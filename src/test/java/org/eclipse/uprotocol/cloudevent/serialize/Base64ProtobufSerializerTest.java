@@ -21,8 +21,6 @@ package org.eclipse.uprotocol.cloudevent.serialize;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import org.eclipse.uprotocol.cloudevent.serialize.Base64ProtobufSerializer;
-import org.eclipse.uprotocol.cloudevent.serialize.CloudEventSerializers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

@@ -19,7 +19,6 @@
 
 package org.eclipse.uprotocol.uuid.validate;
 
-import com.github.f4b6a3.uuid.util.UuidUtil;
 import org.eclipse.uprotocol.cloudevent.validate.ValidationResult;
 import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
 

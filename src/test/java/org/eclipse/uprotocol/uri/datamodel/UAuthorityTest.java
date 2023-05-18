@@ -20,7 +20,6 @@
 package org.eclipse.uprotocol.uri.datamodel;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

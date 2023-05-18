@@ -19,8 +19,6 @@
 
 package org.eclipse.uprotocol.uuid.factory;
 
-import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
-import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

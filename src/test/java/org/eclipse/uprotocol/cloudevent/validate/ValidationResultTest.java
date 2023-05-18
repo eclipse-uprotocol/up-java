@@ -21,7 +21,6 @@ package org.eclipse.uprotocol.cloudevent.validate;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import org.eclipse.uprotocol.cloudevent.validate.ValidationResult;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

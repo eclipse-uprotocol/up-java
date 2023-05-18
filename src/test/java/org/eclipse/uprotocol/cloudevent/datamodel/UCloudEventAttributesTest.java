@@ -20,7 +20,6 @@
 package org.eclipse.uprotocol.cloudevent.datamodel;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
