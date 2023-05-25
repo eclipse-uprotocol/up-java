@@ -79,8 +79,6 @@ Factory class that builds the various types of CloudEvents for uProtocol (publis
 
 The SDK contains comprehensive tests, the best place to look at how all the APIs are used are at:
 
-* link:sdk/src/test/java/org/eclipse/uprotocol/uri/factory/UriFactoryTest.java[UriFactoryTest.java]
+* link:src/test/java/org/eclipse/uprotocol/uri/factory/UriFactoryTest.java[UriFactoryTest.java]
 
-* link:sdk/src/test/java/org/eclipse/uprotocol/cloudevent/factory/CloudEventFactoryTest.java[CloudEventFactoryTest.java]
-
-There are additional example code in the module link:examples/README.adoc[example]
+* link:src/test/java/org/eclipse/uprotocol/cloudevent/factory/CloudEventFactoryTest.java[CloudEventFactoryTest.java]
