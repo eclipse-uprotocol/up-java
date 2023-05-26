@@ -19,7 +19,6 @@
 
 package org.eclipse.uprotocol.cloudevent.datamodel;
 
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

@@ -47,10 +47,10 @@ public interface UriFactory {
     static String buildUProtocolUri(UUri Uri) {
 
         if (Uri == null || Uri.isEmpty()){
-            return Uri.SCHEME;
+            return UUri.SCHEME;
         }
 
-        StringBuilder sb = new StringBuilder(Uri.SCHEME);
+        StringBuilder sb = new StringBuilder(UUri.SCHEME);
 
         sb.append(buildAuthorityPartOfUri(Uri.uAuthority()));
 
