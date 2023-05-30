@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.eclipse.uprotocol.transport.socket;
 
 import java.io.*;
@@ -5,13 +23,17 @@ import java.net.*;
 import java.util.ArrayList;
 import org.eclipse.uprotocol.cloudevent.serialize.*;
 import org.eclipse.uprotocol.transport.*;
+import org.eclipse.uprotocol.utils.Receiver;
+
+import static org.eclipse.uprotocol.utils.StatusUtils.throwableToStatus;
+import static org.eclipse.uprotocol.utils.StatusUtils.buildStatus;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 
 import io.cloudevents.CloudEvent;
 
-public class SocketTransport implements Transport{
+public class SocketTransport implements Transport {
     private Socket clientSocket = null;  
     private DataOutputStream os = null;
     private BufferedReader is = null;
@@ -39,14 +61,9 @@ public class SocketTransport implements Transport{
         }
         return Status.newBuilder().setCode(Code.OK_VALUE).build();
     }
-  
-
-    public final Status registerReceiver(Receiver listener) {
-        return Status.newBuilder().setCode(Code.UNIMPLEMENTED_VALUE).build();
-    }
 
 
-    public final ArrayList<CloudEvent> Receive() {
+    public final CloudEvent[] Receive() {
         ArrayList<CloudEvent> events = new ArrayList<CloudEvent>();
         String inStr;
         try {
@@ -57,7 +74,30 @@ public class SocketTransport implements Transport{
         } catch (IOException e) {
             System.err.println("IOException:  " + e);
         }
-        return events;
+        return (CloudEvent[])events.toArray();
+    }
+
+         /*
+	  * Register message Receier
+      * When the transport supports push type delivery method, the caller invokes this
+	  * method to register a listener to receive the events 
+	  * @param receiver The message reciver
+	  * @return Status The result from the send()
+	 */
+	public Status registerReceiver(Receiver receiver) {
+        return buildStatus(Code.UNIMPLEMENTED);
+    }
+
+
+    /*
+	 * Unregister Message Receier
+     * When the transport supports push type delivery method, the caller invokes this
+	 * method to unregister a message Receiver to receive the events 
+	 * @param receiver to unregister
+	 * @return Status The result from the send()
+	 */
+	public Status unregisterReceiver(Receiver receiver) {
+        return buildStatus(Code.UNIMPLEMENTED);
     }
 
 }
