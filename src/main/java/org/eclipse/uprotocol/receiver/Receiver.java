@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eclipse.uprotocol.utils;
+package org.eclipse.uprotocol.receiver;
 import io.cloudevents.*;
 
 // Interface to define a receive listener used for transports that 

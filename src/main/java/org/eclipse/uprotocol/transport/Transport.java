@@ -18,21 +18,19 @@
  */
 package org.eclipse.uprotocol.transport;
 
-import java.util.ArrayList;
-
-import org.eclipse.uprotocol.utils.Receiver;
+import org.eclipse.uprotocol.receiver.Receiver;
 
 import com.google.rpc.Status;
 
 import io.cloudevents.CloudEvent;
 
 
-/** uProtocol Transport Layer Interface (uP-l1)
+/** uProtocol Transport Layer Interface (uP-L1)
  * Interface is to be implemented by the various transport technologies (ex. MQTT, Binder, HTTP, etc...)
  * NOTE: SW developers do not call these APIs, they interract with the boundary object ULink.java
  */
 public interface Transport {
-    /*
+    /**
 	 * Send a CloudEvent to the connected uE
      * The send command returns immediately and means that your request is valid and will
 	 * be sent to the platform or it is not valid and not sent on.

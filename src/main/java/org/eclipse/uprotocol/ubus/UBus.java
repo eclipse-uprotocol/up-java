@@ -19,39 +19,13 @@
 
 package org.eclipse.uprotocol.ubus;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
-
-import static org.eclipse.uprotocol.cloudevent.factory.UCloudEvent.getSink;
-import static org.eclipse.uprotocol.cloudevent.factory.UCloudEvent.getSource;
-import static org.eclipse.uprotocol.cloudevent.factory.UCloudEvent.isExpired;
-import static org.eclipse.uprotocol.uri.factory.UriFactory.parseFromUri;
-
-import org.eclipse.uprotocol.transport.Transport;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
+import org.eclipse.uprotocol.receiver.Receiver;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.utils.Receiver;
 
-import static org.eclipse.uprotocol.uri.datamodel.UAuthority.local;
-import static org.eclipse.uprotocol.uri.datamodel.UResource.empty;
-import static org.eclipse.uprotocol.uri.datamodel.UResource.response;
-import static org.eclipse.uprotocol.utils.StatusUtils.STATUS_OK;
-import static org.eclipse.uprotocol.utils.StatusUtils.checkArgument;
-import static org.eclipse.uprotocol.utils.StatusUtils.checkNotNull;
-import static org.eclipse.uprotocol.utils.StatusUtils.throwableToStatus;
 import com.google.protobuf.Any;
 import com.google.rpc.Status;
-
-import io.cloudevents.CloudEvent;
 
 
 /* 
@@ -60,128 +34,44 @@ import io.cloudevents.CloudEvent;
  * Helper Base class for all uBus implementations. It is expected that you class that is used by uApps and uServices to interface with uBus.
  * uBus. 
  */
-public abstract class UBus implements Receiver {
+public interface UBus {
 
-    private Transport mTransport;
-    private final UUri mClientUri;
-    private final UUri mResponseUri;
-    private final Executor mCallbackExecutor;
-
-    private final Object mRegistrationLock = new Object();
-    @GuardedBy("mRegistrationLock")
-    private final Map<UUri, Set<Receiver>> mReceiverMap = new HashMap<>();
-
-
-    public UBus(Transport t, UEntity entity, @Nullable Executor executor) {
-        validateUEntity();
-        mTransport = t;
-        mCallbackExecutor = (executor != null) ? executor : Executors.newSingleThreadExecutor();
-        mClientUri = new UUri(local(), entity, empty());
-        mResponseUri = new UUri(local(), entity, response());
-    }
 
     /**
      * Invoke (call) and RPC
-     * @param requestEvent req.v1 CloudEvent.
-     * @return Returns the CompletableFuture with the result or exception. Tamara would rather have a CompletionStage since she likes it better
-     *  when you program to an interface and not an implementation.
+     * @param method The UUri of the method that is to be invoked
+     * @param data The information that is to be send in teh request
+     * @param attributes Various attributes used by uEs
+     * @return Returns the CompletableFuture with the result or exception
      */
-    CompletableFuture<Any> invokeRPC(CloudEvent requestEvent) {
-        /* TODO to complete for reference impl */
-        return CompletableFuture.failedFuture(new Throwable("TODO"));
-    }
+    CompletableFuture<Any> invokeRPC(UUri method, Any data, UCloudEventAttributes attributes);
+    
 
-
-    /*
-     * Send CloudEvents
-     * The cloudevent can be any type (publish, notification, request, etc...)
+    /**
+     * Send a Notification to a specific consumer
+     * @param topic The topic the event is published too
+     * @param destination who the event is being sent to
+     * @param data The event data benig published
+     * @param attributes Various additional attributes
+     * @return Returns google.rpc.Status for sending the published event to the bus
      */
-    Status send(CloudEvent ce) {
-        return mTransport.send(ce);
-    }
+    Status Notify(UUri topic, UUri destination, Any data, UCloudEventAttributes attributes);
 
-
-    /*
-     * Register Receiver per topic
+    /**
+     * Register to receive published/notification events per topic
      * 
-     * API shall provide means for uEs to register a Receiver per topic
-     * 
+     * @param topic What topic the receiver will receive events for
+     * @param receiver The Receiver to receive events (push method) 
      */
-    Status registerReceiver(UUri topic, Receiver receiver) {
-        try {
-            checkArgument(!topic.isEmpty(), "Topic is empty");
-            
-            synchronized (mRegistrationLock) {
-                Set<Receiver> receivers = mReceiverMap.get(topic);
-                if (receivers == null) {
-                    receivers = new HashSet<>();
-                }
-                if (receivers.isEmpty()) {
-                    mReceiverMap.put(topic, receivers);
-                }
-                receivers.add(receiver);
-                return STATUS_OK;
-            }
-        } catch (Exception e) {
-            return throwableToStatus(e);
-        }
-    }
+    Status registerReceiver(UUri topic, Receiver receiver);
 
-
-    /*
+    /**
      * Unregister Receiver per topic
      * 
-     * API shall provide means for uEs to register a Receiver per topic
-     * 
+     * @param topic What topic the receiver will receive events for
+     * @param receiver The Receiver to receive events (push method) 
      */
-    Status unregisterReceiver(UUri topic, Receiver receiver) {
-        try {
-            checkArgument(!topic.isEmpty(), "Topic is empty");
-            checkNotNull(receiver, "Listener is null");
-            synchronized (mRegistrationLock) {
-                final Set<Receiver> receivers = mReceiverMap.get(topic);
-                if (receivers != null && receivers.contains(receiver)) {
-                    receivers.remove(receiver);
-                    if (receivers.isEmpty()) {
-                        mReceiverMap.remove(topic);
-                    }
-                }
-            }
-            return STATUS_OK;
-        } catch (Exception e) {
-            return throwableToStatus(e);
-        }
-    }
-        
-
-    public void onReceive(CloudEvent ce) {
-        final UUri sink = parseFromUri(getSink(ce).orElse(""));       
-        if (!isExpired(ce) && (!sink.isEmpty() && !mClientUri.equals(sink))) {
-        
-            final UUri topic = parseFromUri(getSource(ce));
-            mCallbackExecutor.execute(() -> {
-                final Set<Receiver> receivers;
-                synchronized (mRegistrationLock) {
-                    receivers = mReceiverMap.get(topic);
-                    if (receivers.isEmpty()) {
-                        //Log.w(TAG, UCloudEvent.toString(event) + " skipped: No registered listener");
-                    }
-                }
-                receivers.forEach(receiver -> receiver.onReceive(ce));
-            });
-        }
-        else {
-            //Log.w(TAG, UCloudEvent.toString(event) + " skipped: Expired or wrong sink");
-        }
-    }
-
-
-    /*
-     * Validate the passed entity name matches the callers context.
-     * If UEntity name does not match the callers context, the implementation
-     * MUST throw java.lang.IllegalAccessException if name and context does not match
-     */
-    protected abstract void validateUEntity();
+    Status unregisterReceiver(UUri topic, Receiver receiver);
 
 }
 
