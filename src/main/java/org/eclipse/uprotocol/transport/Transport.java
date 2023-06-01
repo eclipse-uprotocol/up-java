@@ -62,7 +62,7 @@ public interface Transport {
     /**
 	 * Receive CloudEvents (messages)
      * API to fetch 0 to n messages from the sender used when the transport supports 
-	 * @return ReceiveResult that contains the google.rpc.status and a batch of cloudevents
+	 * @return Array of CloudEvents
 	 */
 	CloudEvent[] Receive();
 }
