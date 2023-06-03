@@ -1,0 +1,5 @@
+= uProtocol Client-side Communication Layer Interface (uP-L2)
+:toc:
+
+The client side interface is used by applications and services to communicate with the uBus. 
+The interface provides functionality to Publish(), Notifiy() and InvokeRPC().

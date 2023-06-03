@@ -17,11 +17,10 @@
  * under the License.
  */
 
-package org.eclipse.uprotocol.ubus;
+package org.eclipse.uprotocol.ulink;
 
 import java.util.concurrent.CompletableFuture;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
-import org.eclipse.uprotocol.receiver.Receiver;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 
 import com.google.protobuf.Any;
@@ -34,9 +33,7 @@ import com.google.rpc.Status;
  * Helper Base class for all uBus implementations. It is expected that you class that is used by uApps and uServices to interface with uBus.
  * uBus. 
  */
-public interface UBus {
-
-
+public interface ULink {
     /**
      * Invoke (call) and RPC
      * @param method The UUri of the method that is to be invoked
@@ -48,6 +45,15 @@ public interface UBus {
     
 
     /**
+     * Send a Publish event
+     * @param topic The topic the event is published too
+     * @param data The event data benig published
+     * @param attributes Various additional attributes
+     * @return Returns google.rpc.Status for sending the published event to the bus
+     */
+    Status publish(UUri topic, Any data, UCloudEventAttributes attributes);
+
+    /**
      * Send a Notification to a specific consumer
      * @param topic The topic the event is published too
      * @param destination who the event is being sent to
@@ -55,7 +61,7 @@ public interface UBus {
      * @param attributes Various additional attributes
      * @return Returns google.rpc.Status for sending the published event to the bus
      */
-    Status Notify(UUri topic, UUri destination, Any data, UCloudEventAttributes attributes);
+    Status notify(UUri topic, UUri destination, Any data, UCloudEventAttributes attributes);
 
     /**
      * Register to receive published/notification events per topic
@@ -63,7 +69,7 @@ public interface UBus {
      * @param topic What topic the receiver will receive events for
      * @param receiver The Receiver to receive events (push method) 
      */
-    Status registerReceiver(UUri topic, Receiver receiver);
+    Status registerEventListener(UUri topic, EventListener listener);
 
     /**
      * Unregister Receiver per topic
@@ -71,7 +77,6 @@ public interface UBus {
      * @param topic What topic the receiver will receive events for
      * @param receiver The Receiver to receive events (push method) 
      */
-    Status unregisterReceiver(UUri topic, Receiver receiver);
-
+    Status unregisterEventListener(UUri topic, EventListener listener);
 }
 

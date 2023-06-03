@@ -28,6 +28,8 @@ import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.factory.UriFactory;
+import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
+
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -83,6 +85,81 @@ class CloudEventToProtobufSerializerTest {
         assertCloudEventsAreTheSame(cloudEvent, deserialize);
     }
 
+
+    @Test
+    @DisplayName("Test serialize and deserialize a CloudEvent to protobuf")
+    public void test_cloudevent_long_uri_header_size() {
+
+        // build the source
+        UEntity use = UEntity.fromName("body.access");
+        UUri Uri = new UUri(UAuthority.local(), use, UResource.fromNameWithInstance("Door", "front_left"));
+        String source = UriFactory.buildUProtocolUri(Uri);
+
+        // fake payload
+        final Any protoPayload = buildProtoPayloadForTest();
+
+        // configure cloud event
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withHash("somehash")
+                .withPriority(UCloudEventAttributes.Priority.LOW)
+                .withTtl(3)
+                .build();
+
+        final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
+                UUIDFactory.Factories.UPROTOCOL.factory().create().toString(), source,
+                protoPayload.toByteArray(), protoPayload.getTypeUrl(),
+                uCloudEventAttributes);
+        cloudEventBuilder.withType("pub.v1");
+
+        final CloudEvent cloudEvent = cloudEventBuilder.build();
+        final byte[] bytes = serializer.serialize(cloudEvent);
+
+        final CloudEvent deserialize = serializer.deserialize(bytes);
+
+        // data is not the same type, does not work -> expected data=BytesCloudEventData actual data=io.cloudevents.protobuf.ProtoDataWrapper
+        //assertEquals(cloudEvent, deserialize);
+
+        System.out.println("Size of Publish CloudEvent " +  bytes.length + "Data lengh:" + protoPayload.toByteArray().length );
+
+        assertCloudEventsAreTheSame(cloudEvent, deserialize);
+    }
+
+    @Test
+    @DisplayName("Test serialize and deserialize a CloudEvent to protobuf")
+    public void test_cloudevent_short_uri_header_size() {
+
+        // build the source
+        UEntity use = UEntity.fromName("body.access");
+        UUri Uri = new UUri(UAuthority.local(), use, UResource.fromNameWithInstance("Door", "front_left"));
+        String source = "//192.168.1.100/1/1";
+
+        // fake payload
+        final Any protoPayload = buildProtoPayloadForTest();
+
+        // configure cloud event
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withPriority(UCloudEventAttributes.Priority.LOW)
+                .withTtl(3)
+                .build();
+
+        final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent(
+                UUIDFactory.Factories.UPROTOCOL.factory().create().toString(), source,
+                protoPayload.toByteArray(), protoPayload.getTypeUrl(),
+                uCloudEventAttributes);
+        cloudEventBuilder.withType("pub.v1");
+
+        final CloudEvent cloudEvent = cloudEventBuilder.build();
+        final byte[] bytes = serializer.serialize(cloudEvent);
+
+        final CloudEvent deserialize = serializer.deserialize(bytes);
+
+        // data is not the same type, does not work -> expected data=BytesCloudEventData actual data=io.cloudevents.protobuf.ProtoDataWrapper
+        //assertEquals(cloudEvent, deserialize);
+
+        System.out.println("Size of Publish CloudEvent " +  bytes.length + "Data lengh:" + protoPayload.toByteArray().length );
+
+        assertCloudEventsAreTheSame(cloudEvent, deserialize);
+    }
     @Test
     @DisplayName("Test serialize 2 different cloud events are not the same serialized elements")
     public void test_serialize_two_different_cloud_event_are_not_the_same() {

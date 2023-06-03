@@ -16,16 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eclipse.uprotocol.receiver;
+package org.eclipse.uprotocol.transport;
+import javax.annotation.Nonnull;
+
 import io.cloudevents.*;
 
-// Interface to define a receive listener used for transports that 
-// support push type delivery method. 
+/** 
+ * uP-L1 Message delivery Listener.
+ * Used by transports that implement push delivery method to receive 
+ * events asynchronously. 
+ */
 public interface Receiver {
 
-	// Receive Message Handler
-	// When messages are received, this function is called.
-	// @param ce CloudEvent received
-	// @return void
-	void onReceive(CloudEvent ce);
+	/**
+	 * Receive Message Handler
+	 * When messages are received, this function is called.
+	 * @param ce CloudEvent received
+	 * @return void
+	 */
+	void onReceive(@Nonnull CloudEvent ce);
 }

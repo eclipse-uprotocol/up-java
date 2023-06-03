@@ -18,7 +18,8 @@
  */
 package org.eclipse.uprotocol.transport;
 
-import org.eclipse.uprotocol.receiver.Receiver;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.google.rpc.Status;
 
@@ -26,8 +27,8 @@ import io.cloudevents.CloudEvent;
 
 
 /** uProtocol Transport Layer Interface (uP-L1)
- * Interface is to be implemented by the various transport technologies (ex. MQTT, Binder, HTTP, etc...)
- * NOTE: SW developers do not call these APIs, they interract with the boundary object ULink.java
+ * Provides a standard interface to send and receive CloudEvent messages
+ * The API is to be impemented by all the L1 transports (ex. HTTP, MQTT, etc..)
  */
 public interface Transport {
     /**
@@ -37,32 +38,13 @@ public interface Transport {
 	 * @param ce  Cloudevent to send
 	 * @return Status The result from the send()
 	 */
-	Status send(CloudEvent cloudEvent);
+	Status send(@Nonnull CloudEvent cloudEvent);
   
-
-     /*
-	  * Register message Receier
-      * When the transport supports push type delivery method, the caller invokes this
-	  * method to register a listener to receive the events 
-	  * @param receiver The message reciver
-	  * @return Status The result from the send()
-	 */
-	Status registerReceiver(Receiver receiver);
-
-
-    /*
-	 * Unregister Message Receier
-     * When the transport supports push type delivery method, the caller invokes this
-	 * method to unregister a message Receiver to receive the events 
-	 * @param receiver to unregister
-	 * @return Status The result from the send()
-	 */
-	Status unregisterReceiver(Receiver receiver);
 
     /**
 	 * Receive CloudEvents (messages)
      * API to fetch 0 to n messages from the sender used when the transport supports 
 	 * @return Array of CloudEvents
 	 */
-	CloudEvent[] Receive();
+	CloudEvent Receive();
 }
