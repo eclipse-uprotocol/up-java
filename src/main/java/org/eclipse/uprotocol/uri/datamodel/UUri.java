@@ -24,8 +24,7 @@ import org.eclipse.uprotocol.uri.factory.UriFactory;
 import java.util.Objects;
 
 /**
- * Data representation of an <b> URI</b>.<br>
- * Matches the uProtocol URI in SDV-202 uProtocol Format<br>
+ * Data representation of an <b> URI</b>.
  * This class will be used to represent the source and sink (destination) parts of the  Packet CloudEvent. <br>
  * URI is used as a method to uniquely identify devices, services, and resources on the  network.<br>
  * Defining a common URI for the system allows applications and/or services to publish and discover each other

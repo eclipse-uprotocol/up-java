@@ -26,7 +26,6 @@ import org.eclipse.uprotocol.uri.datamodel.UUri;
 
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -34,8 +33,6 @@ import java.util.stream.Collectors;
  * The  URI Factory generates an  URI.
  */
 public interface UriFactory {
-
-    Pattern schemaPattern = Pattern.compile("(?i)up:");
 
     /**
      * Create the uProtocol URI string for source sink and topics from an  URI.
@@ -45,12 +42,26 @@ public interface UriFactory {
      *      that can be used as a sink or a source in a uProtocol publish communication.
      */
     static String buildUProtocolUri(UUri Uri) {
+        return buildUProtocolUri(Uri, UUri.SCHEME);
+    }
 
-        if (Uri == null || Uri.isEmpty()){
-            return UUri.SCHEME;
+    /**
+     * Create the uProtocol URI with a custom scheme for source sink and topics.
+     * 
+     * API can be used to omit the scheme or use an existing proprietary scheme but 
+     * keeping the same datamodel of UUri
+     * 
+     * @param Uri The  URI data object.
+     * @param scheme The URI scheme per RFC2396.
+     * @return Returns the uProtocol URI string from an URI data object
+     *      that can be used as a sink or a source in a uProtocol publish communication.
+     */
+    static String buildUProtocolUri(UUri Uri, String scheme) {
+        if (Uri == null || Uri.isEmpty()) {
+            return (scheme == null) ? new String() : scheme;
         }
 
-        StringBuilder sb = new StringBuilder(UUri.SCHEME);
+        StringBuilder sb = new StringBuilder(scheme);
 
         sb.append(buildAuthorityPartOfUri(Uri.uAuthority()));
 
@@ -63,7 +74,7 @@ public interface UriFactory {
         }
 
         sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity()));
-
+        
         sb.append(buildResourcePartOfUri(Uri.uResource()));
 
         return sb.toString().replaceAll("/+$", "");
@@ -82,6 +93,23 @@ public interface UriFactory {
      */
     static String buildUProtocolUri(UAuthority uAuthority, UEntity uEntity, UResource uResource) {
         return buildUProtocolUri(new UUri(uAuthority, uEntity, uResource));
+    }
+    
+    
+    /**
+     * Create a uProtocol URI with a custom scheme for source sink and topics using the separate parts
+     * of an  URI.
+     *
+     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
+     * @param uEntity The  Software Entity in the role of a service or in the role of an application.
+     * @param uResource The resource is something that is manipulated by a service such as a Door.
+     * @param scheme The URI scheme of this URI.
+     *
+     * @return Returns the uProtocol URI string from an  URI data object
+     *      that can be used as a sink or a source in a uProtocol publish communication.
+     */
+    static String buildUProtocolUri(UAuthority uAuthority, UEntity uEntity, UResource uResource, String scheme) {
+        return buildUProtocolUri(new UUri(uAuthority, uEntity, uResource), scheme);
     }
 
     /**
@@ -153,6 +181,7 @@ public interface UriFactory {
         return sb.toString();
     }
 
+
     /**
      * Create the authority part of the uProtocol URI from an  authority object.
      * @param Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
@@ -185,10 +214,9 @@ public interface UriFactory {
             return UUri.empty();
         }
 
-        String uri = schemaPattern.matcher(uProtocolUri)
-                .replaceFirst("")
+        String uri = uProtocolUri.contains(":") ? uProtocolUri.substring(uProtocolUri.indexOf(":")+1) : uProtocolUri 
                 .replace('\\', '/');
-
+        
         boolean isLocal = !uri.startsWith("//");
 
         final String[] uriParts = uri.split("/");

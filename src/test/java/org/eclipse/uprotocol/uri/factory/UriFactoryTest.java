@@ -37,6 +37,7 @@ class UriFactoryTest {
         assertTrue(Uri.isEmpty());
     }
 
+    
     @Test
     @DisplayName("Test parse uProtocol uri that is empty string")
     public void test_parse_protocol_uri_when_is_empty_string() {
@@ -103,7 +104,7 @@ class UriFactoryTest {
         assertEquals("access", Uri.uResource().instance().get());
         assertTrue(Uri.uResource().message().isEmpty());
     }
-
+ 
     @Test
     @DisplayName("Test parse uProtocol uri with schema and 6 slash and something")
     public void test_parse_protocol_uri_with_schema_and_6_slash_and_something() {
@@ -908,6 +909,45 @@ class UriFactoryTest {
         UResource uResource = UResource.fromName("door");
         String uProtocolUri = UriFactory.buildUProtocolUri(uAuthority, use, uResource);
         assertEquals("up://vcu.my_car_vin/body.access/1/door", uProtocolUri);
+    }
+
+    @Test
+    @DisplayName("Test Create a URI using custom scheme_separate")
+    public void test_build_protocol_uri_from_custom_scheme() {
+        String uri = "custom://VCU/body.access/1/door.front_left";
+        UAuthority uAuthority = UAuthority.remote("VCU", "MY_CAR_VIN");
+        UEntity use = new UEntity("body.access", "1");
+        UResource uResource = UResource.fromName("door");
+        String ucustomUri = UriFactory.buildUProtocolUri(uAuthority, use, uResource, "custom:");
+        assertEquals("custom://vcu.my_car_vin/body.access/1/door", ucustomUri);
+    }
+    @Test
+    @DisplayName("Test Create a URI using custom scheme_one")
+    public void test_build_protocol_uri_from_custom_scheme_one() {
+        String uri = "custom://VCU/body.access/1/door.front_left";
+        UUri Uri = UriFactory.parseFromUri(uri);
+        String ucustomUri = UriFactory.buildUProtocolUri(Uri, "custom:");
+        assertEquals("custom://vcu/body.access/1/door.front_left", ucustomUri);
+    }
+
+    @Test
+    @DisplayName("Test Create a URI using no scheme")
+    public void test_custom_scheme_no_scheme_empty() {
+        UAuthority uAuthority = null;
+        UEntity uSoftwareEntity = null;
+        UResource uResource = null;
+        String customUri = UriFactory.buildUProtocolUri(uAuthority, uSoftwareEntity, uResource, "");
+        assertTrue(customUri.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Test Create a custom URI using no scheme")
+    public void test_custom_scheme_no_scheme() {
+        UAuthority uAuthority = UAuthority.remote("VCU", "MY_CAR_VIN");
+        UEntity use = new UEntity("body.access", "1");
+        UResource uResource = UResource.fromName("door");
+        String ucustomUri = UriFactory.buildUProtocolUri(uAuthority, use, uResource, "");
+        assertEquals("//vcu.my_car_vin/body.access/1/door", ucustomUri);
     }
 
 }
