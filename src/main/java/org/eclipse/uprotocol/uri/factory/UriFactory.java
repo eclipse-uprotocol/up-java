@@ -26,7 +26,6 @@ import org.eclipse.uprotocol.uri.datamodel.UUri;
 
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -34,8 +33,6 @@ import java.util.stream.Collectors;
  * The  URI Factory generates an  URI.
  */
 public interface UriFactory {
-
-    Pattern schemaPattern = Pattern.compile("(?i)up:");
 
     /**
      * Create the uProtocol URI string for source sink and topics from an  URI.
@@ -45,28 +42,18 @@ public interface UriFactory {
      *      that can be used as a sink or a source in a uProtocol publish communication.
      */
     static String buildUProtocolUri(UUri Uri) {
+        return buildUri(Uri, new StringBuilder(UUri.SCHEME));
+    }
 
-        if (Uri == null || Uri.isEmpty()){
-            return UUri.SCHEME;
-        }
-
-        StringBuilder sb = new StringBuilder(UUri.SCHEME);
-
-        sb.append(buildAuthorityPartOfUri(Uri.uAuthority()));
-
-        if (Uri.uAuthority().isMarkedRemote()) {
-            sb.append("/");
-        }
-
-        if (Uri.uEntity().isEmpty()) {
-            return sb.toString();
-        }
-
-        sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity()));
-
-        sb.append(buildResourcePartOfUri(Uri.uResource()));
-
-        return sb.toString().replaceAll("/+$", "");
+    /**
+     * Create the uProtocol URI string for source sink and topics from an  URI.
+     * 
+     * @param Uri The  URI data object.
+     * @return Returns the uProtocol URI string from an  URI data object
+     *      that can be used as a sink or a source in a uProtocol publish communication.
+     */
+    static String buildUProtocolUri(String scheme, UUri Uri) {
+        return buildUri(Uri, new StringBuilder(scheme));
     }
 
     /**
@@ -82,6 +69,23 @@ public interface UriFactory {
      */
     static String buildUProtocolUri(UAuthority uAuthority, UEntity uEntity, UResource uResource) {
         return buildUProtocolUri(new UUri(uAuthority, uEntity, uResource));
+    }
+    
+    
+    /**
+     * Create a uProtocol URI string for source sink and topics from the separate parts
+     * of an  URI.
+     *
+     * @param scheme The URI scheme of this URI.
+     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
+     * @param uEntity The  Software Entity in the role of a service or in the role of an application.
+     * @param uResource The resource is something that is manipulated by a service such as a Door.
+     *
+     * @return Returns the uProtocol URI string from an  URI data object
+     *      that can be used as a sink or a source in a uProtocol publish communication.
+     */
+    static String buildUProtocolUri(String scheme, UAuthority uAuthority, UEntity uEntity, UResource uResource) {
+        return buildUProtocolUri(scheme, new UUri(uAuthority, uEntity, uResource));
     }
 
     /**
@@ -154,6 +158,37 @@ public interface UriFactory {
     }
 
     /**
+     * Create the uProtocol URI string for source sink and topics from an  URI.
+     * 
+     * @param Uri The  URI data object.
+     * @return Returns the uProtocol URI string from an  URI data object
+     *      that can be used as a sink or a source in a uProtocol publish communication.
+     */
+    private static String buildUri(UUri Uri, StringBuilder sb) {
+
+        if (Uri == null || Uri.isEmpty()) {
+            return sb.toString().isEmpty() ? new String() : UUri.SCHEME;
+        }
+
+        sb.append(buildAuthorityPartOfUri(Uri.uAuthority()));
+
+        if (Uri.uAuthority().isMarkedRemote()) {
+            sb.append("/");
+        }
+
+        if (Uri.uEntity().isEmpty()) {
+            return sb.toString();
+        }
+
+        sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity()));
+
+        sb.append(buildResourcePartOfUri(Uri.uResource()));
+
+        return sb.toString().replaceAll("/+$", "");
+    }
+    
+
+    /**
      * Create the authority part of the uProtocol URI from an  authority object.
      * @param Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
      * @return Returns the String representation of the  Authority in the uProtocol URI.
@@ -185,10 +220,9 @@ public interface UriFactory {
             return UUri.empty();
         }
 
-        String uri = schemaPattern.matcher(uProtocolUri)
-                .replaceFirst("")
+        String uri = uProtocolUri.contains(":") ? uProtocolUri.substring(uProtocolUri.indexOf(":")+1) : uProtocolUri 
                 .replace('\\', '/');
-
+        
         boolean isLocal = !uri.startsWith("//");
 
         final String[] uriParts = uri.split("/");
