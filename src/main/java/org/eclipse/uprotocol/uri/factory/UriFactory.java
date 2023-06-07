@@ -42,18 +42,41 @@ public interface UriFactory {
      *      that can be used as a sink or a source in a uProtocol publish communication.
      */
     static String buildUProtocolUri(UUri Uri) {
-        return buildUri(Uri, new StringBuilder(UUri.SCHEME));
+        return buildUProtocolUri(Uri, UUri.SCHEME);
     }
 
     /**
-     * Create the uProtocol URI string for source sink and topics from an  URI.
+     * Create the uProtocol URI with a custom scheme  for source sink and topics .
+     * 
+     * API can be used to omit the scheme or use an existing proprietary scheme but 
+     * keeping the same datamodel of UUri
      * 
      * @param Uri The  URI data object.
-     * @return Returns the uProtocol URI string from an  URI data object
+     * @param scheme The URI scheme per RFC2396.
+     * @return Returns the uProtocol URI string from an URI data object
      *      that can be used as a sink or a source in a uProtocol publish communication.
      */
-    static String buildUProtocolUri(String scheme, UUri Uri) {
-        return buildUri(Uri, new StringBuilder(scheme));
+    static String buildUProtocolUri(UUri Uri, String scheme) {
+        if (Uri == null || Uri.isEmpty()) {
+            return (scheme == null) ? new String() : scheme;
+        }
+
+        StringBuilder sb = new StringBuilder(scheme);
+
+        sb.append(buildAuthorityPartOfUri(Uri.uAuthority()));
+
+        if (Uri.uAuthority().isMarkedRemote()) {
+            sb.append("/");
+        }
+
+        if (Uri.uEntity().isEmpty()) {
+            return sb.toString();
+        }
+
+        sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity()));
+        sb.append(buildResourcePartOfUri(Uri.uResource()));
+
+        return sb.toString().replaceAll("/+$", "");
     }
 
     /**
@@ -84,8 +107,8 @@ public interface UriFactory {
      * @return Returns the uProtocol URI string from an  URI data object
      *      that can be used as a sink or a source in a uProtocol publish communication.
      */
-    static String buildUProtocolUri(String scheme, UAuthority uAuthority, UEntity uEntity, UResource uResource) {
-        return buildUProtocolUri(scheme, new UUri(uAuthority, uEntity, uResource));
+    static String buildUProtocolUri(UAuthority uAuthority, UEntity uEntity, UResource uResource, String scheme) {
+        return buildUProtocolUri(new UUri(uAuthority, uEntity, uResource), scheme);
     }
 
     /**
@@ -157,36 +180,6 @@ public interface UriFactory {
         return sb.toString();
     }
 
-    /**
-     * Create the uProtocol URI string for source sink and topics from an  URI.
-     * 
-     * @param Uri The  URI data object.
-     * @return Returns the uProtocol URI string from an  URI data object
-     *      that can be used as a sink or a source in a uProtocol publish communication.
-     */
-    private static String buildUri(UUri Uri, StringBuilder sb) {
-
-        if (Uri == null || Uri.isEmpty()) {
-            return sb.toString().isEmpty() ? new String() : UUri.SCHEME;
-        }
-
-        sb.append(buildAuthorityPartOfUri(Uri.uAuthority()));
-
-        if (Uri.uAuthority().isMarkedRemote()) {
-            sb.append("/");
-        }
-
-        if (Uri.uEntity().isEmpty()) {
-            return sb.toString();
-        }
-
-        sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity()));
-
-        sb.append(buildResourcePartOfUri(Uri.uResource()));
-
-        return sb.toString().replaceAll("/+$", "");
-    }
-    
 
     /**
      * Create the authority part of the uProtocol URI from an  authority object.

@@ -918,7 +918,7 @@ class UriFactoryTest {
         UAuthority uAuthority = UAuthority.remote("VCU", "MY_CAR_VIN");
         UEntity use = new UEntity("body.access", "1");
         UResource uResource = UResource.fromName("door");
-        String ucustomUri = UriFactory.buildUProtocolUri("custom:", uAuthority, use, uResource);
+        String ucustomUri = UriFactory.buildUProtocolUri(uAuthority, use, uResource, "custom:");
         assertEquals("custom://vcu.my_car_vin/body.access/1/door", ucustomUri);
     }
     @Test
@@ -926,7 +926,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from_custom_scheme_one() {
         String uri = "custom://VCU/body.access/1/door.front_left";
         UUri Uri = UriFactory.parseFromUri(uri);
-        String ucustomUri = UriFactory.buildUProtocolUri("custom:", Uri);
+        String ucustomUri = UriFactory.buildUProtocolUri(Uri, "custom:");
         assertEquals("custom://vcu/body.access/1/door.front_left", ucustomUri);
     }
 
@@ -936,7 +936,7 @@ class UriFactoryTest {
         UAuthority uAuthority = null;
         UEntity uSoftwareEntity = null;
         UResource uResource = null;
-        String customUri = UriFactory.buildUProtocolUri("", uAuthority, uSoftwareEntity, uResource);
+        String customUri = UriFactory.buildUProtocolUri(uAuthority, uSoftwareEntity, uResource, "");
         assertTrue(customUri.isEmpty());
     }
 
@@ -946,7 +946,7 @@ class UriFactoryTest {
         UAuthority uAuthority = UAuthority.remote("VCU", "MY_CAR_VIN");
         UEntity use = new UEntity("body.access", "1");
         UResource uResource = UResource.fromName("door");
-        String ucustomUri = UriFactory.buildUProtocolUri("", uAuthority, use, uResource);
+        String ucustomUri = UriFactory.buildUProtocolUri(uAuthority, use, uResource, "");
         assertEquals("//vcu.my_car_vin/body.access/1/door", ucustomUri);
     }
 
