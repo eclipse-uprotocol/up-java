@@ -46,7 +46,7 @@ public interface UriFactory {
     }
 
     /**
-     * Create the uProtocol URI with a custom scheme  for source sink and topics .
+     * Create the uProtocol URI with a custom scheme for source sink and topics.
      * 
      * API can be used to omit the scheme or use an existing proprietary scheme but 
      * keeping the same datamodel of UUri
@@ -74,6 +74,7 @@ public interface UriFactory {
         }
 
         sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity()));
+        
         sb.append(buildResourcePartOfUri(Uri.uResource()));
 
         return sb.toString().replaceAll("/+$", "");
@@ -96,13 +97,13 @@ public interface UriFactory {
     
     
     /**
-     * Create a uProtocol URI string for source sink and topics from the separate parts
+     * Create a uProtocol URI with a custom scheme for source sink and topics using the separate parts
      * of an  URI.
      *
-     * @param scheme The URI scheme of this URI.
      * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
      * @param uEntity The  Software Entity in the role of a service or in the role of an application.
      * @param uResource The resource is something that is manipulated by a service such as a Door.
+     * @param scheme The URI scheme of this URI.
      *
      * @return Returns the uProtocol URI string from an  URI data object
      *      that can be used as a sink or a source in a uProtocol publish communication.
