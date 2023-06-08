@@ -1,4 +1,4 @@
-package org.eclipse.uprotocol.sdk;
+package org.eclipse.uprotocol.ubus;
 
 public class SubscriptionAttributes {
 }

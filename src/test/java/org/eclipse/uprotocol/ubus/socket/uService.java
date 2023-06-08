@@ -1,4 +1,4 @@
-package org.eclipse.uprotocol.sdk;
+package org.eclipse.uprotocol.ubus.socket;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -10,22 +10,14 @@ import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 
 import com.google.protobuf.Any;
-import com.google.rpc.Status;
 
-public class uApp {
+public class uService {
     
-    private class AppEventListener implements EventListener {
-
-        @Override
-        public Status onEvent(UUri topic, byte[] data, UCloudEventAttributes attributes) {
-            throw new UnsupportedOperationException("Unimplemented method 'onEvent'");
-        }
-
-    };
     
     public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException, InterruptedException {
         UEntity use = new UEntity("HartleyApp", "1.0");
-        AppEventListener listener;
+        
+        //SocketUBus uBus = new SocketUBus();
 
         UUri topic = new UUri(UAuthority.local(), use,
                 new UResource("hello", "world", "dummy"));
@@ -39,11 +31,10 @@ public class uApp {
                 .withTtl(3)
                 .withToken("someToken")
                 .build();
-/*
-        uBus.registerEventListener(topic, listener);
 
-        uBus.send(topic, data.toByteArray(), uCloudEventAttributes);
-        */
+       // uBus.registerEventListener(topic, listener);
+
+       // uBus.send(topic, data.toByteArray(), uCloudEventAttributes);
     }
 
 }

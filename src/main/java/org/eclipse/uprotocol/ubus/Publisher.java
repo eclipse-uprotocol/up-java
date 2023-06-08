@@ -16,31 +16,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eclipse.uprotocol.sdk;
-
-import java.util.concurrent.CompletableFuture;
+package org.eclipse.uprotocol.ubus;
 
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 
+import com.google.rpc.Status;
 
 /**
- * uProtocol Layer 2 RPC Requester Interface
+ * Publisher Interface for applications
  * 
- * API called by uEs that wish to send an RPC Request to another uE
  */
-public interface Requester {
+public interface Publisher {
+
     /**
-     * Issue a Request (Invoke a method).
+     * Publish an Event to the bus
      * 
-     * The Requester calls this API to issue a request, what is returned is a completable future
-     * that the caller can either block or wait for the future to be completed.
-     * 
-     * @param request URI of the request method
-     * @param data Request message data 
-     * @param attributes Additional request attributes
-     * @return Returns the CompletableFuture with the result or exception.
-     * @throws StatusException if there are any communication errors with sending the request
+     * @param topic The topic the event is published too
+     * @param data The event data being published
+     * @param attributes Various additional attributes
+     * @return Returns google.rpc.Status for sending the published event to the bus
      */
-    CompletableFuture<byte[]> request(UUri request, byte[] data, UCloudEventAttributes attributes);
+    Status publish(UUri topic, byte[] data, UCloudEventAttributes attributes);
+    
+    /* TODO: 
+     * 
+     * Move uSubscription (publisher APIs) to this Java Interface.
+     * We will define the messages in the uSubscription proto and reuse them like below:
+     *
+     * - Status createTopic(CreateTopicRequest);
+     * - Status DeprecateTopic(DeprecateTopicRequest);
+     * - FetchSubscribersResponse fetchSubscribers(FetchSubscribersRequest);
+     */
 }

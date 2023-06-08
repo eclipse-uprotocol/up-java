@@ -16,26 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eclipse.uprotocol.sdk;
+package org.eclipse.uprotocol.transport;
 
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
+import javax.annotation.Nonnull;
 
 import com.google.rpc.Status;
 
-/**
- * Publisher Interface for applications
- * 
+
+/** uProtocol Transport Layer Interface (uP-L1)
+ * Provides a standard interface to send and receive uProtocol messages
+ * The API is to be impemented by all the L1 transports (ex. HTTP, MQTT, etc..)
  */
-public interface Publisher {
+public interface Transport {
+    /**
+	 * Send a uProtocol message.
+     * 
+	 * @param message  uProtocol message
+	 * @return Status The result from the send()
+	 */
+	Status send(@Nonnull byte[] message);
+
 
     /**
-     * Publish an Event to the bus
-     * 
-     * @param topic The topic the event is published too
-     * @param data The event data being published
-     * @param attributes Various additional attributes
-     * @return Returns google.rpc.Status for sending the published event to the bus
-     */
-    Status publish(UUri topic, byte[] data, UCloudEventAttributes attributes);
+	 * Receive uProtocol messages
+     * API to fetch 0 to n messages from the sender used when the transport supports 
+	 * @return Array of CloudEvents
+	 */
+	byte[] receive();
 }

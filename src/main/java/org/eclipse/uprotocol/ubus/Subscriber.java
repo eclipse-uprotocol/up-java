@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eclipse.uprotocol.sdk;
+package org.eclipse.uprotocol.ubus;
 
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 
@@ -48,12 +48,18 @@ public interface Subscriber {
      */
     Status unregisterEventListener(UUri topic, EventListener listener);
 
-    /**
-     * Subscribe to a given topic passing the SubscriptionAttributes
+
+    /* TODO: 
      * 
-     * @param topic What topic the receiver will receive events for
-     * @param receiver The Receiver to receive events (push method) 
-     * @return Status of the API
+     * Move the uSubscription (subscriber APIs) to this Java Interface.
+     * We will define the messages in the uSubscription proto and reuse them like below:
+     *
+     *  - SubscriptionResponse subscribe(SubscriptionRequest request);
+     *  - Status unsubscribe(UnsubscribeRequest request);
+     *  - Status registerForNotifications(NotificationsRequest)
+     *  - Status unregisterForNotifications(NotificationsRequest)
+     *  2. Create/Delete Topic APIs
+     *  3. Fetch Subscriptions
      */
-    Status subscribe(UUri topic, SubscriptionAttributes atributes);
+    
 }

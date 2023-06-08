@@ -16,25 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eclipse.uprotocol.sdk;
+package org.eclipse.uprotocol.ubus;
+
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 
-import com.google.rpc.Status;
 
 /**
- *  uP-L2 Event Listener Interace for the uBus
+ * uProtocol Layer 2 RPC Requester Interface
+ * 
+ * API called by uEs that wish to send an RPC Request to another uE
  */
-public interface EventListener {
-
-	/**
-     * Handle receiving published events from the bus.
-	 * 
-	 * @param topic Topic the event data was published too
-	 * @param data The event data
-	 * @param attributes Attributes related to the published data received
-	 * @return Status
+public interface Requester {
+    /**
+     * Issue a Request (Invoke a method).
+     * 
+     * The Requester calls this API to issue a request, what is returned is a completable future
+     * that the caller can either block or wait for the future to be completed.
+     * 
+     * @param request URI of the request method
+     * @param data Request message data 
+     * @param attributes Additional request attributes
+     * @return Returns the CompletableFuture with the result or exception.
+     * @throws StatusException if there are any communication errors with sending the request
      */
-	Status onEvent(UUri topic, byte[] data, UCloudEventAttributes attributes);
+    CompletableFuture<byte[]> request(UUri request, byte[] data, UCloudEventAttributes attributes);
 }
