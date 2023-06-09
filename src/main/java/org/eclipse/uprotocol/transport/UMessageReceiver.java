@@ -16,27 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eclipse.uprotocol.ubus;
+package org.eclipse.uprotocol.transport;
 
-import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.status.datamodel.UStatus;
 
-import com.google.rpc.Status;
+import io.cloudevents.CloudEvent;
 
-/**
- * Request Listener Interface.
- * 
- * Responders use this interface to listen for incoming requests so that
- * it can invoke the request and issue a response.
+
+/** 
+ * uP-L1 Message Receiver.
+ * Used by transports that implement push delivery method to receive 
+ * events asynchronously. 
  */
-public interface RequestListener {
+public interface UMessageReceiver {
 
 	/**
-     * Receive Events from the bus
+	 * Receive Message Handler
 	 * When messages are received, this function is called.
-	 * @param request The request UURI (method) to be invoked
-	 * @param requester UUri of the requester (who requested the method to be invoked)
-	 * @param data Request message data
-	 * @return Status
-     */
-	Status onRequest(UUri request, UUri requester, byte[] data);
+	 * @param message uProtocol message represented as bytes 
+	 * @return void
+	 */
+	UStatus onReceive(CloudEvent ce);
 }

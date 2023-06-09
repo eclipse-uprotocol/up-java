@@ -1,0 +1,3 @@
+# uProtocol L2 Interface for the Bus
+
+The following are a collection of APIs that are used by app developers to communicate with the bus. The APIs are to provide basic eventing capabilities to send and receive different types of events in uProtocol (request, response, publish, notification)

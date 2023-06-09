@@ -18,23 +18,24 @@
  */
 package org.eclipse.uprotocol.transport;
 
-import javax.annotation.Nonnull;
+import org.eclipse.uprotocol.status.datamodel.UStatus;
 
-import com.google.rpc.Status;
+import io.cloudevents.CloudEvent;
+
 
 
 /** uProtocol Transport Layer Interface (uP-L1)
  * Provides a standard interface to send and receive uProtocol messages
  * The API is to be impemented by all the L1 transports (ex. HTTP, MQTT, etc..)
  */
-public interface Transport {
+public interface UTransport {
     /**
 	 * Send a uProtocol message.
      * 
 	 * @param message  uProtocol message
 	 * @return Status The result from the send()
 	 */
-	Status send(@Nonnull byte[] message);
+	UStatus send(CloudEvent ce);
 
 
     /**
@@ -42,5 +43,5 @@ public interface Transport {
      * API to fetch 0 to n messages from the sender used when the transport supports 
 	 * @return Array of CloudEvents
 	 */
-	byte[] receive();
+	CloudEvent receive();
 }

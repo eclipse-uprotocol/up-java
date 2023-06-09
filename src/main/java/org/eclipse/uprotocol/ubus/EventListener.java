@@ -18,16 +18,14 @@
  */
 package org.eclipse.uprotocol.ubus;
 
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.status.datamodel.UStatus;
 
-import com.google.rpc.Status;
+import io.cloudevents.CloudEvent;
 
 /**
  *  uP-L2 Event Listener Interace for the uBus
  */
 public interface EventListener {
-
 	/**
      * Handle receiving published events from the bus.
 	 * 
@@ -36,5 +34,6 @@ public interface EventListener {
 	 * @param attributes Attributes related to the published data received
 	 * @return Status
      */
-	Status onEvent(UUri topic, byte[] data, UCloudEventAttributes attributes);
+	UStatus onEvent(CloudEvent ce);
+
 }

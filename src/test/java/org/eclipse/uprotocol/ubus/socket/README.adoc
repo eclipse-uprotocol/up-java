@@ -1,7 +1,0 @@
-# Example uBus implementation using Linux Sockets
-
-The following code shall be based off Linux Socket transport and include:
-
-* Simple publisher & subscriber code
-* Client & server side implementation of uBus interfaces
- 

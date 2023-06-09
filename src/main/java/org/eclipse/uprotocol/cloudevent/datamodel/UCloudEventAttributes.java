@@ -19,6 +19,7 @@
 
 package org.eclipse.uprotocol.cloudevent.datamodel;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -195,6 +196,12 @@ public class UCloudEventAttributes {
 
         Priority(String qosString) {
             this.qosString = qosString;
+        }
+        
+        public static Optional<Priority> get(String val) {
+            return Arrays.stream(Priority.values())
+                .filter(priority -> priority.qosString.equals(val))
+                .findFirst();
         }
     }
 
