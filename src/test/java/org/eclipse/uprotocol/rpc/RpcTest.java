@@ -560,7 +560,7 @@ class RpcTest {
         return CloudEventBuilder.v1()
                 .withId("hello")
                 .withType("req.v1")
-                .withSource(URI.create("up://VCU.VIN/body.access"));
+                .withSource(URI.create("//VCU.VIN/body.access"));
     }
 
 }

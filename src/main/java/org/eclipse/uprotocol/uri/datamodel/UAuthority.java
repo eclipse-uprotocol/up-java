@@ -47,7 +47,7 @@ public class UAuthority {
     private final String domain;
 
     /**
-     * An  Uri starting with up:// is a remote configuration of a URI, and we mark the uAuthority implicitly as remote.
+     * An  Uri starting with // is a remote configuration of a URI, and we mark the uAuthority implicitly as remote.
      */
     private final boolean markedRemote;
 
@@ -79,7 +79,7 @@ public class UAuthority {
     /**
      * Static factory method for creating a remote  authority.<br>
      * A remote uri contains an authority and looks like this:
-     * <pre> up://&lt;device&gt;.&lt;domain&gt;/&lt;service&gt;/&lt;version&gt;/&lt;resource&gt;#&lt;Message&gt; </pre>
+     * <pre> //&lt;device&gt;.&lt;domain&gt;/&lt;service&gt;/&lt;version&gt;/&lt;resource&gt;#&lt;Message&gt; </pre>
      * @param device The device an  software entity is deployed on, such as the VCU, CCU or Cloud (PaaS).
      * @param domain The domain an  software entity is deployed on, such as vehicle or backoffice. Vehicle Domain name <b>MUST</b> be that of the vehicle VIN.
      * @return returns a remote  authority that contains the device and the domain.

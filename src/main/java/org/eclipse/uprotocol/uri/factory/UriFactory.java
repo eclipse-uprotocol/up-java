@@ -44,26 +44,11 @@ public interface UriFactory {
      *      that can be used as a sink or a source in a uProtocol publish communication.
      */
     static String buildUProtocolUri(UUri Uri) {
-        return buildUProtocolUri(Uri, UUri.SCHEME);
-    }
-
-    /**
-     * Create the uProtocol URI with a custom scheme for source sink and topics.
-     * 
-     * API can be used to omit the scheme or use an existing proprietary scheme but 
-     * keeping the same datamodel of UUri
-     * 
-     * @param Uri The  URI data object.
-     * @param scheme The URI scheme per RFC2396.
-     * @return Returns the uProtocol URI string from an URI data object
-     *      that can be used as a sink or a source in a uProtocol publish communication.
-     */
-    static String buildUProtocolUri(UUri Uri, String scheme) {
         if (Uri == null || Uri.isEmpty()) {
-            return (scheme == null) ? new String() : scheme;
+            return new String();
         }
 
-        StringBuilder sb = new StringBuilder(scheme);
+        StringBuilder sb = new StringBuilder();
 
         sb.append(buildAuthorityPartOfUri(Uri.uAuthority()));
 
@@ -99,22 +84,6 @@ public interface UriFactory {
     
     
     /**
-     * Create a uProtocol URI with a custom scheme for source sink and topics using the separate parts
-     * of an  URI.
-     *
-     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
-     * @param uEntity The  Software Entity in the role of a service or in the role of an application.
-     * @param uResource The resource is something that is manipulated by a service such as a Door.
-     * @param scheme The URI scheme of this URI.
-     *
-     * @return Returns the uProtocol URI string from an  URI data object
-     *      that can be used as a sink or a source in a uProtocol publish communication.
-     */
-    static String buildUProtocolUri(UAuthority uAuthority, UEntity uEntity, UResource uResource, String scheme) {
-        return buildUProtocolUri(new UUri(uAuthority, uEntity, uResource), scheme);
-    }
-
-    /**
      * Create the uProtocol URI string for the source or sink of the CloudEvent that represents an RPC request.
      * Use this to generate the URI for the  software entity who originated the RPC call.
      * As specified in SDV-202 Request for the source and SDV-202 Response for the sink.
@@ -125,7 +94,7 @@ public interface UriFactory {
      */
     static String buildUriForRpc(UAuthority uAuthority,
                                  UEntity uEntitySource) {
-        StringBuilder sb = new StringBuilder(UUri.SCHEME);
+        StringBuilder sb = new StringBuilder();
 
         sb.append(buildAuthorityPartOfUri(uAuthority));
         if (uAuthority.isMarkedRemote()) {
@@ -147,7 +116,7 @@ public interface UriFactory {
      * an RPC request or the source of the CloudEvent that represents an RPC response for RPC scenarios.
      */
     static String buildMethodUri(UAuthority uAuthority, UEntity uEntity, String methodName) {
-        StringBuilder sb = new StringBuilder(UUri.SCHEME);
+        StringBuilder sb = new StringBuilder();
 
         sb.append(buildAuthorityPartOfUri(uAuthority));
         if (uAuthority.isMarkedRemote()) {

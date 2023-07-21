@@ -170,10 +170,10 @@ class UriTest {
         UResource uResource = UResource.fromNameWithInstance("door", "front_left");
         UUri uri = new UUri(uAuthorityRemote, use, uResource);
 
-        assertEquals("up://vcu.my_vin/body.access/1/door.front_left", uri.uProtocolUri());
+        assertEquals("//vcu.my_vin/body.access/1/door.front_left", uri.uProtocolUri());
 
         // call it again, should not call the function, but there is not really a way to test it.
-        assertEquals("up://vcu.my_vin/body.access/1/door.front_left", uri.uProtocolUri());
+        assertEquals("//vcu.my_vin/body.access/1/door.front_left", uri.uProtocolUri());
     }
 
 }

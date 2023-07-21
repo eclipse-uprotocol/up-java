@@ -60,7 +60,7 @@ class CloudEventToJsonSerializerTest {
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("hello")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left"))
+                .withSource(URI.create("/body.access/1/door.front_left"))
                 .withDataContentType(protoContentType)
                 .withDataSchema(URI.create(protoPayload.getTypeUrl()))
                 .withData(protoPayload.toByteArray())
@@ -70,7 +70,7 @@ class CloudEventToJsonSerializerTest {
 
         final byte[] bytes = serializer.serialize(cloudEvent);
         final String jsonString = new String(bytes, StandardCharsets.UTF_8);
-        final String expected = "{\"specversion\":\"1.0\",\"id\":\"hello\",\"source\":\"up:/body.access/1/door.front_left\",\"type\":\"pub.v1\"," +
+        final String expected = "{\"specversion\":\"1.0\",\"id\":\"hello\",\"source\":\"/body.access/1/door.front_left\",\"type\":\"pub.v1\"," +
                 "\"datacontenttype\":\"application/x-protobuf\",\"dataschema\":\"type.googleapis.com/io.cloudevents.v1.CloudEvent\"," +
                 "\"priority\":\"CS1\",\"ttl\":3," +
                 "\"data_base64\":\"CjB0eXBlLmdvb2dsZWFwaXMuY29tL2lvLmNsb3VkZXZlbnRzLnYxLkNsb3VkRXZlbnQSPAoFaGVsbG8SEmh0dHA6Ly9leGFtcGxlLmNvbRoDMS4wIgxleGFtcGxlLmRlbW8qCgoDdHRsEgMaATNCAA==\"}";
@@ -88,7 +88,7 @@ class CloudEventToJsonSerializerTest {
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("hello")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left"))
+                .withSource(URI.create("/body.access/1/door.front_left"))
                 .withDataContentType(protoContentType)
                 .withDataSchema(URI.create(protoPayload.getTypeUrl()))
                 .withData(protoPayload.toByteArray())
@@ -112,7 +112,7 @@ class CloudEventToJsonSerializerTest {
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("hello")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left"))
+                .withSource(URI.create("/body.access/1/door.front_left"))
                 .withDataContentType(protoContentType)
                 .withDataSchema(URI.create(protoPayload.getTypeUrl()))
                 .withData(protoPayload.toByteArray())
@@ -141,7 +141,7 @@ class CloudEventToJsonSerializerTest {
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("hello")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left"))
+                .withSource(URI.create("/body.access/1/door.front_left"))
                 .withDataContentType(protoContentType)
                 .withDataSchema(URI.create(protoPayload.getTypeUrl()))
                 .withData(protoPayload.toByteArray())
@@ -247,14 +247,14 @@ class CloudEventToJsonSerializerTest {
         return CloudEventBuilder.v1()
                 .withId("hello")
                 .withType("pub.v1")
-                .withSource(URI.create("up://VCU.VIN/body.access"));
+                .withSource(URI.create("//VCU.VIN/body.access"));
     }
 
     private Any buildProtoPayloadForTest1() {
         io.cloudevents.v1.proto.CloudEvent cloudEventProto = io.cloudevents.v1.proto.CloudEvent.newBuilder()
                 .setSpecVersion("1.0")
                 .setId("hello")
-                .setSource("up://VCU.VIN/body.access")
+                .setSource("//VCU.VIN/body.access")
                 .setType("pub.v1")
                 .setProtoData(Any.newBuilder().build())
                 .build();
