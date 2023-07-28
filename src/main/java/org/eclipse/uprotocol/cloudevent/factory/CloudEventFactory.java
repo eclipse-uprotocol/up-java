@@ -176,8 +176,10 @@ public interface CloudEventFactory {
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId(id)
                 .withSource(URI.create(source))
+                /* Not needed:
                 .withDataContentType(PROTOBUF_CONTENT_TYPE)
                 .withDataSchema(URI.create(protoPayloadSchema))
+                */
                 .withData(protoPayloadBytes);
 
         attributes.ttl().ifPresent(ttl -> cloudEventBuilder.withExtension("ttl", ttl));
