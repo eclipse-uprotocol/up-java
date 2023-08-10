@@ -35,6 +35,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -77,9 +78,54 @@ class CloudEventFactoryTest {
         assertEquals(source, cloudEvent.getSource().toString());
         assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
         assertFalse(cloudEvent.getExtensionNames().contains("sink"));
+        assertEquals("somehash", cloudEvent.getExtension("hash"));
+        assertEquals(UCloudEventAttributes.Priority.STANDARD.qosString(), cloudEvent.getExtension("priority"));
+        assertEquals(3, cloudEvent.getExtension("ttl"));
+        assertEquals("someOAuthToken", cloudEvent.getExtension("token"));
+
+        assertArrayEquals(protoPayload.toByteArray(), Objects.requireNonNull(cloudEvent.getData()).toBytes());
+    }
+
+     @Test
+    @DisplayName("Test create base CloudEvent with datacontenttype and dataschema")
+    public void test_create_base_cloud_event_with_datacontenttype_and_schema()  {
+
+        // source
+        UEntity use = UEntity.fromName("body.access");
+        UUri ultifiUri = new UUri(UAuthority.local(), use,
+                new UResource("door", "front_left", "Door"));
+        String source = UriFactory.buildUProtocolUri(ultifiUri);
+
+        // fake payload
+        final Any protoPayload = buildProtoPayloadForTest();
+
+        // additional attributes
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withHash("somehash")
+                .withPriority(UCloudEventAttributes.Priority.STANDARD)
+                .withTtl(3)
+                .withToken("someOAuthToken")
+                .build();
+
+        // build the cloud event
+        final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("testme", source,
+                protoPayload.toByteArray(), protoPayload.getTypeUrl(),
+                uCloudEventAttributes);
+        cloudEventBuilder.withType(UCloudEventType.PUBLISH.type())
+                .withDataContentType(DATA_CONTENT_TYPE)
+                .withDataSchema(URI.create(protoPayload.getTypeUrl()));
+
+        final CloudEvent cloudEvent = cloudEventBuilder.build();
+
+        // test all attributes match the table in SDV-202
+        assertEquals("1.0", cloudEvent.getSpecVersion().toString());
+        assertEquals("testme", cloudEvent.getId());
+        assertEquals(source, cloudEvent.getSource().toString());
+        assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
         assertEquals(DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
         assertEquals("type.googleapis.com/io.cloudevents.v1.CloudEvent",
                 Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
+        assertFalse(cloudEvent.getExtensionNames().contains("sink"));
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UCloudEventAttributes.Priority.STANDARD.qosString(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
@@ -117,9 +163,6 @@ class CloudEventFactoryTest {
         assertEquals(source, cloudEvent.getSource().toString());
         assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
         assertFalse(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals(DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
-        assertEquals("type.googleapis.com/io.cloudevents.v1.CloudEvent",
-                Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
         assertFalse(cloudEvent.getExtensionNames().contains("hash"));
         assertFalse(cloudEvent.getExtensionNames().contains("priority"));
         assertFalse(cloudEvent.getExtensionNames().contains("ttl"));
@@ -155,9 +198,6 @@ class CloudEventFactoryTest {
         assertEquals(source, cloudEvent.getSource().toString());
         assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
         assertFalse(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals(DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
-        assertEquals("type.googleapis.com/io.cloudevents.v1.CloudEvent",
-                Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UCloudEventAttributes.Priority.STANDARD.qosString(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
@@ -201,9 +241,6 @@ class CloudEventFactoryTest {
         assertEquals(sink, Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
-        assertEquals(DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
-        assertEquals("type.googleapis.com/io.cloudevents.v1.CloudEvent",
-                Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
@@ -248,9 +285,6 @@ class CloudEventFactoryTest {
         assertEquals("up:/body.access/1/rpc.UpdateDoor", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("req.v1", cloudEvent.getType());
-        assertEquals(DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
-        assertEquals("type.googleapis.com/io.cloudevents.v1.CloudEvent",
-                Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
@@ -298,9 +332,6 @@ class CloudEventFactoryTest {
         assertEquals("up://vcu.my_car_vin/body.access/1/rpc.UpdateDoor", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("req.v1", cloudEvent.getType());
-        assertEquals(DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
-        assertEquals("type.googleapis.com/io.cloudevents.v1.CloudEvent",
-                Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
@@ -345,9 +376,6 @@ class CloudEventFactoryTest {
         assertEquals("up:/petapp/1/rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("res.v1", cloudEvent.getType());
-        assertEquals(DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
-        assertEquals("type.googleapis.com/io.cloudevents.v1.CloudEvent",
-                Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
@@ -396,9 +424,6 @@ class CloudEventFactoryTest {
         assertEquals("up://bo.cloud/petapp//rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("res.v1", cloudEvent.getType());
-        assertEquals(DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
-        assertEquals("type.googleapis.com/io.cloudevents.v1.CloudEvent",
-                Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
@@ -446,9 +471,6 @@ class CloudEventFactoryTest {
         assertEquals("up:/petapp/1/rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("res.v1", cloudEvent.getType());
-        assertEquals(DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
-        assertEquals("type.googleapis.com/google.protobuf.Empty",
-                Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
@@ -497,9 +519,6 @@ class CloudEventFactoryTest {
         assertEquals("up://bo.cloud/petapp//rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("res.v1", cloudEvent.getType());
-        assertEquals(DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
-        assertEquals("type.googleapis.com/google.protobuf.Empty",
-                Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
