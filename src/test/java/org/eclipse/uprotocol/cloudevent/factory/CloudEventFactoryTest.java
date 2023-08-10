@@ -279,10 +279,10 @@ class CloudEventFactoryTest {
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertNotNull(cloudEvent.getId());
-        assertEquals("up:/petapp//rpc.response", cloudEvent.getSource().toString());
+        assertEquals("/petapp//rpc.response", cloudEvent.getSource().toString());
 
         assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("up:/body.access/1/rpc.UpdateDoor", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
+        assertEquals("/body.access/1/rpc.UpdateDoor", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("req.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
@@ -326,10 +326,10 @@ class CloudEventFactoryTest {
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertNotNull(cloudEvent.getId());
-        assertEquals("up://bo.cloud/petapp/1/rpc.response", cloudEvent.getSource().toString());
+        assertEquals("//bo.cloud/petapp/1/rpc.response", cloudEvent.getSource().toString());
 
         assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("up://vcu.my_car_vin/body.access/1/rpc.UpdateDoor", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
+        assertEquals("//vcu.my_car_vin/body.access/1/rpc.UpdateDoor", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("req.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
@@ -370,10 +370,10 @@ class CloudEventFactoryTest {
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertNotNull(cloudEvent.getId());
-        assertEquals("up:/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
+        assertEquals("/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
 
         assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("up:/petapp/1/rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
+        assertEquals("/petapp/1/rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("res.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
@@ -418,10 +418,10 @@ class CloudEventFactoryTest {
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertNotNull(cloudEvent.getId());
-        assertEquals("up://vcu.my_car_vin/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
+        assertEquals("//vcu.my_car_vin/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
 
         assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("up://bo.cloud/petapp//rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
+        assertEquals("//bo.cloud/petapp//rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("res.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
@@ -465,10 +465,10 @@ class CloudEventFactoryTest {
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertNotNull(cloudEvent.getId());
-        assertEquals("up:/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
+        assertEquals("/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
 
         assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("up:/petapp/1/rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
+        assertEquals("/petapp/1/rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("res.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
@@ -513,10 +513,10 @@ class CloudEventFactoryTest {
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertNotNull(cloudEvent.getId());
-        assertEquals("up://vcu.my_car_vin/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
+        assertEquals("//vcu.my_car_vin/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
 
         assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("up://bo.cloud/petapp//rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
+        assertEquals("//bo.cloud/petapp//rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("res.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));

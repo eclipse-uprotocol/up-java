@@ -61,7 +61,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test get a notification cloud event validator")
     void test_get_a_notification_cloud_event_validator() {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("sink", "up://bo.cloud/petapp")
+                .withExtension("sink", "//bo.cloud/petapp")
                 .withType("pub.v1");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
@@ -196,7 +196,7 @@ class CloudEventValidatorTest {
         final CloudEventBuilder builder = CloudEventBuilder.v03()
                 .withId("id")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access"))
+                .withSource(URI.create("/body.access"))
                 .withDataContentType("application/protobuf")
                 .withDataSchema(URI.create(payloadForTest.getTypeUrl()))
                 .withData(payloadForTest.toByteArray());
@@ -249,7 +249,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate software entity uri with version, when it is valid remote")
     void test_usoftware_entity_uri_with_version_when_it_is_valid_remote() {
 
-        final String uri = "up://VCU.MY_CAR_VIN/body.access/1";
+        final String uri = "//VCU.MY_CAR_VIN/body.access/1";
 
         final Status status = CloudEventValidator.validateUEntityUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -259,7 +259,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate software entity uri no version, when it is valid remote")
     void test_usoftware_entity_uri_no_version_when_it_is_valid_remote() {
 
-        final String uri = "up://VCU.MY_CAR_VIN/body.access";
+        final String uri = "//VCU.MY_CAR_VIN/body.access";
 
         final Status status = CloudEventValidator.validateUEntityUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -269,7 +269,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate software entity uri with version, when it is valid local")
     void test_usoftware_entity_uri_with_version_when_it_is_valid_local() {
 
-        final String uri = "up:/body.access/1";
+        final String uri = "/body.access/1";
 
         final Status status = CloudEventValidator.validateUEntityUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -279,7 +279,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate software entity uri no version, when it is valid local")
     void test_usoftware_entity_uri_no_version_when_it_is_valid_local() {
 
-        final String uri = "up:/body.access/";
+        final String uri = "/body.access/";
 
         final Status status = CloudEventValidator.validateUEntityUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -300,7 +300,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate software entity uri is invalid when uri is remote but missing authority")
     void test_usoftware_entity_uri_invalid_when_uri_is_remote_no_authority() {
 
-        final String uri = "up://";
+        final String uri = "//";
 
         final Status status = CloudEventValidator.validateUEntityUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -311,7 +311,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate software entity uri is invalid when uri is remote with use but missing authority")
     void test_usoftware_entity_uri_invalid_when_uri_is_remote_no_authority_with_use() {
 
-        final String uri = "up:///body.access/1";
+        final String uri = "///body.access/1";
 
         final Status status = CloudEventValidator.validateUEntityUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -322,7 +322,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate software entity uri is invalid when uri has no use information")
     void test_usoftware_entity_uri_invalid_when_uri_is_missing_use() {
 
-        final String uri = "up://VCU.myvin";
+        final String uri = "//VCU.myvin";
 
         final Status status = CloudEventValidator.validateUEntityUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -333,7 +333,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate local software entity uri is invalid when uri is missing use name")
     void test_usoftware_entity_uri_invalid_when_uri_is_missing_use_name_local() {
 
-        final String uri = "up://VCU.myvin//1";
+        final String uri = "//VCU.myvin//1";
 
         final Status status = CloudEventValidator.validateUEntityUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -344,7 +344,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate topic uri with version, when it is valid remote")
     void test_topic_uri_with_version_when_it_is_valid_remote() {
 
-        final String uri = "up://VCU.MY_CAR_VIN/body.access/1/door.front_left#Door";
+        final String uri = "//VCU.MY_CAR_VIN/body.access/1/door.front_left#Door";
 
         final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -354,7 +354,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate topic uri no version, when it is valid remote")
     void test_topic_uri_no_version_when_it_is_valid_remote() {
 
-        final String uri = "up://VCU.MY_CAR_VIN/body.access//door.front_left#Door";
+        final String uri = "//VCU.MY_CAR_VIN/body.access//door.front_left#Door";
 
         final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -364,7 +364,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate topic uri with version, when it is valid local")
     void test_topic_uri_with_version_when_it_is_valid_local() {
 
-        final String uri = "up:/body.access/1/door.front_left#Door";
+        final String uri = "/body.access/1/door.front_left#Door";
 
         final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -374,7 +374,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate topic uri no version, when it is valid local")
     void test_topic_uri_no_version_when_it_is_valid_local() {
 
-        final String uri = "up:/body.access//door.front_left#Door";
+        final String uri = "/body.access//door.front_left#Door";
 
         final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -395,7 +395,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate topic uri is invalid when uri contains empty use name local")
     void test_topic_uri_invalid_when_uri_has_empty_use_name_local() {
 
-        final String uri = "up:/";
+        final String uri = "/";
 
         final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -406,7 +406,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate topic uri is invalid when uri is remote but missing authority")
     void test_topic_uri_invalid_when_uri_is_remote_no_authority() {
 
-        final String uri = "up://";
+        final String uri = "//";
 
         final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -417,7 +417,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate topic uri is invalid when uri is remote with use but missing authority")
     void test_topic_uri_invalid_when_uri_is_remote_no_authority_with_use() {
 
-        final String uri = "up:///body.access/1/door.front_left#Door";
+        final String uri = "///body.access/1/door.front_left#Door";
 
         final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -428,7 +428,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate topic uri is invalid when uri has no use information")
     void test_topic_uri_invalid_when_uri_is_missing_use_remote() {
 
-        final String uri = "up://VCU.myvin///door.front_left#Door";
+        final String uri = "//VCU.myvin///door.front_left#Door";
 
         final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -439,7 +439,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate remote topic uri is invalid when uri is missing use name")
     void test_topic_uri_invalid_when_uri_is_missing_use_name_remote() {
 
-        final String uri = "up:/1/door.front_left#Door";
+        final String uri = "/1/door.front_left#Door";
 
         final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -450,7 +450,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate local topic uri is invalid when uri is missing use name")
     void test_topic_uri_invalid_when_uri_is_missing_use_name_local() {
 
-        final String uri = "up://VCU.myvin//1";
+        final String uri = "//VCU.myvin//1";
 
         final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -461,7 +461,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate remote topic uri, when uri has authority and use no version missing resource")
     void test_topic_uri_when_uri_is_with_authority_with_use_no_version_missing_resource_remote() {
 
-        final String source = "up://VCU.myvin/body.access";
+        final String source = "//VCU.myvin/body.access";
 
         final Status status = CloudEventValidator.validateTopicUri(source).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -472,7 +472,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate remote topic uri, when uri has authority and use with version missing resource")
     void test_topic_uri_when_uri_is_with_authority_with_use_with_version_missing_resource_remote() {
 
-        final String source = "up://VCU.myvin/body.access/";
+        final String source = "//VCU.myvin/body.access/";
 
         final Status status = CloudEventValidator.validateTopicUri(source).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -483,7 +483,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate remote topic uri, when uri has authority and use and resource missing Message")
     void test_topic_uri_when_uri_is_with_authority_with_use_with_resource_missing_message_remote() {
 
-        final String source = "up://VCU.myvin/body.access/1/door.front_left";
+        final String source = "//VCU.myvin/body.access/1/door.front_left";
 
         final Status status = CloudEventValidator.validateTopicUri(source).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -494,7 +494,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic uri with version, when it is valid remote")
     void test_rpc_topic_uri_with_version_when_it_is_valid_remote() {
 
-        final String uri = "up://bo.cloud/petapp/1/rpc.response";
+        final String uri = "//bo.cloud/petapp/1/rpc.response";
 
         final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -504,7 +504,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic uri no version, when it is valid remote")
     void test_rpc_topic_uri_no_version_when_it_is_valid_remote() {
 
-        final String uri = "up://bo.cloud/petapp//rpc.response";
+        final String uri = "//bo.cloud/petapp//rpc.response";
 
         final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -514,7 +514,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic uri with version, when it is valid local")
     void test_rpc_topic_uri_with_version_when_it_is_valid_local() {
 
-        final String uri = "up:/petapp/1/rpc.response";
+        final String uri = "/petapp/1/rpc.response";
 
         final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -524,7 +524,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic uri no version, when it is valid local")
     void test_rpc_topic_uri_no_version_when_it_is_valid_local() {
 
-        final String uri = "up:/petapp//rpc.response";
+        final String uri = "/petapp//rpc.response";
 
         final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -545,7 +545,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic uri with version, when it is local but missing rpc.respons")
     void test_rpc_topic_uri_with_version_when_it_is_not_valid_missing_rpc_response_local() {
 
-        final String uri = "up:/petapp/1/dog";
+        final String uri = "/petapp/1/dog";
 
         final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -556,7 +556,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic uri with version, when it is remote but missing rpc.respons")
     void test_rpc_topic_uri_with_version_when_it_is_not_valid_missing_rpc_response_remote() {
 
-        final String uri = "up://petapp/1/dog";
+        final String uri = "//petapp/1/dog";
 
         final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -567,7 +567,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic uri is invalid when uri is remote but missing authority")
     void test_rpc_topic_uri_invalid_when_uri_is_remote_no_authority() {
 
-        final String uri = "up://";
+        final String uri = "//";
 
         final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -578,7 +578,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic uri is invalid when uri is remote with use but missing authority")
     void test_rpc_topic_uri_invalid_when_uri_is_remote_no_authority_with_use() {
 
-        final String uri = "up:///body.access/1";
+        final String uri = "///body.access/1";
 
         final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -589,7 +589,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic uri is invalid when uri has no use information")
     void test_rpc_topic_uri_invalid_when_uri_is_missing_use() {
 
-        final String uri = "up://VCU.myvin";
+        final String uri = "//VCU.myvin";
 
         final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -600,7 +600,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate remote rpc topic uri is invalid when uri is missing use name")
     void test_rpc_topic_uri_invalid_when_uri_is_missing_use_name_remote() {
 
-        final String uri = "up:/1";
+        final String uri = "/1";
 
         final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -611,7 +611,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate local rpc topic uri is invalid when uri is missing use name")
     void test_rpc_topic_uri_invalid_when_uri_is_missing_use_name_local() {
 
-        final String uri = "up://VCU.myvin//1";
+        final String uri = "//VCU.myvin//1";
 
         final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -649,7 +649,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc method uri with version, when it is valid remote")
     void test_rpc_method_uri_with_version_when_it_is_valid_remote() {
 
-        final String uri = "up://VCU.myvin/body.access/1/rpc.UpdateDoor";
+        final String uri = "//VCU.myvin/body.access/1/rpc.UpdateDoor";
 
         final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -659,7 +659,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc method uri no version, when it is valid remote")
     void test_rpc_method_uri_no_version_when_it_is_valid_remote() {
 
-        final String uri = "up://VCU.myvin/body.access//rpc.UpdateDoor";
+        final String uri = "//VCU.myvin/body.access//rpc.UpdateDoor";
 
         final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -669,7 +669,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc method uri with version, when it is valid local")
     void test_rpc_method_uri_with_version_when_it_is_valid_local() {
 
-        final String uri = "up:/body.access/1/rpc.UpdateDoor";
+        final String uri = "/body.access/1/rpc.UpdateDoor";
 
         final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -679,7 +679,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc method uri no version, when it is valid local")
     void test_rpc_method_uri_no_version_when_it_is_valid_local() {
 
-        final String uri = "up:/body.access//rpc.UpdateDoor";
+        final String uri = "/body.access//rpc.UpdateDoor";
 
         final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
@@ -700,7 +700,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc method uri with version, when it is local but not an rpc method")
     void test_rpc_method_uri_with_version_when_it_is_not_valid_not_rpc_method_local() {
 
-        final String uri = "up:/body.access//UpdateDoor";
+        final String uri = "/body.access//UpdateDoor";
 
         final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -711,7 +711,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc method uri with version, when it is remote but not an rpc method")
     void test_rpc_method_uri_with_version_when_it_is_not_valid_not_rpc_method_remote() {
 
-        final String uri = "up://body.access/1/UpdateDoor";
+        final String uri = "//body.access/1/UpdateDoor";
 
         final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -722,7 +722,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc method uri is invalid when uri is remote but missing authority")
     void test_rpc_method_uri_invalid_when_uri_is_remote_no_authority() {
 
-        final String uri = "up://";
+        final String uri = "//";
 
         final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -733,7 +733,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc method uri is invalid when uri is remote with use but missing authority")
     void test_rpc_method_uri_invalid_when_uri_is_remote_no_authority_with_use() {
 
-        final String uri = "up:///body.access/1/rpc.UpdateDoor";
+        final String uri = "///body.access/1/rpc.UpdateDoor";
 
         final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -744,7 +744,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc method uri is invalid when uri has no use information")
     void test_rpc_method_uri_invalid_when_uri_is_missing_use() {
 
-        final String uri = "up://VCU.myvin";
+        final String uri = "//VCU.myvin";
 
         final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -755,7 +755,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate local rpc method uri is invalid when uri is missing use name")
     void test_rpc_method_uri_invalid_when_uri_is_missing_use_name_local() {
 
-        final String uri = "up:/1/rpc.UpdateDoor";
+        final String uri = "/1/rpc.UpdateDoor";
 
         final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -766,7 +766,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate remote rpc method uri is invalid when uri is missing use name")
     void test_rpc_method_uri_invalid_when_uri_is_missing_use_name_remote() {
 
-        final String uri = "up://VCU.myvin//1/rpc.UpdateDoor";
+        final String uri = "//VCU.myvin//1/rpc.UpdateDoor";
 
         final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
@@ -779,7 +779,7 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withType(UCloudEventType.PUBLISH.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
@@ -793,7 +793,7 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up://VCU.myvin/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
                 .withType(UCloudEventType.PUBLISH.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
@@ -807,8 +807,8 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up://VCU.myvin/body.access/1/door.front_left#Door"))
-                .withExtension("sink", "up://bo.cloud/petapp")
+                .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
+                .withExtension("sink", "//bo.cloud/petapp")
                 .withType(UCloudEventType.PUBLISH.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
@@ -822,14 +822,14 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up://VCU.myvin/body.access/1/door.front_left#Door"))
-                .withExtension("sink", "up://bo.cloud")
+                .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
+                .withExtension("sink", "//bo.cloud")
                 .withType(UCloudEventType.PUBLISH.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid CloudEvent sink [up://bo.cloud]. Uri is missing uSoftware Entity name.", status.getMessage());
+        assertEquals("Invalid CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.", status.getMessage());
     }
 
     @Test
@@ -838,13 +838,13 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up:/"))
+                .withSource(URI.create("/"))
                 .withType(UCloudEventType.PUBLISH.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid Publish type CloudEvent source [up:/]. Uri is missing uSoftware Entity name.", status.getMessage());
+        assertEquals("Invalid Publish type CloudEvent source [/]. Uri is missing uSoftware Entity name.", status.getMessage());
     }
 
     @Test
@@ -852,14 +852,14 @@ class CloudEventValidatorTest {
     void test_publish_type_cloudevent_is_not_valid_when_source_is_missing_authority() {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId("testme")
-                .withSource(URI.create("up:/body.access"))
+                .withSource(URI.create("/body.access"))
                 .withType(UCloudEventType.PUBLISH.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
         assertEquals("Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.," +
-                "Invalid Publish type CloudEvent source [up:/body.access]. Uri is missing uResource name.", status.getMessage());
+                "Invalid Publish type CloudEvent source [/body.access]. Uri is missing uResource name.", status.getMessage());
     }
 
     @Test
@@ -868,9 +868,9 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withType(UCloudEventType.PUBLISH.type())
-                .withExtension("sink", "up://bo.cloud/petapp");
+                .withExtension("sink", "//bo.cloud/petapp");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final Status status = validator.validate(cloudEvent);
@@ -883,7 +883,7 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withType(UCloudEventType.PUBLISH.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
@@ -898,14 +898,14 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withType(UCloudEventType.PUBLISH.type())
-                .withExtension("sink", "up://bo.cloud");
+                .withExtension("sink", "//bo.cloud");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid Notification type CloudEvent sink [up://bo.cloud]. Uri is missing uSoftware Entity name.", status.getMessage());
+        assertEquals("Invalid Notification type CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.", status.getMessage());
     }
 
     @Test
@@ -914,7 +914,7 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withType(UCloudEventType.FILE.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.FILE.validator();
@@ -928,13 +928,13 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up:/"))
+                .withSource(URI.create("/"))
                 .withType(UCloudEventType.FILE.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.FILE.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid Publish type CloudEvent source [up:/]. Uri is missing uSoftware Entity name.", status.getMessage());
+        assertEquals("Invalid Publish type CloudEvent source [/]. Uri is missing uSoftware Entity name.", status.getMessage());
     }
 
     @Test
@@ -943,9 +943,9 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up://bo.cloud/petapp//rpc.response"))
+                .withSource(URI.create("//bo.cloud/petapp//rpc.response"))
                 .withType(UCloudEventType.REQUEST.type())
-                .withExtension("sink", "up://VCU.myvin/body.access/1/rpc.UpdateDoor");
+                .withExtension("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final Status status = validator.validate(cloudEvent);
@@ -958,14 +958,14 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up://bo.cloud/petapp//dog"))
-                .withExtension("sink", "up://VCU.myvin/body.access/1/rpc.UpdateDoor")
+                .withSource(URI.create("//bo.cloud/petapp//dog"))
+                .withExtension("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor")
                 .withType(UCloudEventType.REQUEST.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC Request CloudEvent source [up://bo.cloud/petapp//dog]. " +
+        assertEquals("Invalid RPC Request CloudEvent source [//bo.cloud/petapp//dog]. " +
                 "Invalid RPC uri application response topic. Uri is missing rpc.response.", status.getMessage());
     }
 
@@ -975,7 +975,7 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up://bo.cloud/petapp//rpc.response"))
+                .withSource(URI.create("//bo.cloud/petapp//rpc.response"))
                 .withType(UCloudEventType.REQUEST.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
@@ -990,14 +990,14 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up://bo.cloud/petapp//rpc.response"))
+                .withSource(URI.create("//bo.cloud/petapp//rpc.response"))
                 .withType(UCloudEventType.REQUEST.type())
-                .withExtension("sink", "up://VCU.myvin/body.access/1/UpdateDoor");
+                .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC Request CloudEvent sink [up://VCU.myvin/body.access/1/UpdateDoor]. " +
+        assertEquals("Invalid RPC Request CloudEvent sink [//VCU.myvin/body.access/1/UpdateDoor]. " +
                 "Invalid RPC method uri. Uri should be the method to be called, or method from response.", status.getMessage());
     }
 
@@ -1007,9 +1007,9 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up://VCU.myvin/body.access/1/rpc.UpdateDoor"))
+                .withSource(URI.create("//VCU.myvin/body.access/1/rpc.UpdateDoor"))
                 .withType(UCloudEventType.RESPONSE.type())
-                .withExtension("sink", "up://bo.cloud/petapp//rpc.response");
+                .withExtension("sink", "//bo.cloud/petapp//rpc.response");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final Status status = validator.validate(cloudEvent);
@@ -1022,14 +1022,14 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up://VCU.myvin/body.access/1/UpdateDoor"))
-                .withExtension("sink", "up://bo.cloud/petapp//rpc.response")
+                .withSource(URI.create("//VCU.myvin/body.access/1/UpdateDoor"))
+                .withExtension("sink", "//bo.cloud/petapp//rpc.response")
                 .withType(UCloudEventType.RESPONSE.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC Response CloudEvent source [up://VCU.myvin/body.access/1/UpdateDoor]. " +
+        assertEquals("Invalid RPC Response CloudEvent source [//VCU.myvin/body.access/1/UpdateDoor]. " +
                 "Invalid RPC method uri. Uri should be the method to be called, or method from response.", status.getMessage());
     }
 
@@ -1039,13 +1039,13 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up://VCU.myvin/body.access/1/UpdateDoor"))
+                .withSource(URI.create("//VCU.myvin/body.access/1/UpdateDoor"))
                 .withType(UCloudEventType.RESPONSE.type());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC Response CloudEvent source [up://VCU.myvin/body.access/1/UpdateDoor]. " +
+        assertEquals("Invalid RPC Response CloudEvent source [//VCU.myvin/body.access/1/UpdateDoor]. " +
                 "Invalid RPC method uri. Uri should be the method to be called, or method from response.," +
                 "Invalid CloudEvent sink. Response CloudEvent sink must be uri the destination of the response.", status.getMessage());
     }
@@ -1056,15 +1056,15 @@ class CloudEventValidatorTest {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withId(uuid.toString())
-                .withSource(URI.create("up://bo.cloud/petapp/1/dog"))
+                .withSource(URI.create("//bo.cloud/petapp/1/dog"))
                 .withType(UCloudEventType.RESPONSE.type())
-                .withExtension("sink", "up://VCU.myvin/body.access/1/UpdateDoor");
+                .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC Response CloudEvent source [up://bo.cloud/petapp/1/dog]. Invalid RPC method uri. Uri should be the method to be called, or method from response.," +
-                "Invalid RPC Response CloudEvent sink [up://VCU.myvin/body.access/1/UpdateDoor]. " +
+        assertEquals("Invalid RPC Response CloudEvent source [//bo.cloud/petapp/1/dog]. Invalid RPC method uri. Uri should be the method to be called, or method from response.," +
+                "Invalid RPC Response CloudEvent sink [//VCU.myvin/body.access/1/UpdateDoor]. " +
                 "Invalid RPC uri application response topic. Uri is missing rpc.response.", status.getMessage());
     }
 
@@ -1099,7 +1099,7 @@ class CloudEventValidatorTest {
         io.cloudevents.v1.proto.CloudEvent cloudEventProto = io.cloudevents.v1.proto.CloudEvent.newBuilder()
                 .setSpecVersion("1.0")
                 .setId("hello")
-                .setSource("up:/body.access")
+                .setSource("/body.access")
                 .setType("example.demo")
                 .setProtoData(Any.newBuilder().build())
                 .build();

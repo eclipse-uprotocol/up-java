@@ -96,7 +96,7 @@ class CloudEventToProtobufSerializerTest {
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("hello")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left"))
+                .withSource(URI.create("/body.access/1/door.front_left"))
                 .withDataContentType("application/protobuf")
                 .withDataSchema(URI.create(protoPayload.getTypeUrl()))
                 .withData(protoPayload.toByteArray());
@@ -123,7 +123,7 @@ class CloudEventToProtobufSerializerTest {
         CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("hello")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left"))
+                .withSource(URI.create("/body.access/1/door.front_left"))
                 .withDataContentType("application/protobuf")
                 .withDataSchema(URI.create(protoPayload.getTypeUrl()))
                 .withData(protoPayload.toByteArray());
@@ -316,14 +316,14 @@ class CloudEventToProtobufSerializerTest {
         return CloudEventBuilder.v1()
                 .withId("hello")
                 .withType("pub.v1")
-                .withSource(URI.create("up://VCU.VIN/body.access"));
+                .withSource(URI.create("//VCU.VIN/body.access"));
     }
 
     private Any buildProtoPayloadForTest1() {
         io.cloudevents.v1.proto.CloudEvent cloudEventProto = io.cloudevents.v1.proto.CloudEvent.newBuilder()
                 .setSpecVersion("1.0")
                 .setId("hello")
-                .setSource("up://VCU.VIN/body.access")
+                .setSource("//VCU.VIN/body.access")
                 .setType("pub.v1")
                 .setProtoData(Any.newBuilder().build())
                 .build();

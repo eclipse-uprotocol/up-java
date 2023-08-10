@@ -58,13 +58,13 @@ class UCloudEventTest {
         CloudEvent cloudEvent = builder.build();
 
         String source = UCloudEvent.getSource(cloudEvent);
-        assertEquals("up:/body.access//door.front_left#Door", source);
+        assertEquals("/body.access//door.front_left#Door", source);
     }
 
     @Test
     @DisplayName("Test extracting the sink from a CloudEvent when the sink exists.")
     public void test_extract_sink_from_cloudevent_when_sink_exists() {
-        String sinkForTest = "up://bo.cloud/petapp/1/rpc.response";
+        String sinkForTest = "//bo.cloud/petapp/1/rpc.response";
 
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withExtension("sink", URI.create(sinkForTest));
@@ -364,7 +364,7 @@ class UCloudEventTest {
         final CloudEventBuilder builder = CloudEventBuilder.v1()
                 .withId("id")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.accss//door.front_left#Door"))
+                .withSource(URI.create("/body.accss//door.front_left#Door"))
                 .withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create(protoPayload.getTypeUrl()))
                 .withData(protoPayload.toByteArray())
@@ -500,7 +500,7 @@ class UCloudEventTest {
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("someId")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create(payloadForCloudEvent.getTypeUrl()))
                 .withData(cloudEventData);
@@ -520,7 +520,7 @@ class UCloudEventTest {
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("someId")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent"))
                 .withData(cloudEventData);
@@ -540,7 +540,7 @@ class UCloudEventTest {
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("someId")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent"))
                 .withData("<html><head></head><body><p>Hello</p></body></html>".getBytes());
@@ -560,7 +560,7 @@ class UCloudEventTest {
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("someId")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withDataContentType(DATA_CONTENT_TYPE)
                 .withData(cloudEventData);
         CloudEvent cloudEvent = cloudEventBuilder.build();
@@ -578,7 +578,7 @@ class UCloudEventTest {
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("someId")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create(payloadForCloudEvent.getTypeUrl()));
         CloudEvent cloudEvent = cloudEventBuilder.build();
@@ -594,7 +594,7 @@ class UCloudEventTest {
         Any payloadForCloudEvent = Any.pack(io.cloudevents.v1.proto.CloudEvent.newBuilder()
                 .setSpecVersion("1.0")
                 .setId("hello")
-                .setSource("up://VCU.MY_CAR_VIN/someService")
+                .setSource("//VCU.MY_CAR_VIN/someService")
                 .setType("example.demo")
                 .setProtoData(Any.newBuilder().build())
                 .build());
@@ -603,7 +603,7 @@ class UCloudEventTest {
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("someId")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create(payloadForCloudEvent.getTypeUrl()))
                 .withData(cloudEventData);
@@ -617,7 +617,7 @@ class UCloudEventTest {
         assertEquals("1.0", unpackedCE.getSpecVersion());
         assertEquals("hello", unpackedCE.getId());
         assertEquals("example.demo", unpackedCE.getType());
-        assertEquals("up://VCU.MY_CAR_VIN/someService", unpackedCE.getSource());
+        assertEquals("//VCU.MY_CAR_VIN/someService", unpackedCE.getSource());
 
     }
 
@@ -627,7 +627,7 @@ class UCloudEventTest {
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("someId")
                 .withType("pub.v1")
-                .withSource(URI.create("up:/body.access/1/door.front_left#Door"))
+                .withSource(URI.create("/body.access/1/door.front_left#Door"))
                 .withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent"))
                 .withData("<html><head></head><body><p>Hello</p></body></html>".getBytes());
@@ -644,15 +644,15 @@ class UCloudEventTest {
     @DisplayName("Test pretty printing a cloud event with a sink")
     public void test_pretty_printing_a_cloudevent_with_a_sink() {
 
-        String sinkForTest = "up://bo.cloud/petapp/1/rpc.response";
+        String sinkForTest = "//bo.cloud/petapp/1/rpc.response";
 
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
                 .withExtension("sink", URI.create(sinkForTest));
         CloudEvent cloudEvent = builder.build();
 
         final String prettyPrint = UCloudEvent.toString(cloudEvent);
-        final String expected = "CloudEvent{id='testme', source='up:/body.access//door.front_left#Door', " +
-                "sink='up://bo.cloud/petapp/1/rpc.response', type='pub.v1'}";
+        final String expected = "CloudEvent{id='testme', source='/body.access//door.front_left#Door', " +
+                "sink='//bo.cloud/petapp/1/rpc.response', type='pub.v1'}";
 
         assertEquals(expected, prettyPrint);
     }
@@ -673,7 +673,7 @@ class UCloudEventTest {
         CloudEvent cloudEvent = buildBaseCloudEventBuilderForTest().build();
 
         final String prettyPrint = UCloudEvent.toString(cloudEvent);
-        final String expected = "CloudEvent{id='testme', source='up:/body.access//door.front_left#Door', type='pub.v1'}";
+        final String expected = "CloudEvent{id='testme', source='/body.access//door.front_left#Door', type='pub.v1'}";
 
         assertEquals(expected, prettyPrint);
     }
@@ -713,7 +713,7 @@ class UCloudEventTest {
         return io.cloudevents.v1.proto.CloudEvent.newBuilder()
                 .setSpecVersion("1.0")
                 .setId("hello")
-                .setSource("up://VCU.MY_CAR_VIN/body.access//door.front_left#Door")
+                .setSource("//VCU.MY_CAR_VIN/body.access//door.front_left#Door")
                 .setType("example.demo")
                 .setProtoData(Any.newBuilder().build())
                 .build();

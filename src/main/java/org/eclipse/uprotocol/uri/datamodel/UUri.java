@@ -33,14 +33,13 @@ import java.util.Objects;
  * as well as maintain a database/repository of microservices in the various vehicles.<br>
  * Example:
  * <pre>
- *     up://&lt;device&gt;.&lt;domain&gt;/&lt;service&gt;/&lt;version&gt;/&lt;resource&gt;#&lt;message&gt;
+ *     //&lt;device&gt;.&lt;domain&gt;/&lt;service&gt;/&lt;version&gt;/&lt;resource&gt;#&lt;message&gt;
  * </pre>
  *
  */
 public class UUri {
     private static final UUri EMPTY = new UUri(UAuthority.empty(), UEntity.empty(), UResource.empty());
 
-    public static final String SCHEME = "up:";
     private final UAuthority uAuthority;
     private final UEntity uEntity;
     private final UResource uResource;
