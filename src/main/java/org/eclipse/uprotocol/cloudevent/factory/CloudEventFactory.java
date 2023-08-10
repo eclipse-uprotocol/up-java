@@ -148,10 +148,10 @@ public interface CloudEventFactory {
     }
 
     /**
-     * @return Returns a UUIDv8 id.
+     * @return Returns a UUIDv6 id.
      */
     static String generateCloudEventId() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
+        UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create();
         return uuid.toString();
     }
 
