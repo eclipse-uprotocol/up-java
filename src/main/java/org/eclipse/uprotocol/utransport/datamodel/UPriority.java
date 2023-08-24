@@ -1,9 +1,9 @@
-package org.eclipse.uprotocol.utransport;
+package org.eclipse.uprotocol.utransport.datamodel;
 
 import java.util.Arrays;
 import java.util.Optional;
 
-public enum Priority {
+public enum UPriority {
     // Low Priority. No bandwidth assurance such as File Transfer.
     LOW ("CS0", 0),
     // Standard, undifferentiated application such as General (unclassified).
@@ -29,7 +29,7 @@ public enum Priority {
         return value;
     }
 
-    Priority(String qosString, int value) {
+    UPriority(String qosString, int value) {
         this.qosString = qosString;
         this.value = value;
     }
@@ -39,8 +39,8 @@ public enum Priority {
      * @param value numeric priority value.
      * @return Returns the Priority matching the numeric value. Mind you, it might not exist.
      */
-    public static Optional<Priority> from(int value) {
-        return Arrays.stream(Priority.values())
+    public static Optional<UPriority> from(int value) {
+        return Arrays.stream(UPriority.values())
                 .filter(p -> p.intValue() == value)
                 .findAny();
     }
@@ -50,8 +50,8 @@ public enum Priority {
      * @param qosString QOS String priority value.
      * @return Returns the Priority matching the QOS String value. Mind you, it might not exist.
      */
-    public static Optional<Priority> from(String qosString) {
-        return Arrays.stream(Priority.values())
+    public static Optional<UPriority> from(String qosString) {
+        return Arrays.stream(UPriority.values())
                 .filter(p -> p.qosString().equals(qosString))
                 .findAny();
     }

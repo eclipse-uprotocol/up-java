@@ -101,7 +101,8 @@ public interface UriFactory {
             sb.append("/");
         }
         sb.append(buildSoftwareEntityPartOfUri(uEntitySource));
-        sb.append("/rpc.response");
+        sb.append("/");
+        sb.append(UResource.response().nameWithInstance());
 
         return sb.toString();
     }

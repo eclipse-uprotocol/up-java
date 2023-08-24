@@ -19,26 +19,27 @@
  * under the License.
  */
 
- package org.eclipse.uprotocol.utransport;
+package org.eclipse.uprotocol.rpc;
 
-public enum MessageType {
-    PUBLISH(0, "pub.v1"),   // Publish or notification event
-    REQUEST(1, "req.v1"),   // Request
-    RESPONSE(2, "res.v1");  // Response
+import java.util.concurrent.CompletionStage;
 
-    private final int value;
-    private final String name;
+import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
+import org.eclipse.uprotocol.utransport.datamodel.UPayload;
 
-    public int typeValue() {
-        return value;
-    }
+/**
+ * The RpcClient interface defines the RPC client API per the uProtocol specification
+ * https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l2/README.adoc
+ * 
+ */
+public interface RpcClient {
 
-    public String typeName() {
-        return name;
-    }
-
-    MessageType(int value, String name) {
-        this.value = value;
-        this.name = name;
-    }
+    /**
+     * Support for RPC method invocation.
+     * @param topic The topic to invoke the method on.
+     * @param payload The payload to send.
+     * @param attributes The attributes to send.
+     * @return Returns the CompletableFuture with the result or exception. 
+     */
+    CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes);
 }

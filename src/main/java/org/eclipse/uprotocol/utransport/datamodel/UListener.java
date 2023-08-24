@@ -1,5 +1,6 @@
-package org.eclipse.uprotocol.utransport;
+package org.eclipse.uprotocol.utransport.datamodel;
 
+import org.eclipse.uprotocol.uri.datamodel.UUri;
 
 /**
  * For any implementation that defines some kind of callback or function that will be called to handle incoming messages.
@@ -13,6 +14,6 @@ public interface UListener {
      * @param attributes Transportation attributes
      * @return Returns an Ack every time a message is received and processed.
      */
-    Status onReceive(UTopic topic, UPayload payload, UAttributes attributes);
+    UStatus onReceive(UUri topic, UPayload payload, UAttributes attributes);
 
 }

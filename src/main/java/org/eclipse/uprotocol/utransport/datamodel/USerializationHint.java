@@ -19,9 +19,12 @@
  * under the License.
  */
 
-package org.eclipse.uprotocol.utransport;
+package org.eclipse.uprotocol.utransport.datamodel;
 
-public enum SerializationHint {
+import java.util.Arrays;
+import java.util.Optional;
+
+public enum USerializationHint {
     UNKNOWN(0, ""),
     PROTOBUF (1, "application/x-protobuf"),   // data is a Base64 encoded protobuf string
     JSON(2, "application/json"),       // data is a UTF-8 string containing a JSON structure
@@ -39,9 +42,31 @@ public enum SerializationHint {
         return mimeType;
     }
 
-    SerializationHint(int hintNumber, String mimeType) {
+    USerializationHint(int hintNumber, String mimeType) {
         this.hintNumber = hintNumber;
         this.mimeType = mimeType;
+    }
+
+    /**
+     * Find the serialization hint matching the mimeType value. Mind you, it might not exist.
+     * @param value numeric hint value.
+     * @return Returns the USerializationHint matching the numeric value.
+     */
+    public static Optional<USerializationHint> from(int value) {
+        return Arrays.stream(USerializationHint.values())
+                .filter(p -> p.hintNumber() == value)
+                .findAny();
+    }
+
+    /**
+     * Find the serialization hint  matching the String value. Mind you, it might not exist.
+     * @param value String hint value.
+     * @return Returns the USerializationHint matching the String value.
+     */
+    public static Optional<USerializationHint> from(String value) {
+        return Arrays.stream(USerializationHint.values())
+                .filter(p -> p.mimeType().equals(value))
+                .findAny();
     }
 }
 

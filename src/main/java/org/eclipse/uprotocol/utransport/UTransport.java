@@ -22,6 +22,11 @@
 package org.eclipse.uprotocol.utransport;
 
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
+import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
+import org.eclipse.uprotocol.utransport.datamodel.UListener;
+import org.eclipse.uprotocol.utransport.datamodel.UPayload;
+import org.eclipse.uprotocol.utransport.datamodel.UStatus;
 
 /**
  * UTransport is the  uP-L1 interface that provides a common API for uE developers to send and receive messages.
@@ -35,31 +40,31 @@ public interface UTransport {
      * @param token Deployment specific token used to authenticate the calling uE
      * @return Returns Status if the registration is successful or not.
      */
-    Status register (UEntity uEntity, byte[] token) ;
+    UStatus register (UEntity uEntity, byte[] token) ;
 
 
     /**
      * Transmit UPayload to the topic using the attributes defined in UTransportAttributes.
-     * @param topic UTopic receiver of the payload.
+     * @param topic UUri receiver of the payload.
      * @param payload Actual payload.
      * @param attributes Additional transport attributes.
      * @return Returns an Status if managed to send to the underlying communication technology or not.
      */
-    Status send(UTopic topic, UPayload payload, UAttributes attributes);
+    UStatus send(UUri topic, UPayload payload, UAttributes attributes);
 
     /**
      * Register a method that will be called when a message comes in on the specific topic.
-     * @param topic UTopic of the message that arrived via the underlying transport technology.
+     * @param topic UUri of the message that arrived via the underlying transport technology.
      * @param listener The method to execute to process the date for the topic.
      * @return Returns an Ack if the method is registered successfully.
      */
-    Status registerListener(UTopic topic, UListener listener);
+    UStatus registerListener(UUri topic, UListener listener);
 
     /**
      * Unregister a method on a topic. Messages arriving on this topic will no longer be processed by this listener.
-     * @param topic UTopic of the messages that will no longer be processed.
+     * @param topic UUri of the messages that will no longer be processed.
      * @param listener The method to execute to process the date for the topic.
      * @return Returns an Ack if the method is removed successfully.
      */
-    Status unregisterListener(UTopic topic, UListener listener);
+    UStatus unregisterListener(UUri topic, UListener listener);
 }
