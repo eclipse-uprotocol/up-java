@@ -1,17 +1,11 @@
-image:https://github.com/eclipse-uprotocol/.github/raw/main/logo/uprotocol_logo.png[alt=uProtocol,640]
-
-image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[License,link=https://opensource.org/licenses/Apache-2.0]
-
 = Eclipse uProtocol Java SDK
 :toc:
 
 == Overview
 
-The main object of this module is to enable constructing and deconstructing uProtocol CloudEvents.
+The purpose of this module is to provide language specific code that builds the various data types defined in . The SDK also defines https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications]. 
 
-The core module contains functional factory methods for creating CloudEvents as well as functional factory methods that make it more intuitive to create URIs that are used to configure source and sink (destination) elements in the uProtocol CloudEvents.
-
-This module contains the data model structures as well as core functionality for building uProtocol CloudEvents and URIs for sink and source attributes.
+The module contains factory methods and validators for all data types used in uProtocol. 
 
 The SDKs are then used by the code generators to auto-populate service stubs with generated code that builds CloudEvents. For more information on auto-generating service stubs, please refer to http://github.com/eclipse-uprotocol/uprotocol[uProtocol Main Project]
 
@@ -28,57 +22,29 @@ The SDKs are then used by the code generators to auto-populate service stubs wit
 </dependency>
 ----
 
+=== Using the sdk
 
-=== UriFactory
+The SDK is composed of 4 main packages as shown in <<sdk-packages>> below:
 
-Matches the uProtocol URI Format. and is used to define source and sink (destination) attributes of uProtocol CloudEvents.
-The factory builds URIs.
+.SDK Packages
+[#sdk-packages,width=100%,cols="15%,25%,60%"]
+|===
+| Package | https://github.com/eclipse-uprotocol/uprotocol-spec[uprotocol-spec] | Purpose
 
-URI is used as a method to uniquely identify devices, services, and resources on the network.
+| link:src/main/java/org/eclipse/uprotocol/uri/README.adoc[`uuri`]
+| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc[URI, UAthority, UEntity, UResource]
+| Uniform Resource Identifier (RFC3986) used to address things (devices, software, methods, topics, etc...) on the network
 
-*An Uri is built from the following elements:*
+| link:src/main/java/org/eclipse/uprotocol/cloudevent/README.adoc[`cloudevent`] 
+| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/cloudevents.adoc[uProtocol CloudEvents]
+| Common way to represent uProtocol messages using CloudEvent data model
 
-* *UAuthority* - represents the device and domain of the software, the deployment. You can specify local or remote options.
-* *UEntity* - The Software Entity defines the software name and version.
-* *UResource* - The resource of the software can be a service name, and instance in the service and the name of the protobuf IDL message.
+| link:src/main/java/org/eclipse/uprotocol/uuid/README.adoc[`uuid`] 
+| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uuid.adoc[uProtocol UUIDs]
+| Identifier used to uniquely identify messages that are sent between devices. also includes timestamp for the message
 
-==== UAuthority
+| link:src/main/java/org/eclipse/uprotocol/utransport/README.adoc[`utransport`] 
+| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[uP-L1 Specifications]
+| Interface (and data model) used for bidirectional point-2-point communication between uEs. Interface is to be implemented by the different communication technologies (ex. Binder, MQTT, Zenoh, SOME/IP, DDS, HTTP, etc…​)
 
-An Authority consists of a device and a domain per uProtocol URI format.
-
-An Authority represents the deployment location of a specific Software Entity.
-
-==== UEntity - uE
-
-An Software Entity is a piece of software deployed somewhere on a device. The uE is used in the source and sink parts of communicating software.
-
-A uE that *publishes* events is a *Service* role.
-
-A uE that *consumes* events is an *Application* role.
-
-A uE may combine bother Service and Application roles.
-
-
-==== UResource
-
-A service API - defined in the uE - has Resources and Methods. Both of these are represented by the UResource class.
-
-An UResource is something that can be manipulated/controlled/exposed by a service. 
-
-Resources are unique when prepended with UAuthority that represents the device and Software Entity that represents the service.
-
-An Resource represents a resource from a Service such as "door" and an optional specific instance such as "front_left".
-In addition, it can optionally contain the name of the resource Message type, such as "Door". 
-
-The Message type matches the protobuf service IDL that defines structured data types. A message is a data structure type used to define data that is passed in events and rpc methods.
-
-=== CloudEventFactory
-Factory class that builds the various types of CloudEvents for uProtocol (publish, notification, request, response)
-
-== Examples
-
-The SDK contains comprehensive tests, the best place to look at how all the APIs are used are at:
-
-* link:src/test/java/org/eclipse/uprotocol/uri/factory/UriFactoryTest.java[UriFactoryTest.java]
-
-* link:src/test/java/org/eclipse/uprotocol/cloudevent/factory/CloudEventFactoryTest.java[CloudEventFactoryTest.java]
+|===
