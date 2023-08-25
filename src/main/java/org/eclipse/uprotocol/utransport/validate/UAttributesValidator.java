@@ -9,10 +9,10 @@ import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
 import org.eclipse.uprotocol.utransport.datamodel.UMessageType;
+import org.eclipse.uprotocol.utransport.datamodel.USerializationHint;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus;
 import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
-
-import com.google.rpc.Code;
+import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 
 /**
  * Abstract class for validating UAttributes.
@@ -67,32 +67,35 @@ public abstract class UAttributesValidator {
                     validateCommStatus(attributes),
                     validateTtl(attributes),
                     validatePermissionLevel(attributes),
-                    validateCorrelationId(attributes))
+                    validateReqId(attributes))
                 .filter(UStatus::isFailed)
                 .map(UStatus::msg)
                 .collect(Collectors.joining(","));
         return errorMessage.isBlank() ? UStatus.ok() :
-                UStatus.failed("Invalid argument", Code.INVALID_ARGUMENT_VALUE);
+                UStatus.failed(errorMessage, Code.INVALID_ARGUMENT);
     }
 
 
     public UStatus validatePriority(UAttributes attributes) {
-        return attributes.priority() != null ? UStatus.ok() : UStatus.failed();
+        return attributes.priority() != null ? UStatus.ok() : 
+            UStatus.failed("Invalid Priority", Code.INVALID_ARGUMENT.value());
     }
 
     public UStatus validateTtl(UAttributes attributes) {
         Optional<Integer> ttl = attributes.ttl();
         if (ttl.isPresent()) {
-            return ttl.get() > 0 ? UStatus.ok() : UStatus.failed();
+            return ttl.get() > 0 ? UStatus.ok() : 
+                UStatus.failed("Invalid TTL", Code.INVALID_ARGUMENT.value());
         }
         return UStatus.ok();
     }
 
     public UStatus validateId(UAttributes attributes) {
         try {
-            return UUIDUtils.isUuid(attributes.id()) ? UStatus.ok() : UStatus.failed();
+            return UUIDUtils.isUuid(attributes.id()) ? UStatus.ok() : 
+                UStatus.failed("Invalid UUID", Code.INVALID_ARGUMENT.value());
         } catch (Exception e) {
-            return UStatus.failed();
+            return UStatus.failed("Invalid UUID", Code.INVALID_ARGUMENT.value());
         }
     }
 
@@ -102,7 +105,8 @@ public abstract class UAttributesValidator {
      * @return Returns a UStatus indicating if the Uri is valid or not.
      */
     public UStatus validateSink(UAttributes attributes) {
-        if (!attributes.sink().isEmpty()){
+        Optional<UUri> sink = attributes.sink();
+        if (sink.isPresent()) {
             return UriValidator.validate(attributes.sink().get());
         }
         return UStatus.ok();
@@ -114,8 +118,12 @@ public abstract class UAttributesValidator {
      * @return Returns a UStatus indicating if the commStatus is valid or not.
      */
     public UStatus validateCommStatus(UAttributes attributes) {
-        if (!attributes.commstatus().isEmpty()){
-            return Code.forNumber(attributes.commstatus().get()) != null ? UStatus.ok() : UStatus.failed();
+        Optional<Integer> commStatus = attributes.commstatus();
+
+        if (commStatus.isPresent()) {
+            Optional<Code> code = Code.from(commStatus.get());
+            return code.isPresent() ? UStatus.ok() : 
+                UStatus.failed("Invalid Communication Status Code", Code.INVALID_ARGUMENT.value());
         }
         return UStatus.ok();
     }
@@ -128,8 +136,8 @@ public abstract class UAttributesValidator {
     public UStatus validatePermissionLevel(UAttributes attributes) {
         final Optional<Integer> plevel = attributes.plevel();
         if (plevel.isPresent()) {
-            
-            return plevel.get() > 0 ? UStatus.ok() : UStatus.failed();
+            return plevel.get() >= 0 ? UStatus.ok() : 
+                UStatus.failed("Invalid Permission Level", Code.INVALID_ARGUMENT.value());
         }
         return UStatus.ok();
     }
@@ -139,11 +147,12 @@ public abstract class UAttributesValidator {
      * @param attributes UAttributes to validate
      * @return Returns a UStatus indicating if the correlationId is valid or not.
      */
-    public UStatus validateCorrelationId(UAttributes attributes) {
+    public UStatus validateReqId(UAttributes attributes) {
         final Optional<UUID> correlationId = attributes.reqid();
         
         if (correlationId.isPresent()) {
-            return UUIDUtils.isUuid(correlationId.get()) ? UStatus.ok() : UStatus.failed();
+            return UUIDUtils.isUuid(correlationId.get()) ? UStatus.ok() : 
+                UStatus.failed("Invalid UUID", Code.INVALID_ARGUMENT.value());
         }
         return UStatus.ok();
     }
@@ -170,7 +179,7 @@ public abstract class UAttributesValidator {
          */
         @Override
         public UStatus validateType(UAttributes attributes) {
-            return attributes.type() == UMessageType.PUBLISH ? UStatus.ok() : UStatus.failed();
+            return attributes.type() == UMessageType.PUBLISH ? UStatus.ok() : UStatus.failed("Wrong Attribute Type", Code.INVALID_ARGUMENT.value());
         }
     }
 
@@ -194,7 +203,7 @@ public abstract class UAttributesValidator {
             final Optional<UUri> sink = attributes.sink();
 
             if (!sink.isPresent()) {
-                return UStatus.failed("Missing Sink", Code.INVALID_ARGUMENT_VALUE);
+                return UStatus.failed("Missing Sink", Code.INVALID_ARGUMENT.value());
             }
             return UriValidator.validateRpcResponse(sink.get());
         }
@@ -208,7 +217,7 @@ public abstract class UAttributesValidator {
         public UStatus validateTtl(UAttributes attributes) {
             final Optional<Integer> ttl = attributes.ttl();
             if (!ttl.isPresent()) {
-                return UStatus.failed("Missing TTL", Code.INVALID_ARGUMENT_VALUE);
+                return UStatus.failed("Missing TTL", Code.INVALID_ARGUMENT.value());
             } else {
                 return ttl.get() > 0 ? UStatus.ok() : UStatus.failed();
             }
@@ -223,7 +232,8 @@ public abstract class UAttributesValidator {
 
         @Override
         public UStatus validateType(UAttributes attributes) {
-            return attributes.type() == UMessageType.RESPONSE ? UStatus.ok() : UStatus.failed();
+            return attributes.type() == UMessageType.RESPONSE ? UStatus.ok() : 
+                UStatus.failed("Invalid Type", Code.INVALID_ARGUMENT.value());
         }
 
         /**
@@ -236,7 +246,7 @@ public abstract class UAttributesValidator {
             final Optional<UUri> sink = attributes.sink();
 
             if (!sink.isPresent()) {
-                return UStatus.failed("Missing Sink", Code.INVALID_ARGUMENT_VALUE);
+                return UStatus.failed("Missing Sink", Code.INVALID_ARGUMENT.value());
             }
             return UriValidator.validateRpcMethod(sink.get());
         }
@@ -247,13 +257,14 @@ public abstract class UAttributesValidator {
         * @return Returns a UStatus indicating if the correlationId is valid or not.
         */
         @Override
-        public UStatus validateCorrelationId(UAttributes attributes) {
+        public UStatus validateReqId(UAttributes attributes) {
             final Optional<UUID> correlationId = attributes.reqid();
         
             if (!correlationId.isPresent()) {
-                return UStatus.failed("Missing correlationId", Code.INVALID_ARGUMENT_VALUE);
+                return UStatus.failed("Missing correlationId", Code.INVALID_ARGUMENT.value());
             }
-            return UUIDUtils.isUuid(correlationId.get()) ? UStatus.ok() : UStatus.failed();
+            return UUIDUtils.isUuid(correlationId.get()) ? UStatus.ok() : 
+                UStatus.failed("Invalid UUID", Code.INVALID_ARGUMENT.value());
         }
     }
 

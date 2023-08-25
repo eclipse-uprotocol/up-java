@@ -148,7 +148,7 @@ public class UAttributes {
      * @return Returns an Optional destination URI attribute.
      */
     public Optional<UUri> sink() {
-        return sink == null || sink.isEmpty() ? Optional.empty() : Optional.of(sink);
+        return sink == null ? Optional.empty() : Optional.of(sink);
     }
 
     /**
@@ -269,7 +269,7 @@ public class UAttributes {
          * @param plevel the permission level of the message.
          * @return Returns the UAttributesBuilder with the configured plevel.
          */
-        public UAttributesBuilder withPlevel(Integer plevel) {
+        public UAttributesBuilder withPermissionLevel(Integer plevel) {
             this.plevel = plevel;
             return this;
         }
@@ -279,7 +279,7 @@ public class UAttributes {
          * @param commstatus the communication status of the message.
          * @return Returns the UAttributesBuilder with the configured commstatus.
          */
-        public UAttributesBuilder withCommstatus(Integer commstatus) {
+        public UAttributesBuilder withCommStatus(Integer commstatus) {
             this.commstatus = commstatus;
             return this;
         }
@@ -289,7 +289,7 @@ public class UAttributes {
          * @param reqid the request ID.
          * @return Returns the UAttributesBuilder with the configured reqid.
          */
-        public UAttributesBuilder withReqid(UUID reqid) {
+        public UAttributesBuilder withReqId(UUID reqid) {
             this.reqid = reqid;
             return this;
         }
