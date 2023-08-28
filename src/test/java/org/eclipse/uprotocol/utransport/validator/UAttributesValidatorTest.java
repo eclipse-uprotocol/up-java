@@ -23,14 +23,12 @@ package org.eclipse.uprotocol.utransport.validator;
 
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.factory.UriFactory;
-import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
 import org.eclipse.uprotocol.utransport.datamodel.UMessageType;
 import org.eclipse.uprotocol.utransport.datamodel.UPriority;
@@ -67,7 +65,7 @@ class UAttributesValidatorTest {
         UAttributesValidator response = UAttributesValidator.getValidator(new UAttributesBuilder()
             .withId(UUIDFactory.Factories.UPROTOCOL.factory().create())
             .withPriority(UPriority.LOW)
-            .withType(UMessageType.PUBLISH)
+            .withType(UMessageType.RESPONSE)
             .build());
         assert(response instanceof UAttributesValidator);
 
@@ -139,8 +137,8 @@ class UAttributesValidatorTest {
     }
 
     @Test
-    @DisplayName("test validating invalid ttl attribute")
-    public void test_validating_invalid_ttl_attribute() {
+    @DisplayName("test validating publish invalid ttl attribute")
+    public void test_validating_publish_invalid_ttl_attribute() {
         final UAttributes attributes = new UAttributesBuilder()
             .withTtl(-1)
             .build();
@@ -153,7 +151,7 @@ class UAttributesValidatorTest {
     }
 
     @Test
-    @DisplayName("test validating valid ttl attribute")
+    @DisplayName("test validating publish valid ttl attribute")
     public void test_validating_valid_ttl_attribute() {
         final UAttributes attributes = new UAttributesBuilder()
             .withTtl(100)
@@ -338,8 +336,68 @@ class UAttributesValidatorTest {
         final UStatus status = validator.validate(attributes);
         assertTrue(status.isFailed());
         assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals(status.msg(), "failed,Invalid UUID,Missing Sink,Invalid Priority,Missing TTL");
+        assertEquals(status.msg(), "Wrong Attribute Type,Invalid UUID,Missing Sink,Invalid Priority,Missing TTL");
     }
+
+    @Test
+    @DisplayName("test validating request validator using bad ttl")
+    public void test_validating_request_validator_with_wrong_bad_ttl() {
+        final UAttributes attributes = new UAttributesBuilder()
+            .withId(UUIDFactory.Factories.UPROTOCOL.factory().create())
+            .withSink(UriFactory.parseFromUri("/hartley/1/rpc.response"))
+            .withPriority(UPriority.NETWORK_CONTROL)
+            .withType(UMessageType.REQUEST)
+            .withTtl(-1)
+            .build();
+
+        final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
+        assert(validator instanceof UAttributesValidator);
+        final UStatus status = validator.validate(attributes);
+        assertTrue(status.isFailed());
+        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
+        assertEquals(status.msg(), "Invalid TTL");
+    }
+
+    @Test
+    @DisplayName("test validating response validator using bad ttl")
+    public void test_validating_response_validator_with_wrong_bad_ttl() {
+        final UAttributes attributes = new UAttributesBuilder()
+            .withId(UUIDFactory.Factories.UPROTOCOL.factory().create())
+            .withSink(UriFactory.parseFromUri("/hartley/1/rpc.response"))
+            .withPriority(UPriority.NETWORK_CONTROL)
+            .withTtl(-1)
+            .withType(UMessageType.RESPONSE)
+            .withReqId(UUIDFactory.Factories.UPROTOCOL.factory().create())
+            .build();
+
+        final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
+        assert(validator instanceof UAttributesValidator);
+        final UStatus status = validator.validate(attributes);
+        assertTrue(status.isFailed());
+        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
+        assertEquals(status.msg(), "Invalid TTL");
+    }
+
+    @Test
+    @DisplayName("test validating response validator using bad UUID")
+    public void test_validating_response_validator_with_bad_reqid() {
+        final UAttributes attributes = new UAttributesBuilder()
+            .withId(UUIDFactory.Factories.UPROTOCOL.factory().create())
+            .withSink(UriFactory.parseFromUri("/hartley/1/rpc.response"))
+            .withPriority(UPriority.NETWORK_CONTROL)
+            .withTtl(100)
+            .withType(UMessageType.RESPONSE)
+            .withReqId(UUID.randomUUID())
+            .build();
+
+        final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
+        assert(validator instanceof UAttributesValidator);
+        final UStatus status = validator.validate(attributes);
+        assertTrue(status.isFailed());
+        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
+        assertEquals(status.msg(), "Invalid UUID");
+    }
+
 
     @Test
     @DisplayName("test validating publish validator with wrong messagetype")
@@ -371,4 +429,21 @@ class UAttributesValidatorTest {
         assertEquals(status.msg(), "Invalid Type,Invalid UUID,Missing Sink,Invalid Priority,Missing correlationId");
     }
 
+
+    @Test
+    @DisplayName("test validating request containing hint and token")
+    public void test_validating_request_containing_hint_and_token() {
+        final UAttributes attributes = new UAttributesBuilder()
+            .withId(UUIDFactory.Factories.UPROTOCOL.factory().create())
+            .withPriority(UPriority.LOW)
+            .withType(UMessageType.PUBLISH)
+            .withHint(USerializationHint.JSON)
+            .withToken("null")
+            .build();
+
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        assert(validator instanceof UAttributesValidator);
+        final UStatus status = validator.validate(attributes);
+        assertEquals(status, UStatus.ok());
+    }
 }

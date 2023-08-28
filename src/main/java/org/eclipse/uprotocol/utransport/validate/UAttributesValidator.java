@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2023 General Motors GTO LLC
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.eclipse.uprotocol.utransport.validate;
 
 import java.util.Optional;
@@ -9,7 +29,6 @@ import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
 import org.eclipse.uprotocol.utransport.datamodel.UMessageType;
-import org.eclipse.uprotocol.utransport.datamodel.USerializationHint;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus;
 import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
@@ -190,7 +209,8 @@ public abstract class UAttributesValidator {
 
         @Override
         public UStatus validateType(UAttributes attributes) {
-            return attributes.type() == UMessageType.REQUEST ? UStatus.ok() : UStatus.failed();
+            return attributes.type() == UMessageType.REQUEST ? UStatus.ok() : 
+                UStatus.failed("Wrong Attribute Type", Code.INVALID_ARGUMENT.value());
         }
 
         /**
@@ -219,7 +239,7 @@ public abstract class UAttributesValidator {
             if (!ttl.isPresent()) {
                 return UStatus.failed("Missing TTL", Code.INVALID_ARGUMENT.value());
             } else {
-                return ttl.get() > 0 ? UStatus.ok() : UStatus.failed();
+                return ttl.get() > 0 ? UStatus.ok() : UStatus.failed("Invalid TTL", Code.INVALID_ARGUMENT.value());
             }
         }
     }
