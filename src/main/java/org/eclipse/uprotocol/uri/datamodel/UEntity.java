@@ -37,14 +37,14 @@ public class UEntity {
 
     private final String name;
     private final String version;
-    private final Integer id;
+    private final Short id;
 
     /**
      * Build an  Software Entity that represents a communicating piece of software in the Ultiverse.
      * @param name The name of the software such as petpp or body.access.
      * @param version The software version. If not supplied, the latest version of the service will be used.
      */
-    public UEntity(String name, String version, Integer id) {
+    public UEntity(String name, String version, Short id) {
         Objects.requireNonNull(name, " Software Entity must have a name");
         this.name = name;
         this.id = id;
@@ -107,7 +107,7 @@ public class UEntity {
      * @return Returns the software id if it exists.
      * 
      */
-    public Optional<Integer> id() {
+    public Optional<Short> id() {
         return Optional.ofNullable(id);
     }
 

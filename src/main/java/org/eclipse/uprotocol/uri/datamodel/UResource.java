@@ -33,9 +33,9 @@ import java.util.Optional;
  */
 public class UResource {
 
-    private static final UResource EMPTY = new UResource("", null,null, 0);
+    private static final UResource EMPTY = new UResource("", null,null, null);
 
-    private static final UResource RESPONSE = new UResource("rpc", "response",null, 0);
+    private static final UResource RESPONSE = new UResource("rpc", "response",null, Short.valueOf((short)0));
 
     private static final String UNKNOWN_NAME = new String("unknown");   
 
@@ -45,7 +45,7 @@ public class UResource {
 
     private final String message;
 
-    private final Integer id;
+    private final Short id;
 
     //TODO when message is empty - try and infer it from the name "door" -> "Door"
 
@@ -57,7 +57,7 @@ public class UResource {
      *                  A message is a data structure type used to define data that is passed in  events and rpc methods.
      */
     public UResource(String name, String instance, String message) {
-        this(name, instance, message, 0);
+        this(name, instance, message, Short.valueOf((short)0));
     }
 
     /**
@@ -67,7 +67,7 @@ public class UResource {
      * @param message   The Message type matches the protobuf service IDL message name that defines structured data types.
      *                  A message is a data structure type used to define data that is passed in  events and rpc methods.
      */
-    public UResource(String name, String instance, String message, Integer id) {
+    public UResource(String name, String instance, String message, Short id) {
         Objects.requireNonNull(name, " Resource must have a name.");
         this.name = name;
         this.instance = instance;
@@ -81,7 +81,7 @@ public class UResource {
      * @param id The id of the resource.
      * @return Returns an UResource with the resource id where the name, instance and message are empty.
      */
-    public static UResource fromId(Integer id) {
+    public static UResource fromId(Short id) {
         Objects.requireNonNull(id, "id Required");
         if (id == 0) {
             return new UResource(new String("rpc"), new String("response"), null, id);
@@ -160,8 +160,8 @@ public class UResource {
     /**
      * @return Returns the resource id if it exists.
      */
-    public Integer id() {
-        return id;
+    public Optional<Short> id() {
+        return Optional.of(id);
     }
 
     /**

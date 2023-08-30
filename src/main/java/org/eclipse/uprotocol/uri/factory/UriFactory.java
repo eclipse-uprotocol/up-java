@@ -28,21 +28,21 @@ import org.eclipse.uprotocol.uri.datamodel.UUri;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.Inet6Address;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * A factory is a part of the software has methods to generate concrete objects, usually of the same type or interface.<br>
- * The  URI Factory generates an  URI.
+ * UUri Factory used to build different types of UUri (long, short, micro), and UUri objects themselves
+ * for the various use cases found in uProtocol specifications.
+ * For more information, please refer to https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
  */
 public interface UriFactory {
 
     /**
-     * Create the uProtocol URI string for source sink and topics from an  URI.
+     * Build a Long-URI string from the separate parts of an  URI.
      * 
      * @param Uri The  URI data object.
      * @return Returns the uProtocol URI string from an  URI data object
@@ -73,7 +73,7 @@ public interface UriFactory {
     }
 
     /**
-     * Create the uProtocol URI string for source sink and topics from the separate parts
+     * Build a Long-Uri string using the separate parts of an URI.
      * of an  URI.
      *
      * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
@@ -89,7 +89,7 @@ public interface UriFactory {
     
     
     /**
-     * Create the uProtocol URI string for source sink and topics in short form.
+     * Build a Short-Uri string from a UUri object
      * 
      * @param Uri The  URI data object.
      * @return Returns the short form uProtocol URI string from an  URI data object 
@@ -119,35 +119,22 @@ public interface UriFactory {
     }
 
     /**
-     * Create uProtocol Micro-URI to represent the URI in a byte array in lieu of a string
-     * 
-     * IPv4 Micro URI:
-     * 
-     *  0                   1                   2                   3
-     *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * | URI version   |      unused   |             uResource.id()    |
-     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * |                     uAuthority.address()                      |
-     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * |         uE.id()               |uE.ver() MAJOR |uE.ver() MINOR |
-     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * 
-     * 
-     * IPv6 Micro URI:
-     * 
-     *  0                   1                   2                   3
-     *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
-     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * | URI version   |    unused     |             uResource.id()    |
-     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * |                                                               |
-     * |                     uAuthority.address()                      |
-     * |                                                               |
-     * |                                                               |
-     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * |         uEntity.id()          |uE.ver() MAJOR |uE.ver() MINOR |
-     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     * Build a Short-Uri string using the separate parts of an URI.
+     * of an  URI.
+     *
+     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
+     * @param uEntity The  Software Entity in the role of a service or in the role of an application.
+     * @param uResource The resource is something that is manipulated by a service such as a Door.
+     *
+     * @return Returns the uProtocol URI string from an  URI data object
+     *      that can be used as a sink or a source in a uProtocol publish communication.
+     */
+    static String buildUProtocolShortUri(UAuthority uAuthority, UEntity uEntity, UResource uResource) {
+        return buildUProtocolShortUri(new UUri(uAuthority, uEntity, uResource));
+    }
+
+    /**
+     * Build a Micro-URI byte[] using a passed UUri object
      * 
      * @param Uri The  URI data object.
      * @return Returns the short form uProtocol URI string from an  URI data object 
@@ -158,15 +145,45 @@ public interface UriFactory {
         }
 
         try {
+            Optional<InetAddress> maybeAddress = Uri.uAuthority().address();
+            Optional<Short> maybeUeId = Uri.uEntity().id();
+            Optional<Short> maybeUResourceId = Uri.uResource().id();
+            Optional<String> maybeUEntityId = Uri.uEntity().version();
+            if (!maybeAddress.isPresent() || !maybeUeId.isPresent() || 
+                !maybeUResourceId.isPresent() || !maybeUEntityId.isPresent()) {
+                return new byte[0];
+            }
+
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            os.write((byte)1);  // Version
-            os.write(0);        // Unused
-            os.write(Uri.uResource().id()); // uResource ID
-            os.write(Uri.uAuthority().address().get().getAddress()); // uAuthority Address
-            os.write(Uri.uEntity().id().get().shortValue()); // uEntity ID
+            // UP_VERSION
+            os.write(0x1);
+
+            // IPV
+            os.write(maybeAddress.get() instanceof Inet6Address ? 1<<7 : 0);
+
+            // URESOURCE_ID
+            os.write(maybeUResourceId.get());
+
+             // UAUTHORITY_ADDRESS
+            os.write(maybeAddress.get().getAddress());
+
+            // UENTITY_ID
+            os.write(maybeUeId.get());
             
-            // TODO: Convert the uE.version() to MAJOR & MINOR in the URI
-            //final Float version = Float.valueOf(Uri.uEntity().version().orElse("0.0"));
+            // UENTITY_VERSION
+            String version = Uri.uEntity().version().get();
+            if (version.isEmpty()) {
+                os.write(Short.MAX_VALUE);
+            } else {
+                String[] parts = Uri.uEntity().version().get().split("\\.");
+                if (parts.length > 1) {
+                    final short ver = (short)((Integer.parseInt(parts[0]) << 11) & Integer.parseInt(parts[1]));
+                    os.write(ver);
+                } else {
+                    os.write(0);
+                    os.write(Integer.parseInt(parts[0]));
+                }
+            }
             return os.toByteArray();
         }
         catch (IOException e) {
