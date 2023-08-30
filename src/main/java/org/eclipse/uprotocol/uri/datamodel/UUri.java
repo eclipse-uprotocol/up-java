@@ -24,6 +24,7 @@ package org.eclipse.uprotocol.uri.datamodel;
 import org.eclipse.uprotocol.uri.factory.UriFactory;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Data representation of an <b> URI</b>.
@@ -45,6 +46,9 @@ public class UUri {
     private final UResource uResource;
 
     private transient String uProtocolUri;
+
+    // Transport specific ID
+    private transient Integer id; 
 
     /**
      * Create a full  URI.
@@ -141,5 +145,17 @@ public class UUri {
                 ", uEntity=" + uEntity +
                 ", uResource=" + uResource +
                 '}';
+    }
+
+    /**
+     * Method to get/set the ID used to represent the UUri as an ID in the transport layer.
+     * @param id The ID used to represent the UUri as an ID in the transport layer.
+     * @return Returns the ID used to represent the UUri as an ID in the transport layer.
+     */
+    public Optional<Integer> id(Optional<Integer> id) {
+        if (id.isPresent()) {
+            this.id = id.get();
+        }
+        return Optional.of(this.id);
     }
 }
