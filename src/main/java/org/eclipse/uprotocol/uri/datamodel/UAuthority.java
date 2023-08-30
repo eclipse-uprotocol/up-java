@@ -21,6 +21,7 @@
 
 package org.eclipse.uprotocol.uri.datamodel;
 
+import java.net.InetAddress;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -53,6 +54,13 @@ public class UAuthority {
 
     // TODO add user information - what is this used for? make sure it is part of the domain.
 
+
+    /**
+     * The device IP address.
+     */
+    private final InetAddress address;
+
+    
     /**
      * Constructor.
      *
@@ -63,8 +71,23 @@ public class UAuthority {
     private UAuthority(String device, String domain, boolean markedRemote) {
         this.device = device == null ? null : device.toLowerCase();
         this.domain = domain == null ? null : domain.toLowerCase();
+        this.address = null;
         this.markedRemote = markedRemote;
     }
+
+    /**
+     *  using IP Address.
+     *
+     * @param address      The device IP address.
+     * @param markedRemote  Indicates if this UAuthority was implicitly marked as remote. Used for validation.
+     */
+    private UAuthority(InetAddress address, boolean markedRemote) {
+        this.device = null;
+        this.domain = null;
+        this.address = address;
+        this.markedRemote = markedRemote;
+    }
+
 
     /**
      * Static factory method for creating a local  authority.<br>
@@ -86,6 +109,15 @@ public class UAuthority {
      */
     public static UAuthority remote(String device, String domain) {
         return new UAuthority(device, domain, true);
+    }
+
+    /**
+     * Static factory method for creating a remote authority.<br>
+     * @param address The device an software entity is deployed on
+     * @return returns a remote authority that contains the device and the domain.
+     */
+    public static UAuthority remote(InetAddress device) {
+        return new UAuthority(device, true);
     }
 
     /**
@@ -124,6 +156,14 @@ public class UAuthority {
         return domain == null || domain.isBlank() ? Optional.empty() : Optional.of(domain);
     }
 
+
+    /**
+     * @return Returns the device IP address.
+     */
+    public Optional<InetAddress> address() {
+        return Optional.ofNullable(address);
+    }
+
     /**
      * @return Returns the explicitly configured remote deployment.
      */
@@ -137,12 +177,12 @@ public class UAuthority {
         if (o == null || getClass() != o.getClass()) return false;
         UAuthority that = (UAuthority) o;
         return markedRemote == that.markedRemote && Objects.equals(device, that.device)
-                && Objects.equals(domain, that.domain);
+                && Objects.equals(domain, that.domain) && Objects.equals(address, that.address);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(device, domain, markedRemote);
+        return Objects.hash(device, domain, address, markedRemote);
     }
 
     @Override
@@ -150,6 +190,7 @@ public class UAuthority {
         return "UAuthority{" +
                 "device='" + device + '\'' +
                 ", domain='" + domain + '\'' +
+                ", address='" + address + '\'' +
                 ", markedRemote=" + markedRemote +
                 '}';
     }

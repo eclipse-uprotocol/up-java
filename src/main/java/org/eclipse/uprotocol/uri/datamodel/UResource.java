@@ -33,15 +33,19 @@ import java.util.Optional;
  */
 public class UResource {
 
-    private static final UResource EMPTY = new UResource("", null,null);
+    private static final UResource EMPTY = new UResource("", null,null, 0);
 
-    private static final UResource RESPONSE = new UResource("rpc", "response",null);
+    private static final UResource RESPONSE = new UResource("rpc", "response",null, 0);
+
+    private static final String UNKNOWN_NAME = new String("unknown");   
 
     private final String name;
 
     private final String instance;
 
     private final String message;
+
+    private final Integer id;
 
     //TODO when message is empty - try and infer it from the name "door" -> "Door"
 
@@ -53,10 +57,36 @@ public class UResource {
      *                  A message is a data structure type used to define data that is passed in  events and rpc methods.
      */
     public UResource(String name, String instance, String message) {
+        this(name, instance, message, 0);
+    }
+
+    /**
+     * Create an  Resource. The resource is something that is manipulated by a service such as a door.
+     * @param name      The name of the resource as a noun such as door or window, or in the case a method that manipulates the resource, a verb.
+     * @param instance  An instance of a resource such as front_left.
+     * @param message   The Message type matches the protobuf service IDL message name that defines structured data types.
+     *                  A message is a data structure type used to define data that is passed in  events and rpc methods.
+     */
+    public UResource(String name, String instance, String message, Integer id) {
         Objects.requireNonNull(name, " Resource must have a name.");
         this.name = name;
         this.instance = instance;
         this.message = message;
+        this.id = id;
+    }
+
+
+    /**
+     * Static factory method for creating an  Resource using the resource id.
+     * @param id The id of the resource.
+     * @return Returns an UResource with the resource id where the name, instance and message are empty.
+     */
+    public static UResource fromId(Integer id) {
+        Objects.requireNonNull(id, "id Required");
+        if (id == 0) {
+            return new UResource(new String("rpc"), new String("response"), null, id);
+        }
+        return new UResource(UNKNOWN_NAME, null, null, id);
     }
 
     /**
@@ -128,6 +158,13 @@ public class UResource {
     }
 
     /**
+     * @return Returns the resource id if it exists.
+     */
+    public Integer id() {
+        return id;
+    }
+
+    /**
      * Support for building the name attribute in many protobuf Message objects.
      * Will build a string with the name and instance with a dot delimiter, only if the instance exists.
      * @return Returns a string used for building the name attribute in many protobuf Message objects.
@@ -162,12 +199,13 @@ public class UResource {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UResource that = (UResource) o;
-        return Objects.equals(name, that.name) && Objects.equals(instance, that.instance) && Objects.equals(message, that.message);
+        return Objects.equals(name, that.name) && Objects.equals(instance, that.instance) &&
+            Objects.equals(message, that.message) && Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, instance, message);
+        return Objects.hash(name, instance, message, id);
     }
 
     @Override
@@ -176,6 +214,7 @@ public class UResource {
                 "name='" + name + '\'' +
                 ", instance='" + instance + '\'' +
                 ", message='" + message + '\'' +
+                ", id='" + id + '\'' +
                 '}';
     }
 }

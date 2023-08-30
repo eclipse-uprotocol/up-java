@@ -26,7 +26,12 @@ import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -50,7 +55,7 @@ public interface UriFactory {
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append(buildAuthorityPartOfUri(Uri.uAuthority()));
+        sb.append(buildAuthorityPartOfUri(Uri.uAuthority(), false));
 
         if (Uri.uAuthority().isMarkedRemote()) {
             sb.append("/");
@@ -60,9 +65,9 @@ public interface UriFactory {
             return sb.toString();
         }
 
-        sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity()));
+        sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity(), false));
         
-        sb.append(buildResourcePartOfUri(Uri.uResource()));
+        sb.append(buildResourcePartOfUri(Uri.uResource(), false));
 
         return sb.toString().replaceAll("/+$", "");
     }
@@ -84,6 +89,92 @@ public interface UriFactory {
     
     
     /**
+     * Create the uProtocol URI string for source sink and topics in short form.
+     * 
+     * @param Uri The  URI data object.
+     * @return Returns the short form uProtocol URI string from an  URI data object 
+     */
+    static String buildUProtocolShortUri(UUri Uri) {
+        if (Uri == null || Uri.isEmpty()) {
+            return new String();
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(buildAuthorityPartOfUri(Uri.uAuthority(), true));
+
+        if (Uri.uAuthority().isMarkedRemote()) {
+            sb.append("/");
+        }
+
+        if (Uri.uEntity().isEmpty()) {
+            return sb.toString();
+        }
+
+        sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity(), true));
+        
+        sb.append(buildResourcePartOfUri(Uri.uResource(), true));
+
+        return sb.toString().replaceAll("/+$", "");
+    }
+
+    /**
+     * Create uProtocol Micro-URI to represent the URI in a byte array in lieu of a string
+     * 
+     * IPv4 Micro URI:
+     * 
+     *  0                   1                   2                   3
+     *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     * | URI version   |      unused   |             uResource.id()    |
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     * |                     uAuthority.address()                      |
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     * |         uE.id()               |uE.ver() MAJOR |uE.ver() MINOR |
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     * 
+     * 
+     * IPv6 Micro URI:
+     * 
+     *  0                   1                   2                   3
+     *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     * | URI version   |    unused     |             uResource.id()    |
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     * |                                                               |
+     * |                     uAuthority.address()                      |
+     * |                                                               |
+     * |                                                               |
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     * |         uEntity.id()          |uE.ver() MAJOR |uE.ver() MINOR |
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     * 
+     * @param Uri The  URI data object.
+     * @return Returns the short form uProtocol URI string from an  URI data object 
+     */
+    static byte[] buildUProtocolMicroUri(UUri Uri) {
+        if (Uri == null || Uri.isEmpty()) {
+            return new byte[0];
+        }
+
+        try {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            os.write((byte)1);  // Version
+            os.write(0);        // Unused
+            os.write(Uri.uResource().id()); // uResource ID
+            os.write(Uri.uAuthority().address().get().getAddress()); // uAuthority Address
+            os.write(Uri.uEntity().id().get().shortValue()); // uEntity ID
+            
+            // TODO: Convert the uE.version() to MAJOR & MINOR in the URI
+            //final Float version = Float.valueOf(Uri.uEntity().version().orElse("0.0"));
+            return os.toByteArray();
+        }
+        catch (IOException e) {
+            return new byte[0];
+        }
+    }
+
+    /**
      * Create the uProtocol URI string for the source or sink of the CloudEvent that represents an RPC request.
      * Use this to generate the URI for the  software entity who originated the RPC call.
      * As specified in SDV-202 Request for the source and SDV-202 Response for the sink.
@@ -96,11 +187,11 @@ public interface UriFactory {
                                  UEntity uEntitySource) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(buildAuthorityPartOfUri(uAuthority));
+        sb.append(buildAuthorityPartOfUri(uAuthority, false));
         if (uAuthority.isMarkedRemote()) {
             sb.append("/");
         }
-        sb.append(buildSoftwareEntityPartOfUri(uEntitySource));
+        sb.append(buildSoftwareEntityPartOfUri(uEntitySource, false));
         sb.append("/");
         sb.append(UResource.response().nameWithInstance());
 
@@ -119,22 +210,22 @@ public interface UriFactory {
     static String buildMethodUri(UAuthority uAuthority, UEntity uEntity, String methodName) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(buildAuthorityPartOfUri(uAuthority));
+        sb.append(buildAuthorityPartOfUri(uAuthority, false));
         if (uAuthority.isMarkedRemote()) {
             sb.append("/");
         }
-        sb.append(buildSoftwareEntityPartOfUri(uEntity));
+        sb.append(buildSoftwareEntityPartOfUri(uEntity, false));
 
-        sb.append(buildResourcePartOfUri(UResource.forRpc(methodName)));
+        sb.append(buildResourcePartOfUri(UResource.forRpc(methodName), false));
 
         return sb.toString();
     }
 
-    private static String buildResourcePartOfUri(UResource uResource) {
+    private static String buildResourcePartOfUri(UResource uResource, boolean shortUri) {
         if (uResource.isEmpty()) {
             return "";
         }
-        StringBuilder sb = new StringBuilder("/").append(uResource.name());
+        StringBuilder sb = new StringBuilder("/").append(shortUri ? uResource.id() : uResource.name());
         uResource.instance().ifPresent(instance -> sb.append(".").append(instance));
         uResource.message().ifPresent(message -> sb.append("#").append(message));
 
@@ -145,8 +236,8 @@ public interface UriFactory {
      * Create the service part of the uProtocol URI from an  software entity object.
      * @param use  Software Entity representing a service or an application.
      */
-    private static String buildSoftwareEntityPartOfUri(UEntity use) {
-        StringBuilder sb = new StringBuilder(use.name().trim());
+    private static String buildSoftwareEntityPartOfUri(UEntity use, boolean shortUri) {
+        StringBuilder sb = new StringBuilder(shortUri? use.id().toString() : use.name().trim());
         sb.append("/");
         use.version().ifPresent(sb::append);
 
@@ -159,11 +250,18 @@ public interface UriFactory {
      * @param Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
      * @return Returns the String representation of the  Authority in the uProtocol URI.
      */
-    private static String buildAuthorityPartOfUri(UAuthority Authority) {
+    private static String buildAuthorityPartOfUri(UAuthority Authority, boolean shortUri) {
         if (Authority.isLocal()) {
             return "/";
         }
         StringBuilder partialURI = new StringBuilder("//");
+        if (shortUri) {
+            final Optional<InetAddress> maybeAddress = Authority.address();
+            if (maybeAddress.isPresent()) {
+                partialURI.append(maybeAddress.get().getHostAddress());
+            }
+            return partialURI.toString();
+        }
         final Optional<String> maybeDevice = Authority.device();
         final Optional<String> maybeDomain = Authority.domain();
 

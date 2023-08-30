@@ -37,6 +37,19 @@ public class UEntity {
 
     private final String name;
     private final String version;
+    private final Integer id;
+
+    /**
+     * Build an  Software Entity that represents a communicating piece of software in the Ultiverse.
+     * @param name The name of the software such as petpp or body.access.
+     * @param version The software version. If not supplied, the latest version of the service will be used.
+     */
+    public UEntity(String name, String version, Integer id) {
+        Objects.requireNonNull(name, " Software Entity must have a name");
+        this.name = name;
+        this.id = id;
+        this.version = version;
+    }
 
     /**
      * Build an  Software Entity that represents a communicating piece of software in the Ultiverse.
@@ -46,6 +59,7 @@ public class UEntity {
     public UEntity(String name, String version) {
         Objects.requireNonNull(name, " Software Entity must have a name");
         this.name = name;
+        this.id = null;
         this.version = version;
     }
 
@@ -89,22 +103,31 @@ public class UEntity {
         return version == null || version.isBlank() ? Optional.empty() : Optional.of(version);
     }
 
+    /**
+     * @return Returns the software id if it exists.
+     * 
+     */
+    public Optional<Integer> id() {
+        return Optional.ofNullable(id);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UEntity that = (UEntity) o;
-        return Objects.equals(name, that.name) && Objects.equals(version, that.version);
+        return Objects.equals(name, that.name) && Objects.equals(version, that.version) && Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, version);
+        return Objects.hash(name, version, id);
     }
 
     @Override
     public String toString() {
         return "UEntity{" + "name='" + name + '\''
-                + ", version='" + (version == null ? "latest" : version) + '\'' + '}';
+                + ", version='" + (version == null ? "latest" : version) + '\'' +
+                ", id='" + (id == null ? "unknown" : id) + '\'' + '}';
     }
 }
