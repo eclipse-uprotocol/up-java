@@ -3,6 +3,7 @@ package org.eclipse.uprotocol.uri.validator;
 import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 
@@ -19,6 +20,10 @@ public abstract class UriValidator {
      */
     public static UStatus validate(UUri uri) {
         final UAuthority uAuthority = uri.uAuthority();
+        if (uri.isEmpty()) {
+            return UStatus.failed("Uri is empty.", Code.INVALID_ARGUMENT);
+        }
+
         if (uAuthority.isMarkedRemote()) {
             if (uAuthority.device().isEmpty()) {
                 return UStatus.failed("Uri is configured to be remote and is missing uAuthority device name.", Code.INVALID_ARGUMENT);
@@ -65,5 +70,11 @@ public abstract class UriValidator {
         }
 
         return UStatus.ok();
+    }
+
+
+    public static UStatus validateLongUUri(String uri) {
+        final UUri uUri = UriFactory.parseFromUri(uri);
+        return validate(uUri);
     }
 }

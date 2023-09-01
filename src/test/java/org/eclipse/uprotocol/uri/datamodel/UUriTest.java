@@ -28,6 +28,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Optional;
+
 class UriTest {
 
     @Test
@@ -46,21 +48,21 @@ class UriTest {
 
         UUri uri = new UUri(uAuthorityLocal, use, uResource);
 
-        String expected = "Uri{uAuthority=UAuthority{device='null', domain='null', markedRemote=false}, " +
-                "uEntity=UEntity{name='body.access', version='1'}, " +
-                "uResource=UResource{name='door', instance='front_left', message='null'}}";
+        String expected = "Uri{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, " +
+                "uEntity=UEntity{name='body.access', version='1', id='unknown'}, " +
+                "uResource=UResource{name='door', instance='front_left', message='null', id='unknown'}}";
         assertEquals(expected, uri.toString());
 
         UUri uriRemote = new UUri(uAuthorityRemote, use, uResource);
-        String expectedRemote = "Uri{uAuthority=UAuthority{device='vcu', domain='my_vin', markedRemote=true}, " +
-                "uEntity=UEntity{name='body.access', version='1'}, " +
-                "uResource=UResource{name='door', instance='front_left', message='null'}}";
+        String expectedRemote = "Uri{uAuthority=UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}, " +
+                "uEntity=UEntity{name='body.access', version='1', id='unknown'}, " +
+                "uResource=UResource{name='door', instance='front_left', message='null', id='unknown'}}";
         assertEquals(expectedRemote, uriRemote.toString());
 
         UUri uri2 = new UUri(uAuthorityRemote, use, UResource.empty());
-        String expectedUri2 = "Uri{uAuthority=UAuthority{device='vcu', domain='my_vin', markedRemote=true}, " +
-                "uEntity=UEntity{name='body.access', version='1'}, " +
-                "uResource=UResource{name='', instance='null', message='null'}}";
+        String expectedUri2 = "Uri{uAuthority=UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}, " +
+                "uEntity=UEntity{name='body.access', version='1', id='unknown'}, " +
+                "uResource=UResource{name='', instance='null', message='null', id='unknown'}}";
         assertEquals(expectedUri2, uri2.toString());
     }
 
@@ -174,6 +176,20 @@ class UriTest {
 
         // call it again, should not call the function, but there is not really a way to test it.
         assertEquals("//vcu.my_vin/body.access/1/door.front_left", uri.uProtocolUri());
+    }
+
+    @Test
+    @DisplayName("Test getting and setting id")
+    public void test_getting_and_setting_id() {
+        UAuthority uAuthorityRemote = UAuthority.remote("VCU", "MY_VIN");
+        UEntity use = new UEntity("body.access", "1");
+        UResource uResource = UResource.fromNameWithInstance("door", "front_left");
+        UUri uri = new UUri(uAuthorityRemote, use, uResource);
+
+        assertTrue(uri.id(null).isEmpty());
+        uri.id(1);
+        assertTrue(uri.id(null).isPresent());
+        assertEquals(1, uri.id(null).get());
     }
 
 }

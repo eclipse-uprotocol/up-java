@@ -25,9 +25,11 @@ import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.uri.datamodel.UAuthority.AddressType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.util.Arrays;
@@ -107,7 +109,7 @@ public interface UriFactory {
             sb.append("/");
         }
 
-        if (Uri.uEntity().isEmpty()) {
+        if (Uri.uEntity().id().isEmpty()) {
             return sb.toString();
         }
 
@@ -148,9 +150,7 @@ public interface UriFactory {
             Optional<InetAddress> maybeAddress = Uri.uAuthority().address();
             Optional<Short> maybeUeId = Uri.uEntity().id();
             Optional<Short> maybeUResourceId = Uri.uResource().id();
-            Optional<String> maybeUEntityId = Uri.uEntity().version();
-            if (!maybeAddress.isPresent() || !maybeUeId.isPresent() || 
-                !maybeUResourceId.isPresent() || !maybeUEntityId.isPresent()) {
+            if (!maybeUeId.isPresent() || !maybeUResourceId.isPresent()) {
                 return new byte[0];
             }
 
@@ -158,30 +158,40 @@ public interface UriFactory {
             // UP_VERSION
             os.write(0x1);
 
-            // IPV
-            os.write(maybeAddress.get() instanceof Inet6Address ? 1<<7 : 0);
+            // TYPE
+            if (Uri.uAuthority().isLocal()) {
+                os.write(0x0);
+            } else {
+                os.write(maybeAddress.get() instanceof Inet4Address ? 1 : 2);
+            }
 
             // URESOURCE_ID
+            os.write(maybeUResourceId.get()>>8);
             os.write(maybeUResourceId.get());
 
              // UAUTHORITY_ADDRESS
-            os.write(maybeAddress.get().getAddress());
+            if (!Uri.uAuthority().isLocal()) {
+                os.write(maybeAddress.get().getAddress());
+            }
 
             // UENTITY_ID
+            os.write(maybeUeId.get()>>8);
             os.write(maybeUeId.get());
             
             // UENTITY_VERSION
-            String version = Uri.uEntity().version().get();
+            String version = Uri.uEntity().version().orElse("");
             if (version.isEmpty()) {
-                os.write(Short.MAX_VALUE);
+                os.write((byte)Short.MAX_VALUE>>8);
+                os.write((byte)Short.MAX_VALUE);
             } else {
-                String[] parts = Uri.uEntity().version().get().split("\\.");
+                String[] parts = version.split("\\.");
                 if (parts.length > 1) {
-                    final short ver = (short)((Integer.parseInt(parts[0]) << 11) & Integer.parseInt(parts[1]));
-                    os.write(ver);
+                    int major = (Integer.parseInt(parts[0]) << 3) + (Integer.parseInt(parts[1]) >> 8);
+                    os.write((byte)major);
+                    os.write((byte)Integer.parseInt(parts[1]));
                 } else {
+                    os.write(Integer.parseInt(parts[0])<<3);
                     os.write(0);
-                    os.write(Integer.parseInt(parts[0]));
                 }
             }
             return os.toByteArray();
@@ -242,9 +252,14 @@ public interface UriFactory {
         if (uResource.isEmpty()) {
             return "";
         }
-        StringBuilder sb = new StringBuilder("/").append(shortUri ? uResource.id() : uResource.name());
-        uResource.instance().ifPresent(instance -> sb.append(".").append(instance));
-        uResource.message().ifPresent(message -> sb.append("#").append(message));
+        StringBuilder sb = new StringBuilder("/");
+        if (shortUri) {
+            uResource.id().ifPresent(sb::append);
+        } else {
+            sb.append(uResource.name());
+            uResource.instance().ifPresent(instance -> sb.append(".").append(instance));
+            uResource.message().ifPresent(message -> sb.append("#").append(message));
+        }
 
         return sb.toString();
     }
@@ -254,7 +269,7 @@ public interface UriFactory {
      * @param use  Software Entity representing a service or an application.
      */
     private static String buildSoftwareEntityPartOfUri(UEntity use, boolean shortUri) {
-        StringBuilder sb = new StringBuilder(shortUri? use.id().toString() : use.name().trim());
+        StringBuilder sb = new StringBuilder(shortUri? use.id().get().toString() : use.name().trim());
         sb.append("/");
         use.version().ifPresent(sb::append);
 
@@ -292,7 +307,7 @@ public interface UriFactory {
     }
 
     /**
-     * Create an  URI data object from a uProtocol string.
+     * Create an  URI data object from a uProtocol string (long or short).
      * @param uProtocolUri A String uProtocol URI.
      * @return Returns an  URI data object.
      */
@@ -358,7 +373,15 @@ public interface UriFactory {
 
         }
 
-        return new UUri(uAuthority, new UEntity(useName, useVersion), uResource);
+        Short maybeUeId = null;
+        if (!useName.isEmpty()) {
+            try {
+                maybeUeId = Short.parseShort(useName);
+            } catch (NumberFormatException e) {
+                maybeUeId = null;
+            }
+        }
+        return new UUri(uAuthority, new UEntity(useName, useVersion, maybeUeId), uResource);
     }
 
     private static UResource buildResource(String resourceString) {
@@ -370,5 +393,57 @@ public interface UriFactory {
         String resourceMessage = parts.length > 1 ? parts[1] : null;
         return new UResource(resourceName, resourceInstance, resourceMessage);
     }
+
+
+    /**
+     * Create an  URI data object from a uProtocol micro URI.
+     * @param microUri A byte[] uProtocol micro URI.
+     * @return Returns an  URI data object.
+     */
+    static UUri parseFromMicroUri(byte[] microUri) {
+        if (microUri == null || microUri.length < 8 ) {
+            return UUri.empty();
+        }
+
+        // Need to be version 1
+        if (microUri[0] != 0x1) {
+            return UUri.empty();
+        }
+
+        int uResourceId = ((microUri[2] & 0xFF) << 8) | (microUri[3] & 0xFF);
+
+        Optional<InetAddress> maybeAddress = Optional.empty();
+        
+        Optional<AddressType> type = AddressType.from(microUri[1]);
+
+        if (!type.isPresent()) {
+            return UUri.empty();
+        }
+
+        int index = 4;
+        if (!(type.get() == AddressType.LOCAL)) {
+            try {
+                maybeAddress = Optional.of(InetAddress.getByAddress(
+                    Arrays.copyOfRange(microUri, index, (type.get() == AddressType.IPv4) ? 8 : 20)));
+            } catch (Exception e) {
+                maybeAddress = Optional.empty();
+            }
+            index += type.get() == AddressType.IPv4 ? 4 : 16;
+        }
+        
+        int ueId = ((microUri[index++] & 0xFF) << 8) | (microUri[index++] & 0xFF);
+
+        int ueVersion = ((microUri[index++] & 0xFF) << 8) | (microUri[index++] & 0xFF);
+
+        String ueVersionString = String.valueOf(ueVersion >> 11);
+        if ((ueVersion & 0x7FF) != 0) {
+            ueVersionString += "." + (ueVersion & 0x7FF);
+        }
+
+        return new UUri((type.get() == AddressType.LOCAL) ? UAuthority.local() : UAuthority.remote(maybeAddress.get()),
+                new UEntity("", ueVersionString, (short)ueId),
+                UResource.fromId((short)uResourceId));
+    }
+        
 
 }

@@ -47,8 +47,6 @@ public class UResource {
 
     private final Short id;
 
-    //TODO when message is empty - try and infer it from the name "door" -> "Door"
-
     /**
      * Create an  Resource. The resource is something that is manipulated by a service such as a door.
      * @param name      The name of the resource as a noun such as door or window, or in the case a method that manipulates the resource, a verb.
@@ -57,7 +55,7 @@ public class UResource {
      *                  A message is a data structure type used to define data that is passed in  events and rpc methods.
      */
     public UResource(String name, String instance, String message) {
-        this(name, instance, message, Short.valueOf((short)0));
+        this(name, instance, message, null);
     }
 
     /**
@@ -72,7 +70,11 @@ public class UResource {
         this.name = name;
         this.instance = instance;
         this.message = message;
-        this.id = id;
+        if (name.equals("rpc") && instance != null && instance.equals("response")) {
+            this.id = Short.valueOf((short)0);
+        } else {
+            this.id = id;
+        }
     }
 
 
@@ -161,7 +163,7 @@ public class UResource {
      * @return Returns the resource id if it exists.
      */
     public Optional<Short> id() {
-        return Optional.of(id);
+        return Optional.ofNullable(id);
     }
 
     /**
@@ -214,7 +216,7 @@ public class UResource {
                 "name='" + name + '\'' +
                 ", instance='" + instance + '\'' +
                 ", message='" + message + '\'' +
-                ", id='" + id + '\'' +
+                ", id='" + (id == null ? "unknown" : id) + '\'' +
                 '}';
     }
 }

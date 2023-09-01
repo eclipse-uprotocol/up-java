@@ -209,7 +209,7 @@ class UAttributesValidatorTest {
 
         assertTrue(status.isFailed());
         assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals(status.msg(), "Uri is configured to be remote and is missing uAuthority device name.");
+        assertEquals(status.msg(), "Uri is empty.");
     }
 
     @Test

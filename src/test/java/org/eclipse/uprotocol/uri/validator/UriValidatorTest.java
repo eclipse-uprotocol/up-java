@@ -41,7 +41,7 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validate(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is missing uSoftware Entity name.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
 
     @Test
@@ -51,7 +51,7 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validate(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is configured to be remote and is missing uAuthority device name.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
 
     @Test
@@ -69,7 +69,7 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validate(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is missing uSoftware Entity name.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
 
     @Test
@@ -96,7 +96,7 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validateRpcMethod(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is missing uSoftware Entity name.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
 
     @Test
@@ -114,7 +114,7 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validateRpcResponse(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is missing uSoftware Entity name.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
 
     @Test

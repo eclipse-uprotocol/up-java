@@ -39,7 +39,7 @@ class UResourceTest {
     @DisplayName("Make sure the toString works")
     public void testToString() {
         UResource uResource = new UResource("door", "front_left", "Door");
-        String expected = "UResource{name='door', instance='front_left', message='Door'}";
+        String expected = "UResource{name='door', instance='front_left', message='Door', id='unknown'}";
         assertEquals(expected, uResource.toString());
     }
 
@@ -184,4 +184,80 @@ class UResourceTest {
         assertTrue(uResource.message().isEmpty());
     }
 
+    @Test
+    @DisplayName("Test creating an UResource with valid id")
+    public void test_create_UResource_with_valid_id() {
+        UResource uResource = new UResource("door", "front_left", "Door", (short)5);
+        assertEquals("door", uResource.name());
+        assertTrue(uResource.instance().isPresent());
+        assertEquals("front_left", uResource.instance().get());
+        assertTrue(uResource.message().isPresent());
+        assertEquals("Door", uResource.message().get());
+        assertTrue(uResource.id().isPresent());
+        assertEquals((int)5, (int)uResource.id().get());
+        assertEquals("UResource{name='door', instance='front_left', message='Door', id='5'}", uResource.toString());
+    }
+
+    @Test
+    @DisplayName("Test creating an UResource with invalid id")
+    public void test_create_UResource_with_invalid_id() {
+        UResource uResource = new UResource("door", "front_left", "Door", null);
+        assertEquals("door", uResource.name());
+        assertTrue(uResource.instance().isPresent());
+        assertEquals("front_left", uResource.instance().get());
+        assertTrue(uResource.message().isPresent());
+        assertEquals("Door", uResource.message().get());
+        assertFalse(uResource.id().isPresent());
+        assertEquals("UResource{name='door', instance='front_left', message='Door', id='unknown'}", uResource.toString());
+    }
+
+    @Test
+    @DisplayName("Test creating an UResource by calling fromId static method")
+    public void test_create_UResource_by_calling_fromId_static_method() {
+        UResource uResource = UResource.fromId((short)5);
+        assertEquals("unknown", uResource.name());
+        assertTrue(uResource.instance().isEmpty());
+        assertTrue(uResource.message().isEmpty());
+        assertTrue(uResource.id().isPresent());
+        assertEquals((int)5, (int)uResource.id().get());
+        assertEquals("UResource{name='unknown', instance='null', message='null', id='5'}", uResource.toString());
+    }
+
+    @Test
+    @DisplayName("Test creating a response UResource by calling fromId")
+    public void test_create_response_UResource_by_calling_fromId() {
+        UResource uResource = UResource.fromId((short)0);
+        assertEquals("rpc", uResource.name());
+        assertTrue(uResource.instance().isPresent());
+        assertEquals("response", uResource.instance().get());
+        assertTrue(uResource.message().isEmpty());
+        assertTrue(uResource.id().isPresent());
+        assertEquals((int)0, (int)uResource.id().get());
+        assertEquals("UResource{name='rpc', instance='response', message='null', id='0'}", uResource.toString());
+    }
+
+    @Test
+    @DisplayName("Test creating a response UResource passing name, instance, and id")
+    public void test_create_response_UResource_passing_name_instance_and_id() {
+        UResource uResource = new UResource("rpc", "response", null, (short)0);
+        assertEquals("rpc", uResource.name());
+        assertTrue(uResource.instance().isPresent());
+        assertEquals("response", uResource.instance().get());
+        assertTrue(uResource.message().isEmpty());
+        assertTrue(uResource.id().isPresent());
+        assertEquals((int)0, (int)uResource.id().get());
+        assertEquals("UResource{name='rpc', instance='response', message='null', id='0'}", uResource.toString());
+    }
+
+    @Test
+    @DisplayName("Test creating a request UResource passing name, instance, and id")
+    public void test_create_request_UResource_passing_name_instance_and_id() {
+        UResource uResource = new UResource("rpc", null, null, (short)0);
+        assertEquals("rpc", uResource.name());
+        assertTrue(uResource.instance().isEmpty());
+        assertTrue(uResource.message().isEmpty());
+        assertTrue(uResource.id().isPresent());
+        assertEquals((int)0, (int)uResource.id().get());
+        assertEquals("UResource{name='rpc', instance='null', message='null', id='0'}", uResource.toString());
+    }
 }

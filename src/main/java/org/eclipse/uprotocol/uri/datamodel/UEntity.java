@@ -25,12 +25,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Data representation of an <b> Software Entity - USE</b><br>
- * Matches the first part of the path part &lt;app|service&gt;/&lt;version&gt; in SDV-202 uProtocol Format<br>
- * An  Software Entity is a piece of software deployed somewhere on a uDevice in the Ultiverse.<br>
- * The  Software Entity is used in the source and sink parts of communicating software in the Ultiverse.<br>
- * A USE that publishes events is a <b>Service</b> role.<br>
- * A USE that consumes events is an <b>Application</b> role.
+ * Data representation of an <b> Software Entity - uE</b><br>
+ * An  Software Entity is a piece of software deployed somewhere on a uDevice.<br>
+ * The  Software Entity is used in the source and sink parts of communicating software.<br>
+ * A uE that publishes events is a <b>Service</b> role.<br>
+ * A uE that consumes events is an <b>Application</b> role.
  */
 public class UEntity {
     private static final UEntity EMPTY = new UEntity("", null);
@@ -40,7 +39,7 @@ public class UEntity {
     private final Short id;
 
     /**
-     * Build an  Software Entity that represents a communicating piece of software in the Ultiverse.
+     * Build an  Software Entity that represents a communicating piece of software.
      * @param name The name of the software such as petpp or body.access.
      * @param version The software version. If not supplied, the latest version of the service will be used.
      */
@@ -52,7 +51,7 @@ public class UEntity {
     }
 
     /**
-     * Build an  Software Entity that represents a communicating piece of software in the Ultiverse.
+     * Build an Software Entity that represents a communicating piece of software.
      * @param name The name of the software such as petpp or body.access.
      * @param version The software version. If not supplied, the latest version of the service will be used.
      */
@@ -64,13 +63,14 @@ public class UEntity {
     }
 
     /**
-     * Static factory method for creating a USE using the application or service name.
+     * Static factory method for creating a uE using the application or service name.
      * @param name The application or service name, such as petapp or body.access.
      * @return Returns an UEntity with the name where the version is the latest version of the service.
      */
     public static UEntity fromName(String name) {
         return new UEntity(name, null);
     }
+
 
     /**
      * Static factory method for creating an empty  software entity, to avoid working with null<br>
@@ -87,6 +87,7 @@ public class UEntity {
     public boolean isEmpty() {
         return name.isBlank() && version().isEmpty();
     }
+
 
     /**
      * @return Returns the name of the software such as petpp or body.access.

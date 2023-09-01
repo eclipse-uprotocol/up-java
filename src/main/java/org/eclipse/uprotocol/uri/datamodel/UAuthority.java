@@ -22,6 +22,7 @@
 package org.eclipse.uprotocol.uri.datamodel;
 
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -139,7 +140,7 @@ public class UAuthority {
      * @return returns true if this  authority is local, meaning does not contain a device or a domain.
      */
     public boolean isLocal() {
-        return domain().isEmpty() && device().isEmpty();
+        return domain().isEmpty() && device().isEmpty() && address().isEmpty();
     }
 
     /**
@@ -193,5 +194,30 @@ public class UAuthority {
                 ", address='" + address + '\'' +
                 ", markedRemote=" + markedRemote +
                 '}';
+    }
+
+    /**
+     * The type of address used for Micro URI.
+     */
+    public enum AddressType {
+        LOCAL(0),
+        IPv4(1),
+        IPv6(2);
+
+        private final int value;
+
+        AddressType(int value) {
+            this.value = value;
+        }
+
+        int getValue() {
+            return value;
+        }
+
+        public static Optional<AddressType> from(int value) {
+            return Arrays.stream(AddressType.values())
+                    .filter(p -> p.getValue() == value)
+                    .findAny();
+        }
     }
 }

@@ -44,11 +44,11 @@ class UEntityTest {
         assertTrue(use.version().isPresent());
         assertEquals("1", use.version().get());
 
-        String expected = "UEntity{name='body.access', version='1'}";
+        String expected = "UEntity{name='body.access', version='1', id='unknown'}";
         assertEquals(expected, use.toString());
 
         UEntity use1 = UEntity.fromName("body.access");
-        assertEquals("UEntity{name='body.access', version='latest'}", use1.toString());
+        assertEquals("UEntity{name='body.access', version='latest', id='unknown'}", use1.toString());
     }
 
     @Test
@@ -110,4 +110,28 @@ class UEntityTest {
         UEntity use4 = new UEntity("petapp", null);
         assertFalse(use4.isEmpty());
     }
+
+    @Test
+    @DisplayName("Test creating UEntity with id")
+    public void test_create_use_with_id() {
+        UEntity use = new UEntity("body.access", "1", (short)0);
+        assertEquals("body.access", use.name());
+        assertTrue(use.version().isPresent());
+        assertEquals("1", use.version().get());
+        assertTrue(use.id().isPresent());
+        assertEquals((int)0, (int)use.id().get());
+        assertEquals("UEntity{name='body.access', version='1', id='0'}", use.toString());
+    }
+
+    @Test
+    @DisplayName("Test creating UEntity with invalid id")
+    public void test_create_use_with_invalid_id() {
+        UEntity use = new UEntity("body.access", "1", null);
+        assertEquals("body.access", use.name());
+        assertTrue(use.version().isPresent());
+        assertEquals("1", use.version().get());
+        assertFalse(use.id().isPresent());
+        assertEquals("UEntity{name='body.access', version='1', id='unknown'}", use.toString());
+    }
+
 }

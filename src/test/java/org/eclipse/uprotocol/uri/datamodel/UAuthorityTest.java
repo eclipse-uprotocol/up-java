@@ -27,6 +27,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Objects;
+
 class UAuthorityTest {
 
     @Test
@@ -40,12 +45,12 @@ class UAuthorityTest {
     public void testToString() {
         UAuthority uAuthority = UAuthority.remote("VCU", "my_VIN");
         String sRemote = uAuthority.toString();
-        String expectedRemote = "UAuthority{device='vcu', domain='my_vin', markedRemote=true}";
+        String expectedRemote = "UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}";
         assertEquals(expectedRemote, sRemote);
 
         UAuthority local = UAuthority.local();
         String sLocal = local.toString();
-        String expectedLocal = "UAuthority{device='null', domain='null', markedRemote=false}";
+        String expectedLocal = "UAuthority{device='null', domain='null', address='null', markedRemote=false}";
         assertEquals(expectedLocal, sLocal);
 
     }
@@ -55,12 +60,12 @@ class UAuthorityTest {
     public void testToString_case_sensitivity() {
         UAuthority uAuthority = UAuthority.remote("vcU", "my_VIN");
         String sRemote = uAuthority.toString();
-        String expectedRemote = "UAuthority{device='vcu', domain='my_vin', markedRemote=true}";
+        String expectedRemote = "UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}";
         assertEquals(expectedRemote, sRemote);
 
         UAuthority local = UAuthority.local();
         String sLocal = local.toString();
-        String expectedLocal = "UAuthority{device='null', domain='null', markedRemote=false}";
+        String expectedLocal = "UAuthority{device='null', domain='null', address='null', markedRemote=false}";
         assertEquals(expectedLocal, sLocal);
 
     }
@@ -143,5 +148,46 @@ class UAuthorityTest {
         assertFalse(remote.isLocal());
         assertTrue(remote.isRemote());
         assertTrue(remote.isMarkedRemote());
+    }
+    
+        
+    @Test
+    @DisplayName("Test creating uAuthority with invalid ip address")
+    public void test_create_uAuthority_with_invalid_ip_address() {
+        UAuthority remote = UAuthority.remote((InetAddress)null);
+        String expectedLocal = "UAuthority{device='null', domain='null', address='null', markedRemote=true}";
+        assertEquals(expectedLocal, remote.toString());
+        assertFalse(remote.address().isPresent());
+    }
+
+
+    @Test
+    @DisplayName("Test creating uAuthority with valid ip address")
+    public void test_create_uAuthority_with_valid_ip_address() {
+        InetAddress address = Inet6Address.getLoopbackAddress();
+
+        UAuthority remote = UAuthority.remote(address);
+        String expectedLocal = "UAuthority{device='null', domain='null', address='localhost/127.0.0.1', markedRemote=true}";
+        InetAddress address2 = remote.address().get();
+        assertTrue(remote.address().isPresent());
+        assertEquals(address, address2);
+        assertEquals(expectedLocal, remote.toString());
+    }
+
+    @Test
+    @DisplayName("Test creating uAuthority with valid ipv6 address")
+    public void test_create_uAuthority_with_valid_ipv6_address() {
+        String ipv6Address = "2001:db8:85a3:0:0:8a2e:370:7334";
+        InetAddress address = null;
+        try {
+            address = InetAddress.getByName(ipv6Address);
+        }  
+        catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        UAuthority remote = UAuthority.remote(address);
+        String expectedLocal = "UAuthority{device='null', domain='null', address='/2001:db8:85a3:0:0:8a2e:370:7334', markedRemote=true}";
+        assertEquals(expectedLocal, remote.toString());
     }
 }

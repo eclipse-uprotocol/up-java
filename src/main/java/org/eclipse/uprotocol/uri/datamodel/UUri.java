@@ -152,10 +152,10 @@ public class UUri {
      * @param id The ID used to represent the UUri as an ID in the transport layer.
      * @return Returns the ID used to represent the UUri as an ID in the transport layer.
      */
-    public Optional<Integer> id(Optional<Integer> id) {
-        if (id.isPresent()) {
-            this.id = id.get();
+    public Optional<Integer> id(Integer id) {
+        if (id != null) {
+            this.id = id;
         }
-        return Optional.of(this.id);
+        return Optional.ofNullable(this.id);
     }
 }
