@@ -24,7 +24,7 @@
 import java.util.Arrays;
 
 /**
- * The UPayload contains the clean Payload information at its raw serialized structure of a byte[]
+ * The UPayload contains the clean Payload information along with its raw serialized structure of a byte[].
  */
 public class UPayload {
 
@@ -36,18 +36,17 @@ public class UPayload {
     /**
      * Create a UPayload.
      * @param data A byte array of the actual data.
-     * @param representationHint Hint regarding what the bytes represent such as simple binary, a String or maybe a special type of String.
      */
     public UPayload(byte[] data) {
         this.data = data;
     }
 
     /**
-     * The actual serialized or raw data, which can be deserialized or simply used as is using the hint.
-     * @return Returns the actual serialized or raw data, which can be deserialized or simply used as is using the hint.
+     * The actual serialized or raw data, which can be deserialized or simply used as is.
+     * @return Returns the actual serialized or raw data, which can be deserialized or simply used as is.
      */
     public byte[] data() {
-        return this.data;
+        return this.data == null ? EMPTY.data() : this.data;
     }
 
     
@@ -56,6 +55,15 @@ public class UPayload {
      */
     public static UPayload empty() {
         return EMPTY;
+    }
+
+    /**
+     * Static factory method for creating the payload from a simple String.
+     * @param payload String payload.
+     * @return Returns a UPayload from the string argument.
+     */
+    public static UPayload fromString(String payload) {
+        return new UPayload(payload.getBytes());
     }
 
     /**
@@ -76,14 +84,12 @@ public class UPayload {
 
     @Override
     public int hashCode() {
-        int result = Arrays.hashCode(data);
-        return result;
+        return Arrays.hashCode(data);
     }
 
     @Override
     public String toString() {
         return "UPayload{" +
-                "data=" + Arrays.toString(data) +
-                '}';
+                "data=" + Arrays.toString(data()) + " size=" + data().length + '}';
     }
 }
