@@ -1164,5 +1164,6 @@ class UriFactoryTest {
         assertEquals(use, Uri.uEntity());
         assertEquals(uResource, Uri.uResource());
     }
+    
 
 }

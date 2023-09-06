@@ -27,6 +27,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.eclipse.uprotocol.uri.datamodel.UAuthority;
+import org.eclipse.uprotocol.uri.datamodel.UEntity;
+import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus;
@@ -70,6 +73,17 @@ class UriValidatorTest {
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
         assertEquals("Uri is empty.", status.msg());
+    }
+   
+
+    @Test
+    @DisplayName("Test validate with blank UEntity Name")
+    public void test_validate_with_blank_uentity_name_uri() {
+        final UUri uri = new UUri(UAuthority.local(), UEntity.empty(), UResource.forRpc("echo"));
+        final UStatus status = UriValidator.validate(uri);
+        assertFalse(uri.isEmpty());
+        assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
+        assertEquals("Uri is missing uSoftware Entity name.", status.msg());
     }
 
     @Test
@@ -133,5 +147,13 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validateRpcResponse(uri);
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
         assertEquals("Invalid RPC response type.", status.msg());
+    }
+
+    @Test
+    @DisplayName("Test validateLongUUri with valid URI")
+    public void test_validateLongUUri_with_valid_uri() {
+        final UUri uri = UriFactory.parseFromUri("/hartley//rpc.echo");
+        final UStatus status = UriValidator.validateLongUUri(uri.uProtocolUri());
+        assertEquals(UStatus.ok(), status);
     }
 }

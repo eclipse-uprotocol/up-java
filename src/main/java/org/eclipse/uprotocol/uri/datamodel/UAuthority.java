@@ -133,7 +133,7 @@ public class UAuthority {
      * @return returns true if this  authority is remote, meaning it contains a device or a domain.
      */
     public boolean isRemote() {
-        return domain().isPresent() || device().isPresent();
+        return address().isPresent() || domain().isPresent() || device().isPresent();
     }
 
     /**

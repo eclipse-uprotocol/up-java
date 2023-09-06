@@ -1,6 +1,5 @@
 package org.eclipse.uprotocol.uri.validator;
 
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.factory.UriFactory;
@@ -11,7 +10,7 @@ import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 /**
  * class for validating Uris.
  */
-public abstract class UriValidator {
+public interface UriValidator {
 
     /**
      * Validate a Uri to ensure that it has at least a name for the uEntity.
@@ -19,16 +18,10 @@ public abstract class UriValidator {
      * @return Returns UStatus containing a success or a failure with the error message.
      */
     public static UStatus validate(UUri uri) {
-        final UAuthority uAuthority = uri.uAuthority();
         if (uri.isEmpty()) {
             return UStatus.failed("Uri is empty.", Code.INVALID_ARGUMENT);
         }
 
-        if (uAuthority.isMarkedRemote()) {
-            if (uAuthority.device().isEmpty()) {
-                return UStatus.failed("Uri is configured to be remote and is missing uAuthority device name.", Code.INVALID_ARGUMENT);
-            }
-        }
         if (uri.uEntity().name().isBlank()) {
             return UStatus.failed("Uri is missing uSoftware Entity name.", Code.INVALID_ARGUMENT);
         }
