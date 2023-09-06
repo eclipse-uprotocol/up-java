@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-
 /**
- * UProtocol general Ack requestRpcMessage for all operations.
- * Can be made into a Monad in the future.
+ * UProtocol general status for all operations.
+ * A UStatus is generated using the static factory methods, making is easy to quickly create UStatus objects.
+ * Example: UStatus ok = UStatus.ok();
  */
 public abstract class UStatus {
 
@@ -16,39 +16,37 @@ public abstract class UStatus {
 
     public abstract boolean isSuccess();
     public abstract String msg();
-
     public abstract int getCode();
     
     /**
-     * Enum to contain the status code that we map to google.rpc.Code
-     * 
-     * Please refer to https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto
+     * Enum to contain the status code that we map to google.rpc.Code.
+     * Please refer to <a href="https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto">code.proto</a>
      * for documentation on the codes listed below
-     * 
+     *
      */
     public enum Code {
 
-        OK(com.google.rpc.Code.OK_VALUE),
-        CANCELLED(com.google.rpc.Code.CANCELLED_VALUE),
-        UNKNOWN(com.google.rpc.Code.UNKNOWN_VALUE),
-        INVALID_ARGUMENT(com.google.rpc.Code.INVALID_ARGUMENT_VALUE),
-        DEADLINE_EXCEEDED(com.google.rpc.Code.DEADLINE_EXCEEDED_VALUE),
-        NOT_FOUND(com.google.rpc.Code.NOT_FOUND_VALUE),
-        ALREADY_EXISTS(com.google.rpc.Code.ALREADY_EXISTS_VALUE),
-        PERMISSION_DENIED(com.google.rpc.Code.PERMISSION_DENIED_VALUE),
-        UNAUTHENTICATED(com.google.rpc.Code.UNAUTHENTICATED_VALUE),
-        RESOURCE_EXHAUSTED(com.google.rpc.Code.RESOURCE_EXHAUSTED_VALUE),
-        FAILED_PRECONDITION(com.google.rpc.Code.FAILED_PRECONDITION_VALUE),
-        ABORTED(com.google.rpc.Code.ABORTED_VALUE),
-        OUT_OF_RANGE(com.google.rpc.Code.OUT_OF_RANGE_VALUE),
-        UNIMPLEMENTED(com.google.rpc.Code.UNIMPLEMENTED_VALUE),
-        INTERNAL(com.google.rpc.Code.INTERNAL_VALUE),
-        UNAVAILABLE(com.google.rpc.Code.UNAVAILABLE_VALUE),
-        DATA_LOSS(com.google.rpc.Code.DATA_LOSS_VALUE),
-        UNSPECIFIED(-1);
+        OK (com.google.rpc.Code.OK_VALUE),
+        CANCELLED (com.google.rpc.Code.CANCELLED_VALUE),
+        UNKNOWN (com.google.rpc.Code.UNKNOWN_VALUE),
+        INVALID_ARGUMENT (com.google.rpc.Code.INVALID_ARGUMENT_VALUE),
+        DEADLINE_EXCEEDED (com.google.rpc.Code.DEADLINE_EXCEEDED_VALUE),
+        NOT_FOUND (com.google.rpc.Code.NOT_FOUND_VALUE),
+        ALREADY_EXISTS (com.google.rpc.Code.ALREADY_EXISTS_VALUE),
+        PERMISSION_DENIED (com.google.rpc.Code.PERMISSION_DENIED_VALUE),
+        UNAUTHENTICATED (com.google.rpc.Code.UNAUTHENTICATED_VALUE),
+        RESOURCE_EXHAUSTED (com.google.rpc.Code.RESOURCE_EXHAUSTED_VALUE),
+        FAILED_PRECONDITION (com.google.rpc.Code.FAILED_PRECONDITION_VALUE),
+        ABORTED (com.google.rpc.Code.ABORTED_VALUE),
+        OUT_OF_RANGE (com.google.rpc.Code.OUT_OF_RANGE_VALUE),
+        UNIMPLEMENTED (com.google.rpc.Code.UNIMPLEMENTED_VALUE),
+        INTERNAL (com.google.rpc.Code.INTERNAL_VALUE),
+        UNAVAILABLE (com.google.rpc.Code.UNAVAILABLE_VALUE),
+        DATA_LOSS (com.google.rpc.Code.DATA_LOSS_VALUE),
+        UNSPECIFIED (-1);
 
-        private int value;
-        private Code(int value) {
+        private final int value;
+        Code (int value) {
             this.value = value;
         }
 
@@ -57,9 +55,9 @@ public abstract class UStatus {
         }
 
         /**
-         * Get the Code from an integer value
-         * @param value The integer value of the Code
-         * @return Returns the Code if found, otherwise returns Optional.empty()
+         * Get the Code from an integer value.
+         * @param value The integer value of the Code.
+         * @return Returns the Code if found, otherwise returns Optional.empty().
          */
         public static Optional<Code> from(int value) {
             return Arrays.stream(Code.values())
@@ -69,12 +67,12 @@ public abstract class UStatus {
 
 
         /**
-         * Get the Code from a google.rpc.Code
-         * @param code The google.rpc.Code
-         * @return Returns the Code if found, otherwise returns Optional.empty()
+         * Get the Code from a google.rpc.Code.
+         * @param code The google.rpc.Code.
+         * @return Returns the Code if found, otherwise returns Optional.empty().
          */
         public static Optional<Code> from(com.google.rpc.Code code) {
-            if ( (code == null) || (code == com.google.rpc.Code.UNRECOGNIZED) ) {
+            if (code == null || code == com.google.rpc.Code.UNRECOGNIZED) {
                 return Optional.empty();
             }
             return Arrays.stream(Code.values())
@@ -82,7 +80,6 @@ public abstract class UStatus {
                     .findAny();
         }
     }
-
 
     /**
      * Return true if UStatus is a failure
@@ -92,15 +89,15 @@ public abstract class UStatus {
         return !isSuccess();
     }
 
-
     @Override
     public String toString() {
-        return String.format("UMessage %s %s %s", isSuccess() ? "ok" : "failed",
-                isSuccess() ? "id =" : "msg=", msg());
+        return String.format("UStatus %s %s%s code=%s", isSuccess() ? "ok" : "failed",
+                isSuccess() ? "id=" : "msg=", msg(),
+                getCode());
     }
 
     /**
-     * A successful UStatus
+     * A successful UStatus.
      */
     private static class OKSTATUS extends UStatus {
 
@@ -144,7 +141,7 @@ public abstract class UStatus {
 
 
     /**
-     * A failed UStatus
+     * A failed UStatus.
      */
     private static class FAILSTATUS extends UStatus {
 
@@ -160,13 +157,8 @@ public abstract class UStatus {
         private FAILSTATUS(String failMsg, int value) {
             Optional<Code> code = Code.from(value);
             this.failMsg = failMsg;
-            if (code.isPresent()) {
-                this.code = code.get();
-            } else {
-                this.code = Code.UNSPECIFIED;
-            }
+            this.code = code.orElse(Code.UNSPECIFIED);
         }
-
 
         @Override
         public boolean isSuccess() {
@@ -179,21 +171,21 @@ public abstract class UStatus {
         }
 
         @Override
+        public int getCode() {
+            return code.value;
+        }
+
+        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            FAILSTATUS failstatus = (FAILSTATUS) o;
-            return code == failstatus.code && Objects.equals(failMsg, failstatus.failMsg);
+            FAILSTATUS that = (FAILSTATUS) o;
+            return Objects.equals(failMsg, that.failMsg) && code == that.code;
         }
 
         @Override
         public int hashCode() {
             return Objects.hash(failMsg, code);
-        }
-
-        @Override
-        public int getCode() {
-            return code.value;
         }
     }
 
@@ -207,11 +199,11 @@ public abstract class UStatus {
     }
 
     public static UStatus failed() {
-        return new FAILSTATUS(FAILED, 0);
+        return new FAILSTATUS(FAILED, Code.UNKNOWN.value());
     }
 
     public static UStatus failed(String msg) {
-        return new FAILSTATUS(msg, 0);
+        return new FAILSTATUS(msg, Code.UNKNOWN.value());
     }
 
     public static UStatus failed(String msg, int failureReason) {
