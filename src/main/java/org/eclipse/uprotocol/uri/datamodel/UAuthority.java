@@ -123,7 +123,7 @@ public class UAuthority {
 
     /**
      * Static factory method for creating an empty  authority, to avoid working with null<br>
-     * @return Returns an empty altifi authority that has no domain or device information.
+     * @return Returns an empty authority that has no domain or device information.
      */
     public static UAuthority empty() {
         return EMPTY;
@@ -206,11 +206,11 @@ public class UAuthority {
 
         private final int value;
 
-        AddressType(int value) {
+        private AddressType(int value) {
             this.value = value;
         }
 
-        int getValue() {
+        public int getValue() {
             return value;
         }
 
