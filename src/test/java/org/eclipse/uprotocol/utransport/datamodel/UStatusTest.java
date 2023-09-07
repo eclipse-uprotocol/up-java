@@ -5,7 +5,9 @@ import nl.jqno.equalsverifier.Warning;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,10 +16,43 @@ class UStatusTest {
     @Test
     @DisplayName("Make sure the equals and hash code works")
     public void testHashCodeEquals() {
-        // can't test equals and hashcode for private classes - need to figure this out
         EqualsVerifier.forClass(UStatus.class)
                 .suppress(Warning.INHERITED_DIRECTLY_FROM_OBJECT)
                 .usingGetClass().verify();
+    }
+
+    @Test
+    @DisplayName("Make sure the equals and hash code for ok scenarios")
+    public void testHashCodeEquals_ok_scenarios() {
+        // Sets call equals and hash code - using them to test functionality
+        Set<Object> statuses = new HashSet<>();
+        statuses.add(UStatus.ok());
+        statuses.add(UStatus.ok());
+        statuses.add(UStatus.ok("ackId"));
+        statuses.add("5");
+
+        assertEquals(3, statuses.size());
+    }
+
+    @Test
+    @DisplayName("Make sure the equals and hash code for fail scenarios")
+    public void testHashCodeEquals_fail_scenarios() {
+        // Sets call equals and hash code - using them to test functionality
+        Set<Object> statuses = new HashSet<>();
+        // these two are the same
+        statuses.add(UStatus.failed());
+        statuses.add(UStatus.failed());
+
+        // these two are the same
+        statuses.add(UStatus.failed("boom"));
+        statuses.add(UStatus.failed("boom", UStatus.Code.UNKNOWN));
+
+        statuses.add(UStatus.failed("bam"));
+        statuses.add(UStatus.failed("boom", UStatus.Code.UNSPECIFIED.value()));
+        statuses.add(UStatus.failed("boom", UStatus.Code.INVALID_ARGUMENT));
+        statuses.add("5");
+
+        assertEquals(6, statuses.size());
     }
 
     @Test
