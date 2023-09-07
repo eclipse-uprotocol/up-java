@@ -21,11 +21,19 @@
 
 package org.eclipse.uprotocol.utransport.datamodel;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 
+/**
+ * When sending data over uTransport the basic API for send uses a source topic and the UPayload as the data.
+ * Any other information about the message is placed in the UAttributes class.
+ * The UAttributes class holds the additional information along with business methods for understanding more about the actual message sent.
+ * add all the functionality that I would have if I had strong objects such as UMessage
+ *
+ */
 public class UAttributes {
 
     private static final UAttributes EMPTY = new UAttributes(null, null, null, null, null, null, null, null, null);
@@ -52,7 +60,6 @@ public class UAttributes {
      * @param priority          Message priority
      * @param ttl               Time to live in milliseconds
      * @param token             Authorization token used for TAP
-     * @param hint              Hint regarding the bytes contained within the UPayload
      * @param sink              Explicit destination URI
      * @param plevel            Permission Level
      * @param commstatus        Communication Status
@@ -79,8 +86,8 @@ public class UAttributes {
 
 
     /**
-     * Static factory method for creating an empty ultifi cloud event attributes object, to avoid working with null.
-     * @return Returns an empty transport attributes that indicates that there are no added additional attributes to configure.
+     * Static factory method for creating an empty attributes object, to avoid working with null.
+     * @return Returns an empty attributes that indicates that there are no added additional attributes to configure.
      */
     public static UAttributes empty() {
         return EMPTY;
@@ -117,8 +124,9 @@ public class UAttributes {
     }
 
     /**
-     * hint regarding the bytes contained within the UPayload.
-     * @return Returns an Optional hint regarding the bytes contained within the UPayload.
+     * A time to live which is how long this event should live for after it was generated (in milliseconds).
+     * Events without this attribute (or value is 0) MUST NOT timeout.
+     * @return An Optional time to live which is how long this event should live for after it was generated (in milliseconds).
      */
     public Optional<Integer> ttl() {
         return ttl == null ? Optional.empty() : Optional.of(this.ttl);
@@ -142,8 +150,8 @@ public class UAttributes {
     }
 
     /**
-     * The reqid is used to return a response for a specific request.
-     * @return Returns an Optional requestId attribute.
+     * The reqid is used to indicate a response for a specific request.
+     * @return Returns an Optional requestId that indicates that this is a response for a specific request.
      */
     public Optional<UUID> reqid() {
         return reqid == null ? Optional.empty() : Optional.of(reqid);
@@ -159,21 +167,52 @@ public class UAttributes {
 
     /**
      * The communication status of the message.
-     * @return Returns an Optional communication status attribute.
+     * @return Returns an Optional communication status attribute that indicates an error from the platform.
      */
     public Optional<Integer> commstatus() {
         return commstatus == null ? Optional.empty() : Optional.of(commstatus);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UAttributes that = (UAttributes) o;
+        return Objects.equals(id, that.id) && type == that.type
+                && priority == that.priority && Objects.equals(ttl, that.ttl)
+                && Objects.equals(token, that.token) && Objects.equals(sink, that.sink)
+                && Objects.equals(plevel, that.plevel) && Objects.equals(commstatus, that.commstatus)
+                && Objects.equals(reqid, that.reqid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, type, priority, ttl, token, sink, plevel, commstatus, reqid);
+    }
+
+    @Override
+    public String toString() {
+        return "UAttributes{" +
+                "id=" + id +
+                ", type=" + type +
+                ", priority=" + priority +
+                ", ttl=" + ttl +
+                ", token='" + token + '\'' +
+                ", sink=" + sink +
+                ", plevel=" + plevel +
+                ", commstatus=" + commstatus +
+                ", reqid=" + reqid +
+                '}';
+    }
 
     /**
      * Builder for the UAttributes object.
      */
     public static class UAttributesBuilder {
 
-        private UUID id;
-        private UMessageType type;
-        private UPriority priority;
+        private final UUID id;
+        private final UMessageType type;
+        private final UPriority priority;
         private Integer ttl;
         private String token;
         private UUri sink;
@@ -181,36 +220,10 @@ public class UAttributes {
         private Integer commstatus;
         private UUID reqid;
 
-        public UAttributesBuilder() {}
-
-        /**
-         * Add uProtocol Prioritization classifications.
-         * @param priority the uProtocol Prioritization classifications.
-         * @return Returns the UAttributesBuilder with the configured Priority.
-         */
-        public UAttributesBuilder withPriority(UPriority priority) {
-            this.priority = priority;
-            return this;
-        }
-
-        /**
-         * Add the unique identifier for the message.
-         * @param id the unique identifier for the message.
-         * @return Returns the UAttributesBuilder with the configured id.
-         */
-        public UAttributesBuilder withId(UUID id) {
+        public UAttributesBuilder(UUID id, UMessageType type, UPriority priority) {
             this.id = id;
-            return this;
-        }
-
-        /**
-         * Add the message type.
-         * @param type the message type.
-         * @return Returns the UAttributesBuilder with the configured type.
-         */
-        public UAttributesBuilder withType(UMessageType type) {
-            this.type = type;
-            return this;
+            this. type = type;
+            this.priority = priority;
         }
 
         /**
@@ -278,7 +291,6 @@ public class UAttributes {
          * @return Returns a constructed UAttributes.
          */
         public UAttributes build() {
-            // validation if needed
             return new UAttributes(this);
         }
     }

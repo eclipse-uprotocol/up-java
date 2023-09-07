@@ -186,36 +186,46 @@ public abstract class UAttributesValidator {
 
 
     /**
-     * PUBLISH UAttributes Validator
-     * 
+     * Implements validations for UAttributes that define a message that is meant for publishing state changes.
      */
     private static class Publish extends UAttributesValidator {
 
         /**
-         * Validate UAttributes with type UMessageType PUBLISH
+         * Validates that attributes for a message meant to publish state changes has the correct type.
          * @param attributes UAttributes to validate
-         * @return Returns a UStatus indicating if the MessageType is valid or not.
+         * @return Returns a UStatus indicating if the MessageType is of the correct type.
          */
         @Override
         public UStatus validateType(UAttributes attributes) {
-            return attributes.type() == UMessageType.PUBLISH ? UStatus.ok() : UStatus.failed("Wrong Attribute Type", Code.INVALID_ARGUMENT.value());
+            return attributes.type() == UMessageType.PUBLISH ? UStatus.ok() :
+                    UStatus.failed(String.format("Wrong Attribute Type [%s]", attributes.type()), Code.INVALID_ARGUMENT.value());
+        }
+
+        @Override
+        public String toString() {
+            return "UAttributesValidator.Publish";
         }
     }
 
     /**
-     * Validate UAttributes with type UMessageType Request
+     * Implements validations for UAttributes that define a message that is meant for an RPC request.
      */
     private static class Request extends UAttributesValidator {
 
+        /**
+         * Validates that attributes for a message meant for an RPC request has the correct type.
+         * @param attributes UAttributes to validate.
+         * @return Returns a UStatus indicating if the MessageType is of the correct type.
+         */
         @Override
         public UStatus validateType(UAttributes attributes) {
             return attributes.type() == UMessageType.REQUEST ? UStatus.ok() : 
-                UStatus.failed("Wrong Attribute Type", Code.INVALID_ARGUMENT.value());
+                UStatus.failed(String.format("Wrong Attribute Type [%s]", attributes.type()), Code.INVALID_ARGUMENT.value());
         }
 
         /**
-         * Validate the sink Uri.
-         * @param attributes
+         * Validates that attributes for a message meant for an RPC request has a destination sink.
+         * @param attributes Attributes to validate.
         * @return Returns a UStatus indicating if the Uri is valid or not.
         */
         @Override
@@ -241,6 +251,11 @@ public abstract class UAttributesValidator {
             } else {
                 return ttl.get() > 0 ? UStatus.ok() : UStatus.failed("Invalid TTL", Code.INVALID_ARGUMENT.value());
             }
+        }
+
+        @Override
+        public String toString() {
+            return "UAttributesValidator.Request";
         }
     }
 
@@ -285,6 +300,11 @@ public abstract class UAttributesValidator {
             }
             return UUIDUtils.isUuid(correlationId.get()) ? UStatus.ok() : 
                 UStatus.failed("Invalid UUID", Code.INVALID_ARGUMENT.value());
+        }
+
+        @Override
+        public String toString() {
+            return "UAttributesValidator.Response";
         }
     }
 
