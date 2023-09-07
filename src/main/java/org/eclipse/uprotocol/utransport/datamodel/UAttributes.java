@@ -28,7 +28,7 @@ import org.eclipse.uprotocol.uri.datamodel.UUri;
 
 public class UAttributes {
 
-    private static final UAttributes EMPTY = new UAttributes(null, null, null, null, null, null, null, null, null, null);
+    private static final UAttributes EMPTY = new UAttributes(null, null, null, null, null, null, null, null, null);
 
     // Required Attributes
     private final UUID id;                  // Unique identifier for the message
@@ -38,7 +38,6 @@ public class UAttributes {
     // Optional Attributes
     private final Integer ttl;              // Time to live in milliseconds
     private final String token;             // Authorization token used for TAP
-    private final USerializationHint hint;  // Hint regarding the bytes contained within the UPayload
     private final UUri sink;                // Explicit destination URI
     private final Integer plevel;           // Permission Level
     private final Integer commstatus;       // Communication Status
@@ -61,13 +60,12 @@ public class UAttributes {
      * @return Returns a constructed UAttributes.
      */
     private UAttributes(UUID id, UMessageType type, UPriority priority, Integer ttl, String token,
-            USerializationHint hint, UUri sink, Integer plevel, Integer commstatus, UUID reqid) {
+            UUri sink, Integer plevel, Integer commstatus, UUID reqid) {
         this.id = id;
         this.type = type;
         this.priority = priority;
         this.ttl = ttl;
         this.token = token;
-        this.hint = hint;
         this.sink = sink;
         this.plevel = plevel;
         this.commstatus = commstatus;
@@ -75,7 +73,7 @@ public class UAttributes {
     }
 
     private UAttributes(UAttributesBuilder builder) {
-        this(builder.id, builder.type, builder.priority, builder.ttl, builder.token, builder.hint, builder.sink,
+        this(builder.id, builder.type, builder.priority, builder.ttl, builder.token, builder.sink,
                 builder.plevel, builder.commstatus, builder.reqid);
     }
 
@@ -90,7 +88,7 @@ public class UAttributes {
 
     public boolean isEmpty() {
         return this.id == null && this.type == null && this.priority == null && this.ttl == null && this.token == null
-                && this.hint == null && this.sink == null && this.plevel == null && this.commstatus == null
+                && this.sink == null && this.plevel == null && this.commstatus == null
                 && this.reqid == null;
     }
 
@@ -134,14 +132,6 @@ public class UAttributes {
         return token == null || token.isBlank() ? Optional.empty() : Optional.of(token);
     }
 
-    /**
-     * How long this event should live for after it was generated (in milliseconds).
-     * Events without this attribute (or value is 0) MUST NOT timeout.
-     * @return Returns an Optional time to live attribute.
-     */
-    public Optional<USerializationHint> serializationHint() {
-        return hint == null ? Optional.empty() : Optional.of(this.hint);
-    }
 
     /**
      * an explicit destination URI.
@@ -186,7 +176,6 @@ public class UAttributes {
         private UPriority priority;
         private Integer ttl;
         private String token;
-        private USerializationHint hint;
         private UUri sink;
         private Integer plevel;
         private Integer commstatus;
@@ -241,16 +230,6 @@ public class UAttributes {
          */
         public UAttributesBuilder withToken(String token) {
             this.token = token;
-            return this;
-        }
-
-        /**
-         * Add the hint regarding the bytes contained within the UPayload.
-         * @param hint the hint regarding the bytes contained within the UPayload.
-         * @return Returns the UAttributesBuilder with the configured hint.
-         */
-        public UAttributesBuilder withHint(USerializationHint hint) {
-            this.hint = hint;
             return this;
         }
 

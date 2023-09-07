@@ -25,6 +25,7 @@ import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.uri.datamodel.UAuthority.AddressType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -33,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 class UriFactoryTest {
 
@@ -1082,9 +1084,9 @@ class UriFactoryTest {
         UResource uResource = new UResource("door", "front_left", "Door", (short)3);
 
         byte[] uProtocolUri = UriFactory.buildUProtocolMicroUri(new UUri(uAuthority, use, uResource));
-        assertEquals(8, uProtocolUri.length);
+        assertEquals(UriFactory.LOCAL_MICRO_URI_LENGTH, uProtocolUri.length);
         assertEquals(1, uProtocolUri[0]); // version 1
-        assertEquals(0, uProtocolUri[1]); // local
+        assertEquals(AddressType.LOCAL.getValue(), uProtocolUri[1]); // local
         assertEquals(0, uProtocolUri[2]); // UResource ID (MSB)
         assertEquals(3, uProtocolUri[3]); // UResource ID (LSB)
         assertEquals(0, uProtocolUri[4]); // UEntity ID (MSB)
@@ -1101,9 +1103,9 @@ class UriFactoryTest {
         UResource uResource = new UResource("door", "front_left", "Door", (short)3);
 
         byte[] uProtocolUri = UriFactory.buildUProtocolMicroUri(new UUri(uAuthority, use, uResource));
-        assertEquals(8, uProtocolUri.length);
+        assertEquals(UriFactory.LOCAL_MICRO_URI_LENGTH, uProtocolUri.length);
         assertEquals(1, uProtocolUri[0]); // version 1
-        assertEquals(0, uProtocolUri[1]); // local
+        assertEquals(AddressType.LOCAL.getValue(), uProtocolUri[1]); // local
         assertEquals(0, uProtocolUri[2]); // UResource ID (MSB)
         assertEquals(3, uProtocolUri[3]); // UResource ID (LSB)
         assertEquals(0, uProtocolUri[4]); // UEntity ID (MSB)
@@ -1120,9 +1122,9 @@ class UriFactoryTest {
         UResource uResource = new UResource("door", "front_left", "Door", (short)3);
 
         byte[] uProtocolUri = UriFactory.buildUProtocolMicroUri(new UUri(uAuthority, use, uResource));
-        assertEquals(8, uProtocolUri.length);
+        assertEquals(UriFactory.LOCAL_MICRO_URI_LENGTH, uProtocolUri.length);
         assertEquals(1, uProtocolUri[0]); // version 1
-        assertEquals(0, uProtocolUri[1]); // local
+        assertEquals(AddressType.LOCAL.getValue(), uProtocolUri[1]); // local
         assertEquals(0, uProtocolUri[2]); // UResource ID (MSB)
         assertEquals(3, uProtocolUri[3]); // UResource ID (LSB)
         assertEquals(0, uProtocolUri[4]); // UEntity ID (MSB)
@@ -1140,9 +1142,9 @@ class UriFactoryTest {
         UResource uResource = new UResource("door", "front_left", "Door", (short)3);
 
         byte[] uProtocolUri = UriFactory.buildUProtocolMicroUri(new UUri(uAuthority, use, uResource));
-        assertEquals(8, uProtocolUri.length);
+        assertEquals(UriFactory.LOCAL_MICRO_URI_LENGTH, uProtocolUri.length);
         assertEquals(1, uProtocolUri[0]); // version 1
-        assertEquals(0, uProtocolUri[1]); // local
+        assertEquals(AddressType.LOCAL.getValue(), uProtocolUri[1]); // local
         assertEquals(0, uProtocolUri[2]); // UResource ID (MSB)
         assertEquals(3, uProtocolUri[3]); // UResource ID (LSB)
         assertEquals(0, uProtocolUri[4]); // UEntity ID (MSB)
@@ -1164,6 +1166,97 @@ class UriFactoryTest {
         assertEquals(use, Uri.uEntity());
         assertEquals(uResource, Uri.uResource());
     }
+
+    @Test
+    @DisplayName("Test Create a uProtocol Micro URI for remote IPv4 UAuthority")
+    public void test_build_micro_uri_from_remote_ipv4_address() throws UnknownHostException {
+        final InetAddress address = InetAddress.getByName("127.0.0.1");
+        final UAuthority uAuthority = UAuthority.remote(address);
+        final UEntity use = new UEntity("", null, (short)5);
+        final UResource uResource = UResource.fromId((short)3);
+
+        byte[] uProtocolUri = UriFactory.buildUProtocolMicroUri(new UUri(uAuthority, use, uResource));
+        assertEquals(UriFactory.IPV4_MICRO_URI_LENGTH, uProtocolUri.length);
+        assertEquals(1, uProtocolUri[0]); // version 1
+        assertEquals(AddressType.IPv4.getValue(), uProtocolUri[1]); // IPv4
+        assertEquals(0, uProtocolUri[2]); // UResource ID (MSB)
+        assertEquals(3, uProtocolUri[3]); // UResource ID (LSB)
+        InetAddress address2 = InetAddress.getByAddress(Arrays.copyOfRange(uProtocolUri, 4, 8));
+        assertEquals(address, address2);
+        assertEquals(0, uProtocolUri[8]); // UEntity ID (MSB)
+        assertEquals(5, uProtocolUri[9]); // UEntity ID (LSB)
+        assertEquals((byte)Short.MAX_VALUE>>8, uProtocolUri[10]); // UEntity Version (MSB)
+        assertEquals((byte)Short.MAX_VALUE, uProtocolUri[11]); // UEntity Version (LSB)
+    }
     
+    @Test
+    @DisplayName("Test Create a uProtocol Micro URI for remote IPv6 UAuthority")
+    public void test_build_micro_uri_from_remote_ipv6_address() throws UnknownHostException {
+        final InetAddress address = InetAddress.getByName("2001:db8:85a3:0:0:8a2e:370:7334");
+        final UAuthority uAuthority = UAuthority.remote(address);
+        final UEntity use = new UEntity("", null, (short)5);
+        final UResource uResource = UResource.fromId((short)3);
+
+        byte[] uProtocolUri = UriFactory.buildUProtocolMicroUri(new UUri(uAuthority, use, uResource));
+        assertEquals(UriFactory.IPV6_MICRO_URI_LENGTH, uProtocolUri.length);
+        assertEquals(1, uProtocolUri[0]); // version 1
+        assertEquals(AddressType.IPv6.getValue(), uProtocolUri[1]); // IPv4
+        assertEquals(0, uProtocolUri[2]); // UResource ID (MSB)
+        assertEquals(3, uProtocolUri[3]); // UResource ID (LSB)
+        InetAddress address2 = InetAddress.getByAddress(Arrays.copyOfRange(uProtocolUri, 4, 20));
+        assertEquals(address, address2);
+        assertEquals(0, uProtocolUri[20]); // UEntity ID (MSB)
+        assertEquals(5, uProtocolUri[21]); // UEntity ID (LSB)
+        assertEquals((byte)Short.MAX_VALUE>>8, uProtocolUri[22]); // UEntity Version (MSB)
+        assertEquals((byte)Short.MAX_VALUE, uProtocolUri[23]); // UEntity Version (LSB)
+    }
+
+    @Test
+    @DisplayName("Test Create a uProtocol Micro URI with null URI")
+    public void test_build_micro_uri_from_null_uri() {
+        byte[] uProtocolUri = UriFactory.buildUProtocolMicroUri(null);
+        assertEquals(0, uProtocolUri.length);
+    }
+
+    @Test
+    @DisplayName("Test Create a uProtocol Micro URI with empty URI")
+    public void test_build_micro_uri_from_empty_uri() {
+        byte[] uProtocolUri = UriFactory.buildUProtocolMicroUri(UUri.empty());
+        assertEquals(0, uProtocolUri.length);
+    }
+
+    @Test
+    @DisplayName("Test Create a uProtocol Micro URI without UResource id")
+    public void test_build_micro_uri_from_uri_missing_uresource_id() {
+        UAuthority uAuthority = UAuthority.local();
+        UEntity use = new UEntity("body.access", "1", (short)5);
+        UResource uResource = UResource.empty();
+
+        byte[] uProtocolUri = UriFactory.buildUProtocolMicroUri(new UUri(uAuthority, use, uResource));
+        
+        assertEquals(0, uProtocolUri.length);
+    }
+
+    @Test
+    @DisplayName("Test Create a uProtocol Micro URI with invalid address")
+    public void test_build_micro_uri_from_uri_invalid_address() throws UnknownHostException {
+        InetAddress address = InetAddress.getByName("example.com");
+        UAuthority uAuthority = UAuthority.remote(address);
+        UEntity use = new UEntity("body.access", "1", (short)5);
+        UResource uResource = UResource.fromName("door");
+
+        byte[] uProtocolUri = UriFactory.buildUProtocolMicroUri(new UUri(uAuthority, use, uResource));
+        
+        assertEquals(0, uProtocolUri.length);
+    }
+
+    @Test
+    @DisplayName("Test parse micro URI from empty byte[]")
+    public void test_parse_micro_uri_from_empty_byte_array() {
+        byte[] uProtocolUri = new byte[0];
+        UUri Uri = UriFactory.parseFromMicroUri(uProtocolUri);
+        assertEquals(UUri.empty(), Uri);
+    }
+
 
 }

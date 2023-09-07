@@ -30,7 +30,6 @@ import org.eclipse.uprotocol.uri.datamodel.UAuthority.AddressType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Inet4Address;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Optional;
@@ -42,6 +41,13 @@ import java.util.stream.Collectors;
  * For more information, please refer to https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
  */
 public interface UriFactory {
+
+    static final int LOCAL_MICRO_URI_LENGTH = 8; // local micro URI length
+
+    static final int IPV4_MICRO_URI_LENGTH = 12; // IPv4 micro URI length 
+
+    static final int IPV6_MICRO_URI_LENGTH = 24; // IPv6 micro Uri length
+
 
     /**
      * Build a Long-URI string from the separate parts of an  URI.
@@ -146,59 +152,59 @@ public interface UriFactory {
             return new byte[0];
         }
 
-        try {
-            Optional<InetAddress> maybeAddress = Uri.uAuthority().address();
-            Optional<Short> maybeUeId = Uri.uEntity().id();
-            Optional<Short> maybeUResourceId = Uri.uResource().id();
-            if (!maybeUeId.isPresent() || !maybeUResourceId.isPresent()) {
-                return new byte[0];
-            }
-
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            // UP_VERSION
-            os.write(0x1);
-
-            // TYPE
-            if (Uri.uAuthority().isLocal()) {
-                os.write(0x0);
-            } else {
-                os.write(maybeAddress.get() instanceof Inet4Address ? 1 : 2);
-            }
-
-            // URESOURCE_ID
-            os.write(maybeUResourceId.get()>>8);
-            os.write(maybeUResourceId.get());
-
-             // UAUTHORITY_ADDRESS
-            if (!Uri.uAuthority().isLocal()) {
-                os.write(maybeAddress.get().getAddress());
-            }
-
-            // UENTITY_ID
-            os.write(maybeUeId.get()>>8);
-            os.write(maybeUeId.get());
-            
-            // UENTITY_VERSION
-            String version = Uri.uEntity().version().orElse("");
-            if (version.isEmpty()) {
-                os.write((byte)Short.MAX_VALUE>>8);
-                os.write((byte)Short.MAX_VALUE);
-            } else {
-                String[] parts = version.split("\\.");
-                if (parts.length > 1) {
-                    int major = (Integer.parseInt(parts[0]) << 3) + (Integer.parseInt(parts[1]) >> 8);
-                    os.write((byte)major);
-                    os.write((byte)Integer.parseInt(parts[1]));
-                } else {
-                    os.write(Integer.parseInt(parts[0])<<3);
-                    os.write(0);
-                }
-            }
-            return os.toByteArray();
-        }
-        catch (IOException e) {
+        Optional<InetAddress> maybeAddress = Uri.uAuthority().address();
+        Optional<Short> maybeUeId = Uri.uEntity().id();
+        Optional<Short> maybeUResourceId = Uri.uResource().id();
+        if (!maybeUeId.isPresent() || !maybeUResourceId.isPresent()) {
             return new byte[0];
         }
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        // UP_VERSION
+        os.write(0x1);
+
+        // TYPE
+        if (Uri.uAuthority().isLocal()) {
+            os.write(0x0);
+        } else {
+            os.write(maybeAddress.get() instanceof Inet4Address ? 1 : 2);
+        }
+
+        // URESOURCE_ID
+        os.write(maybeUResourceId.get()>>8);
+        os.write(maybeUResourceId.get());
+
+            // UAUTHORITY_ADDRESS
+        if (!Uri.uAuthority().isLocal()) {
+            try {
+                os.write(maybeAddress.get().getAddress());
+            } catch (IOException e) {
+                return new byte[0];
+            }
+        }
+
+        // UENTITY_ID
+        os.write(maybeUeId.get()>>8);
+        os.write(maybeUeId.get());
+        
+        // UENTITY_VERSION
+        String version = Uri.uEntity().version().orElse("");
+        if (version.isEmpty()) {
+            os.write((byte)Short.MAX_VALUE>>8);
+            os.write((byte)Short.MAX_VALUE);
+        } else {
+            String[] parts = version.split("\\.");
+            if (parts.length > 1) {
+                int major = (Integer.parseInt(parts[0]) << 3) + (Integer.parseInt(parts[1]) >> 8);
+                os.write((byte)major);
+                os.write((byte)Integer.parseInt(parts[1]));
+            } else {
+                os.write(Integer.parseInt(parts[0])<<3);
+                os.write(0);
+            }
+        }
+        return os.toByteArray();
+        
     }
 
     /**
@@ -401,7 +407,7 @@ public interface UriFactory {
      * @return Returns an  URI data object.
      */
     static UUri parseFromMicroUri(byte[] microUri) {
-        if (microUri == null || microUri.length < 8 ) {
+        if (microUri == null || microUri.length < UriFactory.LOCAL_MICRO_URI_LENGTH ) {
             return UUri.empty();
         }
 

@@ -22,23 +22,29 @@
  package org.eclipse.uprotocol.utransport.datamodel;
 
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The UPayload contains the clean Payload information along with its raw serialized structure of a byte[].
  */
 public class UPayload {
 
-    private static final UPayload EMPTY = new UPayload(new byte[0]);
+    private static final UPayload EMPTY = new UPayload(new byte[0], null);
 
     private final byte[] data;
+
+    private final USerializationHint hint;  // Hint regarding the bytes contained within the UPayload
 
 
     /**
      * Create a UPayload.
      * @param data A byte array of the actual data.
      */
-    public UPayload(byte[] data) {
+    public UPayload(byte[] data, USerializationHint hint) {
+        this.hint = hint;
         this.data = data;
+        
     }
 
     /**
@@ -49,6 +55,13 @@ public class UPayload {
         return this.data == null ? EMPTY.data() : this.data;
     }
 
+    /**
+     * The hint regarding the bytes contained within the UPayload.
+     * @return Returns the hint regarding the bytes contained within the UPayload.
+     */
+    public Optional<USerializationHint> hint() {
+        return (hint == null) ? Optional.empty() : Optional.of(hint);
+    }
     
     /**
      * @return Returns an empty representation of UPayload.
@@ -60,10 +73,11 @@ public class UPayload {
     /**
      * Static factory method for creating the payload from a simple String.
      * @param payload String payload.
+     * @param hint Optional hint regarding the bytes contained within the UPayload.
      * @return Returns a UPayload from the string argument.
      */
-    public static UPayload fromString(String payload) {
-        return new UPayload(payload.getBytes());
+    public static UPayload fromString(String payload, USerializationHint hint) {
+        return new UPayload(payload.getBytes(), hint);
     }
 
     /**
@@ -79,17 +93,18 @@ public class UPayload {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UPayload uPayload = (UPayload) o;
-        return Arrays.equals(data, uPayload.data);
+        return Arrays.equals(data, uPayload.data) && this.hint == uPayload.hint;
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(data);
+        return Objects.hash(Arrays.hashCode(data),hint);
     }
 
     @Override
     public String toString() {
         return "UPayload{" +
-                "data=" + Arrays.toString(data()) + " size=" + data().length + '}';
+                "data=" + Arrays.toString(data()) + " size=" + data().length + 
+                ", hint=" + hint +'}';
     }
 }

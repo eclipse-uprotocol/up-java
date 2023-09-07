@@ -32,7 +32,6 @@ import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
 import org.eclipse.uprotocol.utransport.datamodel.UMessageType;
 import org.eclipse.uprotocol.utransport.datamodel.UPriority;
-import org.eclipse.uprotocol.utransport.datamodel.USerializationHint;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus;
 import org.eclipse.uprotocol.utransport.datamodel.UAttributes.UAttributesBuilder;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
@@ -431,13 +430,12 @@ class UAttributesValidatorTest {
 
 
     @Test
-    @DisplayName("test validating request containing hint and token")
-    public void test_validating_request_containing_hint_and_token() {
+    @DisplayName("test validating request containing token")
+    public void test_validating_request_containing_token() {
         final UAttributes attributes = new UAttributesBuilder()
             .withId(UUIDFactory.Factories.UPROTOCOL.factory().create())
             .withPriority(UPriority.LOW)
             .withType(UMessageType.PUBLISH)
-            .withHint(USerializationHint.JSON)
             .withToken("null")
             .build();
 
