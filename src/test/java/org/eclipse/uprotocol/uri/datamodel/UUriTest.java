@@ -49,20 +49,20 @@ class UriTest {
         UUri uri = new UUri(uAuthorityLocal, use, uResource);
 
         String expected = "Uri{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, " +
-                "uEntity=UEntity{name='body.access', version='1', id='unknown'}, " +
-                "uResource=UResource{name='door', instance='front_left', message='null', id='unknown'}}";
+                "uEntity=UEntity{name='body.access', version='1', id='null'}, " +
+                "uResource=UResource{name='door', instance='front_left', message='null', id='null'}}";
         assertEquals(expected, uri.toString());
 
         UUri uriRemote = new UUri(uAuthorityRemote, use, uResource);
         String expectedRemote = "Uri{uAuthority=UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}, " +
-                "uEntity=UEntity{name='body.access', version='1', id='unknown'}, " +
-                "uResource=UResource{name='door', instance='front_left', message='null', id='unknown'}}";
+                "uEntity=UEntity{name='body.access', version='1', id='null'}, " +
+                "uResource=UResource{name='door', instance='front_left', message='null', id='null'}}";
         assertEquals(expectedRemote, uriRemote.toString());
 
         UUri uri2 = new UUri(uAuthorityRemote, use, UResource.empty());
         String expectedUri2 = "Uri{uAuthority=UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}, " +
-                "uEntity=UEntity{name='body.access', version='1', id='unknown'}, " +
-                "uResource=UResource{name='', instance='null', message='null', id='unknown'}}";
+                "uEntity=UEntity{name='body.access', version='1', id='null'}, " +
+                "uResource=UResource{name='', instance='null', message='null', id='null'}}";
         assertEquals(expectedUri2, uri2.toString());
     }
 

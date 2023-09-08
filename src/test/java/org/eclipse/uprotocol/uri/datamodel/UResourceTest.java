@@ -39,7 +39,7 @@ class UResourceTest {
     @DisplayName("Make sure the toString works")
     public void testToString() {
         UResource uResource = new UResource("door", "front_left", "Door");
-        String expected = "UResource{name='door', instance='front_left', message='Door', id='unknown'}";
+        String expected = "UResource{name='door', instance='front_left', message='Door', id='null'}";
         assertEquals(expected, uResource.toString());
     }
 
@@ -208,7 +208,7 @@ class UResourceTest {
         assertTrue(uResource.message().isPresent());
         assertEquals("Door", uResource.message().get());
         assertFalse(uResource.id().isPresent());
-        assertEquals("UResource{name='door', instance='front_left', message='Door', id='unknown'}", uResource.toString());
+        assertEquals("UResource{name='door', instance='front_left', message='Door', id='null'}", uResource.toString());
     }
 
     @Test

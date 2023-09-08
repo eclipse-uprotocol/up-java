@@ -114,11 +114,23 @@ public class UResource {
     /**
      * Static factory method for creating an  Resource using a resource command name such as UpdateDoor.
      * @param commandName The RPC command name such as UpdateDoor.
-     * @return returns an Ulitfi resource used for sending RPC commands.
+     * @return returns an resource used for sending RPC commands.
      */
     public static UResource forRpc(String commandName) {
         Objects.requireNonNull(commandName, " Resource must have a command name.");
-        return new UResource("rpc", commandName, null);
+        return forRpc(commandName, null);
+    }
+
+
+    /**
+     * Static factory method for creating an Resource using a resource command and ID.
+     * @param commandName The RPC command name such as UpdateDoor.
+     * @param id The RPC command id.
+     * @return returns an resource used for sending RPC commands.
+     */
+    public static UResource forRpc(String commandName, Short id) {
+        Objects.requireNonNull(commandName, " Resource must have a command name.");
+        return new UResource("rpc", commandName, null, id);
     }
 
     /**
@@ -216,7 +228,7 @@ public class UResource {
                 "name='" + name + '\'' +
                 ", instance='" + instance + '\'' +
                 ", message='" + message + '\'' +
-                ", id='" + (id == null ? "unknown" : id) + '\'' +
+                ", id='" + (id == null ? "null" : id) + '\'' +
                 '}';
     }
 }

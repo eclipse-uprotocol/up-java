@@ -44,11 +44,11 @@ class UEntityTest {
         assertTrue(use.version().isPresent());
         assertEquals("1", use.version().get());
 
-        String expected = "UEntity{name='body.access', version='1', id='unknown'}";
+        String expected = "UEntity{name='body.access', version='1', id='null'}";
         assertEquals(expected, use.toString());
 
         UEntity use1 = UEntity.fromName("body.access");
-        assertEquals("UEntity{name='body.access', version='latest', id='unknown'}", use1.toString());
+        assertEquals("UEntity{name='body.access', version='latest', id='null'}", use1.toString());
     }
 
     @Test
@@ -131,7 +131,7 @@ class UEntityTest {
         assertTrue(use.version().isPresent());
         assertEquals("1", use.version().get());
         assertFalse(use.id().isPresent());
-        assertEquals("UEntity{name='body.access', version='1', id='unknown'}", use.toString());
+        assertEquals("UEntity{name='body.access', version='1', id='null'}", use.toString());
     }
 
 }

@@ -73,6 +73,17 @@ public class UEntity {
 
 
     /**
+     * Static factory method for creating a uE using id and version.
+     * @param version The software version. If not supplied, the latest version of the service will be used.
+     * @param id The software id.
+     * @return Returns a UEntity with id but unknown name.
+     */
+    public static UEntity fromId(String version, Short id) {
+        return new UEntity("unknown", version, id);
+    }
+
+
+    /**
      * Static factory method for creating an empty  software entity, to avoid working with null<br>
      * @return Returns an empty  software entity that has a blank name and no version information.
      */
@@ -129,6 +140,6 @@ public class UEntity {
     public String toString() {
         return "UEntity{" + "name='" + name + '\''
                 + ", version='" + (version == null ? "latest" : version) + '\'' +
-                ", id='" + (id == null ? "unknown" : id) + '\'' + '}';
+                ", id='" + (id == null ? "null" : id) + '\'' + '}';
     }
 }

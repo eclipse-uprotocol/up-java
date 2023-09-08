@@ -31,7 +31,7 @@ public interface UriValidator {
     /**
      * Validate a Uri that is meant to be used as an RPC method URI. Used in Request sink values and Response source values.
      * @param uri Uri to validate.
-     * @return Returns the ValidationResult containing a success or a failure with the error message.
+     * @return Returns UStatus containing a success or a failure with the error message.
      */
     public static UStatus validateRpcMethod(UUri uri) {
         UStatus status = validate(uri);
@@ -49,7 +49,7 @@ public interface UriValidator {
      * Validate a Uri that is meant to be used as an RPC response URI. Used in Request source values and Response sink values.
      * 
      * @param uri Uri to validate.
-     * @return Returns the ValidationResult containing a success or a failure with the error message.
+     * @return Returns UStatus containing a success or a failure with the error message.
      */
     public static UStatus validateRpcResponse(UUri uri) {
         UStatus status = validate(uri);
@@ -66,8 +66,38 @@ public interface UriValidator {
     }
 
 
+    /**
+     * Wrapper to validate explicitly a long form URI
+     * @param uri Long form URI
+     * @return Returns UStatus containing a success or a failure with the error message.
+     */
     public static UStatus validateLongUUri(String uri) {
         final UUri uUri = UriFactory.parseFromUri(uri);
         return validate(uUri);
+    }
+
+    /**
+     * Validate that a passed shortUri and microUri are the same. We cannot validate long to short
+     * without the mapping of names to ids.
+     * @param shortUri Short form URI
+     * @param microUri Micro form URI
+     * @return Returns the UStatus containing a success or a failure with the error message.
+     */
+    public static UStatus validateEqualsShortMicroUri(String shortUri, byte[] microUri) {
+        final UUri uUri = UriFactory.parseFromUri(shortUri);
+        final UUri uUriMicro = UriFactory.parseFromMicroUri(microUri);
+        
+        if (uUri.isEmpty()) {
+            return UStatus.failed("Short Uri is invalid.", Code.INVALID_ARGUMENT);
+        }
+        if (uUriMicro.isEmpty()) {
+            return UStatus.failed("Micro Uri is invalid.", Code.INVALID_ARGUMENT);
+        }
+
+        if (!uUri.equals(uUriMicro)) {
+            String failure = String.format("Short URI %s and Micro Uri %s are not equal.", uUri.toString(), uUriMicro.toString());
+            return UStatus.failed(failure, Code.INVALID_ARGUMENT);
+        }
+        return UStatus.ok();
     }
 }

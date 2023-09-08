@@ -159,6 +159,11 @@ public interface UriFactory {
             return new byte[0];
         }
 
+        // Remote Uri but the address is missing
+        if (!maybeAddress.isPresent() && Uri.uAuthority().isRemote()) {
+            return new byte[0];
+        }
+        
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         // UP_VERSION
         os.write(0x1);
@@ -190,8 +195,8 @@ public interface UriFactory {
         // UENTITY_VERSION
         String version = Uri.uEntity().version().orElse("");
         if (version.isEmpty()) {
-            os.write((byte)Short.MAX_VALUE>>8);
-            os.write((byte)Short.MAX_VALUE);
+            os.write((byte)0);
+            os.write((byte)0);
         } else {
             String[] parts = version.split("\\.");
             if (parts.length > 1) {
@@ -313,9 +318,9 @@ public interface UriFactory {
     }
 
     /**
-     * Create an  URI data object from a uProtocol string (long or short).
-     * @param uProtocolUri A String uProtocol URI.
-     * @return Returns an  URI data object.
+     * Create an UUri data object from a uProtocol string either long or short format.
+     * @param uProtocolUri A short or long format uProtocol URI.
+     * @return Returns an UUri data object.
      */
     static UUri parseFromUri(String uProtocolUri) {
         if (uProtocolUri == null || uProtocolUri.isBlank()) {
@@ -379,20 +384,37 @@ public interface UriFactory {
 
         }
 
+        // Try and fetch the uE ID in the name portion of the string
         Short maybeUeId = null;
         if (!useName.isEmpty()) {
             try {
                 maybeUeId = Short.parseShort(useName);
             } catch (NumberFormatException e) {
                 maybeUeId = null;
+                
             }
         }
-        return new UUri(uAuthority, new UEntity(useName, useVersion, maybeUeId), uResource);
+        return new UUri(uAuthority, (maybeUeId != null) ? UEntity.fromId(useVersion, maybeUeId) : 
+                new UEntity(useName, useVersion, maybeUeId), uResource);
     }
 
     private static UResource buildResource(String resourceString) {
         String[] parts = resourceString.split("#");
         String nameAndInstance = parts[0];
+
+        // Try and fetch the resource ID if there is one (short form)
+        Short maybeId = null;
+        try {
+            maybeId = Short.parseShort(nameAndInstance);
+        } catch (NumberFormatException e) {
+            maybeId = null;
+            
+        }
+
+        if (maybeId != null) {
+            return UResource.fromId(maybeId);
+        }
+
         String[] nameAndInstanceParts = nameAndInstance.split("\\.");
         String resourceName = nameAndInstanceParts[0];
         String resourceInstance = nameAndInstanceParts.length > 1 ? nameAndInstanceParts[1] : null;
@@ -421,8 +443,20 @@ public interface UriFactory {
         Optional<InetAddress> maybeAddress = Optional.empty();
         
         Optional<AddressType> type = AddressType.from(microUri[1]);
-
+ 
+        // Validate Type is found
         if (!type.isPresent()) {
+            return UUri.empty();
+        }
+
+        // Validate that the microUri is the correct length for the type
+        if (type.get() == AddressType.LOCAL && microUri.length != UriFactory.LOCAL_MICRO_URI_LENGTH) {
+            return UUri.empty();
+        }
+        else if (type.get() == AddressType.IPv4 && microUri.length != UriFactory.IPV4_MICRO_URI_LENGTH) {
+            return UUri.empty();
+        }
+        else if (type.get() == AddressType.IPv6 && microUri.length != UriFactory.IPV6_MICRO_URI_LENGTH) {
             return UUri.empty();
         }
 
@@ -440,16 +474,18 @@ public interface UriFactory {
         int ueId = ((microUri[index++] & 0xFF) << 8) | (microUri[index++] & 0xFF);
 
         int ueVersion = ((microUri[index++] & 0xFF) << 8) | (microUri[index++] & 0xFF);
-
         String ueVersionString = String.valueOf(ueVersion >> 11);
-        if ((ueVersion & 0x7FF) != 0) {
+        
+        if (ueVersion == 0) {
+            ueVersionString = null; // no version provided
+        }
+        else if ((ueVersion & 0x7FF) != 0) {
             ueVersionString += "." + (ueVersion & 0x7FF);
         }
 
         return new UUri((type.get() == AddressType.LOCAL) ? UAuthority.local() : UAuthority.remote(maybeAddress.get()),
-                new UEntity("", ueVersionString, (short)ueId),
+                UEntity.fromId(ueVersionString, (short)ueId),
                 UResource.fromId((short)uResourceId));
-    }
-        
+    }    
 
 }

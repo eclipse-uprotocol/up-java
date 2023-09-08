@@ -167,7 +167,7 @@ class UAuthorityTest {
         InetAddress address = Inet6Address.getLoopbackAddress();
 
         UAuthority remote = UAuthority.remote(address);
-        String expectedLocal = "UAuthority{device='null', domain='null', address='localhost/127.0.0.1', markedRemote=true}";
+        String expectedLocal = "UAuthority{device='127.0.0.1', domain='null', address='localhost/127.0.0.1', markedRemote=true}";
         InetAddress address2 = remote.address().get();
         assertTrue(remote.address().isPresent());
         assertEquals(address, address2);
@@ -187,7 +187,7 @@ class UAuthorityTest {
         }
 
         UAuthority remote = UAuthority.remote(address);
-        String expectedLocal = "UAuthority{device='null', domain='null', address='/2001:db8:85a3:0:0:8a2e:370:7334', markedRemote=true}";
+        String expectedLocal = "UAuthority{device='2001:db8:85a3:0:0:8a2e:370:7334', domain='null', address='/2001:db8:85a3:0:0:8a2e:370:7334', markedRemote=true}";
         assertEquals(expectedLocal, remote.toString());
     }
 }

@@ -25,6 +25,7 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import org.apache.commons.validator.routines.InetAddressValidator;
 
 /**
  * Data representation of an <b> Authority</b>.<br> An  Authority consists of a device and a domain.<br>
@@ -72,7 +73,16 @@ public class UAuthority {
     private UAuthority(String device, String domain, boolean markedRemote) {
         this.device = device == null ? null : device.toLowerCase();
         this.domain = domain == null ? null : domain.toLowerCase();
-        this.address = null;
+        try {
+            if ((device != null) && InetAddressValidator.getInstance().isValid(device)) {
+                this.address = InetAddress.getByName(device);
+            } else {
+                this.address = null;
+            }
+        } catch (Exception e) { 
+            throw new IllegalArgumentException("Invalid device name: " + device, e);
+        }
+        
         this.markedRemote = markedRemote;
     }
 
@@ -83,7 +93,7 @@ public class UAuthority {
      * @param markedRemote  Indicates if this UAuthority was implicitly marked as remote. Used for validation.
      */
     private UAuthority(InetAddress address, boolean markedRemote) {
-        this.device = null;
+        this.device = address != null ? address.getHostAddress() : null;
         this.domain = null;
         this.address = address;
         this.markedRemote = markedRemote;
