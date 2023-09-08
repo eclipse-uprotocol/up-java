@@ -190,4 +190,12 @@ class UAuthorityTest {
         String expectedLocal = "UAuthority{device='2001:db8:85a3:0:0:8a2e:370:7334', domain='null', address='/2001:db8:85a3:0:0:8a2e:370:7334', markedRemote=true}";
         assertEquals(expectedLocal, remote.toString());
     }
+
+    @Test
+    @DisplayName("Test creating uAuthority with valid ipv4 address in the device name")
+    public void test_create_uAuthority_with_valid_ipv4_address_in_device_name() {
+        UAuthority remote = UAuthority.remote("192.168.1.100", null);
+        String expectedLocal = "UAuthority{device='192.168.1.100', domain='null', address='/192.168.1.100', markedRemote=true}";
+        assertEquals(expectedLocal, remote.toString());
+    }
 }

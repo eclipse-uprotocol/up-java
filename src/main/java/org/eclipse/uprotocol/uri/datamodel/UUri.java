@@ -41,9 +41,9 @@ import java.util.Optional;
 public class UUri {
     private static final UUri EMPTY = new UUri(UAuthority.empty(), UEntity.empty(), UResource.empty());
 
-    private final UAuthority uAuthority;
-    private final UEntity uEntity;
-    private final UResource uResource;
+    protected final UAuthority uAuthority;
+    protected final UEntity uEntity;
+    protected final UResource uResource;
 
     private transient String uProtocolUri;
 
@@ -75,7 +75,7 @@ public class UUri {
 
     /**
      * Static factory method for creating an empty  uri, to avoid working with null<br>
-     * @return Returns an empty altifi  uri to avoid working with null.
+     * @return Returns an empty ultify  uri to avoid working with null.
      */
     public static UUri empty() {
         return EMPTY;

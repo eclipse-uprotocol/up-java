@@ -23,6 +23,7 @@ package org.eclipse.uprotocol.utransport;
 
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.uri.datamodel.UriFormat;
 import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
 import org.eclipse.uprotocol.utransport.datamodel.UListener;
 import org.eclipse.uprotocol.utransport.datamodel.UPayload;
@@ -45,26 +46,28 @@ public interface UTransport {
 
     /**
      * Transmit UPayload to the topic using the attributes defined in UTransportAttributes.
-     * @param topic UUri receiver of the payload.
+     * @param <T>
+     * @param topic UriFormat of a specific type (Long, Short, or Micro) receiver of the payload.
      * @param payload Actual payload.
      * @param attributes Additional transport attributes.
      * @return Returns an Status if managed to send to the underlying communication technology or not.
      */
-    UStatus send(UUri topic, UPayload payload, UAttributes attributes);
+    <T> UStatus send(UriFormat<T> topic, UPayload payload, UAttributes attributes);
 
     /**
      * Register a method that will be called when a message comes in on the specific topic.
-     * @param topic UUri of the message that arrived via the underlying transport technology.
+     * @param topic UriFormat of a specific type (Long, Short, or Micro) of the message that arrived via the underlying transport technology.
      * @param listener The method to execute to process the date for the topic.
      * @return Returns an Ack if the method is registered successfully.
      */
-    UStatus registerListener(UUri topic, UListener listener);
+    <T> UStatus registerListener(UriFormat<T> topic, UListener listener);
 
     /**
      * Unregister a method on a topic. Messages arriving on this topic will no longer be processed by this listener.
-     * @param topic UUri of the messages that will no longer be processed.
+     * @param topic UriFormat of a specific type (Long, Short, or Micro) of the messages that will no longer be processed.
      * @param listener The method to execute to process the date for the topic.
      * @return Returns an Ack if the method is removed successfully.
+     * 
      */
-    UStatus unregisterListener(UUri topic, UListener listener);
+    <T> UStatus unregisterListener(UriFormat<T> topic, UListener listener);
 }

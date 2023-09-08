@@ -67,8 +67,8 @@ public class UAttributeTest {
                 .build();
         assertEquals(String.format("UAttributes{id=%s, type=RESPONSE, priority=LOW, ttl=1000, token='someToken', " +
                                 "sink=Uri{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, " +
-                                "uEntity=UEntity{name='body.access', version='latest', id='unknown'}, " +
-                                "uResource=UResource{name='', instance='null', message='null', id='unknown'}}, " +
+                                "uEntity=UEntity{name='body.access', version='latest', id='null'}, " +
+                                "uResource=UResource{name='', instance='null', message='null', id='null'}}, " +
                                 "plevel=1, commstatus=5, reqid=%s}",
                         id,requestId),
                 uAttributes.toString());
