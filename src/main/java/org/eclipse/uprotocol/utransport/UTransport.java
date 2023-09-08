@@ -22,7 +22,6 @@
 package org.eclipse.uprotocol.utransport;
 
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.datamodel.UriFormat;
 import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
 import org.eclipse.uprotocol.utransport.datamodel.UListener;
@@ -32,8 +31,11 @@ import org.eclipse.uprotocol.utransport.datamodel.UStatus;
 /**
  * UTransport is the  uP-L1 interface that provides a common API for uE developers to send and receive messages.
  * UTransport implementations contain the details for connecting to the underlying transport technology and sending UMessage using the configured technology.
+ * @param <T> The type of the UriFormat that the UTransport implementation will use.
+ * @param <S> The primitive type for the UriFormat (string for long/short or byte[] for micro).
  */
-public interface UTransport {
+
+public interface UTransport<T extends UriFormat<S>, S> {
 
     /**
      * API to register the calling uE with the underlining transport implementation.
@@ -46,28 +48,30 @@ public interface UTransport {
 
     /**
      * Transmit UPayload to the topic using the attributes defined in UTransportAttributes.
-     * @param <T>
+     * @param <T> The type of the UriFormat that the UTransport implementation will use.
      * @param topic UriFormat of a specific type (Long, Short, or Micro) receiver of the payload.
      * @param payload Actual payload.
      * @param attributes Additional transport attributes.
      * @return Returns an Status if managed to send to the underlying communication technology or not.
      */
-    <T> UStatus send(UriFormat<T> topic, UPayload payload, UAttributes attributes);
+    UStatus send(T topic, UPayload payload, UAttributes attributes);
 
     /**
      * Register a method that will be called when a message comes in on the specific topic.
+     * @param <T> The type of the UriFormat that the UTransport implementation will use.
      * @param topic UriFormat of a specific type (Long, Short, or Micro) of the message that arrived via the underlying transport technology.
      * @param listener The method to execute to process the date for the topic.
      * @return Returns an Ack if the method is registered successfully.
      */
-    <T> UStatus registerListener(UriFormat<T> topic, UListener listener);
+    UStatus registerListener(T topic, UListener listener);
 
     /**
      * Unregister a method on a topic. Messages arriving on this topic will no longer be processed by this listener.
+     * @param <T> The type of the UriFormat that the UTransport implementation will use.
      * @param topic UriFormat of a specific type (Long, Short, or Micro) of the messages that will no longer be processed.
      * @param listener The method to execute to process the date for the topic.
      * @return Returns an Ack if the method is removed successfully.
      * 
      */
-    <T> UStatus unregisterListener(UriFormat<T> topic, UListener listener);
+    UStatus unregisterListener(T topic, UListener listener);
 }
