@@ -34,6 +34,9 @@ import org.eclipse.uprotocol.uri.datamodel.UUri;
  * When sending data over uTransport the basic API for send uses a source topic and the UPayload as the data.
  * Any other information about the message is placed in the UAttributes class.
  * The UAttributes class holds the additional information along with business methods for understanding more about the actual message sent.
+ * {@link UAttributes} is the class that defines the Payload. It is the place for configuring time to live, priority, security tokens and more.
+ * Each UAttributes class defines a different type of message payload. The payload can represent a simple published payload with some state change,
+ * Payload representing an RPC request or Payload representing an RPC response.
  */
 public class UAttributes {
 
