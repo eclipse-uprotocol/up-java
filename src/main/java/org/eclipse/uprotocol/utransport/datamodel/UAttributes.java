@@ -25,14 +25,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.eclipse.uprotocol.uri.datamodel.UAuthority;
+import org.eclipse.uprotocol.uri.datamodel.UEntity;
+import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 
 /**
  * When sending data over uTransport the basic API for send uses a source topic and the UPayload as the data.
  * Any other information about the message is placed in the UAttributes class.
  * The UAttributes class holds the additional information along with business methods for understanding more about the actual message sent.
- * add all the functionality that I would have if I had strong objects such as UMessage
- *
  */
 public class UAttributes {
 
@@ -55,16 +56,15 @@ public class UAttributes {
     /**
      * Construct the transport UAttributes object.
      *
-     * @param id                Unique identifier for the message
-     * @param type              Message type
-     * @param priority          Message priority
-     * @param ttl               Time to live in milliseconds
-     * @param token             Authorization token used for TAP
-     * @param sink              Explicit destination URI
-     * @param plevel            Permission Level
-     * @param commstatus        Communication Status
-     * @param reqid             Request ID
-     * @return Returns a constructed UAttributes.
+     * @param id                Unique identifier for the message. Required.
+     * @param type              Message type such as Publish a state change, RPC request or RPC response. Required.
+     * @param priority          Message priority. Required.
+     * @param ttl               Time to live in milliseconds.
+     * @param token             Authorization token used for TAP.
+     * @param sink              Explicit destination URI, used in notifications and RPC messages.
+     * @param plevel            Permission Level.
+     * @param commstatus        Communication Status, used to indicate platform communication errors that occurred during delivery.
+     * @param reqid             Request ID, used to indicate the id of the RPC request that matches this RPC response.
      */
     private UAttributes(UUID id, UMessageType type, UPriority priority, Integer ttl, String token,
             UUri sink, Integer plevel, Integer commstatus, UUID reqid) {
@@ -88,15 +88,61 @@ public class UAttributes {
     /**
      * Static factory method for creating an empty attributes object, to avoid working with null.
      * @return Returns an empty attributes that indicates that there are no added additional attributes to configure.
+     * An empty UAttributes is not valid, in the same way null is not valid, this is because UAttributes has 3 required values - id, type and priority.
      */
     public static UAttributes empty() {
         return EMPTY;
     }
 
-    public boolean isEmpty() {
-        return this.id == null && this.type == null && this.priority == null && this.ttl == null && this.token == null
-                && this.sink == null && this.plevel == null && this.commstatus == null
-                && this.reqid == null;
+    /**
+     * Static factory method for creating a base UAttributes for an RPC request.
+     * @param id id Unique identifier for the RPC request message.
+     * @param sink UUri describing the exact RPC command.
+     * @return Returns a base UAttributes that can be used to build an RPC request.
+     */
+    public static UAttributesBuilder forRpcRequest(UUID id, UUri sink) {
+        return new UAttributesBuilder(id, UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
+                .withSink(sink);
+    }
+
+    /**
+     * Static factory method for creating a base UAttributes for an RPC request.
+     * @param id Unique identifier for the RPC request message.
+     * @param uAuthority Indicates where the software for RPC request is installed.
+     * @param serviceUEntity Indicates what service we want to RPC request to change.
+     * @param commandName String command name the RPC is executing.
+     * @return Returns a base UAttributes that can be used to build an RPC request.
+     */
+    public static UAttributesBuilder forRpcRequest(UUID id, UAuthority uAuthority, UEntity serviceUEntity, String commandName) {
+        return new UAttributesBuilder(id, UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
+                .withSink(new UUri(uAuthority, serviceUEntity, UResource.forRpc(commandName)));
+    }
+
+    /**
+     * Static factory method for creating a base UAttributes for an RPC response.
+     * @param id Unique identifier for the RPC response message.
+     * @param sink UUri describing where the response needs to go.
+     * @param requestId The UUID of the message that this response is responding to.
+     * @return Returns a base UAttributes that can be used to build an RPC response.
+     */
+    public static UAttributesBuilder forRpcResponse(UUID id, UUri sink, UUID requestId) {
+        return new UAttributesBuilder(id, UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
+                .withSink(sink)
+                .withReqId(requestId);
+    }
+
+    /**
+     * Static factory method for creating a base UAttributes for an RPC response.
+     * @param id Unique identifier for the RPC response message.
+     * @param uAuthority Indicates where the software for RPC response is for is installed.
+     * @param callerUEntity Indicates what service called the RPC request and this response is for.
+     * @param requestId The id of the RPC request that this message is responding to.
+     * @return Returns a base UAttributes that can be used to build an RPC response.
+     */
+    public static UAttributesBuilder forRpcResponse(UUID id, UAuthority uAuthority, UEntity callerUEntity, UUID requestId) {
+        return new UAttributesBuilder(id, UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
+                .withSink(new UUri(uAuthority, callerUEntity, UResource.fromNameWithInstance("rpc", "response")))
+                .withReqId(requestId);
     }
 
     /**
@@ -108,8 +154,8 @@ public class UAttributes {
     }
 
     /**
-     * Message type.
-     * @return Returns the message type.
+     * Message type such as Publish a state change, RPC request or RPC response.
+     * @return Returns the message type such as Publish a state change, RPC request or RPC response.
      */
     public UMessageType type() {
         return type;
@@ -142,8 +188,8 @@ public class UAttributes {
 
 
     /**
-     * an explicit destination URI.
-     * @return Returns an Optional destination URI attribute.
+     * An explicit destination URI, used in notifications and RPC messages.
+     * @return Returns an Optional destination URI attribute, used in notifications and RPC messages.
      */
     public Optional<UUri> sink() {
         return sink == null ? Optional.empty() : Optional.of(sink);
@@ -171,6 +217,30 @@ public class UAttributes {
      */
     public Optional<Integer> commstatus() {
         return commstatus == null ? Optional.empty() : Optional.of(commstatus);
+    }
+
+    /**
+     * Look at the configured UAttributes and determine if the payload could be an RPC Request.
+     * @return Returns true if the attributes configured indicate that the payload is an RPC Request.
+     */
+    public boolean isRpcRequest() {
+        return UMessageType.REQUEST.equals(type()) && sink().isPresent();
+    }
+
+    /**
+     * Look at the configured UAttributes and determine if the payload could be an RPC Response.
+     * @return Returns true if the attributes configured indicate that the payload is an RPC Response.
+     */
+    public boolean isRpcResponse() {
+        return UMessageType.RESPONSE.equals(type()) && sink().isPresent() && reqid().isPresent();
+    }
+
+    /**
+     * Look at the configured UAttributes and determine of the platform indicated problems.
+     * @return Returns true if there were platform errors during the operation of uTransport.
+     */
+    public boolean isPlatformTransportSuccess() {
+        return commstatus().orElse(0) == 0;
     }
 
     @Override
@@ -206,7 +276,7 @@ public class UAttributes {
     }
 
     /**
-     * Builder for the UAttributes object.
+     * Builder for easy construction of the UAttributes object.
      */
     public static class UAttributesBuilder {
 
@@ -220,6 +290,12 @@ public class UAttributes {
         private Integer commstatus;
         private UUID reqid;
 
+        /**
+         * Construct the UAttributesBuilder with the configurations that are required for every payload transport.
+         * @param id Unique identifier for the message.
+         * @param type Message type such as Publish a state change, RPC request or RPC response.
+         * @param priority uProtocol Prioritization classifications.
+         */
         public UAttributesBuilder(UUID id, UMessageType type, UPriority priority) {
             this.id = id;
             this. type = type;

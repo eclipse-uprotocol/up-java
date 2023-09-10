@@ -24,6 +24,9 @@
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * uProtocol defines message types. Using the message type, validation can be performed to ensure transport validity of the data in the {@link UAttributes}.
+ */
 public enum UMessageType {
     PUBLISH(0, "pub.v1"),   // Publish or notification event
     REQUEST(1, "req.v1"),   // Request
@@ -47,8 +50,8 @@ public enum UMessageType {
 
     /**
      * Find the Message type from a numeric value. Mind you, it might not exist.
-     * @param value numeric message type .
-     * @return Returns the UMessageType matching the numeric value
+     * @param value numeric message type.
+     * @return Returns the UMessageType matching the numeric value.
      */
     public static Optional<UMessageType> from(int value) {
         return Arrays.stream(UMessageType.values())
@@ -58,8 +61,8 @@ public enum UMessageType {
 
     /**
      * Find the Message type from a string value. Mind you, it might not exist.
-     * @param value string message type .
-     * @return Returns the UMessageType matching the string value
+     * @param value string message type.
+     * @return Returns the UMessageType matching the string value.
      */
     public static Optional<UMessageType> from(String value) {
         return Arrays.stream(UMessageType.values())
