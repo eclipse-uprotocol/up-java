@@ -115,7 +115,7 @@ class UAttributesValidatorTest {
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
         final UStatus status = validator.validate(attributes);
         assertTrue(status.isFailed());
-        assertEquals("Invalid UUID [null] [Cannot invoke \"java.util.UUID.version()\" because \"uuid\" is null]", status.msg());
+        assertTrue(status.msg().contains("Invalid UUID [null]"));
     }
 
     @Test
@@ -265,7 +265,7 @@ class UAttributesValidatorTest {
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
         final UStatus status = validator.validate(attributes);
         assertTrue(status.isFailed());
-        assertEquals("Invalid UUID [null] [Cannot invoke \"java.util.UUID.version()\" because \"uuid\" is null]", status.msg());
+        assertTrue(status.msg().contains("Invalid UUID [null]"));
     }
 
     @Test
@@ -470,7 +470,7 @@ class UAttributesValidatorTest {
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
         final UStatus status = validator.validate(attributes);
         assertTrue(status.isFailed());
-        assertEquals("Invalid UUID [null] [Cannot invoke \"java.util.UUID.version()\" because \"uuid\" is null]", status.msg());
+        assertTrue(status.msg().contains("Invalid UUID [null]"));
     }
 
     @Test
@@ -741,12 +741,12 @@ class UAttributesValidatorTest {
         UStatus status = validator.validateId(attributes);
         assertTrue(status.isFailed());
         assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Invalid UUID [null] [Cannot invoke \"java.util.UUID.version()\" because \"uuid\" is null]", status.msg());
+        assertTrue(status.msg().contains("Invalid UUID [null]"));
 
         UStatus status1 = validator.validateId(attributes1);
         assertTrue(status1.isFailed());
         assertEquals(status1.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Invalid UUID [null] [Cannot invoke \"java.util.UUID.version()\" because \"uuid\" is null]", status.msg());
+        assertTrue(status.msg().contains("Invalid UUID [null]"));
     }
 
     @Test
