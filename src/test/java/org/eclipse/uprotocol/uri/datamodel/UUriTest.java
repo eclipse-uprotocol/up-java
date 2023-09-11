@@ -22,13 +22,12 @@
 package org.eclipse.uprotocol.uri.datamodel;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Optional;
 
 class UriTest {
 
@@ -162,20 +161,6 @@ class UriTest {
 
         UUri uri2 = new UUri(uAuthority, use, uResource);
         assertTrue(uri2.isEmpty());
-    }
-
-    @Test
-    @DisplayName("Test lazy initialization of the uProtocol routing string")
-    public void test_lazy_initialization_of_uprotocol_routing_string() {
-        UAuthority uAuthorityRemote = UAuthority.remote("VCU", "MY_VIN");
-        UEntity use = new UEntity("body.access", "1");
-        UResource uResource = UResource.fromNameWithInstance("door", "front_left");
-        UUri uri = new UUri(uAuthorityRemote, use, uResource);
-
-        assertEquals("//vcu.my_vin/body.access/1/door.front_left", uri.uProtocolUri());
-
-        // call it again, should not call the function, but there is not really a way to test it.
-        assertEquals("//vcu.my_vin/body.access/1/door.front_left", uri.uProtocolUri());
     }
 
     @Test

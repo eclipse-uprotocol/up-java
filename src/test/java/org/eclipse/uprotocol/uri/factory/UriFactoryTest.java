@@ -973,7 +973,7 @@ class UriFactoryTest {
         assertEquals("front_left", Uri.uResource().instance().get());
         assertTrue(Uri.uResource().message().isPresent());
         assertEquals("Door", Uri.uResource().message().get());
-        assertEquals(uri2, Uri.uProtocolUri());
+        assertEquals(uri2, UriFactory.buildUProtocolUri(Uri));
     }
 
     @Test

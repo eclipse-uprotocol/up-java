@@ -21,8 +21,6 @@
 
 package org.eclipse.uprotocol.uri.datamodel;
 
-import org.eclipse.uprotocol.uri.factory.UriFactory;
-
 import java.util.Objects;
 import java.util.Optional;
 
@@ -44,8 +42,6 @@ public class UUri {
     protected final UAuthority uAuthority;
     protected final UEntity uEntity;
     protected final UResource uResource;
-
-    private transient String uProtocolUri;
 
     // Transport specific ID
     private transient Integer id; 
@@ -91,7 +87,7 @@ public class UUri {
     }
 
     /**
-     * @return Returns the  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
+     * @return Returns the  Authority represents the deployment location of a specific  Software Entity.
      */
     public UAuthority uAuthority() {
         return uAuthority;
@@ -109,19 +105,6 @@ public class UUri {
      */
     public UResource uResource() {
         return this.uResource;
-    }
-
-    /**
-     * Support for a lazy generation of the uProtocol Uri string that is used in CloudEvent routing for
-     * sources and sinks.
-     * The function used to generate the string is the buildUProtocolUri method in the {@link UriFactory}.
-     * @return Returns the String that can be used as Source and Sink values of CloudEvents. The value is cached and only calculated on the first call.
-     */
-    public String uProtocolUri() {
-        if (this.uProtocolUri == null) {
-            uProtocolUri = UriFactory.buildUProtocolUri(uAuthority(), uEntity(), uResource());
-        }
-        return uProtocolUri;
     }
 
     @Override

@@ -134,6 +134,38 @@ public class UResource {
     }
 
     /**
+     * Static factory method for creating a UResource using a string that contains either the id or
+     * a name + instance + message.
+     * @param resourceString String that contains the UResource information.
+     * @return Returns a UResource object
+     */
+    public static UResource fromString(String resourceString) {
+        Objects.requireNonNull(resourceString, " Resource must have a command name.");
+        String[] parts = resourceString.split("#");
+        String nameAndInstance = parts[0];
+
+        // Try and fetch the resource ID if there is one (short form)
+        Short maybeId = null;
+        try {
+            maybeId = Short.parseShort(nameAndInstance);
+        } catch (NumberFormatException e) {
+            maybeId = null;
+            
+        }
+
+        if (maybeId != null) {
+            return UResource.fromId(maybeId);
+        }
+
+        String[] nameAndInstanceParts = nameAndInstance.split("\\.");
+        String resourceName = nameAndInstanceParts[0];
+        String resourceInstance = nameAndInstanceParts.length > 1 ? nameAndInstanceParts[1] : null;
+        String resourceMessage = parts.length > 1 ? parts[1] : null;
+        return new UResource(resourceName, resourceInstance, resourceMessage);
+    }
+
+
+    /**
      * @return Returns true if this resource specifies an RPC method call.
      */
     public boolean isRPCMethod() {

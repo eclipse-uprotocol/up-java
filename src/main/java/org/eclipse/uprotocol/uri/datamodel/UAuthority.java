@@ -34,7 +34,7 @@ import org.apache.commons.validator.routines.InetAddressValidator;
  * An  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
  */
 public class UAuthority {
-    private final static UAuthority EMPTY = new UAuthority(null, null, false);
+    private final static UAuthority EMPTY = new UAuthority(null, null, null, false);
 
     /**
      * A device is a logical independent representation of a service bus in different execution environments.<br>
@@ -54,8 +54,6 @@ public class UAuthority {
      */
     private final boolean markedRemote;
 
-    // TODO add user information - what is this used for? make sure it is part of the domain.
-
 
     /**
      * The device IP address.
@@ -65,36 +63,14 @@ public class UAuthority {
     
     /**
      * Constructor.
-     *
      * @param device        The device an  software entity is deployed on, such as the VCU, CCU or Cloud (PaaS).
      * @param domain        The domain an  software entity is deployed on, such as vehicle or backoffice.
-     * @param markedRemote  Indicates if this UAuthority was implicitly marked as remote. Used for validation.
-     */
-    private UAuthority(String device, String domain, boolean markedRemote) {
-        this.device = device == null ? null : device.toLowerCase();
-        this.domain = domain == null ? null : domain.toLowerCase();
-        try {
-            if ((device != null) && InetAddressValidator.getInstance().isValid(device)) {
-                this.address = InetAddress.getByName(device);
-            } else {
-                this.address = null;
-            }
-        } catch (Exception e) { 
-            throw new IllegalArgumentException("Invalid device name: " + device, e);
-        }
-        
-        this.markedRemote = markedRemote;
-    }
-
-    /**
-     *  using IP Address.
-     *
      * @param address      The device IP address.
      * @param markedRemote  Indicates if this UAuthority was implicitly marked as remote. Used for validation.
      */
-    private UAuthority(InetAddress address, boolean markedRemote) {
-        this.device = address != null ? address.getHostAddress() : null;
-        this.domain = null;
+    private UAuthority(String device, String domain, InetAddress address, boolean markedRemote) {
+        this.device = device == null ? null : device.toLowerCase();
+        this.domain = domain == null ? null : domain.toLowerCase();
         this.address = address;
         this.markedRemote = markedRemote;
     }
@@ -119,7 +95,7 @@ public class UAuthority {
      * @return returns a remote  authority that contains the device and the domain.
      */
     public static UAuthority remote(String device, String domain) {
-        return new UAuthority(device, domain, true);
+        return remote(device, domain, null);
     }
 
     /**
@@ -127,8 +103,41 @@ public class UAuthority {
      * @param address The device an software entity is deployed on
      * @return returns a remote authority that contains the device and the domain.
      */
-    public static UAuthority remote(InetAddress device) {
-        return new UAuthority(device, true);
+    public static UAuthority remote(InetAddress address) {
+        return remote(null, null, address);
+    }
+
+
+    /**
+     * Static factory method for creating a remote authority using device, domain, and address.<br>
+     * @param device The device name
+     * @param domain The domain name
+     * @param address the IP address for the device
+     * @return returns a remote authority that contains the device and the domain.
+     */
+    public static UAuthority remote(String device, String domain, InetAddress address) {
+        InetAddress addr = address;
+        // Try and set the address based on device name if the name is the string 
+        // representation of an ip address
+        if ( (device != null) && (addr == null) ) {
+            try {
+                if ((device != null) && InetAddressValidator.getInstance().isValid(device)) {
+                    addr = InetAddress.getByName(device);
+                } else {
+                    addr = null;
+                }
+            } catch (Exception e) { 
+                throw new IllegalArgumentException("Invalid device name: " + device, e);
+            }
+        }
+
+        // The IP address is populated but not the device name so set the device name
+        // to be the string representation of the IP address
+        if ((addr !=null) && (device == null)) {
+            device = addr.getHostAddress();
+        }
+
+        return new UAuthority(device, domain, addr, true);
     }
 
     /**
@@ -143,7 +152,7 @@ public class UAuthority {
      * @return returns true if this  authority is remote, meaning it contains a device or a domain.
      */
     public boolean isRemote() {
-        return address().isPresent() || domain().isPresent() || device().isPresent();
+        return domain().isPresent() || device().isPresent();
     }
 
     /**

@@ -79,7 +79,7 @@ public class UEntity {
      * @return Returns a UEntity with id but unknown name.
      */
     public static UEntity fromId(String version, Short id) {
-        return new UEntity("unknown", version, id);
+        return new UEntity(String.valueOf(id), version, id);
     }
 
 
