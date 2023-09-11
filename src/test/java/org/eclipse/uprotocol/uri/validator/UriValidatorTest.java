@@ -155,7 +155,7 @@ class UriValidatorTest {
     @DisplayName("Test validateLongUUri with valid URI")
     public void test_validateLongUUri_with_valid_uri() {
         final UUri uri = UriFactory.parseFromUri("/hartley//rpc.echo");
-        final UStatus status = UriValidator.validateLongUUri(uri.uProtocolUri());
+        final UStatus status = UriValidator.validateLongUUri(UriFactory.buildUProtocolUri(uri));
         assertEquals(UStatus.ok(), status);
     }
 
@@ -174,7 +174,7 @@ class UriValidatorTest {
         final String shortUri = "/0/1/1";
         final byte[] microUri = new byte[] {0x1,0x0,0x0,0x1,0x0,0x0,0x10,0x0};
         final UStatus status = UriValidator.validateEqualsShortMicroUri(shortUri, microUri);
-        assertEquals("Short URI Uri{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, uEntity=UEntity{name='unknown', version='1', id='0'}, uResource=UResource{name='unknown', instance='null', message='null', id='1'}} and Micro Uri Uri{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, uEntity=UEntity{name='unknown', version='2', id='0'}, uResource=UResource{name='unknown', instance='null', message='null', id='1'}} are not equal.", status.msg());
+        assertEquals("Short URI Uri{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, uEntity=UEntity{name='0', version='1', id='0'}, uResource=UResource{name='unknown', instance='null', message='null', id='1'}} and Micro Uri Uri{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, uEntity=UEntity{name='0', version='2', id='0'}, uResource=UResource{name='unknown', instance='null', message='null', id='1'}} are not equal.", status.msg());
     }
 
     @Test
