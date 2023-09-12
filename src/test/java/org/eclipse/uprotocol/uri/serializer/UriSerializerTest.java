@@ -19,6 +19,8 @@ public class UriSerializerTest {
         assertEquals("/hartley//rpc.raise", strUri);
         final UUri uri2 = UriSerializer.LONG.deserialize(strUri);
         assertTrue(uri.equals(uri2));
+        
+
     }
 
 }

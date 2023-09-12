@@ -163,7 +163,7 @@ class UriValidatorTest {
     @DisplayName("Test call validateEqualsShortMicroUri to test if a short and micro URI are identical")
     public void test_validateEqualsShortMicroUri_with_valid_uri() {
         final String shortUri = "/0/2/1";
-        final byte[] microUri = new byte[] {0x1,0x0,0x0,0x1,0x0,0x0,2<<3,0x0};
+        final byte[] microUri = new byte[] {0x1,0x0,0x0,0x1,0x0,0x0,2,0x0};
         final UStatus status = UriValidator.validateEqualsShortMicroUri(shortUri, microUri);
         assertEquals(UStatus.ok(), status);
     }
@@ -172,7 +172,7 @@ class UriValidatorTest {
     @DisplayName("Test call validateEqualsShortMicroUri to test if a short and micro URI are not identical")
     public void test_validateEqualsShortMicroUri_with_invalid_uri() {
         final String shortUri = "/0/1/1";
-        final byte[] microUri = new byte[] {0x1,0x0,0x0,0x1,0x0,0x0,0x10,0x0};
+        final byte[] microUri = new byte[] {0x1,0x0,0x0,0x1,0x0,0x0,0x2,0x0};
         final UStatus status = UriValidator.validateEqualsShortMicroUri(shortUri, microUri);
         assertEquals("Short URI Uri{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, uEntity=UEntity{name='0', version='1', id='0'}, uResource=UResource{name='unknown', instance='null', message='null', id='1'}} and Micro Uri Uri{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, uEntity=UEntity{name='0', version='2', id='0'}, uResource=UResource{name='unknown', instance='null', message='null', id='1'}} are not equal.", status.msg());
     }
@@ -181,7 +181,7 @@ class UriValidatorTest {
     @DisplayName("Test call validateEqualsShortMicroUri to test if a short and micro URI empty values")
     public void test_validateEqualsShortMicroUri_with_missing_parameters() {
         final String shortUri = "/0/1/1";
-        final byte[] microUri = new byte[] {0x1,0x0,0x0,0x1,0x0,0x0,0x10,0x0};
+        final byte[] microUri = new byte[] {0x1,0x0,0x0,0x1,0x0,0x0,0x1,0x0};
         final UStatus status = UriValidator.validateEqualsShortMicroUri(null, microUri);
         assertEquals("Short Uri is invalid.", status.msg());
         final UStatus status2 = UriValidator.validateEqualsShortMicroUri(shortUri, null);

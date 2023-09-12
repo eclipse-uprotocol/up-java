@@ -163,18 +163,4 @@ class UriTest {
         assertTrue(uri2.isEmpty());
     }
 
-    @Test
-    @DisplayName("Test getting and setting id")
-    public void test_getting_and_setting_id() {
-        UAuthority uAuthorityRemote = UAuthority.remote("VCU", "MY_VIN");
-        UEntity use = new UEntity("body.access", "1");
-        UResource uResource = UResource.fromNameWithInstance("door", "front_left");
-        UUri uri = new UUri(uAuthorityRemote, use, uResource);
-
-        assertTrue(uri.id(null).isEmpty());
-        uri.id(1);
-        assertTrue(uri.id(null).isPresent());
-        assertEquals(1, uri.id(null).get());
-    }
-
 }

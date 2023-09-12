@@ -79,6 +79,7 @@ public class UEntity {
      * @return Returns a UEntity with id but unknown name.
      */
     public static UEntity fromId(String version, Short id) {
+        Objects.requireNonNull(id, "ID must be supplied");
         return new UEntity(String.valueOf(id), version, id);
     }
 
@@ -141,5 +142,15 @@ public class UEntity {
         return "UEntity{" + "name='" + name + '\''
                 + ", version='" + (version == null ? "latest" : version) + '\'' +
                 ", id='" + (id == null ? "null" : id) + '\'' + '}';
+    }
+
+
+    /**
+     * Return true if the UEntity contains both the name and IDs meaning it is resolved
+     * UEntity. Resolved UEntity contains name and id when the name and ID are not the same
+     * @return  Returns true of this resource contains resolved information
+     */
+    public boolean isResolved() {
+        return (id != null) && (name != null) && (id != Short.valueOf(name));
     }
 }

@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * UUri Serializer that serializes a UUri to a string (long or long form) per
  *  https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
  */
-public class LongUriSerializer implements UriSerializer<String> {
+public class StringUriSerializer implements UriSerializer<String> {
 
     /**
      * Serialize the UUri object into a String containing either long or short form.
@@ -212,7 +212,7 @@ public class LongUriSerializer implements UriSerializer<String> {
             if (numberOfPartsInUri > 2) {
                 useVersion = uriParts[2];
 
-                uResource = numberOfPartsInUri > 3 ? UResource.fromString(uriParts[3]) : UResource.empty();
+                uResource = numberOfPartsInUri > 3 ? UResource.parseFromString(uriParts[3]) : UResource.empty();
 
             } else {
                 uResource = UResource.empty();
@@ -233,7 +233,7 @@ public class LongUriSerializer implements UriSerializer<String> {
                 if (numberOfPartsInUri > 4) {
                     useVersion = uriParts[4];
 
-                    uResource = numberOfPartsInUri > 5 ? UResource.fromString(uriParts[5]) : UResource.empty();
+                    uResource = numberOfPartsInUri > 5 ? UResource.parseFromString(uriParts[5]) : UResource.empty();
 
                 } else {
                     uResource = UResource.empty();

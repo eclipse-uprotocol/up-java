@@ -191,6 +191,21 @@ public class UAuthority {
         return markedRemote;
     }
 
+    /**
+     * Returns true if UAuthority contains both address and names meaning the UAuthority is resolved.
+     * @return Returns true if UAuthority contains both address and names meaning the UAuthority is resolved.
+     */
+    public boolean isResolved() {
+        boolean isResolved = false;
+        try {
+            isResolved = address().isPresent() && device().isPresent() && 
+                InetAddress.getByName(device().get()).equals(address().get());
+        } catch (Exception e) {
+            isResolved = false;
+        }
+        return isResolved;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

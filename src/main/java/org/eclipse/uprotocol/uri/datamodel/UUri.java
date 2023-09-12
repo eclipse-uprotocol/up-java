@@ -21,8 +21,8 @@
 
 package org.eclipse.uprotocol.uri.datamodel;
 
+import java.net.InetAddress;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Data representation of an <b> URI</b>.
@@ -39,16 +39,14 @@ import java.util.Optional;
 public class UUri {
     private static final UUri EMPTY = new UUri(UAuthority.empty(), UEntity.empty(), UResource.empty());
 
-    protected final UAuthority uAuthority;
-    protected final UEntity uEntity;
-    protected final UResource uResource;
+    private final UAuthority uAuthority;
+    private final UEntity uEntity;
+    private final UResource uResource;
 
-    // Transport specific ID
-    private transient Integer id; 
 
     /**
      * Create a full  URI.
-     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
+     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity .
      * @param uEntity The USE in the role of a service or in the role of an application.
      * @param uResource The resource is something that is manipulated by a service such as a Door.
      */
@@ -61,13 +59,31 @@ public class UUri {
     /**
      * Create an  URI for a resource. This will match all the specific instances of the resource,
      *      for example all the instances of the vehicle doors.
-     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
+     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity.
      * @param uEntity The USE in the role of a service or in the role of an application.
      * @param uResource The resource is something that is manipulated by a service such as a Door.
      */
     public UUri(UAuthority uAuthority, UEntity uEntity, String uResource) {
         this(uAuthority, uEntity, UResource.fromName(uResource));
     }
+
+    /**
+     * Create a UUri containing only IDs
+     * @param uAuthority The internet address of the device or nyll if it is local
+     * @param ueId The id of the ue
+     * @param version The version of the ue
+     * @param uResource The id of the resource
+     * @return Returns a UUri containing only IDs
+     */
+    public static UUri micrUUri(InetAddress address, Short ueId, Integer version, Short uResource) {
+        Objects.requireNonNull(ueId, "Micro Uri must have an ueId");
+        Objects.requireNonNull(version, "Micro Uri must have a version");
+        Objects.requireNonNull(uResource, "Micro Uri must have an uResource");
+        return new UUri(address == null ? UAuthority.local() : UAuthority.remote(address), 
+            UEntity.fromId(String.valueOf(version), ueId), UResource.fromId(uResource));
+    }
+
+
 
     /**
      * Static factory method for creating an empty  uri, to avoid working with null<br>
@@ -128,18 +144,6 @@ public class UUri {
                 ", uEntity=" + uEntity +
                 ", uResource=" + uResource +
                 '}';
-    }
-
-    /**
-     * Method to get/set the ID used to represent the UUri as an ID in the transport layer.
-     * @param id The ID used to represent the UUri as an ID in the transport layer.
-     * @return Returns the ID used to represent the UUri as an ID in the transport layer.
-     */
-    public Optional<Integer> id(Integer id) {
-        if (id != null) {
-            this.id = id;
-        }
-        return Optional.ofNullable(this.id);
     }
 
 }

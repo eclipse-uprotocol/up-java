@@ -24,7 +24,7 @@ package org.eclipse.uprotocol.uri.serializer;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 
 /**
- * UUri serializer that will serialize to either Long form as a string or short form as a byte[].
+ * UUri serializer that will serialize to either String or byte[] the UUri object.
  * 
  * For more information, please refer to https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
  * 
@@ -49,11 +49,11 @@ public interface UriSerializer<T> {
     /**
      * Long form serializer
      */
-    public static LongUriSerializer LONG = new LongUriSerializer();
+    public static StringUriSerializer LONG = new StringUriSerializer();
     
     /**
      * Micro form serializer
      */
-    public static MicroUriSerializer MICRO = new MicroUriSerializer();
+    public static BytesUriSerializer MICRO = new BytesUriSerializer();
 
 }

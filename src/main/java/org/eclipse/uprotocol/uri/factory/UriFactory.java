@@ -191,23 +191,14 @@ public interface UriFactory {
         // UENTITY_ID
         os.write(maybeUeId.get()>>8);
         os.write(maybeUeId.get());
-        
-        // UENTITY_VERSION
+       
+        // UE_VERSION
         String version = Uri.uEntity().version().orElse("");
-        if (version.isEmpty()) {
-            os.write((byte)0);
-            os.write((byte)0);
-        } else {
-            String[] parts = version.split("\\.");
-            if (parts.length > 1) {
-                int major = (Integer.parseInt(parts[0]) << 3) + (Integer.parseInt(parts[1]) >> 8);
-                os.write((byte)major);
-                os.write((byte)Integer.parseInt(parts[1]));
-            } else {
-                os.write(Integer.parseInt(parts[0])<<3);
-                os.write(0);
-            }
-        }
+        os.write(version.isEmpty() ? (byte)0 : Integer.parseInt(version.split("\\.")[0]));
+
+        // UNUSED
+        os.write((byte)0);
+
         return os.toByteArray();
         
     }
@@ -471,20 +462,14 @@ public interface UriFactory {
             index += type.get() == AddressType.IPv4 ? 4 : 16;
         }
         
+        // UENTITY_ID
         int ueId = ((microUri[index++] & 0xFF) << 8) | (microUri[index++] & 0xFF);
 
-        int ueVersion = ((microUri[index++] & 0xFF) << 8) | (microUri[index++] & 0xFF);
-        String ueVersionString = String.valueOf(ueVersion >> 11);
+        // UE_VERSION
+        int uiVersion = microUri[index++];
         
-        if (ueVersion == 0) {
-            ueVersionString = null; // no version provided
-        }
-        else if ((ueVersion & 0x7FF) != 0) {
-            ueVersionString += "." + (ueVersion & 0x7FF);
-        }
-
         return new UUri((type.get() == AddressType.LOCAL) ? UAuthority.local() : UAuthority.remote(maybeAddress.get()),
-                UEntity.fromId(ueVersionString, (short)ueId),
+                UEntity.fromId(String.valueOf(uiVersion), (short)ueId),
                 UResource.fromId((short)uResourceId));
     }    
 

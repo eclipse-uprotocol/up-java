@@ -75,6 +75,7 @@ public class UResource {
         } else {
             this.id = id;
         }
+
     }
 
 
@@ -86,7 +87,7 @@ public class UResource {
     public static UResource fromId(Short id) {
         Objects.requireNonNull(id, "id Required");
         if (id == 0) {
-            return new UResource(new String("rpc"), new String("response"), null, id);
+            return RESPONSE;
         }
         return new UResource(UNKNOWN_NAME, null, null, id);
     }
@@ -139,7 +140,7 @@ public class UResource {
      * @param resourceString String that contains the UResource information.
      * @return Returns a UResource object
      */
-    public static UResource fromString(String resourceString) {
+    public static UResource parseFromString(String resourceString) {
         Objects.requireNonNull(resourceString, " Resource must have a command name.");
         String[] parts = resourceString.split("#");
         String nameAndInstance = parts[0];
@@ -262,5 +263,15 @@ public class UResource {
                 ", message='" + message + '\'' +
                 ", id='" + (id == null ? "null" : id) + '\'' +
                 '}';
+    }
+
+    /**
+     * Return true if this resource contains both ID and names.
+     * Method type of UResource requires name, instance, and ID where a topic
+     * type of UResource also requires message to not be null 
+     * @return  Returns true of this resource contains resolved information
+     */
+    public boolean isResolved() {
+        return (id != null) && (name != null) && (instance != null) && (isRPCMethod() || (message == null));
     }
 }
