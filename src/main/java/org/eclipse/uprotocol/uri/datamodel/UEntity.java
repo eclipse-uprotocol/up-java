@@ -151,6 +151,21 @@ public class UEntity {
      * @return  Returns true of this resource contains resolved information
      */
     public boolean isResolved() {
-        return (id != null) && (name != null) && (id != Short.valueOf(name));
+        boolean isResolved = !name.isBlank() && (id != null);
+        
+        try {
+            isResolved =  (id != Short.valueOf(name));
+        } catch (NumberFormatException e) {
+            return isResolved;
+        }
+        return isResolved;
+    }
+
+    /**
+     * Check if the UEntity contains Long form URI information (uE name)
+     * @return Returns true if the UEntity contains Long form URI information (names)
+     */
+    public boolean isLongForm() {
+        return isResolved() || !name.isBlank();
     }
 }

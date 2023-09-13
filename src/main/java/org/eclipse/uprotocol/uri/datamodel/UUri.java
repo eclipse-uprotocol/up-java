@@ -68,22 +68,20 @@ public class UUri {
     }
 
     /**
-     * Create a UUri containing only IDs
+     * Create a Short UUri using only IDs containing only IDs
      * @param uAuthority The internet address of the device or nyll if it is local
      * @param ueId The id of the ue
      * @param version The version of the ue
      * @param uResource The id of the resource
      * @return Returns a UUri containing only IDs
      */
-    public static UUri micrUUri(InetAddress address, Short ueId, Integer version, Short uResource) {
-        Objects.requireNonNull(ueId, "Micro Uri must have an ueId");
-        Objects.requireNonNull(version, "Micro Uri must have a version");
-        Objects.requireNonNull(uResource, "Micro Uri must have an uResource");
+    public static UUri shortUUri(InetAddress address, Short ueId, Integer version, Short uResource) {
+        Objects.requireNonNull(ueId, "Short Uri must have an ueId");
+        Objects.requireNonNull(version, "Short Uri must have a version");
+        Objects.requireNonNull(uResource, "Short Uri must have an uResource");
         return new UUri(address == null ? UAuthority.local() : UAuthority.remote(address), 
             UEntity.fromId(String.valueOf(version), ueId), UResource.fromId(uResource));
     }
-
-
 
     /**
      * Static factory method for creating an empty  uri, to avoid working with null<br>
@@ -146,4 +144,20 @@ public class UUri {
                 '}';
     }
 
+    /**
+     * Returns true if URI contains both names and numeric representations of the names inside
+     * its belly.
+     * @return Returns true if URI contains both names and numeric representations of the names inside
+     */
+    public boolean isResolved() {
+        return uAuthority.isResolved() && uEntity.isResolved() && uResource.isResolved();
+    }
+
+    /**
+     * Check if the UEntity and UResource contains Long form URI information (names)
+     * @return Returns true if the UEntity and UResource contains Long form URI information (names)
+     */
+    public boolean isLongForm() {
+        return  isResolved() || uEntity.isLongForm() && uResource.isLongForm();
+    }
 }

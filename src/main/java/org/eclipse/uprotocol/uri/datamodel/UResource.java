@@ -272,6 +272,10 @@ public class UResource {
      * @return  Returns true of this resource contains resolved information
      */
     public boolean isResolved() {
-        return (id != null) && (name != null) && (instance != null) && (isRPCMethod() || (message == null));
+        return (id != null) && isLongForm();
+    }
+
+    public boolean isLongForm() {
+        return !name.equals(UNKNOWN_NAME) && (instance != null) && (isRPCMethod() || (message != null));
     }
 }

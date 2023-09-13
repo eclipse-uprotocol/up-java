@@ -67,6 +67,7 @@ public class UAuthority {
      * @param domain        The domain an  software entity is deployed on, such as vehicle or backoffice.
      * @param address      The device IP address.
      * @param markedRemote  Indicates if this UAuthority was implicitly marked as remote. Used for validation.
+     * @param addressName   Indicates if the device name is an IP address
      */
     private UAuthority(String device, String domain, InetAddress address, boolean markedRemote) {
         this.device = device == null ? null : device.toLowerCase();
@@ -121,7 +122,7 @@ public class UAuthority {
         // representation of an ip address
         if ( (device != null) && (addr == null) ) {
             try {
-                if ((device != null) && InetAddressValidator.getInstance().isValid(device)) {
+                if (InetAddressValidator.getInstance().isValid(device)) {
                     addr = InetAddress.getByName(device);
                 } else {
                     addr = null;
@@ -129,12 +130,6 @@ public class UAuthority {
             } catch (Exception e) { 
                 throw new IllegalArgumentException("Invalid device name: " + device, e);
             }
-        }
-
-        // The IP address is populated but not the device name so set the device name
-        // to be the string representation of the IP address
-        if ((addr !=null) && (device == null)) {
-            device = addr.getHostAddress();
         }
 
         return new UAuthority(device, domain, addr, true);
@@ -192,19 +187,24 @@ public class UAuthority {
     }
 
     /**
-     * Returns true if UAuthority contains both address and names meaning the UAuthority is resolved.
+     * Returns true if UAuthority is local or contains both address and names if the name was not populated with the
+     * string representation of the address
      * @return Returns true if UAuthority contains both address and names meaning the UAuthority is resolved.
      */
     public boolean isResolved() {
-        boolean isResolved = false;
-        try {
-            isResolved = address().isPresent() && device().isPresent() && 
-                InetAddress.getByName(device().get()).equals(address().get());
-        } catch (Exception e) {
-            isResolved = false;
-        }
-        return isResolved;
+        return isLocal() || (address().isPresent() && device().isPresent());
     }
+
+    /**
+     * Check if the UAuthority contains Long form URI (i.e. names). It will be long form
+     * if the UAuthority is resolved (meaning it has id and names) or there is no address since
+     * it has to has to have a device name.
+     * @return Returns true if the UAuthority contains Long form URI information (names)
+     */
+    public boolean isLongForm() {
+        return isResolved() || !address().isPresent();
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -212,7 +212,7 @@ public class UAuthority {
         if (o == null || getClass() != o.getClass()) return false;
         UAuthority that = (UAuthority) o;
         return markedRemote == that.markedRemote && Objects.equals(device, that.device)
-                && Objects.equals(domain, that.domain) && Objects.equals(address, that.address);
+                && Objects.equals(domain, that.domain) && Objects.equals(address, that.address) ;
     }
 
     @Override

@@ -260,4 +260,67 @@ class UResourceTest {
         assertEquals((int)0, (int)uResource.id().get());
         assertEquals("UResource{name='rpc', instance='null', message='null', id='0'}", uResource.toString());
     }
+
+    @Test
+    @DisplayName("Test isResolved with resolved UResources")
+    public void test_isResolved_with_resolved_UResources() {
+        UResource uResource = new UResource("door", "front_left", "Door", (short)5);
+        assertTrue(uResource.isResolved());
+        UResource uResource2 = UResource.response();
+        assertTrue(uResource2.isResolved());
+        UResource uResource3 = UResource.forRpc("UpdateDoor", (short)5);
+        assertTrue(uResource3.isResolved());
+    }
+
+    @Test
+    @DisplayName("Test isResolved and isLongForm with unresolved UResources")
+    public void test_isResolved_with_unresolved_UResources() {
+        UResource uResource = new UResource("door", "front_left", "Door", null);
+        assertFalse(uResource.isResolved());
+        assertTrue(uResource.isLongForm());
+        UResource uResource2 = UResource.fromName("door");
+        assertFalse(uResource2.isResolved());
+        assertFalse(uResource2.isLongForm());
+        UResource uResource3 = UResource.forRpc("UpdateDoor");
+        assertFalse(uResource3.isResolved());
+        assertTrue(uResource3.isLongForm());
+        UResource uResource4 = UResource.fromId((short)4);
+        assertFalse(uResource4.isResolved());
+        assertFalse(uResource4.isLongForm());
+
+        UResource uResource5 = UResource.fromNameWithInstance("door", "front_left");
+        assertFalse(uResource5.isResolved());
+        assertFalse(uResource5.isLongForm());
+
+    }
+
+    @Test
+    @DisplayName("Test parseFromString with valid Short Form UResource string")
+    public void test_parseFromString_with_valid_Long_Form_UResource_string() {
+        UResource uResource = UResource.parseFromString("0");
+        assertEquals("UResource{name='rpc', instance='response', message='null', id='0'}", uResource.toString());
+        assertTrue(uResource.id().isPresent());
+        assertEquals(uResource.id().get(), (short)0);
+
+        UResource uResource2 = UResource.parseFromString("1");
+        assertEquals("UResource{name='unknown', instance='null', message='null', id='1'}", uResource2.toString());
+        assertTrue(uResource2.id().isPresent());
+        assertEquals(uResource2.id().get(), (short)1);
+    }
+
+    @Test
+    @DisplayName("Test parseFromString with missing instance and or message")
+    public void test_parseFromString_with_missing_instance_and_or_message() {
+        UResource uResource = UResource.parseFromString("door");
+        assertEquals("UResource{name='door', instance='null', message='null', id='null'}", uResource.toString());
+        assertTrue(uResource.id().isEmpty());
+
+        UResource uResource1 = UResource.parseFromString("door.front_left");
+        assertEquals("UResource{name='door', instance='front_left', message='null', id='null'}", uResource1.toString());
+        assertTrue(uResource1.id().isEmpty());
+
+        UResource uResource5 = UResource.parseFromString("door.front_left#Door");
+        assertEquals("UResource{name='door', instance='front_left', message='Door', id='null'}", uResource5.toString());
+        assertTrue(uResource5.id().isEmpty());
+    }
 }

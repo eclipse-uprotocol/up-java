@@ -134,4 +134,31 @@ class UEntityTest {
         assertEquals("UEntity{name='body.access', version='1', id='null'}", use.toString());
     }
 
+    @Test
+    @DisplayName("Test isResolved and isLongForm() with valid resolved information")
+    public void test_isResolved_with_valid_resolved_data() {
+        UEntity use = new UEntity("body.access", "1", (short)0);
+        assertTrue(use.isResolved());
+        assertTrue(use.isLongForm());
+        UEntity use3 = new UEntity("2", null, (short)1);
+        assertTrue(use3.isResolved());
+        assertTrue(use3.isLongForm());
+    }
+
+    @Test
+    @DisplayName("Test isResolved and isLongForm() with invalid resolved data")
+    public void test_isResolved_with_invalid_resolved_data() {
+        UEntity use = new UEntity("body.access", "1", null);
+        assertFalse(use.isResolved());
+        assertTrue(use.isLongForm());
+        UEntity use2 = UEntity.fromId(null, (short)1);
+        assertFalse(use2.isResolved());
+        assertTrue(use2.isLongForm());
+
+        UEntity use3 = UEntity.empty();
+        assertFalse(use3.isResolved());
+        assertFalse(use3.isLongForm());
+    }
+
+
 }

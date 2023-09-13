@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Objects;
 
 class UAuthorityTest {
 
@@ -167,7 +166,7 @@ class UAuthorityTest {
         InetAddress address = Inet6Address.getLoopbackAddress();
 
         UAuthority remote = UAuthority.remote(address);
-        String expectedLocal = "UAuthority{device='127.0.0.1', domain='null', address='localhost/127.0.0.1', markedRemote=true}";
+        String expectedLocal = "UAuthority{device='null', domain='null', address='localhost/127.0.0.1', markedRemote=true}";
         InetAddress address2 = remote.address().get();
         assertTrue(remote.address().isPresent());
         assertEquals(address, address2);
@@ -187,7 +186,7 @@ class UAuthorityTest {
         }
 
         UAuthority remote = UAuthority.remote(address);
-        String expectedLocal = "UAuthority{device='2001:db8:85a3:0:0:8a2e:370:7334', domain='null', address='/2001:db8:85a3:0:0:8a2e:370:7334', markedRemote=true}";
+        String expectedLocal = "UAuthority{device='null', domain='null', address='/2001:db8:85a3:0:0:8a2e:370:7334', markedRemote=true}";
         assertEquals(expectedLocal, remote.toString());
     }
 
@@ -198,4 +197,35 @@ class UAuthorityTest {
         String expectedLocal = "UAuthority{device='192.168.1.100', domain='null', address='/192.168.1.100', markedRemote=true}";
         assertEquals(expectedLocal, remote.toString());
     }
+
+
+    @Test
+    @DisplayName("Test isResolved() and isLongForm() with a resolved uAuthority")
+    public void test_isResolved_with_resolved_uAuthority() throws UnknownHostException {
+        UAuthority local = UAuthority.local();
+        UAuthority remote = UAuthority.remote("192.168.1.100", null, InetAddress.getByName("192.168.1.100"));
+        UAuthority remote1 = UAuthority.remote("vcu", "vin", InetAddress.getByName("192.168.1.100"));
+        assertTrue(local.isResolved());
+        assertTrue(local.isLongForm());
+        assertTrue(remote.isResolved());
+        assertTrue(remote.isLongForm());
+        assertTrue(remote1.isResolved());
+        assertTrue(remote1.isLongForm());
+    }
+
+
+    @Test
+    @DisplayName("Test isResolved() and isLongForm() with a unresolved uAuthority")
+    public void test_isResolved_with_unresolved_uAuthority() throws UnknownHostException {
+        UAuthority remote = UAuthority.remote("vcu", "vin");
+        UAuthority remote1 = UAuthority.remote(InetAddress.getByName("192.168.1.100"));
+        UAuthority remote2 = UAuthority.empty();
+        assertFalse(remote.isResolved());
+        assertTrue(remote.isLongForm());
+        assertFalse(remote1.isResolved());
+        assertFalse(remote1.isLongForm());
+        assertTrue(remote2.isResolved());
+        assertTrue(remote2.isLongForm());
+    }
+
 }

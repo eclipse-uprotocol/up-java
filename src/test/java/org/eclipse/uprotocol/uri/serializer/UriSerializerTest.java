@@ -15,9 +15,9 @@ public class UriSerializerTest {
     @DisplayName("Test using the serializers")
     public void test_using_the_serializers() {
         final UUri uri = new UUri(UAuthority.local(), UEntity.fromName("hartley"), UResource.forRpc("raise"));
-        final String strUri = UriSerializer.LONG.serialize(uri);
+        final String strUri = UriSerializer.STRING.serialize(uri);
         assertEquals("/hartley//rpc.raise", strUri);
-        final UUri uri2 = UriSerializer.LONG.deserialize(strUri);
+        final UUri uri2 = UriSerializer.STRING.deserialize(strUri);
         assertTrue(uri.equals(uri2));
         
 
