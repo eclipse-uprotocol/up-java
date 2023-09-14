@@ -259,7 +259,7 @@ class CloudEventFactoryTest {
         String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
 
         // service Method Uri
-        UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
+        UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
         UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
         String serviceMethodUri = UriSerializer.STRING.serialize(methodUri);
@@ -301,11 +301,11 @@ class CloudEventFactoryTest {
 
         // Uri for the application requesting the RPC
         UAuthority sourceUseAuthority = UAuthority.remote("bo", "cloud");
-        UEntity sourceUse = new UEntity("petapp", "1");
+        UEntity sourceUse = new UEntity("petapp", 1);
         String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
 
         // service Method Uri
-        UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
+        UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
         UUri methodUri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"),
                 methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
@@ -347,11 +347,11 @@ class CloudEventFactoryTest {
     public void test_create_response_cloud_event_originating_from_local_use() {
 
         // Uri for the application requesting the RPC
-        UEntity sourceUse = new UEntity("petapp", "1");
+        UEntity sourceUse = new UEntity("petapp", 1);
         String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
 
         // service Method Uri
-        UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
+        UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
         UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
         String serviceMethodUri = UriSerializer.STRING.serialize(methodUri);
@@ -398,7 +398,7 @@ class CloudEventFactoryTest {
         String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
 
         // service Method Uri
-        UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
+        UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
         UUri methodUri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"),
                 methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
@@ -441,11 +441,11 @@ class CloudEventFactoryTest {
     public void test_create_a_failed_response_cloud_event_originating_from_local_use() {
 
         // Uri for the application requesting the RPC
-        UEntity sourceUse = new UEntity("petapp", "1");
+        UEntity sourceUse = new UEntity("petapp", 1);
         String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
 
         // service Method Uri
-        UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
+        UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
         UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
         String serviceMethodUri = UriSerializer.STRING.serialize(methodUri);
@@ -493,7 +493,7 @@ class CloudEventFactoryTest {
         String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
 
         // service Method Uri
-        UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
+        UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
         UUri methodUri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"),
                 methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));

@@ -78,8 +78,7 @@ public class StringUriSerializerTest {
         assertTrue(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertTrue(Uri.uEntity().name().isBlank());
-        assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("body.access", Uri.uEntity().version().get());
+        assertTrue(Uri.uEntity().version().isEmpty());
         assertTrue(Uri.uResource().isEmpty());
     }
 
@@ -128,7 +127,7 @@ public class StringUriSerializerTest {
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertTrue(Uri.uResource().isEmpty());
     }
 
@@ -155,7 +154,7 @@ public class StringUriSerializerTest {
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertEquals("door", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isEmpty());
         assertTrue(Uri.uResource().message().isEmpty());
@@ -185,7 +184,7 @@ public class StringUriSerializerTest {
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertEquals("door", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isPresent());
         assertEquals("front_left", Uri.uResource().instance().get());
@@ -217,7 +216,7 @@ public class StringUriSerializerTest {
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertEquals("door", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isPresent());
         assertEquals("front_left", Uri.uResource().instance().get());
@@ -249,7 +248,7 @@ public class StringUriSerializerTest {
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("petapp", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertEquals("rpc", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isPresent());
         assertEquals("response", Uri.uResource().instance().get());
@@ -339,7 +338,7 @@ public class StringUriSerializerTest {
         assertEquals("my_car_vin", Uri.uAuthority().domain().get());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertTrue(Uri.uResource().isEmpty());
     }
 
@@ -355,7 +354,7 @@ public class StringUriSerializerTest {
         assertEquals("uprotocol.example.com", Uri.uAuthority().domain().get());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertTrue(Uri.uResource().isEmpty());
     }
 
@@ -405,7 +404,7 @@ public class StringUriSerializerTest {
         assertEquals("my_car_vin", Uri.uAuthority().domain().get());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertEquals("door", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isEmpty());
         assertTrue(Uri.uResource().message().isEmpty());
@@ -423,7 +422,7 @@ public class StringUriSerializerTest {
         assertEquals("uprotocol.example.com", Uri.uAuthority().domain().get());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertEquals("door", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isEmpty());
         assertTrue(Uri.uResource().message().isEmpty());
@@ -459,7 +458,7 @@ public class StringUriSerializerTest {
         assertEquals("my_car_vin", Uri.uAuthority().domain().get());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertEquals("door", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isPresent());
         assertEquals("front_left", Uri.uResource().instance().get());
@@ -516,7 +515,7 @@ public class StringUriSerializerTest {
         assertEquals("my_car_vin", Uri.uAuthority().domain().get());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertEquals("door", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isPresent());
         assertEquals("front_left", Uri.uResource().instance().get());
@@ -536,7 +535,7 @@ public class StringUriSerializerTest {
         assertEquals("uprotocol.example.com", Uri.uAuthority().domain().get());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertEquals("door", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isPresent());
         assertEquals("front_left", Uri.uResource().instance().get());
@@ -555,7 +554,7 @@ public class StringUriSerializerTest {
         assertTrue(Uri.uAuthority().domain().isEmpty());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertEquals("door", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isPresent());
         assertEquals("front_left", Uri.uResource().instance().get());
@@ -592,7 +591,7 @@ public class StringUriSerializerTest {
         assertEquals("cloud", Uri.uAuthority().domain().get());
         assertEquals("petapp", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals("1", Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().get());
         assertEquals("rpc", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isPresent());
         assertEquals("response", Uri.uResource().instance().get());
@@ -635,7 +634,7 @@ public class StringUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service and version")
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UUri Uri = new UUri(UAuthority.local(), use, UResource.empty());
         String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access/1", uProtocolUri);
@@ -653,7 +652,7 @@ public class StringUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service and version with resource")
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version_with_resource() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UUri Uri = new UUri(UAuthority.local(), use, UResource.fromName("door"));
         String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access/1/door", uProtocolUri);
@@ -671,7 +670,7 @@ public class StringUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service and version with resource with instance no message")
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version_with_resource_with_instance_no_message() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UUri Uri = new UUri(UAuthority.local(), use, UResource.fromNameWithInstance("door", "front_left"));
         String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access/1/door.front_left", uProtocolUri);
@@ -689,7 +688,7 @@ public class StringUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a local authority with service and version with resource with instance and message")
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version_with_resource_with_instance_with_message() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UUri Uri = new UUri(UAuthority.local(), use, new UResource("door", "front_left", "Door"));
         String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access/1/door.front_left#Door", uProtocolUri);
@@ -716,7 +715,7 @@ public class StringUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service and version")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.empty());
         String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1", uProtocolUri);
@@ -725,7 +724,7 @@ public class StringUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote cloud authority with service and version")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_cloud_authority_service_and_version() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UUri Uri = new UUri(UAuthority.remote("cloud", "uprotocol.example.com"), use, UResource.empty());
         String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//cloud.uprotocol.example.com/body.access/1", uProtocolUri);
@@ -734,7 +733,7 @@ public class StringUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service and version with resource")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.fromName("door"));
         String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1/door", uProtocolUri);
@@ -752,7 +751,7 @@ public class StringUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service and version with resource with instance no message")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource_with_instance_no_message() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.fromNameWithInstance("door", "front_left"));
         String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1/door.front_left", uProtocolUri);
@@ -761,7 +760,7 @@ public class StringUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote cloud authority with service and version with resource with instance no message")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_cloud_authority_service_and_version_with_resource_with_instance_no_message() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UUri Uri = new UUri(UAuthority.remote("cloud", "uprotocol.example.com"), use, UResource.fromNameWithInstance("door", "front_left"));
         String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//cloud.uprotocol.example.com/body.access/1/door.front_left", uProtocolUri);
@@ -779,7 +778,7 @@ public class StringUriSerializerTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service and version with resource with instance and message")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource_with_instance_and_message() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, new UResource("door", "front_left", "Door"));
         String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1/door.front_left#Door", uProtocolUri);
@@ -798,7 +797,7 @@ public class StringUriSerializerTest {
     @DisplayName("Test Create a uProtocol URI for the source part of an RPC request, where the source is local")
     public void test_build_protocol_uri_for_source_part_of_rpc_request_where_source_is_local() {
         UAuthority uAuthority = UAuthority.local();
-        UEntity use = new UEntity("petapp", "1");
+        UEntity use = new UEntity("petapp", 1);
         String uProtocolUri = UriSerializer.STRING.serialize(UUri.rpcResponse(uAuthority, use));
         assertEquals("/petapp/1/rpc.response", uProtocolUri);
     }
@@ -827,7 +826,7 @@ public class StringUriSerializerTest {
     @DisplayName("Test Create a uProtocol URI from the parts of  URI Object with a remote authority with service and version with resource")
     public void test_build_protocol_uri_from__uri_parts_when__uri_has_remote_authority_service_and_version_with_resource() {
         UAuthority uAuthority = UAuthority.remote("VCU", "MY_CAR_VIN");
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UResource uResource = UResource.fromName("door");
         String uProtocolUri = UriSerializer.STRING.serialize(new UUri(uAuthority, use, uResource));
         assertEquals("//vcu.my_car_vin/body.access/1/door", uProtocolUri);
@@ -847,7 +846,7 @@ public class StringUriSerializerTest {
     @DisplayName("Test Create a custom URI using no scheme")
     public void test_custom_scheme_no_scheme() {
         UAuthority uAuthority = UAuthority.remote("VCU", "MY_CAR_VIN");
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UResource uResource = UResource.fromName("door");
         String ucustomUri = UriSerializer.STRING.serialize(new UUri(uAuthority, use, uResource));
         assertEquals("//vcu.my_car_vin/body.access/1/door", ucustomUri);

@@ -124,8 +124,8 @@ public class BytesUriSerializer implements UriSerializer<byte[]> {
         os.write(maybeUeId.get());
         
         // UE_VERSION
-        String version = Uri.uEntity().version().orElse("");
-        os.write(version.isEmpty() ? (byte)0 : Integer.parseInt(version.split("\\.")[0]));
+        Optional<Integer> version = Uri.uEntity().version();
+        os.write(!version.isPresent() ? (byte)0 : version.get().byteValue());
 
         // UNUSED
         os.write((byte)0);
@@ -191,7 +191,7 @@ public class BytesUriSerializer implements UriSerializer<byte[]> {
         int uiVersion = microUri[index++];
         
         return new UUri((type.get() == AddressType.LOCAL) ? UAuthority.local() : UAuthority.remote(maybeAddress.get()),
-                UEntity.fromId(String.valueOf(uiVersion), (short)ueId),
+                UEntity.fromId(uiVersion, (short)ueId),
                 UResource.fromId((short)uResourceId));
     }    
 

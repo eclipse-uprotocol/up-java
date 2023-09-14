@@ -622,7 +622,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic  uri with version, when it is valid")
     void test_rpc_topic__uri_with_version_when_it_is_valid() {
 
-        UEntity use = new UEntity("petapp", "1");
+        UEntity use = new UEntity("petapp", 1);
         UAuthority uAuthority = UAuthority.remote("bo", "cloud");
         UResource uResource = UResource.fromNameWithInstance("rpc", "response");
         UUri Uri = new UUri(uAuthority, use, uResource);
@@ -635,7 +635,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic  uri with version, when it is not valid")
     void test_rpc_topic__uri_with_version_when_it_is_not_valid() {
 
-        UEntity use = new UEntity("petapp", "1");
+        UEntity use = new UEntity("petapp", 1);
         UAuthority uAuthority = UAuthority.remote("bo", "cloud");
         UResource uResource = UResource.fromNameWithInstance("body.access", "front_left");
         UUri Uri = new UUri(uAuthority, use, uResource);

@@ -183,7 +183,16 @@ public class StringUriSerializer implements UriSerializer<String> {
 
         }
 
-        return new UUri(uAuthority, new UEntity(useName, useVersion.isBlank() ? null : useVersion), uResource);
+        Integer useVersionInt = null;
+        try {
+            if (!useVersion.isBlank()) {
+                useVersionInt = Integer.valueOf(useVersion);
+            }
+        } catch (NumberFormatException e) {
+            useVersionInt = null;
+        }
+
+        return new UUri(uAuthority, new UEntity(useName, useVersionInt), uResource);
     }
 
 }

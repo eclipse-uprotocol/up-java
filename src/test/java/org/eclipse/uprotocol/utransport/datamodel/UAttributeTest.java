@@ -165,7 +165,7 @@ public class UAttributeTest {
     public void test_create_uattributes_builder_for_basic_rpc_response() {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
-                new UEntity("petapp.ultifi.gm.com","1"), UResource.fromNameWithInstance("rpc", "response"));
+                new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UUID requestId = UUID.randomUUID();
         final UAttributes uAttributes = UAttributes.forRpcResponse(id, sink, requestId)
                 .withToken("someToken")
@@ -186,7 +186,7 @@ public class UAttributeTest {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUID requestId = UUID.randomUUID();
         final UAttributes uAttributes = UAttributes.forRpcResponse(id, UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
-                        new UEntity("petapp.ultifi.gm.com","1"), requestId)
+                        new UEntity("petapp.ultifi.gm.com",1), requestId)
                 .withToken("someToken")
                 .withTtl(10000)
                 .build();
@@ -365,7 +365,7 @@ public class UAttributeTest {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUID requestId = UUID.randomUUID();
         final UUri sink = new UUri(UAuthority.remote("azure", "bo.ultifi.gm.com"),
-                new UEntity("petapp.ultifi.gm.com","1"), UResource.empty());
+                new UEntity("petapp.ultifi.gm.com",1), UResource.empty());
         final UAttributes uAttributes = new UAttributes.UAttributesBuilder(id,
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
                 .withSink(sink)
@@ -380,7 +380,7 @@ public class UAttributeTest {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUID requestId = UUID.randomUUID();
         final UUri sink = new UUri(UAuthority.remote("azure", "bo.ultifi.gm.com"),
-                new UEntity("petapp.ultifi.gm.com","1"), UResource.empty());
+                new UEntity("petapp.ultifi.gm.com",1), UResource.empty());
         final UAttributes uAttributesNoSink = new UAttributes.UAttributesBuilder(id,
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
                 .withReqId(requestId)

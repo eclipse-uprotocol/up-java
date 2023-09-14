@@ -34,16 +34,16 @@ import java.util.Optional;
 public class UEntity {
     private static final UEntity EMPTY = new UEntity("", null);
 
-    private final String name;
-    private final String version;
-    private final Short id;
+    private final String name;      // uE Name
+    private final Integer version;   // uE Major Version
+    private final Short id;         // uE ID
 
     /**
      * Build an  Software Entity that represents a communicating piece of software.
      * @param name The name of the software such as petpp or body.access.
      * @param version The software version. If not supplied, the latest version of the service will be used.
      */
-    public UEntity(String name, String version, Short id) {
+    public UEntity(String name, Integer version, Short id) {
         Objects.requireNonNull(name, " Software Entity must have a name");
         this.name = name;
         this.id = id;
@@ -55,7 +55,7 @@ public class UEntity {
      * @param name The name of the software such as petpp or body.access.
      * @param version The software version. If not supplied, the latest version of the service will be used.
      */
-    public UEntity(String name, String version) {
+    public UEntity(String name, Integer version) {
         Objects.requireNonNull(name, " Software Entity must have a name");
         this.name = name;
         this.id = null;
@@ -78,7 +78,7 @@ public class UEntity {
      * @param id The software id.
      * @return Returns a UEntity with id but unknown name.
      */
-    public static UEntity fromId(String version, Short id) {
+    public static UEntity fromId(Integer version, Short id) {
         Objects.requireNonNull(id, "ID must be supplied");
         return new UEntity(String.valueOf(id), version, id);
     }
@@ -112,8 +112,8 @@ public class UEntity {
      * @return Returns the software version if it exists.
      * If the version does not exist, the latest version of the service will be used.
      */
-    public Optional<String> version() {
-        return version == null || version.isBlank() ? Optional.empty() : Optional.of(version);
+    public Optional<Integer> version() {
+        return Optional.ofNullable(version);
     }
 
     /**

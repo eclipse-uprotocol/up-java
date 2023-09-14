@@ -39,10 +39,10 @@ class UEntityTest {
     @Test
     @DisplayName("Make sure the toString works")
     public void testToString() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         assertEquals("body.access", use.name());
         assertTrue(use.version().isPresent());
-        assertEquals("1", use.version().get());
+        assertEquals(1, use.version().get());
 
         String expected = "UEntity{name='body.access', version='1', id='null'}";
         assertEquals(expected, use.toString());
@@ -54,23 +54,23 @@ class UEntityTest {
     @Test
     @DisplayName("Test creating a complete USE")
     public void test_create_use() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         assertEquals("body.access", use.name());
         assertTrue(use.version().isPresent());
-        assertEquals("1", use.version().get());
+        assertEquals(1, use.version().get());
     }
 
     @Test
     @DisplayName("Test creating a complete USE with a null name, expect exception")
     public void test_create_use_null_name() {
-        Exception exception = assertThrows(NullPointerException.class, () -> new UEntity(null, "1"));
+        Exception exception = assertThrows(NullPointerException.class, () -> new UEntity(null, 1));
         assertTrue(exception.getMessage().contains(" Software Entity must have a name"));
     }
 
     @Test
     @DisplayName("Test creating a USE with no version")
     public void test_create_use_with_no_version() {
-        UEntity use = new UEntity("body.access", " ");
+        UEntity use = new UEntity("body.access", null);
         assertEquals("body.access", use.name());
         assertTrue(use.version().isEmpty());
 
@@ -104,7 +104,7 @@ class UEntityTest {
         UEntity use2 = new UEntity("", null);
         assertTrue(use2.isEmpty());
 
-        UEntity use3 = new UEntity("", "1");
+        UEntity use3 = new UEntity("", 1);
         assertFalse(use3.isEmpty());
 
         UEntity use4 = new UEntity("petapp", null);
@@ -114,10 +114,10 @@ class UEntityTest {
     @Test
     @DisplayName("Test creating UEntity with id")
     public void test_create_use_with_id() {
-        UEntity use = new UEntity("body.access", "1", (short)0);
+        UEntity use = new UEntity("body.access", 1, (short)0);
         assertEquals("body.access", use.name());
         assertTrue(use.version().isPresent());
-        assertEquals("1", use.version().get());
+        assertEquals(1, use.version().get());
         assertTrue(use.id().isPresent());
         assertEquals((int)0, (int)use.id().get());
         assertEquals("UEntity{name='body.access', version='1', id='0'}", use.toString());
@@ -126,10 +126,10 @@ class UEntityTest {
     @Test
     @DisplayName("Test creating UEntity with invalid id")
     public void test_create_use_with_invalid_id() {
-        UEntity use = new UEntity("body.access", "1", null);
+        UEntity use = new UEntity("body.access", 1, null);
         assertEquals("body.access", use.name());
         assertTrue(use.version().isPresent());
-        assertEquals("1", use.version().get());
+        assertEquals(1, use.version().get());
         assertFalse(use.id().isPresent());
         assertEquals("UEntity{name='body.access', version='1', id='null'}", use.toString());
     }
@@ -137,7 +137,7 @@ class UEntityTest {
     @Test
     @DisplayName("Test isResolved and isLongForm() with valid resolved information")
     public void test_isResolved_with_valid_resolved_data() {
-        UEntity use = new UEntity("body.access", "1", (short)0);
+        UEntity use = new UEntity("body.access", 1, (short)0);
         assertTrue(use.isResolved());
         assertTrue(use.isLongForm());
         UEntity use3 = new UEntity("2", null, (short)1);
@@ -148,7 +148,7 @@ class UEntityTest {
     @Test
     @DisplayName("Test isResolved and isLongForm() with invalid resolved data")
     public void test_isResolved_with_invalid_resolved_data() {
-        UEntity use = new UEntity("body.access", "1", null);
+        UEntity use = new UEntity("body.access", 1, null);
         assertFalse(use.isResolved());
         assertTrue(use.isLongForm());
         UEntity use2 = UEntity.fromId(null, (short)1);

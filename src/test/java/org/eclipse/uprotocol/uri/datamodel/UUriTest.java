@@ -46,7 +46,7 @@ class UriTest {
     public void testToString() {
         UAuthority uAuthorityLocal = UAuthority.local();
         UAuthority uAuthorityRemote = UAuthority.remote("VCU", "MY_VIN");
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UResource uResource = UResource.fromNameWithInstance("door", "front_left");
 
         UUri uri = new UUri(uAuthorityLocal, use, uResource);
@@ -87,7 +87,7 @@ class UriTest {
     @DisplayName("Test creating full remote uri")
     public void test_create_full_remote_uri() {
         UAuthority uAuthority = UAuthority.remote("VCU", "MY_VIN");
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UResource uResource = new UResource("door", "front_left", "Door");
 
         UUri uri = new UUri(uAuthority, use, uResource);
@@ -102,7 +102,7 @@ class UriTest {
     @DisplayName("Test creating full uri with resource but no message using the constructor")
     public void test_create_uri_no_message_with_constructor() {
         UAuthority uAuthority = UAuthority.remote("VCU", "MY_VIN");
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UResource uResource = UResource.fromName("door");
 
         UUri uri = new UUri(uAuthority, use, "door");
@@ -115,7 +115,7 @@ class UriTest {
     @Test
     @DisplayName("Test creating a uri with a null  authority, expect creation with an empty  authority")
     public void test_create_uri_null_authority() {
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UResource uResource = UResource.fromNameWithInstance("door", "front_left");
 
         UUri uri = new UUri(null, use, uResource);
@@ -136,7 +136,7 @@ class UriTest {
     @DisplayName("Test creating a uri with a null ulitfi resource, expect creation with an empty  resource")
     public void test_create_uri_null_uResource() {
         UAuthority uAuthority = UAuthority.remote("VCU", "MY_VIN");
-        UEntity use = new UEntity("body.access", "1");
+        UEntity use = new UEntity("body.access", 1);
         UResource uResource = UResource.empty();
 
         UUri uri = new UUri(uAuthority, use, uResource);
