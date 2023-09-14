@@ -25,11 +25,20 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum USerializationHint {
+    // Serialization hint is unknown
     UNKNOWN(0, ""),
-    PROTOBUF (1, "application/x-protobuf"),   // data is a Base64 encoded protobuf string
-    JSON(2, "application/json"),       // data is a UTF-8 string containing a JSON structure
-    SOMEIP(3, "application/x-someip"),       // data is a UTF-8 string containing a JSON structure
-    RAW(4, "application/octet-stream");   // data is a Base64 encoded protobuf string of an Any object with the payload inside
+
+    // serialized com.google.protobuf.Any type
+    PROTOBUF (1, "application/x-protobuf"),
+    
+    // data is a UTF-8 string containing a JSON structure
+    JSON(2, "application/json"),
+
+    // data is a UTF-8 string containing a JSON structure
+    SOMEIP(3, "application/x-someip"),
+
+    // Raw binary data that has not been serialized
+    RAW(4, "application/octet-stream");
 
     private final int hintNumber;
     private final String mimeType;

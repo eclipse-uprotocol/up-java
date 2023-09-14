@@ -21,25 +21,24 @@
 
 package org.eclipse.uprotocol.rpc;
 
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
 import org.eclipse.uprotocol.utransport.datamodel.UPayload;
 
 /**
- * The RpcClient interface defines the RPC client API per the uProtocol specification
- * https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l2/README.adoc
- * 
+ * Interface used by code generators found in https://github.com/eclipse-uprotocol/uprotocol-core-api
+ * to invoke a method to support RPC.
  */
 public interface RpcClient {
 
     /**
      * Support for RPC method invocation.
-     * @param topic The topic to invoke the method on.
-     * @param payload The payload to send.
-     * @param attributes The attributes to send.
-     * @return Returns the CompletableFuture with the result or exception. 
+     * @param topic req.v1 CloudEvent.
+     * @param payload TODO
+     * @param attributes TODO
+     * @return Returns the CompletableFuture with the result or exception.
      */
-    CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes);
+    CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes);
 }
