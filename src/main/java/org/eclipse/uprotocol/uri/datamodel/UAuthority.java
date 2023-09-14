@@ -22,7 +22,6 @@
 package org.eclipse.uprotocol.uri.datamodel;
 
 import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.validator.routines.InetAddressValidator;

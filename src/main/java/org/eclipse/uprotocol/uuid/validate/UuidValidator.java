@@ -38,15 +38,30 @@ import java.util.stream.Stream;
 public abstract class UuidValidator {
 
     public static UuidValidator getValidator(UUID uuid){
+        UuidValidator validator;
+
         switch (UUIDUtils.getVersion(uuid)){
             case VERSION_TIME_ORDERED:
-                return UuidValidator.Validators.UUIDV6.validator();
+                validator = UuidValidator.Validators.UUIDV6.validator();
+                break;
+            case VERSION_UPROTOCOL:
+                validator = UuidValidator.Validators.UPROTOCOL.validator();
+                break;
+            default:
+                validator = UuidValidator.Validators.INVALID.validator();
+                break;
         }
-        return UuidValidator.Validators.UPROTOCOL.validator();
+        return validator;
     }
 
 
     public enum Validators {
+        INVALID (new UuidValidator() {
+            @Override
+            public ValidationResult validateVersion(UUID uuid) {
+                return ValidationResult.failure("Invalid UUID Format");
+            }
+        }),
         UUIDV6 (new UuidValidator.UUIDv6Validator()),
 
         UPROTOCOL (new UuidValidator.UUIDv8Validator());

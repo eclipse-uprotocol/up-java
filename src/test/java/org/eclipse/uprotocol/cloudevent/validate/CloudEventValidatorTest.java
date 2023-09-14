@@ -94,29 +94,6 @@ class CloudEventValidatorTest {
         assertEquals("Invalid CloudEvent type [res.v1]. CloudEvent of type Publish must have a type of 'pub.v1'", status.getMessage());
     }
 
-    @Test
-    @DisplayName("Test get a file cloud event validator")
-    void test_get_a_file_cloud_event_validator() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withType("file.v1");
-        CloudEvent cloudEvent = builder.build();
-        final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
-        final Status status = validator.validateType(cloudEvent).toStatus();
-        assertEquals(status, ValidationResult.STATUS_SUCCESS);
-        assertEquals("CloudEventValidator.File", validator.toString());
-    }
-
-    @Test
-    @DisplayName("Test file cloud event type")
-    void test_file_cloud_event_type() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withType("res.v1");
-        CloudEvent cloudEvent = builder.build();
-        final CloudEventValidator validator = CloudEventValidator.Validators.FILE.validator();
-        final Status status = validator.validateType(cloudEvent).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid CloudEvent type [res.v1]. CloudEvent of type File must have a type of 'file.v1'", status.getMessage());
-    }
 
     @Test
     @DisplayName("Test get a request cloud event validator")
@@ -908,34 +885,6 @@ class CloudEventValidatorTest {
         assertEquals("Invalid Notification type CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.", status.getMessage());
     }
 
-    @Test
-    @DisplayName("Test File type CloudEvent is valid everything is valid")
-    void test_file_type_cloudevent_is_valid_when_everything_is_valid() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withId(uuid.toString())
-                .withSource(URI.create("/body.access/1/door.front_left#Door"))
-                .withType(UCloudEventType.FILE.type());
-        CloudEvent cloudEvent = builder.build();
-        final CloudEventValidator validator = CloudEventValidator.Validators.FILE.validator();
-        final Status status = validator.validate(cloudEvent);
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test File type CloudEvent is not valid when source is empty")
-    void test_file_type_cloudevent_is_not_valid_when_source_is_empty() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withId(uuid.toString())
-                .withSource(URI.create("/"))
-                .withType(UCloudEventType.FILE.type());
-        CloudEvent cloudEvent = builder.build();
-        final CloudEventValidator validator = CloudEventValidator.Validators.FILE.validator();
-        final Status status = validator.validate(cloudEvent);
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid Publish type CloudEvent source [/]. Uri is missing uSoftware Entity name.", status.getMessage());
-    }
 
     @Test
     @DisplayName("Test Request type CloudEvent is valid everything is valid")

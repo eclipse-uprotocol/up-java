@@ -66,6 +66,7 @@ public class UuidValidatorTest {
         final String str = UUIDUtils.toString(uuid);
         try {
             final UUID uuid2 = UUIDUtils.fromString(str);
+            assertEquals(uuid, uuid2);
         } catch(IllegalArgumentException e) {
 
         }

@@ -450,9 +450,6 @@ class CloudEventFactoryTest {
                 UResource.forRpc("UpdateDoor"));
         String serviceMethodUri = UriSerializer.STRING.serialize(methodUri);
 
-        // fake payload
-        final Any protoPayload = buildProtoPayloadForTest();
-
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
@@ -499,8 +496,6 @@ class CloudEventFactoryTest {
                 UResource.forRpc("UpdateDoor"));
         String serviceMethodUri = UriSerializer.STRING.serialize(methodUri);
 
-        // fake payload
-        final Any protoPayload = buildProtoPayloadForTest();
 
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()

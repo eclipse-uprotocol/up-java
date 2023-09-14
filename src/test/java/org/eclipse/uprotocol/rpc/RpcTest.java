@@ -240,18 +240,6 @@ class RpcTest {
         assertFalse(test.isCompletedExceptionally());
     }
 
-    @Test
-    void test_compose_with_failure_2() {
-        CloudEvent request = buildCloudEventForTest().build();
-//        final CompletableFuture<RpcResult<Int32Value>> rpcResponse =
-//                mapResponseToRpcResponse(uLinkReturnsNumber3.invokeMethod(request), Int32Value.class)
-//                        .thenApply(this::xxx)
-//                        .thenApply(ur -> );
-//        rpcResponse.thenAccept(RpcResult -> {
-//            assertTrue(RpcResult.isSuccess());
-//            assertEquals(Int32Value.of(8), RpcResult.successValue());
-//        });
-    }
 
     @Test
     void test_success_invoke_method_happy_flow_using_mapResponseToRpcResponse() {
@@ -470,7 +458,7 @@ class RpcTest {
     }
 
     @Test
-    void what_the_stub_looks_like() {
+    void what_the_stub_looks_like() throws InterruptedException {
 
         Rpc uLink = new Rpc() {
             @Override
@@ -494,6 +482,7 @@ class RpcTest {
         final CompletableFuture<Any> invokeMethodResponse = uLink.invokeMethod(request);
 
         CompletableFuture<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse(invokeMethodResponse);
+        assertFalse(stubReturnValue.isCancelled());
 
     }
 
@@ -535,12 +524,6 @@ class RpcTest {
         return stubReturnValue;
     }
 
-    private Status crateErrorStatus(Exception e, Code exceptionCode) {
-        return Status.newBuilder()
-                .setCode(exceptionCode.getNumber())
-                .setMessage(e.getMessage() == null ? "" : e.getMessage())
-                .build();
-    }
 
 
     private io.cloudevents.v1.proto.CloudEvent buildProtoPayloadForTest() {

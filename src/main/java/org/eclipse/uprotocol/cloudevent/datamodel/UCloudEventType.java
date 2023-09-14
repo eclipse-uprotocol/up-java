@@ -29,7 +29,6 @@ import java.util.Optional;
  */
 public enum UCloudEventType {
     PUBLISH ("pub.v1"),
-    FILE ("file.v1"),
     REQUEST ("req.v1"),
     RESPONSE ("res.v1");
 

@@ -34,6 +34,8 @@ public class UPayload {
 
     private final byte[] data;
 
+    private final Integer size; // The size of the payload in bytes
+
     private final USerializationHint hint;  // Hint regarding the bytes contained within the UPayload
 
 
@@ -42,10 +44,19 @@ public class UPayload {
      * @param data A byte array of the actual data.
      */
     public UPayload(byte[] data, USerializationHint hint) {
+        this(data, data == null ? 0 : data.length, hint);
+    }
+
+    /**
+     * Create a UPayload passing a fixed size
+     * @param data A byte array of the actual data.
+     */
+    public UPayload(byte[] data, Integer size, USerializationHint hint) {
         this.hint = hint;
         this.data = data;
-        
+        this.size = size;
     }
+
 
     /**
      * The actual serialized or raw data, which can be deserialized or simply used as is.
@@ -87,24 +98,33 @@ public class UPayload {
         return this.data == null || this.data.length == 0;
     }
 
+    /**
+     * The size of the payload in bytes
+     * @return Returns the size of the payload in bytes
+     */
+    public Integer size() {
+        return size;
+    }
+
     
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UPayload uPayload = (UPayload) o;
-        return Arrays.equals(data, uPayload.data) && this.hint == uPayload.hint;
+        return Arrays.equals(data, uPayload.data) && this.hint == uPayload.hint
+                && Objects.equals(this.size, uPayload.size);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.hashCode(data),hint);
+        return Objects.hash(Arrays.hashCode(data),hint, size);
     }
 
     @Override
     public String toString() {
         return "UPayload{" +
-                "data=" + Arrays.toString(data()) + " size=" + data().length + 
+                "data=" + Arrays.toString(data()) + " size=" + size + 
                 ", hint=" + hint +'}';
     }
 }

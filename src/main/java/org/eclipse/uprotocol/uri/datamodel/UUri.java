@@ -21,7 +21,6 @@
 
 package org.eclipse.uprotocol.uri.datamodel;
 
-import java.net.InetAddress;
 import java.util.Objects;
 
 /**

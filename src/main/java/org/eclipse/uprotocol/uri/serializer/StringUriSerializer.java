@@ -25,7 +25,6 @@ import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;

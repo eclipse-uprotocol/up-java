@@ -54,15 +54,20 @@ public abstract class CloudEventValidator {
         if (maybeType.isEmpty()) {
             return Validators.PUBLISH.validator();
         }
+        
+        CloudEventValidator validator;
         switch (maybeType.get()){
-            case FILE:
-                return Validators.FILE.validator();
             case RESPONSE:
-                return Validators.RESPONSE.validator();
+                validator = Validators.RESPONSE.validator();
+                break;
             case REQUEST:
-                return Validators.REQUEST.validator();
+                validator = Validators.REQUEST.validator();
+                break;
+            default:
+                validator = Validators.PUBLISH.validator();
+                break;
         }
-        return Validators.PUBLISH.validator();
+        return validator;
     }
 
     /**
@@ -71,7 +76,6 @@ public abstract class CloudEventValidator {
     public enum Validators {
         PUBLISH (new Publish()),
         NOTIFICATION (new Notification()),
-        FILE (new File()),
         REQUEST (new Request()),
         RESPONSE (new Response());
 
@@ -296,22 +300,6 @@ public abstract class CloudEventValidator {
         }
     }
 
-    /**
-     * Implements Validations for a CloudEvent of type File.
-     */
-    private static class File extends Publish {
-
-        @Override
-        public ValidationResult validateType(CloudEvent cloudEvent) {
-            return "file.v1".equals(cloudEvent.getType()) ? ValidationResult.success() :
-                    ValidationResult.failure(String.format("Invalid CloudEvent type [%s]. CloudEvent of type File must have a type of 'file.v1'", cloudEvent.getType()));
-        }
-
-        @Override
-        public String toString() {
-            return "CloudEventValidator.File";
-        }
-    }
 
     /**
      * Implements Validations for a CloudEvent for RPC Request.
