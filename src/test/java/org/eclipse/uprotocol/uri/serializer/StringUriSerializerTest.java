@@ -1,47 +1,31 @@
-/*
- * Copyright (c) 2023 General Motors GTO LLC
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
+package org.eclipse.uprotocol.uri.serializer;
 
-package org.eclipse.uprotocol.uri.factory;
-
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.datamodel.UAuthority.AddressType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
+import org.eclipse.uprotocol.uri.datamodel.UAuthority;
+import org.eclipse.uprotocol.uri.datamodel.UEntity;
+import org.eclipse.uprotocol.uri.datamodel.UResource;
+import org.eclipse.uprotocol.uri.datamodel.UUri;
 
-class UriFactoryTest {
+public class StringUriSerializerTest {
 
     @Test
+    @DisplayName("Test using the serializers")
+    public void test_using_the_serializers() {
+        final UUri uri = new UUri(UAuthority.local(), UEntity.fromName("hartley"), UResource.forRpc("raise"));
+        final String strUri = UriSerializer.STRING.serialize(uri);
+        assertEquals("/hartley//rpc.raise", strUri);
+        final UUri uri2 = UriSerializer.STRING.deserialize(strUri);
+        assertTrue(uri.equals(uri2));
+    }
+
+        @Test
     @DisplayName("Test parse uProtocol uri that is null")
     public void test_parse_protocol_uri_when_is_null() {
-        UUri Uri = UriFactory.parseFromUri(null);
+        UUri Uri = UriSerializer.STRING.deserialize(null);
         assertTrue(Uri.isEmpty());
     }
 
@@ -50,7 +34,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri that is empty string")
     public void test_parse_protocol_uri_when_is_empty_string() {
         String uri = "";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.isEmpty());
     }
 
@@ -58,7 +42,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with schema and slash")
     public void test_parse_protocol_uri_with_schema_and_slash() {
         String uri = "/";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertTrue(Uri.isEmpty());
@@ -68,7 +52,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with schema and double slash")
     public void test_parse_protocol_uri_with_schema_and_double_slash() {
         String uri = "//";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertTrue(Uri.isEmpty());
@@ -78,7 +62,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with schema and 3 slash and something")
     public void test_parse_protocol_uri_with_schema_and_3_slash_and_something() {
         String uri = "///body.access";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
@@ -90,7 +74,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with schema and 4 slash and something")
     public void test_parse_protocol_uri_with_schema_and_4_slash_and_something() {
         String uri = "////body.access";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertTrue(Uri.uEntity().name().isBlank());
@@ -103,7 +87,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with schema and 5 slash and something")
     public void test_parse_protocol_uri_with_schema_and_5_slash_and_something() {
         String uri = "/////body.access";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertTrue(Uri.uEntity().isEmpty());
@@ -117,7 +101,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with schema and 6 slash and something")
     public void test_parse_protocol_uri_with_schema_and_6_slash_and_something() {
         String uri = "//////body.access";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertTrue(Uri.isEmpty());
@@ -127,7 +111,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with local service no version")
     public void test_parse_protocol_uri_with_local_service_no_version() {
         String uri = "/body.access";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
@@ -139,7 +123,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with local service with version")
     public void test_parse_protocol_uri_with_local_service_with_version() {
         String uri = "/body.access/1";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
@@ -152,7 +136,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with local service no version with resource name only")
     public void test_parse_protocol_uri_with_local_service_no_version_with_resource_name_only() {
         String uri = "/body.access//door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
@@ -166,7 +150,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with local service with version with resource name only")
     public void test_parse_protocol_uri_with_local_service_with_version_with_resource_name_only() {
         String uri = "/body.access/1/door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
@@ -181,7 +165,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with local service no version with resource and instance only")
     public void test_parse_protocol_uri_with_local_service_no_version_with_resource_with_instance() {
         String uri = "/body.access//door.front_left";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
@@ -196,7 +180,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with local service with version with resource and instance only")
     public void test_parse_protocol_uri_with_local_service_with_version_with_resource_with_message() {
         String uri = "/body.access/1/door.front_left";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
@@ -212,7 +196,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with local service no version with resource with instance and message")
     public void test_parse_protocol_uri_with_local_service_no_version_with_resource_with_instance_and_message() {
         String uri = "/body.access//door.front_left#Door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
@@ -228,7 +212,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with local service with version with resource with instance and message")
     public void test_parse_protocol_uri_with_local_service_with_version_with_resource_with_instance_and_message() {
         String uri = "/body.access/1/door.front_left#Door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
@@ -245,7 +229,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol RPC uri with local service no version")
     public void test_parse_protocol_rpc_uri_with_local_service_no_version() {
         String uri = "/petapp//rpc.response";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("petapp", Uri.uEntity().name());
@@ -260,7 +244,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol RPC uri with local service with version")
     public void test_parse_protocol_rpc_uri_with_local_service_with_version() {
         String uri = "/petapp/1/rpc.response";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("petapp", Uri.uEntity().name());
@@ -276,7 +260,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service only device no domain")
     public void test_parse_protocol_uri_with_remote_service_only_device_no_domain() {
         String uri = "//VCU";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -289,7 +273,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service only device and domain")
     public void test_parse_protocol_uri_with_remote_service_only_device_and_domain() {
         String uri = "//VCU.MY_CAR_VIN";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -303,7 +287,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service only device and cloud domain")
     public void test_parse_protocol_uri_with_remote_service_only_device_and_cloud_domain() {
         String uri = "//cloud.uprotocol.example.com";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("cloud", Uri.uAuthority().device().get());
@@ -317,7 +301,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service no version")
     public void test_parse_protocol_uri_with_remote_service_no_version() {
         String uri = "//VCU.MY_CAR_VIN/body.access";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -332,7 +316,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote cloud service no version")
     public void test_parse_protocol_uri_with_remote_cloud_service_no_version() {
         String uri = "//cloud.uprotocol.example.com/body.access";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("cloud", Uri.uAuthority().device().get());
@@ -347,7 +331,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service with version")
     public void test_parse_protocol_uri_with_remote_service_with_version() {
         String uri = "//VCU.MY_CAR_VIN/body.access/1";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -363,7 +347,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote cloud service with version")
     public void test_parse_protocol_uri_with_remote_cloud_service_with_version() {
         String uri = "//cloud.uprotocol.example.com/body.access/1";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("cloud", Uri.uAuthority().device().get());
@@ -379,7 +363,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service no version with resource name only")
     public void test_parse_protocol_uri_with_remote_service_no_version_with_resource_name_only() {
         String uri = "//VCU.MY_CAR_VIN/body.access//door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -396,7 +380,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote cloud service no version with resource name only")
     public void test_parse_protocol_uri_with_remote_cloud_service_no_version_with_resource_name_only() {
         String uri = "//cloud.uprotocol.example.com/body.access//door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("cloud", Uri.uAuthority().device().get());
@@ -413,7 +397,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service with version with resource name only")
     public void test_parse_protocol_uri_with_remote_service_with_version_with_resource_name_only() {
         String uri = "//VCU.MY_CAR_VIN/body.access/1/door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -431,7 +415,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote cloud service with version with resource name only")
     public void test_parse_protocol_uri_with_remote_service_cloud_with_version_with_resource_name_only() {
         String uri = "//cloud.uprotocol.example.com/body.access/1/door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("cloud", Uri.uAuthority().device().get());
@@ -449,7 +433,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service no version with resource and instance no message")
     public void test_parse_protocol_uri_with_remote_service_no_version_with_resource_and_instance_no_message() {
         String uri = "//VCU.MY_CAR_VIN/body.access//door.front_left";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -467,7 +451,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service with version with resource and instance no message")
     public void test_parse_protocol_uri_with_remote_service_with_version_with_resource_and_instance_no_message() {
         String uri = "//VCU.MY_CAR_VIN/body.access/1/door.front_left";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -486,7 +470,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service no version with resource and instance and message")
     public void test_parse_protocol_uri_with_remote_service_no_version_with_resource_and_instance_and_message() {
         String uri = "//VCU.MY_CAR_VIN/body.access//door.front_left#Door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -505,7 +489,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote cloud service no version with resource and instance and message")
     public void test_parse_protocol_uri_with_remote_cloud_service_no_version_with_resource_and_instance_and_message() {
         String uri = "//cloud.uprotocol.example.com/body.access//door.front_left#Door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("cloud", Uri.uAuthority().device().get());
@@ -524,7 +508,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service with version with resource and instance and message")
     public void test_parse_protocol_uri_with_remote_service_with_version_with_resource_and_instance_and_message() {
         String uri = "//VCU.MY_CAR_VIN/body.access/1/door.front_left#Door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -544,7 +528,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote cloud service with version with resource and instance and message")
     public void test_parse_protocol_uri_with_remote_cloud_service_with_version_with_resource_and_instance_and_message() {
         String uri = "//cloud.uprotocol.example.com/body.access/1/door.front_left#Door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("cloud", Uri.uAuthority().device().get());
@@ -564,7 +548,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol uri with remote service with version with resource with message when there is only device, no domain")
     public void test_parse_protocol_uri_with_remote_service_with_version_with_resource_with_message_device_no_domain() {
         String uri = "//VCU/body.access/1/door.front_left";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -582,7 +566,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol RPC uri with remote service no version")
     public void test_parse_protocol_rpc_uri_with_remote_service_no_version() {
         String uri = "//bo.cloud/petapp//rpc.response";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("bo", Uri.uAuthority().device().get());
@@ -600,7 +584,7 @@ class UriFactoryTest {
     @DisplayName("Test parse uProtocol RPC uri with remote service with version")
     public void test_parse_protocol_rpc_uri_with_remote_service_with_version() {
         String uri = "//bo.cloud/petapp/1/rpc.response";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isRemote());
         assertTrue(Uri.uAuthority().device().isPresent());
         assertEquals("bo", Uri.uAuthority().device().get());
@@ -618,7 +602,7 @@ class UriFactoryTest {
     @Test
     @DisplayName("Test Create a uProtocol URI from null")
     public void test_build_protocol_uri_from__uri_when__uri_isnull() {
-        String uProtocolUri = UriFactory.buildUProtocolUri(null);
+        String uProtocolUri = UriSerializer.STRING.serialize(null);
         assertEquals("", uProtocolUri);
     }
 
@@ -626,7 +610,7 @@ class UriFactoryTest {
     @DisplayName("Test Create a uProtocol URI from an empty  URI Object")
     public void test_build_protocol_uri_from__uri_when__uri_isEmpty() {
         UUri Uri = UUri.empty();
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("", uProtocolUri);
     }
 
@@ -635,7 +619,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_empty_use() {
         UEntity use = UEntity.empty();
         UUri Uri = new UUri(UAuthority.local(), use, UResource.fromName("door"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/", uProtocolUri);
     }
 
@@ -644,7 +628,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_no_version() {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use, UResource.empty());
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access", uProtocolUri);
     }
 
@@ -653,7 +637,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version() {
         UEntity use = new UEntity("body.access", "1");
         UUri Uri = new UUri(UAuthority.local(), use, UResource.empty());
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access/1", uProtocolUri);
     }
 
@@ -662,7 +646,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_no_version_with_resource() {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use, UResource.fromName("door"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access//door", uProtocolUri);
     }
 
@@ -671,7 +655,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version_with_resource() {
         UEntity use = new UEntity("body.access", "1");
         UUri Uri = new UUri(UAuthority.local(), use, UResource.fromName("door"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access/1/door", uProtocolUri);
     }
 
@@ -680,7 +664,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_no_version_with_resource_with_instance_no_message() {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use, UResource.fromNameWithInstance("door", "front_left"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access//door.front_left", uProtocolUri);
     }
 
@@ -689,7 +673,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version_with_resource_with_instance_no_message() {
         UEntity use = new UEntity("body.access", "1");
         UUri Uri = new UUri(UAuthority.local(), use, UResource.fromNameWithInstance("door", "front_left"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access/1/door.front_left", uProtocolUri);
     }
 
@@ -698,7 +682,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_no_version_with_resource_with_instance_with_message() {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use, new UResource("door", "front_left", "Door"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access//door.front_left#Door", uProtocolUri);
     }
 
@@ -707,7 +691,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_local_authority_service_and_version_with_resource_with_instance_with_message() {
         UEntity use = new UEntity("body.access", "1");
         UUri Uri = new UUri(UAuthority.local(), use, new UResource("door", "front_left", "Door"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("/body.access/1/door.front_left#Door", uProtocolUri);
     }
 
@@ -716,7 +700,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version() {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.empty());
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access", uProtocolUri);
     }
 
@@ -725,7 +709,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_no_device_with_domain_with_service_no_version() {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.remote("", "MY_CAR_VIN"), use, UResource.empty());
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//my_car_vin/body.access", uProtocolUri);
     }
 
@@ -734,7 +718,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version() {
         UEntity use = new UEntity("body.access", "1");
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.empty());
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1", uProtocolUri);
     }
 
@@ -743,7 +727,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_cloud_authority_service_and_version() {
         UEntity use = new UEntity("body.access", "1");
         UUri Uri = new UUri(UAuthority.remote("cloud", "uprotocol.example.com"), use, UResource.empty());
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//cloud.uprotocol.example.com/body.access/1", uProtocolUri);
     }
 
@@ -752,7 +736,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource() {
         UEntity use = new UEntity("body.access", "1");
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.fromName("door"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1/door", uProtocolUri);
     }
 
@@ -761,7 +745,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version_with_resource() {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.fromName("door"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access//door", uProtocolUri);
     }
 
@@ -770,7 +754,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource_with_instance_no_message() {
         UEntity use = new UEntity("body.access", "1");
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.fromNameWithInstance("door", "front_left"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1/door.front_left", uProtocolUri);
     }
 
@@ -779,7 +763,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_cloud_authority_service_and_version_with_resource_with_instance_no_message() {
         UEntity use = new UEntity("body.access", "1");
         UUri Uri = new UUri(UAuthority.remote("cloud", "uprotocol.example.com"), use, UResource.fromNameWithInstance("door", "front_left"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//cloud.uprotocol.example.com/body.access/1/door.front_left", uProtocolUri);
     }
 
@@ -788,7 +772,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version_with_resource_with_instance_no_message() {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.fromNameWithInstance("door", "front_left"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access//door.front_left", uProtocolUri);
     }
 
@@ -797,7 +781,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource_with_instance_and_message() {
         UEntity use = new UEntity("body.access", "1");
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, new UResource("door", "front_left", "Door"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1/door.front_left#Door", uProtocolUri);
     }
 
@@ -806,7 +790,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version_with_resource_with_instance_and_message() {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, new UResource("door", "front_left", "Door"));
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access//door.front_left#Door", uProtocolUri);
     }
 
@@ -815,7 +799,7 @@ class UriFactoryTest {
     public void test_build_protocol_uri_for_source_part_of_rpc_request_where_source_is_local() {
         UAuthority uAuthority = UAuthority.local();
         UEntity use = new UEntity("petapp", "1");
-        String uProtocolUri = UriFactory.buildUriForRpc(uAuthority, use);
+        String uProtocolUri = UriSerializer.STRING.serialize(UUri.rpcResponse(uAuthority, use));
         assertEquals("/petapp/1/rpc.response", uProtocolUri);
     }
 
@@ -824,78 +808,8 @@ class UriFactoryTest {
     public void test_build_protocol_uri_for_source_part_of_rpc_request_where_source_is_remote() {
         UAuthority uAuthority = UAuthority.remote("cloud", "uprotocol.example.com");
         UEntity use = UEntity.fromName("petapp");
-        String uProtocolUri = UriFactory.buildUriForRpc(uAuthority, use);
+        String uProtocolUri = UriSerializer.STRING.serialize(UUri.rpcResponse(uAuthority, use));
         assertEquals("//cloud.uprotocol.example.com/petapp//rpc.response", uProtocolUri);
-    }
-
-    @Test
-    @DisplayName("Test Create a uProtocol URI for the service accepting the rpc, when authority is local with software entity no version")
-    public void test_build_protocol_uri_for_service_accepting_rpc_local_uauthority_with_use_no_version() {
-        UAuthority uAuthority = UAuthority.local();
-        UEntity use = UEntity.fromName("body.access");
-        String methodName = "UpdateDoor";
-        String uProtocolUri = UriFactory.buildMethodUri(uAuthority, use, methodName);
-        assertEquals("/body.access//rpc.UpdateDoor", uProtocolUri);
-    }
-
-    @Test
-    @DisplayName("Test Create a uProtocol URI for the service accepting the rpc, when authority is local with software entity with version")
-    public void test_build_protocol_uri_for_service_accepting_rpc_local_uauthority_with_use_with_version() {
-        UAuthority uAuthority = UAuthority.local();
-        UEntity use = new UEntity("body.access", "1");
-        String methodName = "UpdateDoor";
-        String uProtocolUri = UriFactory.buildMethodUri(uAuthority, use, methodName);
-        assertEquals("/body.access/1/rpc.UpdateDoor", uProtocolUri);
-    }
-
-    @Test
-    @DisplayName("Test Create a uProtocol URI for the service accepting the rpc, when authority is local, software entity is empty")
-    public void test_build_protocol_uri_for_service_accepting_rpc_local_uauthority_empty_use() {
-        UAuthority uAuthority = UAuthority.local();
-        UEntity use = UEntity.fromName(" ");
-        String methodName = "UpdateDoor";
-        String uProtocolUri = UriFactory.buildMethodUri(uAuthority, use, methodName);
-        assertEquals("///rpc.UpdateDoor", uProtocolUri);
-    }
-
-    @Test
-    @DisplayName("Test Create a uProtocol URI for the service accepting the rpc, when authority is remote with software entity no version")
-    public void test_build_protocol_uri_for_service_accepting_rpc_remote_uauthority_with_use_no_version() {
-        UAuthority uAuthority = UAuthority.remote("VCU", "MY_VIN");
-        UEntity use = UEntity.fromName("body.access");
-        String methodName = "UpdateDoor";
-        String uProtocolUri = UriFactory.buildMethodUri(uAuthority, use, methodName);
-        assertEquals("//vcu.my_vin/body.access//rpc.UpdateDoor", uProtocolUri);
-    }
-
-    @Test
-    @DisplayName("Test Create a uProtocol URI for the service accepting the rpc, when authority is remote with software entity with version")
-    public void test_build_protocol_uri_for_service_accepting_rpc_remote_uauthority_with_use_with_version() {
-        UAuthority uAuthority = UAuthority.remote("VCU", "MY_VIN");
-        UEntity use = new UEntity("body.access", "1");
-        String methodName = "UpdateDoor";
-        String uProtocolUri = UriFactory.buildMethodUri(uAuthority, use, methodName);
-        assertEquals("//vcu.my_vin/body.access/1/rpc.UpdateDoor", uProtocolUri);
-    }
-
-    @Test
-    @DisplayName("Test Create a uProtocol URI for the service accepting the rpc, when authority is remote cloud with software entity with version")
-    public void test_build_protocol_uri_for_service_accepting_rpc_remote_cloud_uauthority_with_use_with_version() {
-        UAuthority uAuthority = UAuthority.remote("cloud", "uprotocol.example.com");
-        UEntity use = new UEntity("body.access", "1");
-        String methodName = "UpdateDoor";
-        String uProtocolUri = UriFactory.buildMethodUri(uAuthority, use, methodName);
-        assertEquals("//cloud.uprotocol.example.com/body.access/1/rpc.UpdateDoor", uProtocolUri);
-    }
-
-    @Test
-    @DisplayName("Test Create a uProtocol URI for the service accepting the rpc, when authority is remote, software entity is empty")
-    public void test_build_protocol_uri_for_service_accepting_rpc_remote_uauthority_empty_use() {
-        UAuthority uAuthority = UAuthority.remote("VCU", "MY_VIN");
-        UEntity use = UEntity.fromName(" ");
-        String methodName = "UpdateDoor";
-        String uProtocolUri = UriFactory.buildMethodUri(uAuthority, use, methodName);
-        assertEquals("//vcu.my_vin///rpc.UpdateDoor", uProtocolUri);
     }
 
     @Test
@@ -905,7 +819,7 @@ class UriFactoryTest {
         UEntity uSoftwareEntity = null;
         UResource uResource = null;
         UUri Uri = new UUri(uAuthority, uSoftwareEntity, uResource);
-        String uProtocolUri = UriFactory.buildUProtocolUri(Uri);
+        String uProtocolUri = UriSerializer.STRING.serialize(Uri);
         assertEquals("", uProtocolUri);
     }
 
@@ -915,7 +829,7 @@ class UriFactoryTest {
         UAuthority uAuthority = UAuthority.remote("VCU", "MY_CAR_VIN");
         UEntity use = new UEntity("body.access", "1");
         UResource uResource = UResource.fromName("door");
-        String uProtocolUri = UriFactory.buildUProtocolUri(uAuthority, use, uResource);
+        String uProtocolUri = UriSerializer.STRING.serialize(new UUri(uAuthority, use, uResource));
         assertEquals("//vcu.my_car_vin/body.access/1/door", uProtocolUri);
     }
 
@@ -925,7 +839,7 @@ class UriFactoryTest {
         UAuthority uAuthority = null;
         UEntity uSoftwareEntity = null;
         UResource uResource = null;
-        String customUri = UriFactory.buildUProtocolUri(uAuthority, uSoftwareEntity, uResource);
+        String customUri = UriSerializer.STRING.serialize(new UUri(uAuthority, uSoftwareEntity, uResource));
         assertTrue(customUri.isEmpty());
     }
 
@@ -935,7 +849,7 @@ class UriFactoryTest {
         UAuthority uAuthority = UAuthority.remote("VCU", "MY_CAR_VIN");
         UEntity use = new UEntity("body.access", "1");
         UResource uResource = UResource.fromName("door");
-        String ucustomUri = UriFactory.buildUProtocolUri(uAuthority, use, uResource);
+        String ucustomUri = UriSerializer.STRING.serialize(new UUri(uAuthority, use, uResource));
         assertEquals("//vcu.my_car_vin/body.access/1/door", ucustomUri);
     }
 
@@ -943,7 +857,7 @@ class UriFactoryTest {
     @DisplayName("Test parse local uProtocol uri with custom scheme")
     public void test_parse_local_protocol_uri_with_custom_scheme() {
         String uri = "custom:/body.access//door.front_left#Door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
@@ -960,7 +874,7 @@ class UriFactoryTest {
     public void test_parse_remote_protocol_uri_with_custom_scheme() {
         String uri = "custom://vcu.vin/body.access//door.front_left#Door";
         String uri2 = "//vcu.vin/body.access//door.front_left#Door";
-        UUri Uri = UriFactory.parseFromUri(uri);
+        UUri Uri = UriSerializer.STRING.deserialize(uri);
         assertFalse(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertEquals("vcu", Uri.uAuthority().device().get());
@@ -973,81 +887,7 @@ class UriFactoryTest {
         assertEquals("front_left", Uri.uResource().instance().get());
         assertTrue(Uri.uResource().message().isPresent());
         assertEquals("Door", Uri.uResource().message().get());
-        assertEquals(uri2, UriFactory.buildUProtocolUri(Uri));
+        assertEquals(uri2, UriSerializer.STRING.serialize(Uri));
     }
 
-    @Test
-    @DisplayName("Test Create a uProtocol Short URI from a URI Object")
-    public void test_build_short_uri_from_uri() {
-        UAuthority uAuthority = UAuthority.local();
-        UEntity use = new UEntity("body.access", "1", (short)5);
-        UResource uResource = new UResource("door", "front_left", "Door", (short)3);
-
-        UUri Uri = new UUri(uAuthority, use, uResource);
-        String uProtocolUri = UriFactory.buildUProtocolShortUri(Uri);
-        assertEquals("/5/1/3", uProtocolUri);
-    }
-
-    @Test
-    @DisplayName("Test Create a uProtocol Short URI for empty URI")
-    public void test_build_short_uri_from_uri_missing_ids() {
-        UUri Uri = UUri.empty();
-        String uProtocolUri = UriFactory.buildUProtocolShortUri(Uri);
-        assertEquals("", uProtocolUri);
-    }
-
-    @Test
-    @DisplayName("Test Create a uProtocol Short URI for null URI")
-    public void test_build_short_uri_from_null_uri() {
-        String uProtocolUri = UriFactory.buildUProtocolShortUri(null);
-        assertEquals("", uProtocolUri);
-    }
-
-
-    @Test
-    @DisplayName("Test Create a uProtocol Short URI with remote URI")
-    public void test_build_short_uri_from_remote_uri() {
-        String ipv6Address = "2001:db8:85a3:0:0:8a2e:370:7334";
-        InetAddress address = null;
-        try {
-            address = InetAddress.getByName(ipv6Address);
-        }  
-        catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-        UAuthority uAuthority = UAuthority.remote(address);
-        UEntity use = new UEntity("body.access", "1", (short)5);
-        UResource uResource = new UResource("door", "front_left", "Door", (short)3);
-
-        String uProtocolUri = UriFactory.buildUProtocolShortUri(uAuthority, use, uResource);
-        assertEquals("//2001:db8:85a3:0:0:8a2e:370:7334/5/1/3", uProtocolUri);
-    }
-
-    @Test
-    @DisplayName("Test Create a uProtocol Short URI with remote URI without uEntity")
-    public void test_build_short_uri_from_remote_uri_missing_uentity() {
-        String ipv6Address = "2001:db8:85a3:0:0:8a2e:370:7334";
-        InetAddress address = null;
-        try {
-            address = InetAddress.getByName(ipv6Address);
-        }  
-        catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-        UAuthority uAuthority = UAuthority.remote(address);
-
-        String uProtocolUri = UriFactory.buildUProtocolShortUri(uAuthority, UEntity.empty(), UResource.empty());
-        assertEquals("//2001:db8:85a3:0:0:8a2e:370:7334/", uProtocolUri);
-    }
-
-    @Test
-    @DisplayName("Test Create a uProtocol Short URI when address is missing")
-    public void test_build_short_uri_from_remote_uri_missing_address() {
-        UAuthority uAuthority = UAuthority.remote("VCU", "MY_CAR_VIN");
-        UEntity use = new UEntity("body.access", "1");
-        UResource uResource = UResource.fromName("door");
-        String ucustomUri = UriFactory.buildUProtocolShortUri(uAuthority, use, uResource);
-        assertEquals("///", ucustomUri);
-    }
- 
 }

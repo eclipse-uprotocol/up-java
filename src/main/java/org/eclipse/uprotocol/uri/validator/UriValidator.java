@@ -2,7 +2,7 @@ package org.eclipse.uprotocol.uri.validator;
 
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.factory.UriFactory;
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 
@@ -72,33 +72,8 @@ public interface UriValidator {
      * @return Returns UStatus containing a success or a failure with the error message.
      */
     public static UStatus validateLongUUri(String uri) {
-        final UUri uUri = UriFactory.parseFromUri(uri);
+        final UUri uUri = UriSerializer.STRING.deserialize(uri);
         return validate(uUri);
-    }
-
-    /**
-     * Validate that a passed shortUri and microUri are the same. We cannot validate long to short
-     * without the mapping of names to ids.
-     * @param shortUri Short form URI
-     * @param microUri Micro form URI
-     * @return Returns the UStatus containing a success or a failure with the error message.
-     */
-    public static UStatus validateEqualsShortMicroUri(String shortUri, byte[] microUri) {
-        final UUri uUri = UriFactory.parseFromUri(shortUri);
-        final UUri uUriMicro = UriFactory.parseFromMicroUri(microUri);
-        
-        if (uUri.isEmpty()) {
-            return UStatus.failed("Short Uri is invalid.", Code.INVALID_ARGUMENT);
-        }
-        if (uUriMicro.isEmpty()) {
-            return UStatus.failed("Micro Uri is invalid.", Code.INVALID_ARGUMENT);
-        }
-
-        if (!uUri.equals(uUriMicro)) {
-            String failure = String.format("Short URI %s and Micro Uri %s are not equal.", uUri.toString(), uUriMicro.toString());
-            return UStatus.failed(failure, Code.INVALID_ARGUMENT);
-        }
-        return UStatus.ok();
     }
 
 }

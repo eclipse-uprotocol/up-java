@@ -27,7 +27,8 @@ import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.factory.UriFactory;
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
+
 import com.google.protobuf.Any;
 import com.google.rpc.Code;
 import io.cloudevents.CloudEvent;
@@ -52,7 +53,7 @@ class CloudEventFactoryTest {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
                 new UResource("door", "front_left", "Door"));
-        String source = UriFactory.buildUProtocolUri(Uri);
+        String source = UriSerializer.STRING.serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -94,7 +95,7 @@ class CloudEventFactoryTest {
         UEntity use = UEntity.fromName("body.access");
         UUri ultifiUri = new UUri(UAuthority.local(), use,
                 new UResource("door", "front_left", "Door"));
-        String source = UriFactory.buildUProtocolUri(ultifiUri);
+        String source = UriSerializer.STRING.serialize(ultifiUri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -142,7 +143,7 @@ class CloudEventFactoryTest {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
                 new UResource("door", "front_left", "Door"));
-        String source = UriFactory.buildUProtocolUri(Uri);
+        String source = UriSerializer.STRING.serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -179,7 +180,7 @@ class CloudEventFactoryTest {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
                 new UResource("door", "front_left", "Door"));
-        String source = UriFactory.buildUProtocolUri(Uri);
+        String source = UriSerializer.STRING.serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -213,12 +214,12 @@ class CloudEventFactoryTest {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
                 new UResource("door", "front_left", "Door"));
-        String source = UriFactory.buildUProtocolUri(Uri);
+        String source = UriSerializer.STRING.serialize(Uri);
 
         // sink
         UEntity sinkUse = UEntity.fromName("petapp");
         UUri sinkUri = new UUri(UAuthority.remote("com.gm.bo", "bo"), sinkUse, "OK");
-        String sink = UriFactory.buildUProtocolUri(sinkUri);
+        String sink = UriSerializer.STRING.serialize(sinkUri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -255,13 +256,13 @@ class CloudEventFactoryTest {
 
         // Uri for the application requesting the RPC
         UEntity sourceUse = UEntity.fromName("petapp");
-        String applicationUriForRPC = UriFactory.buildUriForRpc(UAuthority.local(), sourceUse);
+        String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
 
         // service Method Uri
         UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
         UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
-        String serviceMethodUri = UriFactory.buildUProtocolUri(methodUri);
+        String serviceMethodUri = UriSerializer.STRING.serialize(methodUri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -301,14 +302,14 @@ class CloudEventFactoryTest {
         // Uri for the application requesting the RPC
         UAuthority sourceUseAuthority = UAuthority.remote("bo", "cloud");
         UEntity sourceUse = new UEntity("petapp", "1");
-        String applicationUriForRPC = UriFactory.buildUriForRpc(sourceUseAuthority, sourceUse);
+        String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
 
         // service Method Uri
         UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
         UUri methodUri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"),
                 methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
-        String serviceMethodUri = UriFactory.buildUProtocolUri(methodUri);
+        String serviceMethodUri = UriSerializer.STRING.serialize(methodUri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -347,13 +348,13 @@ class CloudEventFactoryTest {
 
         // Uri for the application requesting the RPC
         UEntity sourceUse = new UEntity("petapp", "1");
-        String applicationUriForRPC = UriFactory.buildUriForRpc(UAuthority.local(), sourceUse);
+        String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
 
         // service Method Uri
         UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
         UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
-        String serviceMethodUri = UriFactory.buildUProtocolUri(methodUri);
+        String serviceMethodUri = UriSerializer.STRING.serialize(methodUri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -393,14 +394,15 @@ class CloudEventFactoryTest {
         // Uri for the application requesting the RPC
         UAuthority sourceUseAuthority = UAuthority.remote("bo", "cloud");
         UEntity sourceUse = UEntity.fromName("petapp");
-        String applicationUriForRPC = UriFactory.buildUriForRpc(sourceUseAuthority, sourceUse);
+        
+        String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
 
         // service Method Uri
         UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
         UUri methodUri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"),
                 methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
-        String serviceMethodUri = UriFactory.buildUProtocolUri(methodUri);
+        String serviceMethodUri = UriSerializer.STRING.serialize(methodUri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -440,13 +442,13 @@ class CloudEventFactoryTest {
 
         // Uri for the application requesting the RPC
         UEntity sourceUse = new UEntity("petapp", "1");
-        String applicationUriForRPC = UriFactory.buildUriForRpc(UAuthority.local(), sourceUse);
+        String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
 
         // service Method Uri
         UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
         UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
-        String serviceMethodUri = UriFactory.buildUProtocolUri(methodUri);
+        String serviceMethodUri = UriSerializer.STRING.serialize(methodUri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -487,14 +489,15 @@ class CloudEventFactoryTest {
         // Uri for the application requesting the RPC
         UAuthority sourceUseAuthority = UAuthority.remote("bo", "cloud");
         UEntity sourceUse = UEntity.fromName("petapp");
-        String applicationUriForRPC = UriFactory.buildUriForRpc(sourceUseAuthority, sourceUse);
+        
+        String applicationUriForRPC = UriSerializer.STRING.serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
 
         // service Method Uri
         UEntity methodSoftwareEntityService = new UEntity("body.access", "1");
         UUri methodUri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"),
                 methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
-        String serviceMethodUri = UriFactory.buildUProtocolUri(methodUri);
+        String serviceMethodUri = UriSerializer.STRING.serialize(methodUri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();

@@ -27,7 +27,7 @@ import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.factory.UriFactory;
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -683,7 +683,7 @@ class UCloudEventTest {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
                 new UResource("door", "front_left", "Door"));
-        String source = UriFactory.buildUProtocolUri(Uri);
+        String source = UriSerializer.STRING.serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();

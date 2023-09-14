@@ -34,7 +34,7 @@ import org.apache.commons.validator.routines.InetAddressValidator;
  * An  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
  */
 public class UAuthority {
-    private final static UAuthority EMPTY = new UAuthority(null, null, null, false);
+    private final static UAuthority EMPTY = new UAuthority(null, null, null, false, true);
 
     /**
      * A device is a logical independent representation of a service bus in different execution environments.<br>
@@ -60,6 +60,12 @@ public class UAuthority {
      */
     private final InetAddress address;
 
+    /**
+     * Indicates that the UUri contains both address and name and
+     * the name is not the string version of the IP address
+     */
+    private final boolean markedResolved;
+
     
     /**
      * Constructor.
@@ -68,12 +74,14 @@ public class UAuthority {
      * @param address      The device IP address.
      * @param markedRemote  Indicates if this UAuthority was implicitly marked as remote. Used for validation.
      * @param addressName   Indicates if the device name is an IP address
+     * @param markedResolved Indicates if the UAuthority contains both address and names meaning the UAuthority is resolved.
      */
-    private UAuthority(String device, String domain, InetAddress address, boolean markedRemote) {
+    private UAuthority(String device, String domain, InetAddress address, boolean markedRemote, boolean markedResolved) {
         this.device = device == null ? null : device.toLowerCase();
         this.domain = domain == null ? null : domain.toLowerCase();
         this.address = address;
         this.markedRemote = markedRemote;
+        this.markedResolved = markedResolved;
     }
 
 
@@ -118,12 +126,15 @@ public class UAuthority {
      */
     public static UAuthority remote(String device, String domain, InetAddress address) {
         InetAddress addr = address;
+        boolean markedResolved = device != null && address != null;
+
         // Try and set the address based on device name if the name is the string 
-        // representation of an ip address
+        // representation of an ip address. For this we need to mark it explicitly not resolved
         if ( (device != null) && (addr == null) ) {
             try {
                 if (InetAddressValidator.getInstance().isValid(device)) {
                     addr = InetAddress.getByName(device);
+                    markedResolved = false;
                 } else {
                     addr = null;
                 }
@@ -132,7 +143,7 @@ public class UAuthority {
             }
         }
 
-        return new UAuthority(device, domain, addr, true);
+        return new UAuthority(device, domain, addr, true, markedResolved);
     }
 
     /**
@@ -154,7 +165,7 @@ public class UAuthority {
      * @return returns true if this  authority is local, meaning does not contain a device or a domain.
      */
     public boolean isLocal() {
-        return domain().isEmpty() && device().isEmpty() && address().isEmpty();
+        return domain().isEmpty() && device().isEmpty();
     }
 
     /**
@@ -187,12 +198,13 @@ public class UAuthority {
     }
 
     /**
-     * Returns true if UAuthority is local or contains both address and names if the name was not populated with the
-     * string representation of the address
-     * @return Returns true if UAuthority contains both address and names meaning the UAuthority is resolved.
+     * Returns true if the UAuthority was tagged as resolved meaning the name and address are present and 
+     * the name is NOT the string version of the IP address. *NOTE:* there is no way to know if the address is
+     * in fact a valid DNS address for the device+domain name so we will assume it is.
+     * @return Returns true if UAuthority contains both address and name.
      */
     public boolean isResolved() {
-        return isLocal() || (address().isPresent() && device().isPresent());
+        return markedResolved;
     }
 
     /**
@@ -212,12 +224,13 @@ public class UAuthority {
         if (o == null || getClass() != o.getClass()) return false;
         UAuthority that = (UAuthority) o;
         return markedRemote == that.markedRemote && Objects.equals(device, that.device)
-                && Objects.equals(domain, that.domain) && Objects.equals(address, that.address) ;
+                && Objects.equals(domain, that.domain) && Objects.equals(address, that.address)
+                && markedResolved == that.markedResolved ;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(device, domain, address, markedRemote);
+        return Objects.hash(device, domain, address, markedRemote, markedResolved);
     }
 
     @Override
@@ -230,28 +243,4 @@ public class UAuthority {
                 '}';
     }
 
-    /**
-     * The type of address used for Micro URI.
-     */
-    public enum AddressType {
-        LOCAL(0),
-        IPv4(1),
-        IPv6(2);
-
-        private final int value;
-
-        private AddressType(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public static Optional<AddressType> from(int value) {
-            return Arrays.stream(AddressType.values())
-                    .filter(p -> p.getValue() == value)
-                    .findAny();
-        }
-    }
 }

@@ -29,7 +29,8 @@ import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.factory.UriFactory;
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
+
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -167,7 +168,7 @@ class CloudEventToJsonSerializerTest {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
                 new UResource("door", "front_left", "Door"));
-        String source = UriFactory.buildUProtocolUri(Uri);
+        String source = UriSerializer.STRING.serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest1();

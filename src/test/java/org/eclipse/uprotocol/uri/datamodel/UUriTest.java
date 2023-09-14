@@ -187,6 +187,9 @@ class UriTest {
         assertTrue(uri4.isResolved());
         assertTrue(uri4.isLongForm());
 
+        UUri uri11 = new UUri(UAuthority.local(), new UEntity("Hartley", null, (short)2), UResource.forRpc("Raise"));
+        assertFalse(uri11.isResolved());
+        assertTrue(uri11.isLongForm());
 
         UUri uri5 = new UUri(UAuthority.remote("vcu", "vin", null), UEntity.fromName("Hartley"), UResource.forRpc("Raise"));
         assertFalse(uri5.isResolved());
@@ -213,22 +216,10 @@ class UriTest {
         assertTrue(uri10.isResolved());
         assertTrue(uri10.isLongForm());
 
-    }
-
-    @Test
-    @DisplayName("Test shortUri with valid data")
-    public void test_shortUri_with_valid_data() throws UnknownHostException {
-        UUri uri = UUri.shortUUri(null, (short)1, 2, (short)3);
-        assertEquals(UAuthority.local(), uri.uAuthority());
-        assertEquals((short)1, uri.uEntity().id().get());
-        assertEquals("2", uri.uEntity().version().get());
-        assertEquals((short)3, uri.uResource().id().get());
-
-        UUri uri2 = UUri.shortUUri(InetAddress.getByName("192.168.1.100"), (short)1, 2, (short)3);
-        assertTrue(InetAddress.getByName("192.168.1.100").equals(uri2.uAuthority().address().get()));
-        assertEquals((short)1, uri2.uEntity().id().get());
-        assertEquals("2", uri2.uEntity().version().get());
-        assertEquals((short)3, uri2.uResource().id().get());
+        UUri uri12 = new UUri(UAuthority.remote("vcu", "vin", InetAddress.getByName("192.168.1.100")), new UEntity("Hartley", null, (short)2), UResource.fromId((short)2));
+        assertFalse(uri12.isResolved());
+        assertFalse(uri12.isLongForm());
 
     }
+
 }

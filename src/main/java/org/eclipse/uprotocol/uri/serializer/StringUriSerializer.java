@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class StringUriSerializer implements UriSerializer<String> {
 
     /**
-     * Serialize the UUri object into a String containing either long or short form.
+     * Serialize the UUri object Into a string in Long Form.
      * 
      * @param Uri The  URI data object.
      * @return Returns the uProtocol URI string from an  URI data object
@@ -51,7 +51,7 @@ public class StringUriSerializer implements UriSerializer<String> {
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append(buildAuthorityPartOfUri(Uri.uAuthority(), false));
+        sb.append(buildAuthorityPartOfUri(Uri.uAuthority()));
 
         if (Uri.uAuthority().isMarkedRemote()) {
             sb.append("/");
@@ -61,75 +61,21 @@ public class StringUriSerializer implements UriSerializer<String> {
             return sb.toString();
         }
 
-        sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity(), false));
+        sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity()));
         
-        sb.append(buildResourcePartOfUri(Uri.uResource(), false));
+        sb.append(buildResourcePartOfUri(Uri.uResource()));
 
         return sb.toString().replaceAll("/+$", "");
     }
 
-   
-    
-    /**
-     * Build a Short-Uri string from a UUri object
-     * 
-     * @param Uri The  URI data object.
-     * @return Returns the short form uProtocol URI string from an  URI data object 
-     */
-    static String toShortUri(UUri Uri) {
-        if (Uri == null || Uri.isEmpty()) {
-            return new String();
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(buildAuthorityPartOfUri(Uri.uAuthority(), true));
-
-        if (Uri.uAuthority().isMarkedRemote()) {
-            sb.append("/");
-        }
-
-        if (Uri.uEntity().id().isEmpty()) {
-            return sb.toString();
-        }
-
-        sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity(), true));
-        
-        sb.append(buildResourcePartOfUri(Uri.uResource(), true));
-
-        return sb.toString().replaceAll("/+$", "");
-    }
-
-    /**
-     * Build a Short-Uri string using the separate parts of an URI.
-     * of an  URI.
-     *
-     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
-     * @param uEntity The  Software Entity in the role of a service or in the role of an application.
-     * @param uResource The resource is something that is manipulated by a service such as a Door.
-     *
-     * @return Returns the uProtocol URI string from an  URI data object
-     *      that can be used as a sink or a source in a uProtocol publish communication.
-     */
-    static String toShortUri(UAuthority uAuthority, UEntity uEntity, UResource uResource) {
-        return toShortUri(new UUri(uAuthority, uEntity, uResource));
-    }
-
-
-    
-
-    private static String buildResourcePartOfUri(UResource uResource, boolean shortUri) {
+    private static String buildResourcePartOfUri(UResource uResource) {
         if (uResource.isEmpty()) {
             return "";
         }
         StringBuilder sb = new StringBuilder("/");
-        if (shortUri) {
-            uResource.id().ifPresent(sb::append);
-        } else {
-            sb.append(uResource.name());
-            uResource.instance().ifPresent(instance -> sb.append(".").append(instance));
-            uResource.message().ifPresent(message -> sb.append("#").append(message));
-        }
+        sb.append(uResource.name());
+        uResource.instance().ifPresent(instance -> sb.append(".").append(instance));
+        uResource.message().ifPresent(message -> sb.append("#").append(message));
 
         return sb.toString();
     }
@@ -138,8 +84,8 @@ public class StringUriSerializer implements UriSerializer<String> {
      * Create the service part of the uProtocol URI from an  software entity object.
      * @param use  Software Entity representing a service or an application.
      */
-    private static String buildSoftwareEntityPartOfUri(UEntity use, boolean shortUri) {
-        StringBuilder sb = new StringBuilder(shortUri? use.id().get().toString() : use.name().trim());
+    private static String buildSoftwareEntityPartOfUri(UEntity use) {
+        StringBuilder sb = new StringBuilder(use.name().trim());
         sb.append("/");
         use.version().ifPresent(sb::append);
 
@@ -152,18 +98,11 @@ public class StringUriSerializer implements UriSerializer<String> {
      * @param Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
      * @return Returns the String representation of the  Authority in the uProtocol URI.
      */
-    private static String buildAuthorityPartOfUri(UAuthority Authority, boolean shortUri) {
+    private static String buildAuthorityPartOfUri(UAuthority Authority) {
         if (Authority.isLocal()) {
             return "/";
         }
         StringBuilder partialURI = new StringBuilder("//");
-        if (shortUri) {
-            final Optional<InetAddress> maybeAddress = Authority.address();
-            if (maybeAddress.isPresent()) {
-                partialURI.append(maybeAddress.get().getHostAddress());
-            }
-            return partialURI.toString();
-        }
         final Optional<String> maybeDevice = Authority.device();
         final Optional<String> maybeDomain = Authority.domain();
 
@@ -244,17 +183,7 @@ public class StringUriSerializer implements UriSerializer<String> {
 
         }
 
-        // Try and fetch the uE ID in the name portion of the string
-        Short maybeUeId = null;
-        if (!useName.isEmpty()) {
-            try {
-                maybeUeId = Short.parseShort(useName);
-            } catch (NumberFormatException e) {
-                maybeUeId = null;
-                
-            }
-        }
-        return new UUri(uAuthority, new UEntity(useName, useVersion.isBlank()? null : useVersion, maybeUeId), uResource);
+        return new UUri(uAuthority, new UEntity(useName, useVersion.isBlank() ? null : useVersion), uResource);
     }
 
 }

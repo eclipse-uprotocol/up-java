@@ -25,7 +25,6 @@ import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.datamodel.UAuthority.AddressType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,6 +46,32 @@ public class BytesUriSerializer implements UriSerializer<byte[]> {
 
     static final int IPV6_MICRO_URI_LENGTH = 24; // IPv6 micro Uri length
 
+    static final byte UP_VERSION = 0x1; // UP version
+
+    /**
+     * The type of address used for Micro URI.
+     */
+    private enum AddressType {
+        LOCAL(0),
+        IPv4(1),
+        IPv6(2);
+
+        private final int value;
+
+        private AddressType(int value) {
+            this.value = value;
+        }
+
+        public byte getValue() {
+            return (byte)value;
+        }
+
+        public static Optional<AddressType> from(int value) {
+            return Arrays.stream(AddressType.values())
+                    .filter(p -> p.getValue() == value)
+                    .findAny();
+        }
+    }
 
     /**
      * Serialize a UUri into a byte[] following the Micro-URI specifications
@@ -63,24 +88,22 @@ public class BytesUriSerializer implements UriSerializer<byte[]> {
         Optional<InetAddress> maybeAddress = Uri.uAuthority().address();
         Optional<Short> maybeUeId = Uri.uEntity().id();
         Optional<Short> maybeUResourceId = Uri.uResource().id();
-        if (!maybeUeId.isPresent() || !maybeUResourceId.isPresent()) {
+
+        // Cannot create a micro URI without UResource ID or uEntity ID
+        if (!maybeUResourceId.isPresent() || !maybeUeId.isPresent()) {
             return new byte[0];
         }
 
-        // Remote Uri but the address is missing
-        if (!maybeAddress.isPresent() && Uri.uAuthority().isRemote()) {
-            return new byte[0];
-        }
-        
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         // UP_VERSION
-        os.write(0x1);
+        os.write(UP_VERSION);
 
         // TYPE
-        if (Uri.uAuthority().isLocal()) {
-            os.write(0x0);
+        if (maybeAddress.isPresent()) {
+            os.write(maybeAddress.get() instanceof Inet4Address ? 
+                AddressType.IPv4.getValue() : AddressType.IPv6.getValue());
         } else {
-            os.write(maybeAddress.get() instanceof Inet4Address ? 1 : 2);
+            os.write(AddressType.LOCAL.getValue());
         }
 
         // URESOURCE_ID
@@ -88,7 +111,7 @@ public class BytesUriSerializer implements UriSerializer<byte[]> {
         os.write(maybeUResourceId.get());
 
             // UAUTHORITY_ADDRESS
-        if (!Uri.uAuthority().isLocal()) {
+        if (maybeAddress.isPresent()) {
             try {
                 os.write(maybeAddress.get().getAddress());
             } catch (IOException e) {

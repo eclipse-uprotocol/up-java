@@ -68,20 +68,15 @@ public class UUri {
     }
 
     /**
-     * Create a Short UUri using only IDs containing only IDs
-     * @param uAuthority The internet address of the device or nyll if it is local
-     * @param ueId The id of the ue
-     * @param version The version of the ue
-     * @param uResource The id of the resource
-     * @return Returns a UUri containing only IDs
+     * Create a RPC Response UUri passing the Authority and Entity information
+     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity.
+     * @param uEntity The SW entity information
+     * @return Returns a UUri of a constructed RPC Response
      */
-    public static UUri shortUUri(InetAddress address, Short ueId, Integer version, Short uResource) {
-        Objects.requireNonNull(ueId, "Short Uri must have an ueId");
-        Objects.requireNonNull(version, "Short Uri must have a version");
-        Objects.requireNonNull(uResource, "Short Uri must have an uResource");
-        return new UUri(address == null ? UAuthority.local() : UAuthority.remote(address), 
-            UEntity.fromId(String.valueOf(version), ueId), UResource.fromId(uResource));
+    public static UUri rpcResponse(UAuthority uAuthority, UEntity uEntity) {
+        return new UUri(uAuthority, uEntity, UResource.response());
     }
+    
 
     /**
      * Static factory method for creating an empty  uri, to avoid working with null<br>
