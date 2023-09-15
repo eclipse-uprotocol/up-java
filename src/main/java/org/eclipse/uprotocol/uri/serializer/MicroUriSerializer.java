@@ -34,11 +34,10 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * UUri Factory used to build different types of UUri (long, short, micro), and UUri objects themselves
- * for the various use cases found in uProtocol specifications.
- * For more information, please refer to https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
+ * UUri Serializer that serializes a UUri to a byte[] (micro format) per
+ * https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
  */
-public class BytesUriSerializer implements UriSerializer<byte[]> {
+public class MicroUriSerializer implements UriSerializer<byte[]> {
 
     static final int LOCAL_MICRO_URI_LENGTH = 8; // local micro URI length
 

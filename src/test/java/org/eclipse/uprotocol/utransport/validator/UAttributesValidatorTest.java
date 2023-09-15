@@ -763,7 +763,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("test validating invalid sink attribute")
     public void test_validating_invalid_sink_attribute() {
-        final UUri uri = UriSerializer.STRING.deserialize("//");
+        final UUri uri = UriSerializer.LONG.deserialize("//");
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.PUBLISH, UPriority.LOW).withSink(uri).build();
 
@@ -778,7 +778,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("test validating valid sink attribute")
     public void test_validating_valid_sink_attribute() {
-        final UUri uri = UriSerializer.STRING.deserialize("/haartley/1");
+        final UUri uri = UriSerializer.LONG.deserialize("/haartley/1");
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.PUBLISH, UPriority.LOW).withSink(uri).build();
 
@@ -894,7 +894,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("test validating request message types")
     public void test_validating_request_message_types() {
-        final UUri sink = UriSerializer.STRING.deserialize("/hartley/1/rpc.response");
+        final UUri sink = UriSerializer.LONG.deserialize("/hartley/1/rpc.response");
 
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.NETWORK_CONTROL)
@@ -931,7 +931,7 @@ class UAttributesValidatorTest {
 
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.NETWORK_CONTROL)
-                .withSink(UriSerializer.STRING.deserialize("/hartley/1/rpc.response"))
+                .withSink(UriSerializer.LONG.deserialize("/hartley/1/rpc.response"))
                 .withTtl(-1)
                 .build();
 
@@ -949,7 +949,7 @@ class UAttributesValidatorTest {
 
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.RESPONSE, UPriority.NETWORK_CONTROL)
-                .withSink(UriSerializer.STRING.deserialize("/hartley/1/rpc.response"))
+                .withSink(UriSerializer.LONG.deserialize("/hartley/1/rpc.response"))
                 .withTtl(-1)
                 .withReqId(UUIDFactory.Factories.UPROTOCOL.factory().create())
                 .build();
@@ -969,7 +969,7 @@ class UAttributesValidatorTest {
         final UUID id = UUID.randomUUID();
         final UAttributes attributes = new UAttributesBuilder(id,
                 UMessageType.RESPONSE, UPriority.NETWORK_CONTROL)
-                .withSink(UriSerializer.STRING.deserialize("/hartley/1/rpc.response"))
+                .withSink(UriSerializer.LONG.deserialize("/hartley/1/rpc.response"))
                 .withTtl(100)
                 .withReqId(UUIDFactory.Factories.UPROTOCOL.factory().create())
                 .build();

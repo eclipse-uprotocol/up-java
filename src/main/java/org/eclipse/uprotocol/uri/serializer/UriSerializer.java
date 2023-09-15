@@ -49,11 +49,11 @@ public interface UriSerializer<T> {
     /**
      * Long form serializer
      */
-    public static StringUriSerializer STRING = new StringUriSerializer();
+    public static LongUriSerializer LONG = new LongUriSerializer();
     
     /**
      * Micro form serializer
      */
-    public static BytesUriSerializer BYTES = new BytesUriSerializer();
+    public static MicroUriSerializer MICRO = new MicroUriSerializer();
 
 }

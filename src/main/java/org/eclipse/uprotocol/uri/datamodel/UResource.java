@@ -31,7 +31,7 @@ import java.util.Optional;
  * An UResource is something that can be manipulated/controlled/exposed by a service. Resources are unique when prepended with UAuthority that represents the device and
  * UEntity that represents the service.
  */
-public class UResource {
+public class UResource implements Uri {
 
     private static final UResource EMPTY = new UResource("", null,null, null);
 

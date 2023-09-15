@@ -32,7 +32,7 @@ import org.apache.commons.validator.routines.InetAddressValidator;
  * Devices will be grouped together into realms of Zone of Authority.<br>
  * An  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
  */
-public class UAuthority {
+public class UAuthority implements Uri{
     private final static UAuthority EMPTY = new UAuthority(null, null, null, false, true);
 
     /**
@@ -240,6 +240,12 @@ public class UAuthority {
                 ", address='" + address + '\'' +
                 ", markedRemote=" + markedRemote +
                 '}';
+    }
+
+
+    @Override
+    public boolean isEmpty() {
+        return isLocal();
     }
 
 }

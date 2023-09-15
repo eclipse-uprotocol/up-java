@@ -72,7 +72,7 @@ public interface UriValidator {
      * @return Returns UStatus containing a success or a failure with the error message.
      */
     public static UStatus validateLongUUri(String uri) {
-        final UUri uUri = UriSerializer.STRING.deserialize(uri);
+        final UUri uUri = UriSerializer.LONG.deserialize(uri);
         return validate(uUri);
     }
 

@@ -35,7 +35,7 @@ import java.util.Objects;
  * </pre>
  *
  */
-public class UUri {
+public class UUri implements Uri {
     private static final UUri EMPTY = new UUri(UAuthority.empty(), UEntity.empty(), UResource.empty());
 
     private final UAuthority uAuthority;

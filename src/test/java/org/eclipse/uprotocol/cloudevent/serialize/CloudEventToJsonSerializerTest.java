@@ -168,7 +168,7 @@ class CloudEventToJsonSerializerTest {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
                 new UResource("door", "front_left", "Door"));
-        String source = UriSerializer.STRING.serialize(Uri);
+        String source = UriSerializer.LONG.serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest1();

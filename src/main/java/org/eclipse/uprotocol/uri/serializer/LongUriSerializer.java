@@ -30,10 +30,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * UUri Serializer that serializes a UUri to a string (long or long form) per
+ * UUri Serializer that serializes a UUri to a string (long format) per
  *  https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
  */
-public class StringUriSerializer implements UriSerializer<String> {
+public class LongUriSerializer implements UriSerializer<String> {
 
     /**
      * Serialize the UUri object Into a string in Long Form.

@@ -152,7 +152,7 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateUEntityUri(String uri) {
-        UUri Uri = UriSerializer.STRING.deserialize(uri);
+        UUri Uri = UriSerializer.LONG.deserialize(uri);
         return validateUEntityUri(Uri);
     }
 
@@ -175,7 +175,7 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateTopicUri(String uri) {
-        UUri Uri = UriSerializer.STRING.deserialize(uri);
+        UUri Uri = UriSerializer.LONG.deserialize(uri);
         return validateTopicUri(Uri);
     }
 
@@ -206,7 +206,7 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateRpcTopicUri(String uri) {
-        UUri Uri = UriSerializer.STRING.deserialize(uri);
+        UUri Uri = UriSerializer.LONG.deserialize(uri);
         return validateRpcTopicUri(Uri);
     }
 
@@ -234,7 +234,7 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateRpcMethod(String uri) {
-        UUri Uri = UriSerializer.STRING.deserialize(uri);
+        UUri Uri = UriSerializer.LONG.deserialize(uri);
         ValidationResult validationResult = validateUEntityUri(Uri);
         if (validationResult.isFailure()){
             return ValidationResult.failure(String.format("Invalid RPC method uri. %s", validationResult.getMessage()));

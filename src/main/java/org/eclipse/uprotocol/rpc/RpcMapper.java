@@ -33,13 +33,15 @@ import java.util.concurrent.CompletionException;
 import org.eclipse.uprotocol.utransport.datamodel.UPayload;
 
 /**
- * An interface that maps the returned value from uProtocol Layer 2 to the response in Layer3.
+ * RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with 
+ * an RPC Response (uP-L2). APIs that return Message assumes that the payload is protobuf serialized 
+ * com.google.protobuf.Any (USerializationHint.PROTOBUF) and will barf if anything else is passed
  */
 public interface RpcMapper {
 
     /**
-     * Map a response of CompletableFuture&lt;Any&gt; from Link into a CompletableFuture containing the declared expected return type of the RPC method or an exception.
-     * @param responseFuture CompletableFuture&lt;Any&gt; response from Link.
+     * Map a response of CompletableFuture&lt;UPayload&gt; from Link into a CompletableFuture containing the declared expected return type of the RPC method or an exception.
+     * @param responseFuture CompletableFuture&lt;UPayload&gt; response from uTransport.
      * @param expectedClazz The class name of the declared expected return type of the RPC method.
      * @return Returns a CompletableFuture containing the declared expected return type of the RPC method or an exception.
      * @param <T> The declared expected return type of the RPC method.

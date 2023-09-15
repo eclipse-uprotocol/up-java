@@ -31,7 +31,7 @@ import java.util.Optional;
  * A uE that publishes events is a <b>Service</b> role.<br>
  * A uE that consumes events is an <b>Application</b> role.
  */
-public class UEntity {
+public class UEntity implements Uri {
     private static final UEntity EMPTY = new UEntity("", null);
 
     private final String name;      // uE Name

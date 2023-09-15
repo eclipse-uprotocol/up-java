@@ -58,7 +58,7 @@ class CloudEventToProtobufSerializerTest {
         // build the source
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use, UResource.fromNameWithInstance("Door", "front_left"));
-        String source = UriSerializer.STRING.serialize(Uri);
+        String source = UriSerializer.LONG.serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -148,7 +148,7 @@ class CloudEventToProtobufSerializerTest {
         UEntity use = UEntity.fromName("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
                 new UResource("door", "front_left", "Door"));
-        String source = UriSerializer.STRING.serialize(Uri);
+        String source = UriSerializer.LONG.serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest1();

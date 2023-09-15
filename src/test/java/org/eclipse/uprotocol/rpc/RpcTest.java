@@ -542,7 +542,7 @@ class RpcTest {
     }
 
     private static UUri buildTopic() {
-        return UriSerializer.STRING.deserialize("//vcu.vin/hartley/1/rpc.Raise");
+        return UriSerializer.LONG.deserialize("//vcu.vin/hartley/1/rpc.Raise");
     }
 
     private static UAttributes buildUAttributes() {
