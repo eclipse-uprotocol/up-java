@@ -218,7 +218,7 @@ class CloudEventFactoryTest {
 
         // sink
         UEntity sinkUse = UEntity.fromName("petapp");
-        UUri sinkUri = new UUri(UAuthority.remote("com.gm.bo", "bo"), sinkUse, "OK");
+        UUri sinkUri = new UUri(UAuthority.longRemote("com.gm.bo", "bo"), sinkUse, "OK");
         String sink = UriSerializer.LONG.serialize(sinkUri);
 
         // fake payload
@@ -254,11 +254,11 @@ class CloudEventFactoryTest {
     @DisplayName("Test create request RPC CloudEvent coming from a local USE")
     public void test_create_request_cloud_event_from_local_use() {
 
-        // Uri for the application requesting the RPC
+        // UriPart for the application requesting the RPC
         UEntity sourceUse = UEntity.fromName("petapp");
         String applicationUriForRPC = UriSerializer.LONG.serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
 
-        // service Method Uri
+        // service Method UriPart
         UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
         UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
@@ -296,17 +296,17 @@ class CloudEventFactoryTest {
     }
 
     @Test
-    @DisplayName("Test create request RPC CloudEvent coming from a remote USE")
+    @DisplayName("Test create request RPC CloudEvent coming from a microRemote USE")
     public void test_create_request_cloud_event_from_remote_use() {
 
-        // Uri for the application requesting the RPC
-        UAuthority sourceUseAuthority = UAuthority.remote("bo", "cloud");
+        // UriPart for the application requesting the RPC
+        UAuthority sourceUseAuthority = UAuthority.longRemote("bo", "cloud");
         UEntity sourceUse = new UEntity("petapp", 1);
         String applicationUriForRPC = UriSerializer.LONG.serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
 
-        // service Method Uri
+        // service Method UriPart
         UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
-        UUri methodUri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"),
+        UUri methodUri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"),
                 methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
         String serviceMethodUri = UriSerializer.LONG.serialize(methodUri);
@@ -346,11 +346,11 @@ class CloudEventFactoryTest {
     @DisplayName("Test create response RPC CloudEvent originating from a local USE")
     public void test_create_response_cloud_event_originating_from_local_use() {
 
-        // Uri for the application requesting the RPC
+        // UriPart for the application requesting the RPC
         UEntity sourceUse = new UEntity("petapp", 1);
         String applicationUriForRPC = UriSerializer.LONG.serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
 
-        // service Method Uri
+        // service Method UriPart
         UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
         UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
@@ -388,18 +388,18 @@ class CloudEventFactoryTest {
     }
 
     @Test
-    @DisplayName("Test create response RPC CloudEvent originating from a remote USE")
+    @DisplayName("Test create response RPC CloudEvent originating from a microRemote USE")
     public void test_create_response_cloud_event_originating_from_remote_use() {
 
-        // Uri for the application requesting the RPC
-        UAuthority sourceUseAuthority = UAuthority.remote("bo", "cloud");
+        // UriPart for the application requesting the RPC
+        UAuthority sourceUseAuthority = UAuthority.longRemote("bo", "cloud");
         UEntity sourceUse = UEntity.fromName("petapp");
         
         String applicationUriForRPC = UriSerializer.LONG.serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
 
-        // service Method Uri
+        // service Method UriPart
         UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
-        UUri methodUri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"),
+        UUri methodUri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"),
                 methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
         String serviceMethodUri = UriSerializer.LONG.serialize(methodUri);
@@ -440,11 +440,11 @@ class CloudEventFactoryTest {
     @DisplayName("Test create a failed response RPC CloudEvent originating from a local USE")
     public void test_create_a_failed_response_cloud_event_originating_from_local_use() {
 
-        // Uri for the application requesting the RPC
+        // UriPart for the application requesting the RPC
         UEntity sourceUse = new UEntity("petapp", 1);
         String applicationUriForRPC = UriSerializer.LONG.serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
 
-        // service Method Uri
+        // service Method UriPart
         UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
         UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
@@ -480,18 +480,18 @@ class CloudEventFactoryTest {
     }
 
     @Test
-    @DisplayName("Test create a failed response RPC CloudEvent originating from a remote USE")
+    @DisplayName("Test create a failed response RPC CloudEvent originating from a microRemote USE")
     public void test_create_a_failed_response_cloud_event_originating_from_remote_use() {
 
-        // Uri for the application requesting the RPC
-        UAuthority sourceUseAuthority = UAuthority.remote("bo", "cloud");
+        // UriPart for the application requesting the RPC
+        UAuthority sourceUseAuthority = UAuthority.longRemote("bo", "cloud");
         UEntity sourceUse = UEntity.fromName("petapp");
         
         String applicationUriForRPC = UriSerializer.LONG.serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
 
-        // service Method Uri
+        // service Method UriPart
         UEntity methodSoftwareEntityService = new UEntity("body.access", 1);
-        UUri methodUri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"),
+        UUri methodUri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"),
                 methodSoftwareEntityService,
                 UResource.forRpc("UpdateDoor"));
         String serviceMethodUri = UriSerializer.LONG.serialize(methodUri);

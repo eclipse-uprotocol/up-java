@@ -1,5 +1,6 @@
 package org.eclipse.uprotocol.uri.serializer;
 
+import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -8,9 +9,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
 
-public class StringUriSerializerTest {
+public class StringUriSerializerTestPart {
 
     @Test
     @DisplayName("Test using the serializers")
@@ -256,7 +256,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service only device no domain")
+    @DisplayName("Test parse uProtocol uri with microRemote service only device no domain")
     public void test_parse_protocol_uri_with_remote_service_only_device_no_domain() {
         String uri = "//VCU";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -269,7 +269,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service only device and domain")
+    @DisplayName("Test parse uProtocol uri with microRemote service only device and domain")
     public void test_parse_protocol_uri_with_remote_service_only_device_and_domain() {
         String uri = "//VCU.MY_CAR_VIN";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -283,7 +283,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service only device and cloud domain")
+    @DisplayName("Test parse uProtocol uri with microRemote service only device and cloud domain")
     public void test_parse_protocol_uri_with_remote_service_only_device_and_cloud_domain() {
         String uri = "//cloud.uprotocol.example.com";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -297,7 +297,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service no version")
+    @DisplayName("Test parse uProtocol uri with microRemote service no version")
     public void test_parse_protocol_uri_with_remote_service_no_version() {
         String uri = "//VCU.MY_CAR_VIN/body.access";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -312,7 +312,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote cloud service no version")
+    @DisplayName("Test parse uProtocol uri with microRemote cloud service no version")
     public void test_parse_protocol_uri_with_remote_cloud_service_no_version() {
         String uri = "//cloud.uprotocol.example.com/body.access";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -327,7 +327,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service with version")
+    @DisplayName("Test parse uProtocol uri with microRemote service with version")
     public void test_parse_protocol_uri_with_remote_service_with_version() {
         String uri = "//VCU.MY_CAR_VIN/body.access/1";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -343,7 +343,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote cloud service with version")
+    @DisplayName("Test parse uProtocol uri with microRemote cloud service with version")
     public void test_parse_protocol_uri_with_remote_cloud_service_with_version() {
         String uri = "//cloud.uprotocol.example.com/body.access/1";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -359,7 +359,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service no version with resource name only")
+    @DisplayName("Test parse uProtocol uri with microRemote service no version with resource name only")
     public void test_parse_protocol_uri_with_remote_service_no_version_with_resource_name_only() {
         String uri = "//VCU.MY_CAR_VIN/body.access//door";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -376,7 +376,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote cloud service no version with resource name only")
+    @DisplayName("Test parse uProtocol uri with microRemote cloud service no version with resource name only")
     public void test_parse_protocol_uri_with_remote_cloud_service_no_version_with_resource_name_only() {
         String uri = "//cloud.uprotocol.example.com/body.access//door";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -393,7 +393,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service with version with resource name only")
+    @DisplayName("Test parse uProtocol uri with microRemote service with version with resource name only")
     public void test_parse_protocol_uri_with_remote_service_with_version_with_resource_name_only() {
         String uri = "//VCU.MY_CAR_VIN/body.access/1/door";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -411,7 +411,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote cloud service with version with resource name only")
+    @DisplayName("Test parse uProtocol uri with microRemote cloud service with version with resource name only")
     public void test_parse_protocol_uri_with_remote_service_cloud_with_version_with_resource_name_only() {
         String uri = "//cloud.uprotocol.example.com/body.access/1/door";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -429,7 +429,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service no version with resource and instance no message")
+    @DisplayName("Test parse uProtocol uri with microRemote service no version with resource and instance no message")
     public void test_parse_protocol_uri_with_remote_service_no_version_with_resource_and_instance_no_message() {
         String uri = "//VCU.MY_CAR_VIN/body.access//door.front_left";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -447,7 +447,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service with version with resource and instance no message")
+    @DisplayName("Test parse uProtocol uri with microRemote service with version with resource and instance no message")
     public void test_parse_protocol_uri_with_remote_service_with_version_with_resource_and_instance_no_message() {
         String uri = "//VCU.MY_CAR_VIN/body.access/1/door.front_left";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -466,7 +466,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service no version with resource and instance and message")
+    @DisplayName("Test parse uProtocol uri with microRemote service no version with resource and instance and message")
     public void test_parse_protocol_uri_with_remote_service_no_version_with_resource_and_instance_and_message() {
         String uri = "//VCU.MY_CAR_VIN/body.access//door.front_left#Door";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -485,7 +485,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote cloud service no version with resource and instance and message")
+    @DisplayName("Test parse uProtocol uri with microRemote cloud service no version with resource and instance and message")
     public void test_parse_protocol_uri_with_remote_cloud_service_no_version_with_resource_and_instance_and_message() {
         String uri = "//cloud.uprotocol.example.com/body.access//door.front_left#Door";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -504,7 +504,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service with version with resource and instance and message")
+    @DisplayName("Test parse uProtocol uri with microRemote service with version with resource and instance and message")
     public void test_parse_protocol_uri_with_remote_service_with_version_with_resource_and_instance_and_message() {
         String uri = "//VCU.MY_CAR_VIN/body.access/1/door.front_left#Door";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -524,7 +524,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote cloud service with version with resource and instance and message")
+    @DisplayName("Test parse uProtocol uri with microRemote cloud service with version with resource and instance and message")
     public void test_parse_protocol_uri_with_remote_cloud_service_with_version_with_resource_and_instance_and_message() {
         String uri = "//cloud.uprotocol.example.com/body.access/1/door.front_left#Door";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -544,7 +544,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol uri with remote service with version with resource with message when there is only device, no domain")
+    @DisplayName("Test parse uProtocol uri with microRemote service with version with resource with message when there is only device, no domain")
     public void test_parse_protocol_uri_with_remote_service_with_version_with_resource_with_message_device_no_domain() {
         String uri = "//VCU/body.access/1/door.front_left";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -562,7 +562,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol RPC uri with remote service no version")
+    @DisplayName("Test parse uProtocol RPC uri with microRemote service no version")
     public void test_parse_protocol_rpc_uri_with_remote_service_no_version() {
         String uri = "//bo.cloud/petapp//rpc.response";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -580,7 +580,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse uProtocol RPC uri with remote service with version")
+    @DisplayName("Test parse uProtocol RPC uri with microRemote service with version")
     public void test_parse_protocol_rpc_uri_with_remote_service_with_version() {
         String uri = "//bo.cloud/petapp/1/rpc.response";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
@@ -695,100 +695,100 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service no version")
+    @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service no version")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version() {
         UEntity use = UEntity.fromName("body.access");
-        UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.empty());
+        UUri Uri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"), use, UResource.empty());
         String uProtocolUri = UriSerializer.LONG.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access", uProtocolUri);
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority no device with domain with service no version")
+    @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority no device with domain with service no version")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_no_device_with_domain_with_service_no_version() {
         UEntity use = UEntity.fromName("body.access");
-        UUri Uri = new UUri(UAuthority.remote("", "MY_CAR_VIN"), use, UResource.empty());
+        UUri Uri = new UUri(UAuthority.longRemote("", "MY_CAR_VIN"), use, UResource.empty());
         String uProtocolUri = UriSerializer.LONG.serialize(Uri);
         assertEquals("//my_car_vin/body.access", uProtocolUri);
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service and version")
+    @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service and version")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version() {
         UEntity use = new UEntity("body.access", 1);
-        UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.empty());
+        UUri Uri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"), use, UResource.empty());
         String uProtocolUri = UriSerializer.LONG.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1", uProtocolUri);
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote cloud authority with service and version")
+    @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote cloud authority with service and version")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_cloud_authority_service_and_version() {
         UEntity use = new UEntity("body.access", 1);
-        UUri Uri = new UUri(UAuthority.remote("cloud", "uprotocol.example.com"), use, UResource.empty());
+        UUri Uri = new UUri(UAuthority.longRemote("cloud", "uprotocol.example.com"), use, UResource.empty());
         String uProtocolUri = UriSerializer.LONG.serialize(Uri);
         assertEquals("//cloud.uprotocol.example.com/body.access/1", uProtocolUri);
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service and version with resource")
+    @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service and version with resource")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource() {
         UEntity use = new UEntity("body.access", 1);
-        UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.fromName("door"));
+        UUri Uri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"), use, UResource.fromName("door"));
         String uProtocolUri = UriSerializer.LONG.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1/door", uProtocolUri);
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service no version with resource")
+    @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service no version with resource")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version_with_resource() {
         UEntity use = UEntity.fromName("body.access");
-        UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.fromName("door"));
+        UUri Uri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"), use, UResource.fromName("door"));
         String uProtocolUri = UriSerializer.LONG.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access//door", uProtocolUri);
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service and version with resource with instance no message")
+    @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service and version with resource with instance no message")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource_with_instance_no_message() {
         UEntity use = new UEntity("body.access", 1);
-        UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.fromNameWithInstance("door", "front_left"));
+        UUri Uri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"), use, UResource.fromNameWithInstance("door", "front_left"));
         String uProtocolUri = UriSerializer.LONG.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1/door.front_left", uProtocolUri);
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote cloud authority with service and version with resource with instance no message")
+    @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote cloud authority with service and version with resource with instance no message")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_cloud_authority_service_and_version_with_resource_with_instance_no_message() {
         UEntity use = new UEntity("body.access", 1);
-        UUri Uri = new UUri(UAuthority.remote("cloud", "uprotocol.example.com"), use, UResource.fromNameWithInstance("door", "front_left"));
+        UUri Uri = new UUri(UAuthority.longRemote("cloud", "uprotocol.example.com"), use, UResource.fromNameWithInstance("door", "front_left"));
         String uProtocolUri = UriSerializer.LONG.serialize(Uri);
         assertEquals("//cloud.uprotocol.example.com/body.access/1/door.front_left", uProtocolUri);
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service no version with resource with instance no message")
+    @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service no version with resource with instance no message")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version_with_resource_with_instance_no_message() {
         UEntity use = UEntity.fromName("body.access");
-        UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, UResource.fromNameWithInstance("door", "front_left"));
+        UUri Uri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"), use, UResource.fromNameWithInstance("door", "front_left"));
         String uProtocolUri = UriSerializer.LONG.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access//door.front_left", uProtocolUri);
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service and version with resource with instance and message")
+    @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service and version with resource with instance and message")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource_with_instance_and_message() {
         UEntity use = new UEntity("body.access", 1);
-        UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, new UResource("door", "front_left", "Door"));
+        UUri Uri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"), use, new UResource("door", "front_left", "Door"));
         String uProtocolUri = UriSerializer.LONG.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access/1/door.front_left#Door", uProtocolUri);
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI Object with a remote authority with service no version with resource with instance and message")
+    @DisplayName("Test Create a uProtocol URI from an  URI Object with a microRemote authority with service no version with resource with instance and message")
     public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_no_version_with_resource_with_instance_and_message() {
         UEntity use = UEntity.fromName("body.access");
-        UUri Uri = new UUri(UAuthority.remote("VCU", "MY_CAR_VIN"), use, new UResource("door", "front_left", "Door"));
+        UUri Uri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"), use, new UResource("door", "front_left", "Door"));
         String uProtocolUri = UriSerializer.LONG.serialize(Uri);
         assertEquals("//vcu.my_car_vin/body.access//door.front_left#Door", uProtocolUri);
     }
@@ -803,9 +803,9 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI for the source part of an RPC request, where the source is remote")
+    @DisplayName("Test Create a uProtocol URI for the source part of an RPC request, where the source is microRemote")
     public void test_build_protocol_uri_for_source_part_of_rpc_request_where_source_is_remote() {
-        UAuthority uAuthority = UAuthority.remote("cloud", "uprotocol.example.com");
+        UAuthority uAuthority = UAuthority.longRemote("cloud", "uprotocol.example.com");
         UEntity use = UEntity.fromName("petapp");
         String uProtocolUri = UriSerializer.LONG.serialize(UUri.rpcResponse(uAuthority, use));
         assertEquals("//cloud.uprotocol.example.com/petapp//rpc.response", uProtocolUri);
@@ -823,9 +823,9 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from the parts of  URI Object with a remote authority with service and version with resource")
+    @DisplayName("Test Create a uProtocol URI from the parts of  URI Object with a microRemote authority with service and version with resource")
     public void test_build_protocol_uri_from__uri_parts_when__uri_has_remote_authority_service_and_version_with_resource() {
-        UAuthority uAuthority = UAuthority.remote("VCU", "MY_CAR_VIN");
+        UAuthority uAuthority = UAuthority.longRemote("VCU", "MY_CAR_VIN");
         UEntity use = new UEntity("body.access", 1);
         UResource uResource = UResource.fromName("door");
         String uProtocolUri = UriSerializer.LONG.serialize(new UUri(uAuthority, use, uResource));
@@ -845,7 +845,7 @@ public class StringUriSerializerTest {
     @Test
     @DisplayName("Test Create a custom URI using no scheme")
     public void test_custom_scheme_no_scheme() {
-        UAuthority uAuthority = UAuthority.remote("VCU", "MY_CAR_VIN");
+        UAuthority uAuthority = UAuthority.longRemote("VCU", "MY_CAR_VIN");
         UEntity use = new UEntity("body.access", 1);
         UResource uResource = UResource.fromName("door");
         String ucustomUri = UriSerializer.LONG.serialize(new UUri(uAuthority, use, uResource));
@@ -869,7 +869,7 @@ public class StringUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test parse remote uProtocol uri with custom scheme")
+    @DisplayName("Test parse microRemote uProtocol uri with custom scheme")
     public void test_parse_remote_protocol_uri_with_custom_scheme() {
         String uri = "custom://vcu.vin/body.access//door.front_left#Door";
         String uri2 = "//vcu.vin/body.access//door.front_left#Door";

@@ -42,7 +42,7 @@ class UAuthorityTest {
     @Test
     @DisplayName("Make sure the toString works")
     public void testToString() {
-        UAuthority uAuthority = UAuthority.remote("VCU", "my_VIN");
+        UAuthority uAuthority = UAuthority.longRemote("VCU", "my_VIN");
         String sRemote = uAuthority.toString();
         String expectedRemote = "UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}";
         assertEquals(expectedRemote, sRemote);
@@ -57,7 +57,7 @@ class UAuthorityTest {
     @Test
     @DisplayName("Make sure the toString works with case sensitivity")
     public void testToString_case_sensitivity() {
-        UAuthority uAuthority = UAuthority.remote("vcU", "my_VIN");
+        UAuthority uAuthority = UAuthority.longRemote("vcU", "my_VIN");
         String sRemote = uAuthority.toString();
         String expectedRemote = "UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}";
         assertEquals(expectedRemote, sRemote);
@@ -82,16 +82,16 @@ class UAuthorityTest {
     @Test
     @DisplayName("Test a local uAuthority when one part is empty")
     public void test_local_uAuthority_one_part_empty() {
-        UAuthority uAuthority = UAuthority.remote("", "My_VIN");
+        UAuthority uAuthority = UAuthority.longRemote("", "My_VIN");
         assertFalse(uAuthority.isLocal());
-        UAuthority uAuthority2 = UAuthority.remote("VCU", "");
+        UAuthority uAuthority2 = UAuthority.longRemote("VCU", "");
         assertFalse(uAuthority2.isLocal());
     }
 
     @Test
-    @DisplayName("Test a remote uAuthority")
+    @DisplayName("Test a microRemote uAuthority")
     public void test_remote_uAuthority() {
-        UAuthority uAuthority = UAuthority.remote("VCU", "my_VIN");
+        UAuthority uAuthority = UAuthority.longRemote("VCU", "my_VIN");
         assertTrue(uAuthority.device().isPresent());
         assertEquals("vcu", uAuthority.device().get());
         assertTrue(uAuthority.domain().isPresent());
@@ -101,9 +101,9 @@ class UAuthorityTest {
     }
 
     @Test
-    @DisplayName("Test a remote uAuthority with case sensitivity")
+    @DisplayName("Test a microRemote uAuthority with case sensitivity")
     public void test_remote_uAuthority_case_sensitive() {
-        UAuthority uAuthority = UAuthority.remote("VCu", "my_VIN");
+        UAuthority uAuthority = UAuthority.longRemote("VCu", "my_VIN");
         assertTrue(uAuthority.device().isPresent());
         assertEquals("vcu", uAuthority.device().get());
         assertTrue(uAuthority.domain().isPresent());
@@ -113,9 +113,9 @@ class UAuthorityTest {
     }
 
     @Test
-    @DisplayName("Test a blank remote uAuthority is actually local")
+    @DisplayName("Test a blank microRemote uAuthority is actually local")
     public void test_blank_remote_uAuthority_is_local() {
-        UAuthority uAuthority = UAuthority.remote(" ", " ");
+        UAuthority uAuthority = UAuthority.longRemote(" ", " ");
         assertTrue(uAuthority.device().isEmpty());
         assertTrue(uAuthority.domain().isEmpty());
         assertTrue(uAuthority.isLocal());
@@ -143,7 +143,7 @@ class UAuthorityTest {
     @Test
     @DisplayName("Make sure the isRemote() works")
     public void test_isRemote() {
-        UAuthority remote = UAuthority.remote("VCU", "my_VIN");
+        UAuthority remote = UAuthority.longRemote("VCU", "my_VIN");
         assertFalse(remote.isLocal());
         assertTrue(remote.isRemote());
         assertTrue(remote.isMarkedRemote());
@@ -153,7 +153,7 @@ class UAuthorityTest {
     @Test
     @DisplayName("Test creating uAuthority with invalid ip address")
     public void test_create_uAuthority_with_invalid_ip_address() {
-        UAuthority remote = UAuthority.remote((InetAddress)null);
+        UAuthority remote = UAuthority.microRemote((InetAddress)null);
         String expectedLocal = "UAuthority{device='null', domain='null', address='null', markedRemote=true}";
         assertEquals(expectedLocal, remote.toString());
         assertFalse(remote.address().isPresent());
@@ -165,7 +165,7 @@ class UAuthorityTest {
     public void test_create_uAuthority_with_valid_ip_address() {
         InetAddress address = Inet6Address.getLoopbackAddress();
 
-        UAuthority remote = UAuthority.remote(address);
+        UAuthority remote = UAuthority.microRemote(address);
         String expectedLocal = "UAuthority{device='null', domain='null', address='localhost/127.0.0.1', markedRemote=true}";
         InetAddress address2 = remote.address().get();
         assertTrue(remote.address().isPresent());
@@ -185,7 +185,7 @@ class UAuthorityTest {
             e.printStackTrace();
         }
 
-        UAuthority remote = UAuthority.remote(address);
+        UAuthority remote = UAuthority.microRemote(address);
         String expectedLocal = "UAuthority{device='null', domain='null', address='/2001:db8:85a3:0:0:8a2e:370:7334', markedRemote=true}";
         assertEquals(expectedLocal, remote.toString());
     }
@@ -193,7 +193,7 @@ class UAuthorityTest {
     @Test
     @DisplayName("Test creating uAuthority with valid ipv4 address in the device name")
     public void test_create_uAuthority_with_valid_ipv4_address_in_device_name() {
-        UAuthority remote = UAuthority.remote("192.168.1.100", null);
+        UAuthority remote = UAuthority.longRemote("192.168.1.100", null);
         String expectedLocal = "UAuthority{device='192.168.1.100', domain='null', address='/192.168.1.100', markedRemote=true}";
         assertEquals(expectedLocal, remote.toString());
     }
@@ -203,8 +203,8 @@ class UAuthorityTest {
     @DisplayName("Test isResolved() and isLongForm() with a resolved uAuthority")
     public void test_isResolved_with_resolved_uAuthority() throws UnknownHostException {
         UAuthority local = UAuthority.local();
-        UAuthority remote = UAuthority.remote("192.168.1.100", null, InetAddress.getByName("192.168.1.100"));
-        UAuthority remote1 = UAuthority.remote("vcu", "vin", InetAddress.getByName("192.168.1.100"));
+        UAuthority remote = UAuthority.resolvedRemote("192.168.1.100", null, InetAddress.getByName("192.168.1.100"));
+        UAuthority remote1 = UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100"));
         assertTrue(local.isResolved());
         assertTrue(local.isLongForm());
         assertTrue(remote.isResolved());
@@ -217,8 +217,8 @@ class UAuthorityTest {
     @Test
     @DisplayName("Test isResolved() and isLongForm() with a unresolved uAuthority")
     public void test_isResolved_with_unresolved_uAuthority() throws UnknownHostException {
-        UAuthority remote = UAuthority.remote("vcu", "vin");
-        UAuthority remote1 = UAuthority.remote(InetAddress.getByName("192.168.1.100"));
+        UAuthority remote = UAuthority.longRemote("vcu", "vin");
+        UAuthority remote1 = UAuthority.microRemote(InetAddress.getByName("192.168.1.100"));
         UAuthority remote2 = UAuthority.empty();
         assertFalse(remote.isResolved());
         assertTrue(remote.isLongForm());

@@ -167,7 +167,7 @@ class UAttributesValidatorTest {
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
         final UStatus status = validator.validate(attributes);
         assertTrue(status.isFailed());
-        assertEquals("Uri is empty.", status.msg());
+        assertEquals("UriPart is empty.", status.msg());
     }
 
     @Test
@@ -217,7 +217,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request")
     public void test_validate_uAttributes_for_rpc_request_message_payload() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
@@ -234,7 +234,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with all values")
     public void test_validate_uAttributes_for_rpc_request_message_payload_all_values() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
@@ -254,7 +254,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid id")
     public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_id() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(null,
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
@@ -271,7 +271,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid type")
     public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_type() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
@@ -288,7 +288,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid priority")
     public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_priority() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, null)
@@ -305,7 +305,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with missing time to live")
     public void test_validate_uAttributes_for_rpc_request_message_payload_missing_ttl() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
@@ -321,7 +321,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid time to live")
     public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_ttl() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
@@ -367,7 +367,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid permission level")
     public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_permission_level() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
@@ -385,7 +385,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid communication status")
     public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_communication_status() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
@@ -403,7 +403,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid request id")
     public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_request_id() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
@@ -423,7 +423,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response")
     public void test_validate_uAttributes_for_rpc_response_message_payload() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
@@ -440,7 +440,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with all values")
     public void test_validate_uAttributes_for_rpc_response_message_payload_all_values() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
@@ -459,7 +459,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with invalid id")
     public void test_validate_uAttributes_for_rpc_response_message_payload_invalid_id() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(null,
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
@@ -476,7 +476,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with invalid type")
     public void test_validate_uAttributes_for_rpc_response_message_payload_invalid_type() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.PUBLISH, UPriority.REALTIME_INTERACTIVE)
@@ -493,7 +493,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with invalid priority")
     public void test_validate_uAttributes_for_rpc_response_message_payload_invalid_priority() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.RESPONSE, null)
@@ -510,7 +510,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with invalid time to live")
     public void test_validate_uAttributes_for_rpc_response_message_payload_invalid_ttl() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
@@ -551,13 +551,13 @@ class UAttributesValidatorTest {
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
         final UStatus status = validator.validate(attributes);
         assertTrue(status.isFailed());
-        assertEquals("Uri is missing uSoftware Entity name.", status.msg());
+        assertEquals("UriPart is missing uSoftware Entity name.", status.msg());
     }
 
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with invalid permission level")
     public void test_validate_uAttributes_for_rpc_response_message_payload_invalid_permission_level() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
@@ -575,7 +575,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with invalid communication status")
     public void test_validate_uAttributes_for_rpc_response_message_payload_invalid_communication_status() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
@@ -593,7 +593,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with missing request id")
     public void test_validate_uAttributes_for_rpc_response_message_payload_missing_request_id() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
@@ -609,7 +609,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with invalid request id")
     public void test_validate_uAttributes_for_rpc_response_message_payload_invalid_request_id() {
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UUID reqid = UUID.randomUUID();
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
@@ -772,7 +772,7 @@ class UAttributesValidatorTest {
 
         assertTrue(status.isFailed());
         assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Uri is empty.", status.msg());
+        assertEquals("UriPart is empty.", status.msg());
     }
 
     @Test

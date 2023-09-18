@@ -43,7 +43,7 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
 
     static final int IPV4_MICRO_URI_LENGTH = 12; // IPv4 micro URI length 
 
-    static final int IPV6_MICRO_URI_LENGTH = 24; // IPv6 micro Uri length
+    static final int IPV6_MICRO_URI_LENGTH = 24; // IPv6 micro UriPart length
 
     static final byte UP_VERSION = 0x1; // UP version
 
@@ -189,7 +189,7 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
         // UE_VERSION
         int uiVersion = microUri[index++];
         
-        return new UUri((type.get() == AddressType.LOCAL) ? UAuthority.local() : UAuthority.remote(maybeAddress.get()),
+        return new UUri((type.get() == AddressType.LOCAL) ? UAuthority.local() : UAuthority.microRemote(maybeAddress.get()),
                 UEntity.fromId(uiVersion, (short)ueId),
                 UResource.fromId((short)uResourceId));
     }    

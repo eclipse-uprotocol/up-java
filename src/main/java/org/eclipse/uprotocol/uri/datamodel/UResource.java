@@ -31,13 +31,11 @@ import java.util.Optional;
  * An UResource is something that can be manipulated/controlled/exposed by a service. Resources are unique when prepended with UAuthority that represents the device and
  * UEntity that represents the service.
  */
-public class UResource implements Uri {
+public class UResource implements UriPart {
 
-    private static final UResource EMPTY = new UResource("", null,null, null);
+    private static final UResource EMPTY = new UResource("", null,null, null, false);
 
-    private static final UResource RESPONSE = new UResource("rpc", "response",null, Short.valueOf((short)0));
-
-    private static final String UNKNOWN_NAME = new String("unknown");   
+    private static final UResource RESPONSE = new UResource("rpc", "response",null, (short) 0, true);
 
     private final String name;
 
@@ -47,124 +45,94 @@ public class UResource implements Uri {
 
     private final Short id;
 
-    /**
-     * Create an  Resource. The resource is something that is manipulated by a service such as a door.
-     * @param name      The name of the resource as a noun such as door or window, or in the case a method that manipulates the resource, a verb.
-     * @param instance  An instance of a resource such as front_left.
-     * @param message   The Message type matches the protobuf service IDL message name that defines structured data types.
-     *                  A message is a data structure type used to define data that is passed in  events and rpc methods.
-     */
-    public UResource(String name, String instance, String message) {
-        this(name, instance, message, null);
-    }
+    private final boolean markedResolved; // Indicates that this UAuthority has already been resolved.
 
     /**
-     * Create an  Resource. The resource is something that is manipulated by a service such as a door.
+     * Create a uResource. The resource is something that is manipulated by a service such as a door.
      * @param name      The name of the resource as a noun such as door or window, or in the case a method that manipulates the resource, a verb.
      * @param instance  An instance of a resource such as front_left.
      * @param message   The Message type matches the protobuf service IDL message name that defines structured data types.
      *                  A message is a data structure type used to define data that is passed in  events and rpc methods.
+     * @param id        The numeric representation of this uResource.
+     * @param markedResolved Indicates that this uResource was populated with intent of having all data.
      */
-    public UResource(String name, String instance, String message, Short id) {
-        Objects.requireNonNull(name, " Resource must have a name.");
-        this.name = name;
+    private UResource(String name, String instance, String message, Short id, boolean markedResolved) {
+        this.name = Objects.requireNonNullElse(name, "");
         this.instance = instance;
         this.message = message;
-        if (name.equals("rpc") && instance != null && instance.equals("response")) {
-            this.id = Short.valueOf((short)0);
-        } else {
-            this.id = id;
-        }
-
-    }
-
-
-    /**
-     * Static factory method for creating an  Resource using the resource id.
-     * @param id The id of the resource.
-     * @return Returns an UResource with the resource id where the name, instance and message are empty.
-     */
-    public static UResource fromId(Short id) {
-        Objects.requireNonNull(id, "id Required");
-        if (id == 0) {
-            return RESPONSE;
-        }
-        return new UResource(UNKNOWN_NAME, null, null, id);
+        this.id = id;
+        this.markedResolved = markedResolved;
     }
 
     /**
-     * Static factory method for creating an  Resource using the resource name.
+     * Build a UResource that has serialization information.
      * @param name The name of the resource as a noun such as door or window, or in the case a method that manipulates the resource, a verb.
-     * @return Returns an UResource with the resource name where the instance and message are empty.
-     *      If the instance does not exist, it is assumed that all the instances of the resource are wanted.
+     * @param instance An instance of a resource such as front_left.
+     * @param message The Message type matches the protobuf service IDL message name that defines structured data types.
+     *                A message is a data structure type used to define data that is passed in  events and rpc methods.
+     * @param id The numeric representation of this uResource.
+     * @return Returns a UResource that has all the information that is needed to serialise into a long UUri or a micro UUri.
      */
-    public static UResource fromName(String name) {
-        return new UResource(name, null, null);
+    public static UResource resolved(String name, String instance, String message, Short id) {
+        boolean resolved = name != null && !name.isEmpty() && id != null;
+        return new UResource(name, instance, message, id, resolved);
     }
 
     /**
-     * Static factory method for creating an  Resource using the resource name and some resource instance.
-     * @param name      The name of the resource as a noun such as door or window, or in the case a method that manipulates the resource, a verb.
-     * @param instance  An instance of a resource such as front_left.
-     * @return Returns an UResource with the resource name and a specific instance where the message is left empty.
+     * Build a UResource that can be serialised into a long UUri. Mostly used for publishing messages.
+     * @param name The name of the resource as a noun such as door or window, or in the case a method that manipulates the resource, a verb.
+     * @return Returns a UResource that can be serialised into a long UUri.
      */
-    public static UResource fromNameWithInstance(String name, String instance) {
-        return new UResource(name, instance, null);
+    public static UResource longFormat(String name) {
+        return new UResource(name, null, null, null, false);
     }
 
     /**
-     * Static factory method for creating an  Resource using a resource command name such as UpdateDoor.
-     * @param commandName The RPC command name such as UpdateDoor.
-     * @return returns an resource used for sending RPC commands.
+     * Build a UResource that can be serialised into a long UUri. Mostly used for publishing messages.
+     * @param name The name of the resource as a noun such as door or window, or in the case a method that manipulates the resource, a verb.
+     * @param instance An instance of a resource such as front_left.
+     * @param message The Message type matches the protobuf service IDL message name that defines structured data types.
+     *                A message is a data structure type used to define data that is passed in  events and rpc methods.
+     * @return Returns a UResource that can be serialised into a long UUri.
      */
-    public static UResource forRpc(String commandName) {
-        Objects.requireNonNull(commandName, " Resource must have a command name.");
-        return forRpc(commandName, null);
-    }
-
-
-    /**
-     * Static factory method for creating an Resource using a resource command and ID.
-     * @param commandName The RPC command name such as UpdateDoor.
-     * @param id The RPC command id.
-     * @return returns an resource used for sending RPC commands.
-     */
-    public static UResource forRpc(String commandName, Short id) {
-        Objects.requireNonNull(commandName, " Resource must have a command name.");
-        return new UResource("rpc", commandName, null, id);
+    public static UResource longFormat(String name, String instance, String message) {
+        return new UResource(name, instance, message, null, false);
     }
 
     /**
-     * Static factory method for creating a UResource using a string that contains either the id or
-     * a name + instance + message.
-     * @param resourceString String that contains the UResource information.
-     * @return Returns a UResource object
+     * Build a UResource that can be serialised into a micro UUri. Mostly used for publishing messages.
+     * @param id The numeric representation of this uResource.
+     * @return Returns a UResource that can be serialised into a micro UUri.
      */
-    public static UResource parseFromString(String resourceString) {
-        Objects.requireNonNull(resourceString, " Resource must have a command name.");
-        String[] parts = resourceString.split("#");
-        String nameAndInstance = parts[0];
-
-        // Try and fetch the resource ID if there is one (short form)
-        Short maybeId = null;
-        try {
-            maybeId = Short.parseShort(nameAndInstance);
-        } catch (NumberFormatException e) {
-            maybeId = null;
-            
-        }
-
-        if (maybeId != null) {
-            return UResource.fromId(maybeId);
-        }
-
-        String[] nameAndInstanceParts = nameAndInstance.split("\\.");
-        String resourceName = nameAndInstanceParts[0];
-        String resourceInstance = nameAndInstanceParts.length > 1 ? nameAndInstanceParts[1] : null;
-        String resourceMessage = parts.length > 1 ? parts[1] : null;
-        return new UResource(resourceName, resourceInstance, resourceMessage);
+    public static UResource microFormat(Short id) {
+        return new UResource("", null, null, id, false);
     }
 
+    /**
+     * Build a UResource for rpc request, using only the long format.
+     * @param methodName The RPC method name.
+     * @return Returns a UResource used for an RPC request that could be serialised in long format.
+     */
+    public static UResource forRpcRequest(String methodName) {
+        return new UResource("rpc", methodName, null, null, false);
+    }
+
+    /**
+     * Build a UResource for rpc request, using only the micro format.
+     * @param methodId The numeric representation method name for the RPC.
+     * @return Returns a UResource used for an RPC request that could be serialised in micro format.
+     */
+    public static UResource forRpcRequest(Short methodId) {
+        return new UResource("rpc", null, null, methodId, false);
+    }
+
+    /**
+     * Static factory method for creating a response resource that is returned from RPC calls<br>
+     * @return Returns a response  resource used for response RPC calls.
+     */
+    public static UResource forRpcResponse() {
+        return RESPONSE;
+    }
 
     /**
      * @return Returns true if this resource specifies an RPC method call.
@@ -182,19 +150,11 @@ public class UResource implements Uri {
     }
 
     /**
-     * Static factory method for creating a response  resource that is returned from RPC calls<br>
-     * @return Returns a response  resource used for response RPC calls.
-     */
-    public static UResource response() {
-        return RESPONSE;
-    }
-
-    /**
      * Indicates that this resource is an empty container and has no valuable information in building uProtocol URI.
      * @return Returns true if this resource is an empty container and has no valuable information in building uProtocol URI.
      */
     public boolean isEmpty() {
-        return name.isBlank() && instance().isEmpty() && message().isEmpty();
+        return name.isBlank() && instance().isEmpty() && message().isEmpty() && id().isEmpty();
     }
 
     /**
@@ -212,16 +172,6 @@ public class UResource implements Uri {
     }
 
     /**
-     * Support for building the name attribute in many protobuf Message objects.
-     * Will build a string with the name and instance with a dot delimiter, only if the instance exists.
-     * @return Returns a string used for building the name attribute in many protobuf Message objects.
-     *      Will build a string with the name and instance with a dot delimiter, only if the instance exists.
-     */
-    public String nameWithInstance() {
-        return instance().isPresent() ? String.format("%s.%s", name(), instance().get()) : name();
-    }
-
-    /**
      * An instance of a resource such as front_left
      * or in the case of RPC a method name that manipulates the resource such as UpdateDoor.
      * @return Returns the resource instance of the resource if it exists.
@@ -230,7 +180,6 @@ public class UResource implements Uri {
     public Optional<String> instance() {
         return instance == null || instance.isBlank() ? Optional.empty() : Optional.of(instance);
     }
-
 
     /**
      * The Message type matches the protobuf service IDL that defines structured data types.
@@ -241,18 +190,47 @@ public class UResource implements Uri {
         return message == null || message.isBlank() ? Optional.empty() : Optional.of(message);
     }
 
+    /**
+     * Return true if this resource contains both ID and names.
+     * Method type of UResource requires name, instance, and ID where a topic
+     * type of UResource also requires message to not be null 
+     * @return  Returns true of this resource contains resolved information
+     */
+    public boolean isResolved() {
+        return markedResolved;
+    }
+
+    /**
+     * Returns true if the uResource contains names so that it can be serialized to long format.
+     * @return Returns true if the uResource contains names so that it can be serialized to long format.
+     */
+    @Override
+    public boolean isLongForm() {
+        return !name().isEmpty() && instance().isPresent();
+    }
+
+    /**
+     * Returns true if the uResource contains the id's which will allow the Uri part to be serialized into micro form.
+     * @return Returns true if the uResource can be serialized into micro form.
+     */
+    @Override
+    public boolean isMicroForm() {
+        return id().isPresent();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UResource that = (UResource) o;
-        return Objects.equals(name, that.name) && Objects.equals(instance, that.instance) &&
-            Objects.equals(message, that.message) && Objects.equals(id, that.id);
+        UResource uResource = (UResource) o;
+        return markedResolved == uResource.markedResolved && Objects.equals(name, uResource.name)
+                && Objects.equals(instance, uResource.instance) && Objects.equals(message, uResource.message)
+                && Objects.equals(id, uResource.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, instance, message, id);
+        return Objects.hash(name, instance, message, id, markedResolved);
     }
 
     @Override
@@ -261,21 +239,8 @@ public class UResource implements Uri {
                 "name='" + name + '\'' +
                 ", instance='" + instance + '\'' +
                 ", message='" + message + '\'' +
-                ", id='" + (id == null ? "null" : id) + '\'' +
+                ", id=" + id +
+                ", markedResolved=" + markedResolved +
                 '}';
-    }
-
-    /**
-     * Return true if this resource contains both ID and names.
-     * Method type of UResource requires name, instance, and ID where a topic
-     * type of UResource also requires message to not be null 
-     * @return  Returns true of this resource contains resolved information
-     */
-    public boolean isResolved() {
-        return (id != null) && isLongForm();
-    }
-
-    public boolean isLongForm() {
-        return !name.equals(UNKNOWN_NAME) && (instance != null) && (isRPCMethod() || (message != null));
     }
 }

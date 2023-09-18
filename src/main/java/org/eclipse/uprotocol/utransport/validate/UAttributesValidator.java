@@ -168,7 +168,7 @@ public abstract class UAttributesValidator {
     }
 
     /**
-     * Validate the sink Uri for the default case. If the UAttributes does not contain a sink then the UStatus is ok.
+     * Validate the sink UriPart for the default case. If the UAttributes does not contain a sink then the UStatus is ok.
      * @param attributes UAttributes object containing the sink to validate.
      * @return Returns a {@link UStatus} that is success or failed with a failure message.
      */

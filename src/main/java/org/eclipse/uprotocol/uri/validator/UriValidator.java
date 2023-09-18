@@ -13,24 +13,24 @@ import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 public interface UriValidator {
 
     /**
-     * Validate a Uri to ensure that it has at least a name for the uEntity.
-     * @param uri Uri to validate.
+     * Validate a UriPart to ensure that it has at least a name for the uEntity.
+     * @param uri UriPart to validate.
      * @return Returns UStatus containing a success or a failure with the error message.
      */
     public static UStatus validate(UUri uri) {
         if (uri.isEmpty()) {
-            return UStatus.failed("Uri is empty.", Code.INVALID_ARGUMENT);
+            return UStatus.failed("UriPart is empty.", Code.INVALID_ARGUMENT);
         }
 
         if (uri.uEntity().name().isBlank()) {
-            return UStatus.failed("Uri is missing uSoftware Entity name.", Code.INVALID_ARGUMENT);
+            return UStatus.failed("UriPart is missing uSoftware Entity name.", Code.INVALID_ARGUMENT);
         }
         return UStatus.ok();
     }
 
     /**
-     * Validate a Uri that is meant to be used as an RPC method URI. Used in Request sink values and Response source values.
-     * @param uri Uri to validate.
+     * Validate a UriPart that is meant to be used as an RPC method URI. Used in Request sink values and Response source values.
+     * @param uri UriPart to validate.
      * @return Returns UStatus containing a success or a failure with the error message.
      */
     public static UStatus validateRpcMethod(UUri uri) {
@@ -40,15 +40,15 @@ public interface UriValidator {
         }
         final UResource uResource = uri.uResource();
         if (!uResource.isRPCMethod()) {
-            return UStatus.failed("Invalid RPC method uri. Uri should be the method to be called, or method from response.", Code.INVALID_ARGUMENT);
+            return UStatus.failed("Invalid RPC method uri. UriPart should be the method to be called, or method from response.", Code.INVALID_ARGUMENT);
         }
         return UStatus.ok();
     }
 
     /**
-     * Validate a Uri that is meant to be used as an RPC response URI. Used in Request source values and Response sink values.
+     * Validate a UriPart that is meant to be used as an RPC response URI. Used in Request source values and Response sink values.
      * 
-     * @param uri Uri to validate.
+     * @param uri UriPart to validate.
      * @return Returns UStatus containing a success or a failure with the error message.
      */
     public static UStatus validateRpcResponse(UUri uri) {

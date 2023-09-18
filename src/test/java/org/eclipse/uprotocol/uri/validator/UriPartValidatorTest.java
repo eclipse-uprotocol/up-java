@@ -22,6 +22,7 @@
 package org.eclipse.uprotocol.uri.validator;
 
 
+import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -30,13 +31,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
 
 import org.eclipse.uprotocol.uri.serializer.UriSerializer;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 
-class UriValidatorTest {
+class UriPartValidatorTest {
 
     @Test
     @DisplayName("Test validate blank uri")
@@ -45,7 +45,7 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validate(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is empty.", status.msg());
+        assertEquals("UriPart is empty.", status.msg());
     }
 
     @Test
@@ -55,7 +55,7 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validate(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is empty.", status.msg());
+        assertEquals("UriPart is empty.", status.msg());
     }
 
     @Test
@@ -73,7 +73,7 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validate(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is empty.", status.msg());
+        assertEquals("UriPart is empty.", status.msg());
     }
    
 
@@ -84,7 +84,7 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validate(uri);
         assertFalse(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is missing uSoftware Entity name.", status.msg());
+        assertEquals("UriPart is missing uSoftware Entity name.", status.msg());
     }
 
     @Test
@@ -101,7 +101,7 @@ class UriValidatorTest {
         final UUri uri = UriSerializer.LONG.deserialize("/hartley/echo");
         final UStatus status = UriValidator.validateRpcMethod(uri);
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Invalid RPC method uri. Uri should be the method to be called, or method from response.", status.msg());
+        assertEquals("Invalid RPC method uri. UriPart should be the method to be called, or method from response.", status.msg());
     }
 
     @Test
@@ -111,7 +111,7 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validateRpcMethod(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is empty.", status.msg());
+        assertEquals("UriPart is empty.", status.msg());
     }
 
     @Test
@@ -129,7 +129,7 @@ class UriValidatorTest {
         final UStatus status = UriValidator.validateRpcResponse(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is empty.", status.msg());
+        assertEquals("UriPart is empty.", status.msg());
     }
 
     @Test

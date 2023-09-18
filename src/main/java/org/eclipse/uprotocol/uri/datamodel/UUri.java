@@ -24,30 +24,30 @@ package org.eclipse.uprotocol.uri.datamodel;
 import java.util.Objects;
 
 /**
- * Data representation of an <b> URI</b>.
- * This class will be used to represent the source and sink (destination) parts of the  Packet CloudEvent. <br>
- * URI is used as a method to uniquely identify devices, services, and resources on the  network.<br>
+ * Data representation of uProtocol <b>URI</b>.
+ * This class will be used to represent the source and sink (destination) parts of the Packet, for example in a CloudEvent Packet. <br>
+ * UUri is used as a method to uniquely identify devices, services, and resources on the  network.<br>
+ * Where software is deployed, what the service is called along with a version and the resources in the service.
  * Defining a common URI for the system allows applications and/or services to publish and discover each other
  * as well as maintain a database/repository of microservices in the various vehicles.<br>
- * Example:
+ * Example for long format serialisation:
  * <pre>
  *     //&lt;device&gt;.&lt;domain&gt;/&lt;service&gt;/&lt;version&gt;/&lt;resource&gt;#&lt;message&gt;
  * </pre>
  *
  */
-public class UUri implements Uri {
+public class UUri {
     private static final UUri EMPTY = new UUri(UAuthority.empty(), UEntity.empty(), UResource.empty());
 
     private final UAuthority uAuthority;
     private final UEntity uEntity;
     private final UResource uResource;
 
-
     /**
      * Create a full  URI.
-     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity .
-     * @param uEntity The USE in the role of a service or in the role of an application.
-     * @param uResource The resource is something that is manipulated by a service such as a Door.
+     * @param uAuthority The uAuthority represents the deployment location of a specific Software Entity .
+     * @param uEntity The uEntity in the role of a service or in the role of an application is the software and version.
+     * @param uResource The uResource is something that is manipulated by a service such as a Door.
      */
     public UUri(UAuthority uAuthority, UEntity uEntity, UResource uResource) {
         this.uAuthority = Objects.requireNonNullElse(uAuthority, UAuthority.empty());
@@ -56,24 +56,24 @@ public class UUri implements Uri {
     }
 
     /**
-     * Create an  URI for a resource. This will match all the specific instances of the resource,
+     * Create a URI for a resource. This will match all the specific instances of the resource,
      *      for example all the instances of the vehicle doors.
      * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity.
      * @param uEntity The USE in the role of a service or in the role of an application.
      * @param uResource The resource is something that is manipulated by a service such as a Door.
      */
     public UUri(UAuthority uAuthority, UEntity uEntity, String uResource) {
-        this(uAuthority, uEntity, UResource.fromName(uResource));
+        this(uAuthority, uEntity, UResource.longFormat(uResource));
     }
 
     /**
-     * Create a RPC Response UUri passing the Authority and Entity information
-     * @param uAuthority The  Authority represents the deployment location of a specific  Software Entity.
-     * @param uEntity The SW entity information
-     * @return Returns a UUri of a constructed RPC Response
+     * Create an RPC Response UUri passing the Authority and Entity information.
+     * @param uAuthority The uAuthority represents the deployment location of a specific Software Entity.
+     * @param uEntity The SW entity information.
+     * @return Returns a UUri of a constructed RPC Response.
      */
     public static UUri rpcResponse(UAuthority uAuthority, UEntity uEntity) {
-        return new UUri(uAuthority, uEntity, UResource.response());
+        return new UUri(uAuthority, uEntity, UResource.forRpcResponse());
     }
     
 
@@ -92,6 +92,32 @@ public class UUri implements Uri {
     public boolean isEmpty() {
         return uAuthority.isLocal() && uEntity().isEmpty()
                 && uResource.isEmpty();
+    }
+
+    /**
+     * Returns true if URI contains both names and numeric representations of the names inside its belly.
+     * Meaning that this UUri can be serialised to long or micro formats.
+     * @return Returns true if URI contains both names and numeric representations of the names inside its belly.
+     *      Meaning that this UUri can be serialised to long or micro formats.
+     */
+    public boolean isResolved() {
+        return uAuthority.isResolved() && uEntity.isResolved() && uResource.isResolved();
+    }
+
+    /**
+     * Determines if this UUri can be serialised into a long form UUri.
+     * @return Returns true if this UUri can be serialised into a long form UUri.
+     */
+    public boolean isLongForm() {
+        return uAuthority.isLongForm() && uEntity.isLongForm() && uResource.isLongForm();
+    }
+
+    /**
+     * Determines if this UUri can be serialised into a micro form UUri.
+     * @return Returns true if this UUri can be serialised into a micro form UUri.
+     */
+    public boolean isMicroForm() {
+        return uAuthority.isMicroForm() && uEntity.isMicroForm() && uResource.isMicroForm();
     }
 
     /**
@@ -131,27 +157,10 @@ public class UUri implements Uri {
 
     @Override
     public String toString() {
-        return "Uri{" +
+        return "UriPart{" +
                 "uAuthority=" + uAuthority +
                 ", uEntity=" + uEntity +
                 ", uResource=" + uResource +
                 '}';
-    }
-
-    /**
-     * Returns true if URI contains both names and numeric representations of the names inside
-     * its belly.
-     * @return Returns true if URI contains both names and numeric representations of the names inside
-     */
-    public boolean isResolved() {
-        return uAuthority.isResolved() && uEntity.isResolved() && uResource.isResolved();
-    }
-
-    /**
-     * Check if the UEntity and UResource contains Long form URI information (names)
-     * @return Returns true if the UEntity and UResource contains Long form URI information (names)
-     */
-    public boolean isLongForm() {
-        return  isResolved() || uEntity.isLongForm() && uResource.isLongForm();
     }
 }

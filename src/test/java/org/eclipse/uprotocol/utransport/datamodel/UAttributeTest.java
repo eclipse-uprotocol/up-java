@@ -66,7 +66,7 @@ public class UAttributeTest {
                 .withCommStatus(5)
                 .build();
         assertEquals(String.format("UAttributes{id=%s, type=RESPONSE, priority=LOW, ttl=1000, token='someToken', " +
-                                "sink=Uri{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, " +
+                                "sink=UriPart{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, " +
                                 "uEntity=UEntity{name='body.access', version='latest', id='null'}, " +
                                 "uResource=UResource{name='', instance='null', message='null', id='null'}}, " +
                                 "plevel=1, commstatus=5, reqid=%s}",
@@ -164,7 +164,7 @@ public class UAttributeTest {
     @DisplayName("Test creating UAttributes builder with static factory method for a basic RPC response")
     public void test_create_uattributes_builder_for_basic_rpc_response() {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
         final UUID requestId = UUID.randomUUID();
         final UAttributes uAttributes = UAttributes.forRpcResponse(id, sink, requestId)
@@ -185,7 +185,7 @@ public class UAttributeTest {
     public void test_create_uattributes_builder_for_basic_rpc_response_with_values() {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUID requestId = UUID.randomUUID();
-        final UAttributes uAttributes = UAttributes.forRpcResponse(id, UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
+        final UAttributes uAttributes = UAttributes.forRpcResponse(id, UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
                         new UEntity("petapp.ultifi.gm.com",1), requestId)
                 .withToken("someToken")
                 .withTtl(10000)
@@ -345,7 +345,7 @@ public class UAttributeTest {
     public void test_scenarios_for_uattributes_not_configured_for_rpc_request_payload() {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final String vin = "someVin";
-        final UUri sink = new UUri(UAuthority.remote("vcu", String.format("%s.veh.ultifi.gm.com", vin)),
+        final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", vin)),
                 UEntity.fromName("body.access"), UResource.forRpc("ExecuteWindowCommand"));
         final UAttributes uAttributesNoSink = new UAttributes.UAttributesBuilder(id,
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
@@ -364,7 +364,7 @@ public class UAttributeTest {
     public void test_is_uattributes_configured_for_rpc_response_payload() {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUID requestId = UUID.randomUUID();
-        final UUri sink = new UUri(UAuthority.remote("azure", "bo.ultifi.gm.com"),
+        final UUri sink = new UUri(UAuthority.longRemote("azure", "bo.ultifi.gm.com"),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.empty());
         final UAttributes uAttributes = new UAttributes.UAttributesBuilder(id,
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
@@ -379,7 +379,7 @@ public class UAttributeTest {
     public void test_scenarios_for_uattributes_not_configured_for_rpc_response_payload() {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUID requestId = UUID.randomUUID();
-        final UUri sink = new UUri(UAuthority.remote("azure", "bo.ultifi.gm.com"),
+        final UUri sink = new UUri(UAuthority.longRemote("azure", "bo.ultifi.gm.com"),
                 new UEntity("petapp.ultifi.gm.com",1), UResource.empty());
         final UAttributes uAttributesNoSink = new UAttributes.UAttributesBuilder(id,
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)

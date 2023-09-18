@@ -146,7 +146,7 @@ public abstract class CloudEventValidator {
     }
 
     /**
-     * Validate an  Uri for an  Software Entity must have an authority in the case of a remote uri, and must contain
+     * Validate an  UriPart for an  Software Entity must have an authority in the case of a microRemote uri, and must contain
      * the name of the USE.
      * @param uri uri string to validate.
      * @return Returns the ValidationResult containing a success or a failure with the error message.
@@ -160,18 +160,18 @@ public abstract class CloudEventValidator {
         final UAuthority uAuthority = Uri.uAuthority();
         if (uAuthority.isMarkedRemote()) {
             if (uAuthority.device().isEmpty()) {
-                return ValidationResult.failure("Uri is configured to be remote and is missing uAuthority device name.");
+                return ValidationResult.failure("UriPart is configured to be microRemote and is missing uAuthority device name.");
             }
         }
         if (Uri.uEntity().name().isBlank()) {
-            return ValidationResult.failure("Uri is missing uSoftware Entity name.");
+            return ValidationResult.failure("UriPart is missing uSoftware Entity name.");
         }
         return ValidationResult.success();
     }
 
     /**
-     * Validate a Uri that is to be used as a topic in publish scenarios for events such as publish, file and notification.
-     * @param uri String Uri to validate.
+     * Validate a UriPart that is to be used as a topic in publish scenarios for events such as publish, file and notification.
+     * @param uri String UriPart to validate.
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateTopicUri(String uri) {
@@ -180,8 +180,8 @@ public abstract class CloudEventValidator {
     }
 
     /**
-     * Validate a Uri that is to be used as a topic in publish scenarios for events such as publish, file and notification.
-     * @param Uri Uri to validate.
+     * Validate a UriPart that is to be used as a topic in publish scenarios for events such as publish, file and notification.
+     * @param Uri UriPart to validate.
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateTopicUri(UUri Uri) {
@@ -191,18 +191,18 @@ public abstract class CloudEventValidator {
         }
         final UResource uResource = Uri.uResource();
         if (uResource.name().isBlank()) {
-            return ValidationResult.failure("Uri is missing uResource name.");
+            return ValidationResult.failure("UriPart is missing uResource name.");
         }
         if (uResource.message().isEmpty()) {
-            return ValidationResult.failure("Uri is missing Message information.");
+            return ValidationResult.failure("UriPart is missing Message information.");
         }
         return ValidationResult.success();
     }
 
     /**
-     * Validate a Uri that is meant to be used as the application response topic for rpc calls. <br>
+     * Validate a UriPart that is meant to be used as the application response topic for rpc calls. <br>
      * Used in Request source values and Response sink values.
-     * @param uri String Uri to validate.
+     * @param uri String UriPart to validate.
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateRpcTopicUri(String uri) {
@@ -211,8 +211,8 @@ public abstract class CloudEventValidator {
     }
 
     /**
-     * Validate an  Uri that is meant to be used as the application response topic for rpc calls. <br>
-     * @param Uri  Uri to validate.
+     * Validate an  UriPart that is meant to be used as the application response topic for rpc calls. <br>
+     * @param Uri  UriPart to validate.
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateRpcTopicUri(UUri Uri) {
@@ -223,14 +223,14 @@ public abstract class CloudEventValidator {
         final UResource uResource = Uri.uResource();
         String topic = String.format("%s.%s", uResource.name(), uResource.instance().isPresent() ? uResource.instance().get() : "" );
         if (!"rpc.response".equals(topic)) {
-            return ValidationResult.failure("Invalid RPC uri application response topic. Uri is missing rpc.response.");
+            return ValidationResult.failure("Invalid RPC uri application response topic. UriPart is missing rpc.response.");
         }
         return ValidationResult.success();
     }
 
     /**
-     * Validate a Uri that is meant to be used as an RPC method URI. Used in Request sink values and Response source values.
-     * @param uri String Uri to validate.
+     * Validate a UriPart that is meant to be used as an RPC method URI. Used in Request sink values and Response source values.
+     * @param uri String UriPart to validate.
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateRpcMethod(String uri) {
@@ -241,7 +241,7 @@ public abstract class CloudEventValidator {
         }
         final UResource uResource = Uri.uResource();
         if (!uResource.isRPCMethod()) {
-            return ValidationResult.failure("Invalid RPC method uri. Uri should be the method to be called, or method from response.");
+            return ValidationResult.failure("Invalid RPC method uri. UriPart should be the method to be called, or method from response.");
         }
         return ValidationResult.success();
     }

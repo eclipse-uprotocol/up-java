@@ -25,7 +25,9 @@ import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
+
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -135,7 +137,7 @@ public class LongUriSerializer implements UriSerializer<String> {
 
         if(numberOfPartsInUri == 0 || numberOfPartsInUri == 1) {
             return isLocal ? UUri.empty() :
-                    new UUri(UAuthority.remote("", ""), UEntity.empty(), UResource.empty());
+                    new UUri(UAuthority.longRemote("", ""), UEntity.empty(), UResource.empty());
         }
 
         String useName;
@@ -164,7 +166,7 @@ public class LongUriSerializer implements UriSerializer<String> {
                         .skip(1)
                         .collect(Collectors.joining("."));
             }
-            uAuthority = UAuthority.remote(device, domain);
+            uAuthority = UAuthority.longRemote(device, domain);
 
             if (uriParts.length > 3) {
                 useName = uriParts[3];
@@ -192,6 +194,37 @@ public class LongUriSerializer implements UriSerializer<String> {
         }
 
         return new UUri(uAuthority, new UEntity(useName, useVersionInt), uResource);
+    }
+
+    /**
+     * Static factory method for creating a UResource using a string that contains either the id or
+     * a name + instance + message.
+     * @param resourceString String that contains the UResource information.
+     * @return Returns a UResource object
+     */
+    private static UResource parseFromString(String resourceString) {
+        Objects.requireNonNull(resourceString, " Resource must have a command name.");
+        String[] parts = resourceString.split("#");
+        String nameAndInstance = parts[0];
+
+        // Try and fetch the resource ID if there is one (short form)
+        Short maybeId = null;
+        try {
+            maybeId = Short.parseShort(nameAndInstance);
+        } catch (NumberFormatException e) {
+            maybeId = null;
+
+        }
+
+        if (maybeId != null) {
+            return UResource.fromId(maybeId);
+        }
+
+        String[] nameAndInstanceParts = nameAndInstance.split("\\.");
+        String resourceName = nameAndInstanceParts[0];
+        String resourceInstance = nameAndInstanceParts.length > 1 ? nameAndInstanceParts[1] : null;
+        String resourceMessage = parts.length > 1 ? parts[1] : null;
+        return new UResource(resourceName, resourceInstance, resourceMessage);
     }
 
 }
