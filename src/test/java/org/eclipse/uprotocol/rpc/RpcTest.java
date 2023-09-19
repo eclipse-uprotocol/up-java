@@ -548,7 +548,7 @@ class RpcTest {
     private static UAttributes buildUAttributes() {
         return UAttributes.forRpcRequest(
             UUIDFactory.Factories.UPROTOCOL.factory().create(), 
-            UUri.rpcResponse(null, UEntity.fromName("hartley"))).build();
+            UUri.rpcResponse(null, UEntity.longFormat("hartley"))).build();
     }
 
     private static CompletableFuture<io.cloudevents.v1.proto.CloudEvent> rpcResponse(CompletableFuture<UPayload> invokeMethodResponse) {

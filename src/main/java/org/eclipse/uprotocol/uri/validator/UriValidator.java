@@ -58,7 +58,7 @@ public interface UriValidator {
         }
         
         final UResource uResource = uri.uResource();
-        if (!uResource.isRPCMethod() || !uResource.equals(UResource.response())) {
+        if (!uResource.isRPCMethod() || !uResource.instance().equals(UResource.forRpcResponse().instance())) {
             return UStatus.failed("Invalid RPC response type.", Code.INVALID_ARGUMENT);
         }
 

@@ -46,26 +46,26 @@ class UriPartTest {
     public void testToString() {
         UAuthority uAuthorityLocal = UAuthority.local();
         UAuthority uAuthorityRemote = UAuthority.longRemote("VCU", "MY_VIN");
-        UEntity use = new UEntity("body.access", 1);
-        UResource uResource = UResource.fromNameWithInstance("door", "front_left");
+        UEntity use = UEntity.longFormat("body.access", 1);
+        UResource uResource = UResource.longFormat("door", "front_left", null);
 
         UUri uri = new UUri(uAuthorityLocal, use, uResource);
 
         String expected = "UriPart{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, " +
-                "uEntity=UEntity{name='body.access', version='1', id='null'}, " +
-                "uResource=UResource{name='door', instance='front_left', message='null', id='null'}}";
+                "uEntity=UEntity{name='body.access', version=1, id=null, markedResolved=false}, " +
+                "uResource=UResource{name='door', instance='front_left', message='null', id=null, markedResolved=false}}";
         assertEquals(expected, uri.toString());
 
         UUri uriRemote = new UUri(uAuthorityRemote, use, uResource);
         String expectedRemote = "UriPart{uAuthority=UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}, " +
-                "uEntity=UEntity{name='body.access', version='1', id='null'}, " +
-                "uResource=UResource{name='door', instance='front_left', message='null', id='null'}}";
+                "uEntity=UEntity{name='body.access', version=1, id=null, markedResolved=false}, " +
+                "uResource=UResource{name='door', instance='front_left', message='null', id=null, markedResolved=false}}";
         assertEquals(expectedRemote, uriRemote.toString());
 
         UUri uri2 = new UUri(uAuthorityRemote, use, UResource.empty());
         String expectedUri2 = "UriPart{uAuthority=UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}, " +
-                "uEntity=UEntity{name='body.access', version='1', id='null'}, " +
-                "uResource=UResource{name='', instance='null', message='null', id='null'}}";
+                "uEntity=UEntity{name='body.access', version=1, id=null, markedResolved=false}, " +
+                "uResource=UResource{name='', instance='null', message='null', id=null, markedResolved=false}}";
         assertEquals(expectedUri2, uri2.toString());
     }
 
@@ -73,8 +73,8 @@ class UriPartTest {
     @DisplayName("Test creating full local uri")
     public void test_create_full_local_uri() {
         UAuthority uAuthority = UAuthority.local();
-        UEntity use = UEntity.fromName("body.access");
-        UResource uResource = UResource.fromNameWithInstance("door", "front_left");
+        UEntity use = UEntity.longFormat("body.access");
+        UResource uResource = UResource.longFormat("door", "front_left", null);
 
         UUri uri = new UUri(uAuthority, use, uResource);
 
@@ -87,8 +87,8 @@ class UriPartTest {
     @DisplayName("Test creating full microRemote uri")
     public void test_create_full_remote_uri() {
         UAuthority uAuthority = UAuthority.longRemote("VCU", "MY_VIN");
-        UEntity use = new UEntity("body.access", 1);
-        UResource uResource = new UResource("door", "front_left", "Door");
+        UEntity use = UEntity.longFormat("body.access", 1);
+        UResource uResource = UResource.longFormat("door", "front_left", "Door");
 
         UUri uri = new UUri(uAuthority, use, uResource);
 
@@ -102,8 +102,8 @@ class UriPartTest {
     @DisplayName("Test creating full uri with resource but no message using the constructor")
     public void test_create_uri_no_message_with_constructor() {
         UAuthority uAuthority = UAuthority.longRemote("VCU", "MY_VIN");
-        UEntity use = new UEntity("body.access", 1);
-        UResource uResource = UResource.fromName("door");
+        UEntity use = UEntity.longFormat("body.access", 1);
+        UResource uResource = UResource.longFormat("door");
 
         UUri uri = new UUri(uAuthority, use, "door");
 
@@ -115,8 +115,8 @@ class UriPartTest {
     @Test
     @DisplayName("Test creating a uri with a null  authority, expect creation with an empty  authority")
     public void test_create_uri_null_authority() {
-        UEntity use = new UEntity("body.access", 1);
-        UResource uResource = UResource.fromNameWithInstance("door", "front_left");
+        UEntity use = UEntity.longFormat("body.access", 1);
+        UResource uResource = UResource.longFormat("door", "front_left", null);
 
         UUri uri = new UUri(null, use, uResource);
         assertEquals(UAuthority.empty(), uri.uAuthority());
@@ -126,7 +126,7 @@ class UriPartTest {
     @DisplayName("Test creating a uri with a null  software entity, expect creation with an empty  software entity")
     public void test_create_uri_null_use() {
         UAuthority uAuthority = UAuthority.longRemote("VCU", "MY_VIN");
-        UResource uResource = UResource.fromNameWithInstance("door", "front_left");
+        UResource uResource = UResource.longFormat("door", "front_left", null);
 
         UUri uri = new UUri(uAuthority, null, uResource);
         assertEquals(UEntity.empty(), uri.uEntity());
@@ -136,7 +136,7 @@ class UriPartTest {
     @DisplayName("Test creating a uri with a null ulitfi resource, expect creation with an empty  resource")
     public void test_create_uri_null_uResource() {
         UAuthority uAuthority = UAuthority.longRemote("VCU", "MY_VIN");
-        UEntity use = new UEntity("body.access", 1);
+        UEntity use = UEntity.longFormat("body.access", 1);
         UResource uResource = UResource.empty();
 
         UUri uri = new UUri(uAuthority, use, uResource);
@@ -175,48 +175,48 @@ class UriPartTest {
         assertFalse(uri.isResolved());
         assertFalse(uri.isLongForm());
 
-        UUri uri2 = new UUri(UAuthority.local(), UEntity.fromName("Hartley"), UResource.forRpc("Raise"));
+        UUri uri2 = new UUri(UAuthority.local(), UEntity.longFormat("Hartley"), UResource.forRpcRequest("Raise"));
         assertFalse(uri2.isResolved());
         assertTrue(uri2.isLongForm());
 
-        UUri uri3 = new UUri(UAuthority.local(), UEntity.fromName("Hartley"), new UResource("Raise", "Salary", "Bonus", (short)1));
+        UUri uri3 = new UUri(UAuthority.local(), UEntity.longFormat("Hartley"), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri3.isResolved());
         assertTrue(uri3.isLongForm());
 
-        UUri uri4 = new UUri(UAuthority.local(), new UEntity("Hartley", null, (short)2), new UResource("Raise", "Salary", "Bonus", (short)1));
+        UUri uri4 = new UUri(UAuthority.local(), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
         assertTrue(uri4.isResolved());
         assertTrue(uri4.isLongForm());
 
-        UUri uri11 = new UUri(UAuthority.local(), new UEntity("Hartley", null, (short)2), UResource.forRpc("Raise"));
+        UUri uri11 = new UUri(UAuthority.local(), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.forRpcRequest("Raise"));
         assertFalse(uri11.isResolved());
         assertTrue(uri11.isLongForm());
 
-        UUri uri5 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.fromName("Hartley"), UResource.forRpc("Raise"));
+        UUri uri5 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.longFormat("Hartley"), UResource.forRpcRequest("Raise"));
         assertFalse(uri5.isResolved());
         assertTrue(uri5.isLongForm());
 
-        UUri uri6 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.fromName("Hartley"), new UResource("Raise", "Salary", "Bonus", (short)1));
+        UUri uri6 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.longFormat("Hartley"), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri6.isResolved());
         assertTrue(uri6.isLongForm());
 
-        UUri uri7 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.fromName("Hartley"), new UResource("Raise", "Salary", "Bonus", (short)1));
+        UUri uri7 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.longFormat("Hartley"), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri7.isResolved());
         assertTrue(uri7.isLongForm());
 
 
-        UUri uri8 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.fromName("Hartley"), UResource.forRpc("Raise"));
+        UUri uri8 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.longFormat("Hartley"), UResource.forRpcRequest("Raise"));
         assertFalse(uri8.isResolved());
         assertTrue(uri8.isLongForm());
 
-        UUri uri9 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.fromName("Hartley"), new UResource("Raise", "Salary", "Bonus", (short)1));
+        UUri uri9 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.longFormat("Hartley"), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri9.isResolved());
         assertTrue(uri9.isLongForm());
 
-        UUri uri10 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), new UEntity("Hartley", null, (short)2), new UResource("Raise", "Salary", "Bonus", (short)1));
+        UUri uri10 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
         assertTrue(uri10.isResolved());
         assertTrue(uri10.isLongForm());
 
-        UUri uri12 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), new UEntity("Hartley", null, (short)2), UResource.fromId((short)2));
+        UUri uri12 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.microFormat((short)2));
         assertFalse(uri12.isResolved());
         assertFalse(uri12.isLongForm());
 

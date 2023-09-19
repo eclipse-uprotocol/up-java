@@ -36,7 +36,7 @@ import org.eclipse.uprotocol.uri.serializer.UriSerializer;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus;
 import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 
-class UriPartValidatorTest {
+class UUriValidatorTest {
 
     @Test
     @DisplayName("Test validate blank uri")
@@ -80,7 +80,7 @@ class UriPartValidatorTest {
     @Test
     @DisplayName("Test validate with blank UEntity Name")
     public void test_validate_with_blank_uentity_name_uri() {
-        final UUri uri = new UUri(UAuthority.local(), UEntity.empty(), UResource.forRpc("echo"));
+        final UUri uri = new UUri(UAuthority.local(), UEntity.empty(), UResource.forRpcRequest("echo"));
         final UStatus status = UriValidator.validate(uri);
         assertFalse(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());

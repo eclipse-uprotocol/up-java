@@ -118,7 +118,7 @@ public class UAttributes {
      */
     public static UAttributesBuilder forRpcRequest(UUID id, UAuthority uAuthority, UEntity serviceUEntity, String commandName) {
         return new UAttributesBuilder(id, UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
-                .withSink(new UUri(uAuthority, serviceUEntity, UResource.forRpc(commandName)));
+                .withSink(new UUri(uAuthority, serviceUEntity, UResource.forRpcRequest(commandName)));
     }
 
     /**
@@ -144,7 +144,7 @@ public class UAttributes {
      */
     public static UAttributesBuilder forRpcResponse(UUID id, UAuthority uAuthority, UEntity callerUEntity, UUID requestId) {
         return new UAttributesBuilder(id, UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
-                .withSink(new UUri(uAuthority, callerUEntity, UResource.fromNameWithInstance("rpc", "response")))
+                .withSink(new UUri(uAuthority, callerUEntity, UResource.forRpcResponse()))
                 .withReqId(requestId);
     }
 

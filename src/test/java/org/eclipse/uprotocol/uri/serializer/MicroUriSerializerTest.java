@@ -15,7 +15,8 @@ import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class BytesUriSerializerTestPart {
+public class MicroUriSerializerTest
+ {
     
     @Test
     @DisplayName("Test serialize and deserialize empty content")
@@ -44,8 +45,8 @@ public class BytesUriSerializerTestPart {
     @DisplayName("Test happy path Byte serialization of local UUri")
     public void test_serialize_uri() {
         UAuthority uAuthority = UAuthority.local();
-        UEntity use = UEntity.fromId(1, (short)2);
-        UResource uResource = UResource.fromId((short)3);
+        UEntity use = UEntity.microFormat((short)2, 1);
+        UResource uResource = UResource.microFormat((short)3);
 
         UUri uri = new UUri(uAuthority, use, uResource);
 
@@ -57,21 +58,36 @@ public class BytesUriSerializerTestPart {
     
 
     @Test
+    @DisplayName("Test happy path with null version")
+    public void test_serialize_uri_without_version() {
+        UAuthority uAuthority = UAuthority.local();
+        UEntity use = UEntity.microFormat((short)2, null);
+        UResource uResource = UResource.microFormat((short)3);
+
+        UUri uri = new UUri(uAuthority, use, uResource);
+
+        byte[] bytes = UriSerializer.MICRO.serialize(uri);
+        UUri uri2 = UriSerializer.MICRO.deserialize(bytes);
+
+        assertEquals(uri, uri2);
+    }
+
+    @Test
     @DisplayName("Test serialize invalid UUris")
     public void test_serialize_invalid_uuris() throws UnknownHostException {
-        UUri uri = new UUri(UAuthority.local(), UEntity.fromId(null, (short)1), UResource.empty());
+        UUri uri = new UUri(UAuthority.local(), UEntity.microFormat((short)1, null), UResource.empty());
         byte[] bytes = UriSerializer.MICRO.serialize(uri);
         assertEquals(bytes.length, 0);
 
-        UUri uri2 = new UUri(UAuthority.local(), new UEntity("", null), UResource.forRpc("", (short)1));
+        UUri uri2 = new UUri(UAuthority.local(), UEntity.longFormat("", null), UResource.forRpcRequest("", (short)1));
         byte[] bytes2 = UriSerializer.MICRO.serialize(uri2);
         assertEquals(bytes2.length, 0);
 
-        UUri uri3 = new UUri(UAuthority.longRemote("null", "null"), new UEntity("", null), UResource.forRpc("", (short)1));
+        UUri uri3 = new UUri(UAuthority.longRemote("null", "null"), UEntity.longFormat("", null), UResource.forRpcRequest("", (short)1));
         byte[] bytes3 = UriSerializer.MICRO.serialize(uri3);
         assertEquals(bytes3.length, 0);
 
-        UUri uri4 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), new UEntity("", null), UResource.forRpc("", (short)1));
+        UUri uri4 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.longFormat("", null), UResource.forRpcRequest("", (short)1));
         byte[] bytes4 = UriSerializer.MICRO.serialize(uri4);
         assertEquals(bytes4.length, 0);
     }
@@ -80,8 +96,8 @@ public class BytesUriSerializerTestPart {
     @DisplayName("Test serialize and deserialize IPv4 UUris")
     public void test_serialize_ipv4_uri() throws UnknownHostException {
         UAuthority uAuthority = UAuthority.microRemote(InetAddress.getByName("192.168.1.100"));
-        UEntity use = UEntity.fromId(1, (short)2);
-        UResource uResource = UResource.fromId((short)3);
+        UEntity use = UEntity.microFormat((short)2, 1);
+        UResource uResource = UResource.microFormat((short)3);
         UUri uri = new UUri(uAuthority, use, uResource);
 
         byte[] bytes = UriSerializer.MICRO.serialize(uri);
@@ -93,8 +109,8 @@ public class BytesUriSerializerTestPart {
     @DisplayName("Test serialize and deserialize IPv6 UUris")
     public void test_serialize_ipv6_uri() throws UnknownHostException {
         UAuthority uAuthority = UAuthority.microRemote(InetAddress.getByName("2001:db8:85a3:0:0:8a2e:370:7334"));
-        UEntity use = UEntity.fromId(1, (short)2);
-        UResource uResource = UResource.fromId((short)3);
+        UEntity use = UEntity.microFormat((short)2, 1);
+        UResource uResource = UResource.microFormat((short)3);
         UUri uri = new UUri(uAuthority, use, uResource);
 
         byte[] bytes = UriSerializer.MICRO.serialize(uri);
@@ -106,8 +122,8 @@ public class BytesUriSerializerTestPart {
     @DisplayName("Test deserialize with missing information")
     public void test_deserialize_with_missing_information() throws UnknownHostException {
         UAuthority uAuthority = UAuthority.microRemote(InetAddress.getByName("2001:db8:85a3:0:0:8a2e:370:7334"));
-        UEntity use = UEntity.fromId(1, (short)2);
-        UResource uResource = UResource.fromId((short)3);
+        UEntity use = UEntity.microFormat((short)2, 1);
+        UResource uResource = UResource.microFormat((short)3);
         UUri uri = new UUri(uAuthority, use, uResource);
         byte[] bytes = UriSerializer.MICRO.serialize(uri);
         

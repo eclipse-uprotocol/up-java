@@ -599,9 +599,9 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic  uri with version, when it is valid")
     void test_rpc_topic__uri_with_version_when_it_is_valid() {
 
-        UEntity use = new UEntity("petapp", 1);
+        UEntity use = UEntity.longFormat("petapp", 1);
         UAuthority uAuthority = UAuthority.longRemote("bo", "cloud");
-        UResource uResource = UResource.fromNameWithInstance("rpc", "response");
+        UResource uResource = UResource.forRpcResponse();
         UUri Uri = new UUri(uAuthority, use, uResource);
 
         final Status status = CloudEventValidator.validateRpcTopicUri(Uri).toStatus();
@@ -612,9 +612,9 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate rpc topic  uri with version, when it is not valid")
     void test_rpc_topic__uri_with_version_when_it_is_not_valid() {
 
-        UEntity use = new UEntity("petapp", 1);
+        UEntity use = UEntity.longFormat("petapp", 1);
         UAuthority uAuthority = UAuthority.longRemote("bo", "cloud");
-        UResource uResource = UResource.fromNameWithInstance("body.access", "front_left");
+        UResource uResource = UResource.longFormat("body.access", "front_left", null);
         UUri Uri = new UUri(uAuthority, use, uResource);
 
         final Status status = CloudEventValidator.validateRpcTopicUri(Uri).toStatus();
@@ -1019,9 +1019,9 @@ class CloudEventValidatorTest {
 
     private CloudEventBuilder buildBaseCloudEventBuilderForTest() {
         // source
-        UEntity use = UEntity.fromName("body.access");
+        UEntity use = UEntity.longFormat("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
-                new UResource("door", "front_left", "Door"));
+                UResource.longFormat("door", "front_left", "Door"));
         String source = UriSerializer.LONG.serialize(Uri);
 
         // fake payload

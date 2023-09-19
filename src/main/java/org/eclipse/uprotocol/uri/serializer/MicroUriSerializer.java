@@ -190,8 +190,8 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
         int uiVersion = microUri[index++];
         
         return new UUri((type.get() == AddressType.LOCAL) ? UAuthority.local() : UAuthority.microRemote(maybeAddress.get()),
-                UEntity.fromId(uiVersion, (short)ueId),
-                UResource.fromId((short)uResourceId));
+                UEntity.microFormat((short)ueId, uiVersion == 0 ? null : uiVersion),
+                UResource.microFormat((short)uResourceId));
     }    
 
 }

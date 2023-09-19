@@ -56,8 +56,8 @@ class CloudEventToProtobufSerializerTest {
     public void test_serialize_and_desirialize_cloud_event_to_protobuf() {
 
         // build the source
-        UEntity use = UEntity.fromName("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use, UResource.fromNameWithInstance("Door", "front_left"));
+        UEntity use = UEntity.longFormat("body.access");
+        UUri Uri = new UUri(UAuthority.local(), use, UResource.longFormat("Door", "front_left", null));
         String source = UriSerializer.LONG.serialize(Uri);
 
         // fake payload
@@ -145,9 +145,9 @@ class CloudEventToProtobufSerializerTest {
         final CloudEventSerializer serializer = CloudEventSerializers.PROTOBUF.serializer();
 
         // source
-        UEntity use = UEntity.fromName("body.access");
+        UEntity use = UEntity.longFormat("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
-                new UResource("door", "front_left", "Door"));
+                UResource.longFormat("door", "front_left", "Door"));
         String source = UriSerializer.LONG.serialize(Uri);
 
         // fake payload

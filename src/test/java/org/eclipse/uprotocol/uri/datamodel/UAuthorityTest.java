@@ -119,7 +119,7 @@ class UAuthorityTest {
         assertTrue(uAuthority.device().isEmpty());
         assertTrue(uAuthority.domain().isEmpty());
         assertTrue(uAuthority.isLocal());
-        assertFalse(uAuthority.isRemote());
+        assertTrue(uAuthority.isRemote());
         assertTrue(uAuthority.isMarkedRemote());
     }
 
@@ -194,7 +194,7 @@ class UAuthorityTest {
     @DisplayName("Test creating uAuthority with valid ipv4 address in the device name")
     public void test_create_uAuthority_with_valid_ipv4_address_in_device_name() {
         UAuthority remote = UAuthority.longRemote("192.168.1.100", null);
-        String expectedLocal = "UAuthority{device='192.168.1.100', domain='null', address='/192.168.1.100', markedRemote=true}";
+        String expectedLocal = "UAuthority{device='192.168.1.100', domain='null', address='null', markedRemote=true}";
         assertEquals(expectedLocal, remote.toString());
     }
 

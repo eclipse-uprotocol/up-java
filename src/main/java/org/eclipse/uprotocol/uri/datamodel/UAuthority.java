@@ -24,7 +24,6 @@ package org.eclipse.uprotocol.uri.datamodel;
 import java.net.InetAddress;
 import java.util.Objects;
 import java.util.Optional;
-import org.apache.commons.validator.routines.InetAddressValidator;
 
 /**
  * Data representation of an <b>Authority</b>.<br> An  Authority consists of a device and a domain.<br>
@@ -33,7 +32,7 @@ import org.apache.commons.validator.routines.InetAddressValidator;
  * An  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
  */
 public class UAuthority implements UriPart {
-    private final static UAuthority EMPTY = new UAuthority(null, null, null, false, false);
+    private final static UAuthority EMPTY = new UAuthority(null, null, null, false, true);
 
     /**
      * A device is a logical independent representation of a service bus in different execution environments.<br>
@@ -187,7 +186,7 @@ public class UAuthority implements UriPart {
      */
     @Override
     public boolean isLongForm() {
-        return device().isPresent();
+        return isLocal() || device().isPresent();
     }
 
     /**
@@ -196,7 +195,7 @@ public class UAuthority implements UriPart {
      */
     @Override
     public boolean isMicroForm() {
-        return address().isPresent();
+        return isLocal() || address().isPresent();
     }
 
     @Override

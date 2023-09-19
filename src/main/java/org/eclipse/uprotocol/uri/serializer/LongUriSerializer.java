@@ -152,7 +152,7 @@ public class LongUriSerializer implements UriSerializer<String> {
             if (numberOfPartsInUri > 2) {
                 useVersion = uriParts[2];
 
-                uResource = numberOfPartsInUri > 3 ? UResource.parseFromString(uriParts[3]) : UResource.empty();
+                uResource = numberOfPartsInUri > 3 ? parseFromString(uriParts[3]) : UResource.empty();
 
             } else {
                 uResource = UResource.empty();
@@ -173,7 +173,7 @@ public class LongUriSerializer implements UriSerializer<String> {
                 if (numberOfPartsInUri > 4) {
                     useVersion = uriParts[4];
 
-                    uResource = numberOfPartsInUri > 5 ? UResource.parseFromString(uriParts[5]) : UResource.empty();
+                    uResource = numberOfPartsInUri > 5 ? parseFromString(uriParts[5]) : UResource.empty();
 
                 } else {
                     uResource = UResource.empty();
@@ -193,12 +193,12 @@ public class LongUriSerializer implements UriSerializer<String> {
             useVersionInt = null;
         }
 
-        return new UUri(uAuthority, new UEntity(useName, useVersionInt), uResource);
+        return new UUri(uAuthority, UEntity.longFormat(useName, useVersionInt), uResource);
     }
 
     /**
-     * Static factory method for creating a UResource using a string that contains either the id or
-     * a name + instance + message.
+     * Static factory method for creating a UResource using a string that contains 
+     * name + instance + message.
      * @param resourceString String that contains the UResource information.
      * @return Returns a UResource object
      */
@@ -207,24 +207,11 @@ public class LongUriSerializer implements UriSerializer<String> {
         String[] parts = resourceString.split("#");
         String nameAndInstance = parts[0];
 
-        // Try and fetch the resource ID if there is one (short form)
-        Short maybeId = null;
-        try {
-            maybeId = Short.parseShort(nameAndInstance);
-        } catch (NumberFormatException e) {
-            maybeId = null;
-
-        }
-
-        if (maybeId != null) {
-            return UResource.fromId(maybeId);
-        }
-
         String[] nameAndInstanceParts = nameAndInstance.split("\\.");
         String resourceName = nameAndInstanceParts[0];
         String resourceInstance = nameAndInstanceParts.length > 1 ? nameAndInstanceParts[1] : null;
         String resourceMessage = parts.length > 1 ? parts[1] : null;
-        return new UResource(resourceName, resourceInstance, resourceMessage);
+        return UResource.longFormat(resourceName, resourceInstance, resourceMessage);
     }
 
 }

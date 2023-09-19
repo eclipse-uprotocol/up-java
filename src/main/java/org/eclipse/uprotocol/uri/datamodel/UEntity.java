@@ -55,7 +55,7 @@ public class UEntity implements UriPart {
     }
 
     public static UEntity resolvedFormat(String name, Integer version, Short id) {
-        boolean resolved = !name.isEmpty() && version != null && id != null;
+        boolean resolved = name != null && !name.isEmpty() && id != null;
         return new UEntity(name, version, id, resolved);
     }
 
@@ -132,6 +132,7 @@ public class UEntity implements UriPart {
      * Determine if this software entity can be serialised into a long UUri form.
      * @return Returns true if this software entity can be serialised into a long UUri form, meaning it has at least a name.
      */
+    @Override
     public boolean isLongForm() {
         return !name().isEmpty();
     }

@@ -58,7 +58,7 @@ public class UAttributeTest {
         final UUID requestId = UUID.randomUUID();
         final UAttributes uAttributes = new UAttributes.UAttributesBuilder(id,
                 UMessageType.RESPONSE, UPriority.LOW)
-                .withSink(new UUri(UAuthority.local(), UEntity.fromName("body.access"), UResource.empty()))
+                .withSink(new UUri(UAuthority.local(), UEntity.longFormat("body.access"), UResource.empty()))
                 .withTtl(1000)
                 .withToken("someToken")
                 .withPermissionLevel(1)
@@ -67,8 +67,8 @@ public class UAttributeTest {
                 .build();
         assertEquals(String.format("UAttributes{id=%s, type=RESPONSE, priority=LOW, ttl=1000, token='someToken', " +
                                 "sink=UriPart{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, " +
-                                "uEntity=UEntity{name='body.access', version='latest', id='null'}, " +
-                                "uResource=UResource{name='', instance='null', message='null', id='null'}}, " +
+                                "uEntity=UEntity{name='body.access', version=null, id=null, markedResolved=false}, " +
+                                "uResource=UResource{name='', instance='null', message='null', id=null, markedResolved=false}}, " +
                                 "plevel=1, commstatus=5, reqid=%s}",
                         id,requestId),
                 uAttributes.toString());
@@ -79,7 +79,7 @@ public class UAttributeTest {
     public void testCreatingUattributes() {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUID requestId = UUID.randomUUID();
-        final UUri sink = new UUri(UAuthority.local(), UEntity.fromName("body.access"), UResource.empty());
+        final UUri sink = new UUri(UAuthority.local(), UEntity.longFormat("body.access"), UResource.empty());
         final UAttributes uAttributes = new UAttributes.UAttributesBuilder(id,
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
                 .withSink(sink)
@@ -129,7 +129,7 @@ public class UAttributeTest {
     @DisplayName("Test creating UAttributes builder with static factory method for a basic RPC request")
     public void test_create_uattributes_builder_for_basic_rpc_request() {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        final UUri sink = new UUri(UAuthority.local(), UEntity.fromName("body.access"), UResource.forRpc("ExecuteWindowCommand"));
+        final UUri sink = new UUri(UAuthority.local(), UEntity.longFormat("body.access"), UResource.forRpcRequest("ExecuteWindowCommand"));
         final UAttributes uAttributes = UAttributes.forRpcRequest(id, sink)
                 .withToken("someToken")
                 .withTtl(10000)
@@ -147,7 +147,7 @@ public class UAttributeTest {
     @DisplayName("Test creating UAttributes builder with static factory method for a basic RPC request with values")
     public void test_create_uattributes_builder_for_basic_rpc_request_with_values() {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        final UAttributes uAttributes = UAttributes.forRpcRequest(id, UAuthority.local(), UEntity.fromName("body.access"), "ExecuteWindowCommand")
+        final UAttributes uAttributes = UAttributes.forRpcRequest(id, UAuthority.local(), UEntity.longFormat("body.access"), "ExecuteWindowCommand")
                 .withToken("someToken")
                 .withTtl(10000)
                 .build();
@@ -165,7 +165,7 @@ public class UAttributeTest {
     public void test_create_uattributes_builder_for_basic_rpc_response() {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
-                new UEntity("petapp.ultifi.gm.com",1), UResource.fromNameWithInstance("rpc", "response"));
+                UEntity.longFormat("petapp.ultifi.gm.com",1), UResource.forRpcResponse());
         final UUID requestId = UUID.randomUUID();
         final UAttributes uAttributes = UAttributes.forRpcResponse(id, sink, requestId)
                 .withToken("someToken")
@@ -186,7 +186,7 @@ public class UAttributeTest {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUID requestId = UUID.randomUUID();
         final UAttributes uAttributes = UAttributes.forRpcResponse(id, UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", "someVin")),
-                        new UEntity("petapp.ultifi.gm.com",1), requestId)
+                        UEntity.longFormat("petapp.ultifi.gm.com",1), requestId)
                 .withToken("someToken")
                 .withTtl(10000)
                 .build();
@@ -332,7 +332,7 @@ public class UAttributeTest {
     @DisplayName("Test is this UAttributes configured for an RPC request payload")
     public void test_is_uattributes_configured_for_rpc_request_payload() {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        final UUri sink = new UUri(UAuthority.local(), UEntity.fromName("body.access"), UResource.forRpc("ExecuteWindowCommand"));
+        final UUri sink = new UUri(UAuthority.local(), UEntity.longFormat("body.access"), UResource.forRpcRequest("ExecuteWindowCommand"));
         final UAttributes uAttributes = new UAttributes.UAttributesBuilder(id,
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
                 .withSink(sink)
@@ -346,7 +346,7 @@ public class UAttributeTest {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final String vin = "someVin";
         final UUri sink = new UUri(UAuthority.longRemote("vcu", String.format("%s.veh.ultifi.gm.com", vin)),
-                UEntity.fromName("body.access"), UResource.forRpc("ExecuteWindowCommand"));
+                UEntity.longFormat("body.access"), UResource.forRpcRequest("ExecuteWindowCommand"));
         final UAttributes uAttributesNoSink = new UAttributes.UAttributesBuilder(id,
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
                 .build();
@@ -365,7 +365,7 @@ public class UAttributeTest {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUID requestId = UUID.randomUUID();
         final UUri sink = new UUri(UAuthority.longRemote("azure", "bo.ultifi.gm.com"),
-                new UEntity("petapp.ultifi.gm.com",1), UResource.empty());
+                UEntity.longFormat("petapp.ultifi.gm.com",1), UResource.empty());
         final UAttributes uAttributes = new UAttributes.UAttributesBuilder(id,
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
                 .withSink(sink)
@@ -380,7 +380,7 @@ public class UAttributeTest {
         final UUID id = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final UUID requestId = UUID.randomUUID();
         final UUri sink = new UUri(UAuthority.longRemote("azure", "bo.ultifi.gm.com"),
-                new UEntity("petapp.ultifi.gm.com",1), UResource.empty());
+                UEntity.longFormat("petapp.ultifi.gm.com",1), UResource.empty());
         final UAttributes uAttributesNoSink = new UAttributes.UAttributesBuilder(id,
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
                 .withReqId(requestId)

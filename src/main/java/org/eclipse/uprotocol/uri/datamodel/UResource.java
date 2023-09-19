@@ -74,7 +74,7 @@ public class UResource implements UriPart {
      * @return Returns a UResource that has all the information that is needed to serialise into a long UUri or a micro UUri.
      */
     public static UResource resolved(String name, String instance, String message, Short id) {
-        boolean resolved = name != null && !name.isEmpty() && id != null;
+        boolean resolved = name != null && !name.isEmpty() && instance != null && !instance.isEmpty() && id != null;
         return new UResource(name, instance, message, id, resolved);
     }
 
@@ -124,6 +124,17 @@ public class UResource implements UriPart {
      */
     public static UResource forRpcRequest(Short methodId) {
         return new UResource("rpc", null, null, methodId, false);
+    }
+
+    /**
+     * Build a UResource for rpc request, using both the long and micro format information.
+     * @param methodName The RPC method name.
+     * @param methodId The numeric representation method name for the RPC.
+     * @return Returns a UResource used for an RPC request that could be serialised in long and micro format.
+     */
+    public static UResource forRpcRequest(String methodName, Short methodId) {
+        boolean resolved = methodName != null && !methodName.isEmpty() && methodId != null;
+        return new UResource("rpc", methodName, null, methodId, resolved);
     }
 
     /**
