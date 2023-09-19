@@ -1,10 +1,10 @@
 package org.eclipse.uprotocol.uri.datamodel;
 
 /**
- * Basic building blocks for all data models that are part of a uProtocol URI.
- * The interface defines APIs that MUST be implemented in all Uri uProtocol parts.
+ * Interface used to provide hints as to how the Uri part or Uri itself is formated meaning does it contain 
+ * long format, micro format or both (resolved) information. 
  */
-public interface UriPart {
+public interface UriFormat {
 
     /**
      * Supporting empty Uri parts enables avoiding null values in the data model, and can indicate the absence of a Uri Part.

@@ -151,7 +151,7 @@ class UResourceTest {
     @Test
     @DisplayName("Test creating an UResource with valid id")
     public void test_create_UResource_with_valid_id() {
-        UResource uResource = UResource.resolved("door", "front_left", "Door", (short)5);
+        UResource uResource = UResource.resolvedFormat("door", "front_left", "Door", (short)5);
         assertEquals("door", uResource.name());
         assertTrue(uResource.instance().isPresent());
         assertEquals("front_left", uResource.instance().get());
@@ -165,7 +165,7 @@ class UResourceTest {
     @Test
     @DisplayName("Test creating an UResource with invalid id")
     public void test_create_UResource_with_invalid_id() {
-        UResource uResource = UResource.resolved("door", "front_left", "Door", null);
+        UResource uResource = UResource.resolvedFormat("door", "front_left", "Door", null);
         assertEquals("door", uResource.name());
         assertTrue(uResource.instance().isPresent());
         assertEquals("front_left", uResource.instance().get());
@@ -203,7 +203,7 @@ class UResourceTest {
     @Test
     @DisplayName("Test creating a response UResource passing name, instance, and id")
     public void test_create_response_UResource_passing_name_instance_and_id() {
-        UResource uResource = UResource.resolved("rpc", "response", null, (short)0);
+        UResource uResource = UResource.resolvedFormat("rpc", "response", null, (short)0);
         assertEquals("rpc", uResource.name());
         assertTrue(uResource.instance().isPresent());
         assertEquals("response", uResource.instance().get());
@@ -216,7 +216,7 @@ class UResourceTest {
     @Test
     @DisplayName("Test creating a request UResource passing name, instance, and id")
     public void test_create_request_UResource_passing_name_instance_and_id() {
-        UResource uResource = UResource.resolved("rpc", null, null, (short)0);
+        UResource uResource = UResource.resolvedFormat("rpc", null, null, (short)0);
         assertEquals("rpc", uResource.name());
         assertTrue(uResource.instance().isEmpty());
         assertTrue(uResource.message().isEmpty());
@@ -228,7 +228,7 @@ class UResourceTest {
     @Test
     @DisplayName("Test isResolved with resolved UResources")
     public void test_isResolved_with_resolved_UResources() {
-        UResource uResource = UResource.resolved("door", "front_left", "Door", (short)5);
+        UResource uResource = UResource.resolvedFormat("door", "front_left", "Door", (short)5);
         assertTrue(uResource.isResolved());
         UResource uResource2 = UResource.forRpcResponse();
         assertTrue(uResource2.isResolved());
@@ -239,7 +239,7 @@ class UResourceTest {
     @Test
     @DisplayName("Test isResolved and isLongForm with unresolved UResources")
     public void test_isResolved_with_unresolved_UResources() {
-        UResource uResource = UResource.resolved("door", "front_left", "Door", null);
+        UResource uResource = UResource.resolvedFormat("door", "front_left", "Door", null);
         assertFalse(uResource.isResolved());
         assertTrue(uResource.isLongForm());
         UResource uResource2 = UResource.longFormat("door");
@@ -261,37 +261,37 @@ class UResourceTest {
     @Test
     @DisplayName("Test resolved API with all possible combinations of the APIs passed valid and invalid")
     public void test_resolved_API_with_all_possible_combinations_of_the_APIs_passed_valid_and_invalid() {
-        UResource uResource = UResource.resolved("door", "front_left", "Door", (short)5);
+        UResource uResource = UResource.resolvedFormat("door", "front_left", "Door", (short)5);
         assertTrue(uResource.isResolved());
-        UResource uResource2 = UResource.resolved("door", "front_left", "Door", null);
+        UResource uResource2 = UResource.resolvedFormat("door", "front_left", "Door", null);
         assertFalse(uResource2.isResolved());
-        UResource uResource3 = UResource.resolved("door", "front_left", null, (short)5);
+        UResource uResource3 = UResource.resolvedFormat("door", "front_left", null, (short)5);
         assertTrue(uResource3.isResolved());
-        UResource uResource4 = UResource.resolved("door", "front_left", null, null);
+        UResource uResource4 = UResource.resolvedFormat("door", "front_left", null, null);
         assertFalse(uResource4.isResolved());
-        UResource uResource5 = UResource.resolved("door", null, "Door", (short)5);
+        UResource uResource5 = UResource.resolvedFormat("door", null, "Door", (short)5);
         assertFalse(uResource5.isResolved());
-        UResource uResource6 = UResource.resolved("door", null, "Door", null);
+        UResource uResource6 = UResource.resolvedFormat("door", null, "Door", null);
         assertFalse(uResource6.isResolved());
-        UResource uResource7 = UResource.resolved("door", null, null, (short)5);
+        UResource uResource7 = UResource.resolvedFormat("door", null, null, (short)5);
         assertFalse(uResource7.isResolved());
-        UResource uResource8 = UResource.resolved("door", null, null, null);
+        UResource uResource8 = UResource.resolvedFormat("door", null, null, null);
         assertFalse(uResource8.isResolved());
-        UResource uResource9 = UResource.resolved(null, "front_left", "Door", (short)5);
+        UResource uResource9 = UResource.resolvedFormat(null, "front_left", "Door", (short)5);
         assertFalse(uResource9.isResolved());
-        UResource uResource10 = UResource.resolved(null, "front_left", "Door", null);
+        UResource uResource10 = UResource.resolvedFormat(null, "front_left", "Door", null);
         assertFalse(uResource10.isResolved());
-        UResource uResource11 = UResource.resolved(null, "front_left", null, (short)5);
+        UResource uResource11 = UResource.resolvedFormat(null, "front_left", null, (short)5);
         assertFalse(uResource11.isResolved());
-        UResource uResource12 = UResource.resolved(null, "front_left", null, null);
+        UResource uResource12 = UResource.resolvedFormat(null, "front_left", null, null);
         assertFalse(uResource12.isResolved());
-        UResource uResource13 = UResource.resolved(null, null, "Door", (short)5);
+        UResource uResource13 = UResource.resolvedFormat(null, null, "Door", (short)5);
         assertFalse(uResource13.isResolved());
-        UResource uResource14 = UResource.resolved(null, null, "Door", null);
+        UResource uResource14 = UResource.resolvedFormat(null, null, "Door", null);
         assertFalse(uResource14.isResolved());
-        UResource uResource15 = UResource.resolved(null, null, null, (short)5);
+        UResource uResource15 = UResource.resolvedFormat(null, null, null, (short)5);
         assertFalse(uResource15.isResolved());
-        UResource uResource16 = UResource.resolved(null, null, null, null);
+        UResource uResource16 = UResource.resolvedFormat(null, null, null, null);
         assertFalse(uResource16.isResolved());
      }
 

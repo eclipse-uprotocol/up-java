@@ -31,7 +31,7 @@ import java.util.Optional;
  * Devices will be grouped together into realms of Zone of Authority.<br>
  * An  Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
  */
-public class UAuthority implements UriPart {
+public class UAuthority implements UriFormat {
     private final static UAuthority EMPTY = new UAuthority(null, null, null, false, true);
 
     /**

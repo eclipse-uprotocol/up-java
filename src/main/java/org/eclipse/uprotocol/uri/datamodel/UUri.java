@@ -36,7 +36,7 @@ import java.util.Objects;
  * </pre>
  *
  */
-public class UUri {
+public class UUri implements UriFormat {
     private static final UUri EMPTY = new UUri(UAuthority.empty(), UEntity.empty(), UResource.empty());
 
     private final UAuthority uAuthority;
@@ -89,6 +89,7 @@ public class UUri {
      * Indicates that this  URI is an empty container and has no valuable information in building uProtocol sinks or sources.
      * @return Returns true if this  URI is an empty container and has no valuable information in building uProtocol sinks or sources.
      */
+    @Override
     public boolean isEmpty() {
         return uAuthority.isLocal() && uEntity().isEmpty()
                 && uResource.isEmpty();
@@ -100,6 +101,7 @@ public class UUri {
      * @return Returns true if URI contains both names and numeric representations of the names inside its belly.
      *      Meaning that this UUri can be serialised to long or micro formats.
      */
+    @Override
     public boolean isResolved() {
         return uAuthority.isResolved() && uEntity.isResolved() && uResource.isResolved();
     }
@@ -108,6 +110,7 @@ public class UUri {
      * Determines if this UUri can be serialised into a long form UUri.
      * @return Returns true if this UUri can be serialised into a long form UUri.
      */
+    @Override
     public boolean isLongForm() {
         return uAuthority.isLongForm() && uEntity.isLongForm() && uResource.isLongForm();
     }
@@ -116,6 +119,7 @@ public class UUri {
      * Determines if this UUri can be serialised into a micro form UUri.
      * @return Returns true if this UUri can be serialised into a micro form UUri.
      */
+    @Override
     public boolean isMicroForm() {
         return uAuthority.isMicroForm() && uEntity.isMicroForm() && uResource.isMicroForm();
     }

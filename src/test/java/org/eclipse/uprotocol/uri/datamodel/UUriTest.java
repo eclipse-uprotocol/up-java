@@ -179,11 +179,11 @@ class UriPartTest {
         assertFalse(uri2.isResolved());
         assertTrue(uri2.isLongForm());
 
-        UUri uri3 = new UUri(UAuthority.local(), UEntity.longFormat("Hartley"), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
+        UUri uri3 = new UUri(UAuthority.local(), UEntity.longFormat("Hartley"), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri3.isResolved());
         assertTrue(uri3.isLongForm());
 
-        UUri uri4 = new UUri(UAuthority.local(), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
+        UUri uri4 = new UUri(UAuthority.local(), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertTrue(uri4.isResolved());
         assertTrue(uri4.isLongForm());
 
@@ -195,11 +195,11 @@ class UriPartTest {
         assertFalse(uri5.isResolved());
         assertTrue(uri5.isLongForm());
 
-        UUri uri6 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.longFormat("Hartley"), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
+        UUri uri6 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.longFormat("Hartley"), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri6.isResolved());
         assertTrue(uri6.isLongForm());
 
-        UUri uri7 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.longFormat("Hartley"), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
+        UUri uri7 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.longFormat("Hartley"), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri7.isResolved());
         assertTrue(uri7.isLongForm());
 
@@ -208,11 +208,11 @@ class UriPartTest {
         assertFalse(uri8.isResolved());
         assertTrue(uri8.isLongForm());
 
-        UUri uri9 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.longFormat("Hartley"), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
+        UUri uri9 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.longFormat("Hartley"), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri9.isResolved());
         assertTrue(uri9.isLongForm());
 
-        UUri uri10 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.resolved("Raise", "Salary", "Bonus", (short)1));
+        UUri uri10 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertTrue(uri10.isResolved());
         assertTrue(uri10.isLongForm());
 

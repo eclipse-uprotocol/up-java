@@ -31,7 +31,7 @@ import java.util.Optional;
  * An UResource is something that can be manipulated/controlled/exposed by a service. Resources are unique when prepended with UAuthority that represents the device and
  * UEntity that represents the service.
  */
-public class UResource implements UriPart {
+public class UResource implements UriFormat {
 
     private static final UResource EMPTY = new UResource("", null,null, null, false);
 
@@ -71,24 +71,24 @@ public class UResource implements UriPart {
      * @param message The Message type matches the protobuf service IDL message name that defines structured data types.
      *                A message is a data structure type used to define data that is passed in  events and rpc methods.
      * @param id The numeric representation of this uResource.
-     * @return Returns a UResource that has all the information that is needed to serialise into a long UUri or a micro UUri.
+     * @return Returns a UResource that has all the information that is needed to serialize into a long UUri or a micro UUri.
      */
-    public static UResource resolved(String name, String instance, String message, Short id) {
+    public static UResource resolvedFormat(String name, String instance, String message, Short id) {
         boolean resolved = name != null && !name.isEmpty() && instance != null && !instance.isEmpty() && id != null;
         return new UResource(name, instance, message, id, resolved);
     }
 
     /**
-     * Build a UResource that can be serialised into a long UUri. Mostly used for publishing messages.
+     * Build a UResource that can be serialized into a long UUri. Mostly used for publishing messages.
      * @param name The name of the resource as a noun such as door or window, or in the case a method that manipulates the resource, a verb.
-     * @return Returns a UResource that can be serialised into a long UUri.
+     * @return Returns a UResource that can be serialized into a long UUri.
      */
     public static UResource longFormat(String name) {
         return new UResource(name, null, null, null, false);
     }
 
     /**
-     * Build a UResource that can be serialised into a long UUri. Mostly used for publishing messages.
+     * Build a UResource that can be serialized into a long UUri. Mostly used for publishing messages.
      * @param name The name of the resource as a noun such as door or window, or in the case a method that manipulates the resource, a verb.
      * @param instance An instance of a resource such as front_left.
      * @param message The Message type matches the protobuf service IDL message name that defines structured data types.
