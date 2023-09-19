@@ -30,7 +30,7 @@ import java.util.Objects;
  * Where software is deployed, what the service is called along with a version and the resources in the service.
  * Defining a common URI for the system allows applications and/or services to publish and discover each other
  * as well as maintain a database/repository of microservices in the various vehicles.<br>
- * Example for long format serialisation:
+ * Example for long format serialization:
  * <pre>
  *     //&lt;device&gt;.&lt;domain&gt;/&lt;service&gt;/&lt;version&gt;/&lt;resource&gt;#&lt;message&gt;
  * </pre>
@@ -79,7 +79,7 @@ public class UUri implements UriFormat {
 
     /**
      * Static factory method for creating an empty  uri, to avoid working with null<br>
-     * @return Returns an empty ultify  uri to avoid working with null.
+     * @return Returns an empty uri to avoid working with null.
      */
     public static UUri empty() {
         return EMPTY;
@@ -97,9 +97,9 @@ public class UUri implements UriFormat {
 
     /**
      * Returns true if URI contains both names and numeric representations of the names inside its belly.
-     * Meaning that this UUri can be serialised to long or micro formats.
+     * Meaning that this UUri can be serialized to long or micro formats.
      * @return Returns true if URI contains both names and numeric representations of the names inside its belly.
-     *      Meaning that this UUri can be serialised to long or micro formats.
+     *      Meaning that this UUri can be serialized to long or micro formats.
      */
     @Override
     public boolean isResolved() {
@@ -107,8 +107,8 @@ public class UUri implements UriFormat {
     }
 
     /**
-     * Determines if this UUri can be serialised into a long form UUri.
-     * @return Returns true if this UUri can be serialised into a long form UUri.
+     * Determines if this UUri can be serialized into a long form UUri.
+     * @return Returns true if this UUri can be serialized into a long form UUri.
      */
     @Override
     public boolean isLongForm() {
@@ -116,8 +116,8 @@ public class UUri implements UriFormat {
     }
 
     /**
-     * Determines if this UUri can be serialised into a micro form UUri.
-     * @return Returns true if this UUri can be serialised into a micro form UUri.
+     * Determines if this UUri can be serialized into a micro form UUri.
+     * @return Returns true if this UUri can be serialized into a micro form UUri.
      */
     @Override
     public boolean isMicroForm() {
@@ -125,7 +125,7 @@ public class UUri implements UriFormat {
     }
 
     /**
-     * @return Returns the  Authority represents the deployment location of a specific  Software Entity.
+     * @return Returns the Authority represents the deployment location of a specific Software Entity.
      */
     public UAuthority uAuthority() {
         return uAuthority;

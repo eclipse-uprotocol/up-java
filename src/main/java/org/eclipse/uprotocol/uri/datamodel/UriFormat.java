@@ -1,7 +1,7 @@
 package org.eclipse.uprotocol.uri.datamodel;
 
 /**
- * Interface used to provide hints as to how the Uri part or Uri itself is formated meaning does it contain 
+ * Interface used to provide hints as to how the Uri part or Uri itself is formatted meaning does it contain 
  * long format, micro format or both (resolved) information. 
  */
 public interface UriFormat {

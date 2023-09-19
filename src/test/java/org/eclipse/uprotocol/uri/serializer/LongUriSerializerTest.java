@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
@@ -895,4 +898,63 @@ public class LongUriSerializerTest {
         assertEquals(uri2, UriSerializer.LONG.serialize(Uri));
     }
 
+    @Test
+    @DisplayName("Test deserializer a long and micro uri passing garbage")
+    void test_deserialize_long_and_micro_passing_garbage() {
+        UUri uri = UriSerializer.LONG.deserialize(null, null);
+        assertTrue(uri.isEmpty());
+
+        UUri uri1 = UriSerializer.LONG.deserialize(null, new byte[0]);
+        assertTrue(uri1.isEmpty());
+
+        UUri uri2 = UriSerializer.LONG.deserialize("", null);
+        assertTrue(uri2.isEmpty());
+
+        UUri uri3 = UriSerializer.LONG.deserialize("", new byte[0]);
+        assertTrue(uri3.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Test deserializer a long and micro uri passing UAuthority of different types (local vs remote)")
+    void test_deserialize_long_and_micro_passing_UAuthority_that_doesnt_match() {
+        String longUUri = "//vcu.vin/body.access//door.front_left#Door";
+        byte[] microUUri = new byte[] {0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+        UUri uri = UriSerializer.LONG.deserialize(longUUri, microUUri);
+        assertTrue(uri.isEmpty());
+
+        String longUUri1 = "/body.access//door.front_left#Door";
+        byte[] microUUri1 = new byte[] {0x1, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+        UUri uri1 = UriSerializer.LONG.deserialize(longUUri1, microUUri1);
+        assertTrue(uri1.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Test deserializer a long and micro uri passing invalid values")
+    void test_deserialize_long_and_micro_passing_invalid_values() {
+        String goodLongUUri = "/body.access//door.front_left#Door";
+        byte[] goodMicroUUri = new byte[] {0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+        String badLongUUri = "///";
+        byte[] badMicroUUri = new byte[] {0x0, 0x0, 0x0, 0x0, 0x0};
+        UUri uri = UriSerializer.LONG.deserialize(goodLongUUri, goodMicroUUri);
+        assertFalse(uri.isEmpty());
+
+        UUri uri2 = UriSerializer.LONG.deserialize(goodLongUUri, badMicroUUri);
+        assertTrue(uri2.isEmpty());
+        UUri uri3 = UriSerializer.LONG.deserialize(badLongUUri, goodMicroUUri);
+        assertTrue(uri3.isEmpty());
+        UUri uri4 = UriSerializer.LONG.deserialize(badLongUUri, badMicroUUri);
+        assertTrue(uri4.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Test deserializer a long and micro uri passing valid values")
+    void test_deserialize_long_and_micro_passing_valid_values() throws UnknownHostException {
+        UUri uri = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")),
+            UEntity.resolvedFormat("hartley", 1, (short)5),
+            UResource.resolvedFormat("raise", "salary", "Pay", (short)2));
+        String longUUri = UriSerializer.LONG.serialize(uri);
+        byte[] microUUri = UriSerializer.MICRO.serialize(uri);
+        UUri uri2 = UriSerializer.LONG.deserialize(longUUri, microUUri);
+        assertEquals(uri, uri2);
+    }
 }
