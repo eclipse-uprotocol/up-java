@@ -22,18 +22,15 @@
 package org.eclipse.uprotocol.uri.datamodel;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-class UriPartTest {
+class UUriTest {
 
     @Test
     @DisplayName("Make sure the equals and hash code works")
@@ -51,19 +48,19 @@ class UriPartTest {
 
         UUri uri = new UUri(uAuthorityLocal, use, uResource);
 
-        String expected = "UriPart{uAuthority=UAuthority{device='null', domain='null', address='null', markedRemote=false}, " +
+        String expected = "UriPart{uAuthority=UAuthority{device='null', domain='null', markedRemote=false, address=null, markedResolved=true}, " +
                 "uEntity=UEntity{name='body.access', version=1, id=null, markedResolved=false}, " +
                 "uResource=UResource{name='door', instance='front_left', message='null', id=null, markedResolved=false}}";
         assertEquals(expected, uri.toString());
 
         UUri uriRemote = new UUri(uAuthorityRemote, use, uResource);
-        String expectedRemote = "UriPart{uAuthority=UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}, " +
+        String expectedRemote = "UriPart{uAuthority=UAuthority{device='vcu', domain='my_vin', markedRemote=true, address=null, markedResolved=false}, " +
                 "uEntity=UEntity{name='body.access', version=1, id=null, markedResolved=false}, " +
                 "uResource=UResource{name='door', instance='front_left', message='null', id=null, markedResolved=false}}";
         assertEquals(expectedRemote, uriRemote.toString());
 
         UUri uri2 = new UUri(uAuthorityRemote, use, UResource.empty());
-        String expectedUri2 = "UriPart{uAuthority=UAuthority{device='vcu', domain='my_vin', address='null', markedRemote=true}, " +
+        String expectedUri2 = "UriPart{uAuthority=UAuthority{device='vcu', domain='my_vin', markedRemote=true, address=null, markedResolved=false}, " +
                 "uEntity=UEntity{name='body.access', version=1, id=null, markedResolved=false}, " +
                 "uResource=UResource{name='', instance='null', message='null', id=null, markedResolved=false}}";
         assertEquals(expectedUri2, uri2.toString());
@@ -81,11 +78,15 @@ class UriPartTest {
         assertEquals(uAuthority, uri.uAuthority());
         assertEquals(use, uri.uEntity());
         assertEquals(uResource, uri.uResource());
+        assertFalse(uri.isEmpty());
+        assertTrue(uri.isLongForm());
+        assertFalse(uri.isMicroForm());
+        assertFalse(uri.isResolved());
     }
 
     @Test
-    @DisplayName("Test creating full microRemote uri")
-    public void test_create_full_remote_uri() {
+    @DisplayName("Test creating full long uri")
+    public void test_create_full_long_remote_uri() {
         UAuthority uAuthority = UAuthority.longRemote("VCU", "MY_VIN");
         UEntity use = UEntity.longFormat("body.access", 1);
         UResource uResource = UResource.longFormat("door", "front_left", "Door");
@@ -95,6 +96,29 @@ class UriPartTest {
         assertEquals(uAuthority, uri.uAuthority());
         assertEquals(use, uri.uEntity());
         assertEquals(uResource, uri.uResource());
+
+        assertFalse(uri.isEmpty());
+        assertTrue(uri.isLongForm());
+        assertFalse(uri.isMicroForm());
+        assertFalse(uri.isResolved());
+    }
+
+    @Test
+    @DisplayName("Test creating rpc response uri")
+    public void test_create_rpc_response_uri() {
+        UAuthority uAuthority = UAuthority.longRemote("VCU", "MY_VIN");
+        UEntity use = UEntity.longFormat("body.access", 1);
+
+        UUri uri = UUri.rpcResponse(uAuthority, use);
+
+        assertEquals(uAuthority, uri.uAuthority());
+        assertEquals(use, uri.uEntity());
+        assertTrue(uri.uResource().isRPCMethod());
+
+        assertFalse(uri.isEmpty());
+        assertTrue(uri.isLongForm());
+        assertFalse(uri.isMicroForm());
+        assertFalse(uri.isResolved());
     }
 
 
@@ -110,6 +134,11 @@ class UriPartTest {
         assertEquals(uAuthority, uri.uAuthority());
         assertEquals(use, uri.uEntity());
         assertEquals(uResource, uri.uResource());
+
+        assertFalse(uri.isEmpty());
+        assertTrue(uri.isLongForm());
+        assertFalse(uri.isMicroForm());
+        assertFalse(uri.isResolved());
     }
 
     @Test
@@ -120,6 +149,11 @@ class UriPartTest {
 
         UUri uri = new UUri(null, use, uResource);
         assertEquals(UAuthority.empty(), uri.uAuthority());
+
+        assertFalse(uri.isEmpty());
+        assertTrue(uri.isLongForm());
+        assertFalse(uri.isMicroForm());
+        assertFalse(uri.isResolved());
     }
 
     @Test
@@ -130,6 +164,11 @@ class UriPartTest {
 
         UUri uri = new UUri(uAuthority, null, uResource);
         assertEquals(UEntity.empty(), uri.uEntity());
+
+        assertFalse(uri.isEmpty());
+        assertTrue(uri.isLongForm());
+        assertFalse(uri.isMicroForm());
+        assertFalse(uri.isResolved());
     }
 
     @Test
@@ -141,6 +180,11 @@ class UriPartTest {
 
         UUri uri = new UUri(uAuthority, use, uResource);
         assertEquals(UResource.empty(), uri.uResource());
+
+        assertFalse(uri.isEmpty());
+        assertTrue(uri.isLongForm());
+        assertFalse(uri.isMicroForm());
+        assertFalse(uri.isResolved());
     }
 
     @Test
@@ -151,20 +195,11 @@ class UriPartTest {
         assertTrue(uri.uAuthority().isLocal());
         assertTrue(uri.uEntity().isEmpty());
         assertTrue(uri.uResource().isEmpty());
-    }
 
-    @Test
-    @DisplayName("Test the isEmpty static method")
-    public void test_is_empty() {
-        UUri uri = UUri.empty();
         assertTrue(uri.isEmpty());
-
-        UAuthority uAuthority = UAuthority.empty();
-        UEntity use = UEntity.empty();
-        UResource uResource = UResource.empty();
-
-        UUri uri2 = new UUri(uAuthority, use, uResource);
-        assertTrue(uri2.isEmpty());
+        assertTrue(uri.isLongForm());
+        assertFalse(uri.isMicroForm());
+        assertFalse(uri.isResolved());
     }
 
     @Test
@@ -173,7 +208,7 @@ class UriPartTest {
         UUri uri = UUri.empty();
         
         assertFalse(uri.isResolved());
-        assertFalse(uri.isLongForm());
+        assertTrue(uri.isLongForm());
         assertFalse(uri.isMicroForm());
 
         UUri uri2 = new UUri(UAuthority.local(), UEntity.longFormat("Hartley"), UResource.forRpcRequest("Raise"));

@@ -25,8 +25,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * An  service API - defined in the {@link UEntity} - has Resources and Methods. Both of these are represented by the UResource class.<br>
- * An  Resource represents a resource from a Service such as "door" and an optional specific instance such as "front_left". In addition, it can optionally contain
+ * A service API - defined in the {@link UEntity} - has Resources and Methods. Both of these are represented by the UResource class.<br>
+ * A uResource represents a resource from a Service such as "door" and an optional specific instance such as "front_left". In addition, it can optionally contain
  * the name of the resource Message type, such as "Door". The Message type matches the protobuf service IDL that defines structured data types. <br>
  * An UResource is something that can be manipulated/controlled/exposed by a service. Resources are unique when prepended with UAuthority that represents the device and
  * UEntity that represents the service.
@@ -65,7 +65,7 @@ public class UResource implements UriFormat {
     }
 
     /**
-     * Build a UResource that has serialization information.
+     * Build a UResource that has all elements resolved and can be serialized in a long UUri or a micro UUri.
      * @param name The name of the resource as a noun such as door or window, or in the case a method that manipulates the resource, a verb.
      * @param instance An instance of a resource such as front_left.
      * @param message The Message type matches the protobuf service IDL message name that defines structured data types.
@@ -74,7 +74,7 @@ public class UResource implements UriFormat {
      * @return Returns a UResource that has all the information that is needed to serialize into a long UUri or a micro UUri.
      */
     public static UResource resolvedFormat(String name, String instance, String message, Short id) {
-        boolean resolved = name != null && !name.isEmpty() && instance != null && !instance.isEmpty() && id != null;
+        boolean resolved = name != null && !name.isBlank() && id != null;
         return new UResource(name, instance, message, id, resolved);
     }
 
@@ -133,7 +133,7 @@ public class UResource implements UriFormat {
      * @return Returns a UResource used for an RPC request that could be serialised in long and micro format.
      */
     public static UResource forRpcRequest(String methodName, Short methodId) {
-        boolean resolved = methodName != null && !methodName.isEmpty() && methodId != null;
+        boolean resolved = methodName != null && !methodName.isBlank() && methodId != null;
         return new UResource("rpc", methodName, null, methodId, resolved);
     }
 
@@ -146,10 +146,11 @@ public class UResource implements UriFormat {
     }
 
     /**
-     * @return Returns true if this resource specifies an RPC method call.
+     * @return Returns true if this resource specifies an RPC method call or RPC response.
      */
     public boolean isRPCMethod() {
-        return name.equals("rpc");
+        return (name.equals("rpc") && instance().isPresent()) ||
+                (name.equals("rpc") && id().isPresent());
     }
 
     /**
@@ -165,7 +166,7 @@ public class UResource implements UriFormat {
      * @return Returns true if this resource is an empty container and has no valuable information in building uProtocol URI.
      */
     public boolean isEmpty() {
-        return name.isBlank() && instance().isEmpty() && message().isEmpty() && id().isEmpty();
+        return (name.isBlank() || "rpc".equals(name)) && instance().isEmpty() && message().isEmpty() && id().isEmpty();
     }
 
     /**
@@ -217,7 +218,10 @@ public class UResource implements UriFormat {
      */
     @Override
     public boolean isLongForm() {
-        return !name().isEmpty() && instance().isPresent();
+        if (name.equals("rpc")) {
+            return instance().isPresent();
+        }
+        return !name().isBlank();
     }
 
     /**

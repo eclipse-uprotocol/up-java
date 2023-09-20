@@ -112,7 +112,9 @@ public class UUri implements UriFormat {
      */
     @Override
     public boolean isLongForm() {
-        return uAuthority.isLongForm() && uEntity.isLongForm() && uResource.isLongForm();
+        return uAuthority.isLongForm() &&
+                (uEntity.isLongForm() || uEntity.isEmpty()) &&
+                (uResource.isLongForm() || uResource().isEmpty());
     }
 
     /**

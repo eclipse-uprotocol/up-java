@@ -26,6 +26,7 @@ import java.util.Optional;
 
 /**
  * Data representation of an <b> Software Entity - uE</b><br>
+ * Software entities are distinguished by using a unique name or a unique id along with the specific version of the software.
  * An Software Entity is a piece of software deployed somewhere on a uDevice.<br>
  * The Software Entity is used in the source and sink parts of communicating software.<br>
  * A uE that publishes events is a <b>Service</b> role.<br>
@@ -43,7 +44,7 @@ public class UEntity implements UriFormat {
      * Build a Software Entity that represents a communicating piece of software.
      * @param name The name of the software such as petapp or body.access.
      * @param version The software version. If not supplied, the latest version of the service will be used.
-     * @param id A numeric identifier for the software entity.
+     * @param id A numeric identifier for the software entity which is a one-to-one correspondence with the software name.
      * @param markedResolved Indicates that this uResource was populated with intent of having all data.
      */
     private UEntity(String name, Integer version, Short id, boolean markedResolved) {
@@ -54,13 +55,21 @@ public class UEntity implements UriFormat {
         this.markedResolved = markedResolved;
     }
 
+    /**
+     * Create a complete UEntity with all the information so that it can be used in long form UUri serialisation and micro form UUri serialisation.
+     * In the case of missing elements such as name or id, the UEntity will not be marked as resolvable and will not be usable in serialisation formats.
+     * @param name The name of the software such as petapp or body.access.
+     * @param version The software version. If not supplied, the latest version of the service will be used.
+     * @param id A numeric identifier for the software entity which is a one-to-one correspondence with the software name.
+     * @return Returns a complete UEntity with all the information so that it can be used in long form UUri serialisation and micro form UUri serialisation.
+     */
     public static UEntity resolvedFormat(String name, Integer version, Short id) {
         boolean resolved = name != null && !name.isEmpty() && id != null;
         return new UEntity(name, version, id, resolved);
     }
 
     /**
-     * Static factory method for creating a uE using the software entity name, that can be used to serialize long UUris.
+     * Static factory method for creating a uE using the software entity name, that can be used in long form UUri serialisation.
      * @param name The software entity name, such as petapp or body.access.
      * @return Returns an UEntity with the name where the version is the latest version of the service and can only be serialized
      *      to long UUri format.
@@ -70,7 +79,7 @@ public class UEntity implements UriFormat {
     }
 
     /**
-     * Static factory method for creating a uE using the software entity name, that can be used to serialize long UUris.
+     * Static factory method for creating a uE using the software entity name, that can be used long form UUri serialisation.
      * @param name The software entity name, such as petapp or body.access.
      * @param version The software entity version.
      * @return Returns an UEntity with the name and the version of the service and can only be serialized
@@ -82,9 +91,9 @@ public class UEntity implements UriFormat {
 
     /**
      * Static factory method for creating a uE using the software entity identification number, that can be used to serialize micro UUris.
-     * @param id The software entity name, such as petapp or body.access.
+     * @param id A numeric identifier for the software entity which is a one-to-one correspondence with the software name.
      * @return Returns an UEntity with the name where the version is the latest version of the service and can only be serialized
-     *      to long UUri format.
+     *      to long micro UUri format.
      */
     public static UEntity microFormat(Short id) {
         return new UEntity("", null, id, false);
@@ -92,26 +101,26 @@ public class UEntity implements UriFormat {
 
     /**
      * Static factory method for creating a uE using the software entity identification number, that can be used to serialize micro UUris.
-     * @param id The software entity name, such as petapp or body.access.
+     * @param id A numeric identifier for the software entity which is a one-to-one correspondence with the software name.
      * @param version The software entity version.
      * @return Returns an UEntity with the name and the version of the service and can only be serialized
-     *      to long UUri format.
+     *      to micro UUri format.
      */
     public static UEntity microFormat(Short id, Integer version) {
         return new UEntity("", version, id, false);
     }
 
     /**
-     * Static factory method for creating an empty  software entity, to avoid working with null<br>
-     * @return Returns an empty  software entity that has a blank name and no version information.
+     * Static factory method for creating an empty software entity, to avoid working with null<br>
+     * @return Returns an empty software entity that has a blank name, no unique id and no version information.
      */
     public static UEntity empty() {
         return EMPTY;
     }
 
     /**
-     * Indicates that this USE is an empty container and has no valuable information in building uProtocol sinks or sources.
-     * @return Returns true if this USE is an empty container and has no valuable information in building uProtocol sinks or sources.
+     * Indicates that this software entity is an empty container and has no valuable information in building uProtocol sinks or sources.
+     * @return Returns true if this software entity is an empty container and has no valuable information in building uProtocol sinks or sources.
      */
     @Override
     public boolean isEmpty() {
@@ -134,12 +143,12 @@ public class UEntity implements UriFormat {
      */
     @Override
     public boolean isLongForm() {
-        return !name().isEmpty();
+        return !name().isBlank();
     }
 
     /**
      * Returns true if the Uri part contains the id's which will allow the Uri part to be serialized into micro form.
-     * @return Returns true if the Uri part can be serialized into micro form.
+     * @return Returns true if the Uri part can be serialized into micro form, meaning is has at least a unique numeric identifier.
      */
     @Override
     public boolean isMicroForm() {
