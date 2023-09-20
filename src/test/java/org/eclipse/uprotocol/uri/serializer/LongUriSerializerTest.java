@@ -937,13 +937,27 @@ public class LongUriSerializerTest {
         byte[] badMicroUUri = new byte[] {0x0, 0x0, 0x0, 0x0, 0x0};
         UUri uri = UriSerializer.LONG.deserialize(goodLongUUri, goodMicroUUri);
         assertFalse(uri.isEmpty());
-
         UUri uri2 = UriSerializer.LONG.deserialize(goodLongUUri, badMicroUUri);
         assertTrue(uri2.isEmpty());
         UUri uri3 = UriSerializer.LONG.deserialize(badLongUUri, goodMicroUUri);
         assertTrue(uri3.isEmpty());
         UUri uri4 = UriSerializer.LONG.deserialize(badLongUUri, badMicroUUri);
         assertTrue(uri4.isEmpty());
+        UUri uri5 = UriSerializer.LONG.deserialize("", goodMicroUUri);
+        assertTrue(uri5.isEmpty());
+        UUri uri6 = UriSerializer.LONG.deserialize("", badMicroUUri);
+        assertTrue(uri6.isEmpty());
+        UUri uri7 = UriSerializer.LONG.deserialize(null, goodMicroUUri);
+        assertTrue(uri7.isEmpty());
+        UUri uri8 = UriSerializer.LONG.deserialize(null, badMicroUUri);
+        assertTrue(uri8.isEmpty());
+
+
+        UUri uri9 = UriSerializer.LONG.deserialize(goodLongUUri, null);
+        assertTrue(uri9.isEmpty());
+        UUri uri10 = UriSerializer.LONG.deserialize(goodLongUUri, new byte[0]);
+        assertTrue(uri10.isEmpty());
+
     }
 
     @Test

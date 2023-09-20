@@ -205,12 +205,27 @@ class UAuthorityTest {
         UAuthority local = UAuthority.local();
         UAuthority remote = UAuthority.resolvedRemote("192.168.1.100", null, InetAddress.getByName("192.168.1.100"));
         UAuthority remote1 = UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100"));
+        UAuthority remote2 = UAuthority.resolvedRemote("", null, InetAddress.getByName("192.168.1.100"));
+        UAuthority remote3 = UAuthority.resolvedRemote("vcu", "vin", null);
+        UAuthority remote4 = UAuthority.resolvedRemote(null, null, null);
         assertTrue(local.isResolved());
         assertTrue(local.isLongForm());
+        assertTrue(local.isEmpty());
         assertTrue(remote.isResolved());
         assertTrue(remote.isLongForm());
+        assertFalse(remote.isEmpty());
         assertTrue(remote1.isResolved());
         assertTrue(remote1.isLongForm());
+        assertFalse(remote1.isEmpty());
+        assertFalse(remote2.isResolved());
+        assertFalse(remote2.isLongForm());
+        assertFalse(remote2.isEmpty());
+        assertFalse(remote3.isResolved());
+        assertTrue(remote3.isLongForm());
+        assertFalse(remote3.isEmpty());
+        assertFalse(remote4.isResolved());
+        assertTrue(remote4.isLongForm());
+        assertTrue(remote4.isEmpty());
     }
 
 

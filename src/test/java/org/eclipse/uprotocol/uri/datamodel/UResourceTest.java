@@ -308,6 +308,12 @@ class UResourceTest {
         assertFalse(uResource15.isResolved());
         UResource uResource16 = UResource.resolvedFormat(null, null, null, null);
         assertFalse(uResource16.isResolved());
+
+
+        UResource uResource17 = UResource.resolvedFormat("", "front_left", "Door", (short)5);
+        assertFalse(uResource17.isResolved());
+        UResource uResource18 = UResource.resolvedFormat("door", "", "Door", null);
+        assertFalse(uResource18.isResolved());
      }
 
     @Test
@@ -352,7 +358,16 @@ class UResourceTest {
         assertFalse(uResource4.isLongForm());
         assertTrue(uResource4.isRPCMethod());
 
-        UResource uResource5 = UResource.forRpcRequest(null,  (short)2);
+        UResource uResource6 = UResource.forRpcRequest("hello",  null);
+        assertEquals("rpc", uResource6.name());
+        assertTrue(uResource6.instance().isPresent());
+        assertTrue(uResource6.message().isEmpty());
+        assertFalse(uResource6.id().isPresent());
+        assertFalse(uResource6.isResolved());
+        assertTrue(uResource6.isLongForm());
+        assertTrue(uResource6.isRPCMethod());
+
+        UResource uResource5 = UResource.forRpcRequest("",  (short)2);
         assertEquals("rpc", uResource5.name());
         assertFalse(uResource5.instance().isPresent());
         assertTrue(uResource5.message().isEmpty());

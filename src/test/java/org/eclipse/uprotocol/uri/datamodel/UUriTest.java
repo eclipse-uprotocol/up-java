@@ -237,6 +237,11 @@ class UriPartTest {
         assertFalse(uri12.isLongForm());
         assertTrue(uri12.isMicroForm());
 
+        UUri uri19 = new UUri(UAuthority.microRemote(InetAddress.getByName("192.168.1.100")), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.microFormat((short)2));
+        assertFalse(uri19.isResolved());
+        assertFalse(uri19.isLongForm());
+        assertTrue(uri19.isMicroForm());
+
         UUri uri16 = new UUri(UAuthority.local(), UEntity.microFormat((short)2, 1), UResource.microFormat((short)2));
         assertFalse(uri16.isResolved());
         assertFalse(uri16.isLongForm());
