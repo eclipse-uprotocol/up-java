@@ -22,7 +22,7 @@ public class LongUriSerializerTest {
         final String strUri = UriSerializer.LONG.serialize(uri);
         assertEquals("/hartley//rpc.raise", strUri);
         final UUri uri2 = UriSerializer.LONG.deserialize(strUri);
-        assertTrue(uri.equals(uri2));
+        assertEquals(uri, uri2);
     }
 
         @Test
@@ -62,7 +62,7 @@ public class LongUriSerializerTest {
     public void test_parse_protocol_uri_with_schema_and_double_slash() {
         String uri = "//";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
-        assertTrue(Uri.uAuthority().isLocal());
+        assertFalse(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertTrue(Uri.isEmpty());
     }
@@ -72,7 +72,7 @@ public class LongUriSerializerTest {
     public void test_parse_protocol_uri_with_schema_and_3_slash_and_something() {
         String uri = "///body.access";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
-        assertTrue(Uri.uAuthority().isLocal());
+        assertFalse(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isEmpty());
@@ -84,7 +84,7 @@ public class LongUriSerializerTest {
     public void test_parse_protocol_uri_with_schema_and_4_slash_and_something() {
         String uri = "////body.access";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
-        assertTrue(Uri.uAuthority().isLocal());
+        assertFalse(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertTrue(Uri.uEntity().name().isBlank());
         assertTrue(Uri.uEntity().version().isEmpty());
@@ -96,12 +96,11 @@ public class LongUriSerializerTest {
     public void test_parse_protocol_uri_with_schema_and_5_slash_and_something() {
         String uri = "/////body.access";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
-        assertTrue(Uri.uAuthority().isLocal());
+        assertFalse(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertTrue(Uri.uEntity().isEmpty());
         assertEquals("body", Uri.uResource().name());
-        assertTrue(Uri.uResource().instance().isPresent());
-        assertEquals("access", Uri.uResource().instance().get());
+        assertEquals("access", Uri.uResource().instance().orElse(""));
         assertTrue(Uri.uResource().message().isEmpty());
     }
  
@@ -110,7 +109,7 @@ public class LongUriSerializerTest {
     public void test_parse_protocol_uri_with_schema_and_6_slash_and_something() {
         String uri = "//////body.access";
         UUri Uri = UriSerializer.LONG.deserialize(uri);
-        assertTrue(Uri.uAuthority().isLocal());
+        assertFalse(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
         assertTrue(Uri.isEmpty());
     }
@@ -135,8 +134,7 @@ public class LongUriSerializerTest {
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
-        assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals(1, Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().orElse(10));
         assertTrue(Uri.uResource().isEmpty());
     }
 
@@ -162,8 +160,7 @@ public class LongUriSerializerTest {
         assertTrue(Uri.uAuthority().isLocal());
         assertFalse(Uri.uAuthority().isMarkedRemote());
         assertEquals("body.access", Uri.uEntity().name());
-        assertTrue(Uri.uEntity().version().isPresent());
-        assertEquals(1, Uri.uEntity().version().get());
+        assertEquals(1, Uri.uEntity().version().orElse(10));
         assertEquals("door", Uri.uResource().name());
         assertTrue(Uri.uResource().instance().isEmpty());
         assertTrue(Uri.uResource().message().isEmpty());
@@ -885,16 +882,13 @@ public class LongUriSerializerTest {
         UUri Uri = UriSerializer.LONG.deserialize(uri);
         assertFalse(Uri.uAuthority().isLocal());
         assertTrue(Uri.uAuthority().isMarkedRemote());
-        assertEquals("vcu", Uri.uAuthority().device().get());
-        assertTrue(Uri.uAuthority().domain().isPresent());
-        assertEquals("vin", Uri.uAuthority().domain().get());
+        assertEquals("vcu", Uri.uAuthority().device().orElse(""));
+        assertEquals("vin", Uri.uAuthority().domain().orElse(""));
         assertEquals("body.access", Uri.uEntity().name());
         assertTrue(Uri.uEntity().version().isEmpty());
         assertEquals("door", Uri.uResource().name());
-        assertTrue(Uri.uResource().instance().isPresent());
-        assertEquals("front_left", Uri.uResource().instance().get());
-        assertTrue(Uri.uResource().message().isPresent());
-        assertEquals("Door", Uri.uResource().message().get());
+        assertEquals("front_left", Uri.uResource().instance().orElse(""));
+        assertEquals("Door", Uri.uResource().message().orElse(""));
         assertEquals(uri2, UriSerializer.LONG.serialize(Uri));
     }
 

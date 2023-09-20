@@ -91,15 +91,14 @@ public class UUri implements UriFormat {
      */
     @Override
     public boolean isEmpty() {
-        return uAuthority.isLocal() && uEntity().isEmpty()
-                && uResource.isEmpty();
+        return uAuthority.isEmpty() && uEntity().isEmpty() && uResource.isEmpty();
     }
 
     /**
      * Returns true if URI contains both names and numeric representations of the names inside its belly.
      * Meaning that this UUri can be serialized to long or micro formats.
      * @return Returns true if URI contains both names and numeric representations of the names inside its belly.
-     *      Meaning that this UUri can be serialized to long or micro formats.
+     *      Meaning that this UUri can buree serialized to long or micro formats.
      */
     @Override
     public boolean isResolved() {
