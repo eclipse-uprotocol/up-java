@@ -64,8 +64,8 @@ public class UEntity implements UriFormat {
      * @return Returns a complete UEntity with all the information so that it can be used in long form UUri serialisation and micro form UUri serialisation.
      */
     public static UEntity resolvedFormat(String name, Integer version, Short id) {
-        boolean resolved = name != null && !name.isEmpty() && id != null;
-        return new UEntity(name, version, id, resolved);
+        boolean resolved = name != null && !name.isBlank() && id != null;
+        return new UEntity(Objects.requireNonNullElse(name, "").trim(), version, id, resolved);
     }
 
     /**

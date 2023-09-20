@@ -235,7 +235,22 @@ class UEntityTest {
     public void test_create_resolved_use_for_use_with_long_format_uuri_and_micro_format_uuri_when_name_is_empty() {
         Short id = 42;
         Short defaultNotUsed = 0;
-        UEntity use = UEntity.resolvedFormat("", 1, id);
+        UEntity use = UEntity.resolvedFormat(" ", 1, id);
+        assertEquals("", use.name());
+        assertEquals(1, use.version().orElse(-1));
+        assertEquals(id, use.id().orElse(defaultNotUsed));
+        assertFalse(use.isEmpty());
+        assertFalse(use.isResolved());
+        assertFalse(use.isLongForm());
+        assertTrue(use.isMicroForm());
+    }
+
+    @Test
+    @DisplayName("Test creating a resolved software entity for use in long format and micro format UUri when name is null")
+    public void test_create_resolved_use_for_use_with_long_format_uuri_and_micro_format_uuri_when_name_is_null() {
+        Short id = 42;
+        Short defaultNotUsed = 0;
+        UEntity use = UEntity.resolvedFormat(null, 1, id);
         assertEquals("", use.name());
         assertEquals(1, use.version().orElse(-1));
         assertEquals(id, use.id().orElse(defaultNotUsed));
@@ -263,7 +278,7 @@ class UEntityTest {
     @Test
     @DisplayName("Test creating a resolved software entity for use in long format and micro format UUri when all elements are empty")
     public void test_create_resolved_use_for_use_with_long_format_uuri_and_micro_format_uuri_all_empty_elements() {
-        UEntity use = UEntity.resolvedFormat("", null, null);
+        UEntity use = UEntity.resolvedFormat("  ", null, null);
         assertEquals("", use.name());
         assertTrue(use.version().isEmpty());
         assertTrue(use.id().isEmpty());

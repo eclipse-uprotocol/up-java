@@ -48,7 +48,22 @@ class UResourceTest {
     @DisplayName("Test creating a empty Resource")
     public void test_create_empty_Resource() {
         UResource uResource = UResource.empty();
-        assertTrue(uResource.name().isEmpty());
+        assertTrue(uResource.name().isBlank());
+        assertTrue(uResource.instance().isEmpty());
+        assertTrue(uResource.message().isEmpty());
+        assertTrue(uResource.id().isEmpty());
+        assertTrue(uResource.isEmpty());
+        assertFalse(uResource.isResolved());
+        assertFalse(uResource.isLongForm());
+        assertFalse(uResource.isMicroForm());
+        assertFalse(uResource.isRPCMethod());
+    }
+
+    @Test
+    @DisplayName("Test creating a empty Resource")
+    public void test_create_empty_Resource2() {
+        UResource uResource = UResource.longFormat(" ", null, null);
+        assertTrue(uResource.name().isBlank());
         assertTrue(uResource.instance().isEmpty());
         assertTrue(uResource.message().isEmpty());
         assertTrue(uResource.id().isEmpty());
