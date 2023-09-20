@@ -174,51 +174,84 @@ class UriPartTest {
         
         assertFalse(uri.isResolved());
         assertFalse(uri.isLongForm());
+        assertFalse(uri.isMicroForm());
 
         UUri uri2 = new UUri(UAuthority.local(), UEntity.longFormat("Hartley"), UResource.forRpcRequest("Raise"));
         assertFalse(uri2.isResolved());
         assertTrue(uri2.isLongForm());
+        assertFalse(uri2.isMicroForm());
 
         UUri uri3 = new UUri(UAuthority.local(), UEntity.longFormat("Hartley"), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri3.isResolved());
         assertTrue(uri3.isLongForm());
+        assertFalse(uri3.isMicroForm());
 
         UUri uri4 = new UUri(UAuthority.local(), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertTrue(uri4.isResolved());
         assertTrue(uri4.isLongForm());
+        assertFalse(uri3.isMicroForm());
 
         UUri uri11 = new UUri(UAuthority.local(), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.forRpcRequest("Raise"));
         assertFalse(uri11.isResolved());
         assertTrue(uri11.isLongForm());
+        assertFalse(uri11.isMicroForm());
 
         UUri uri5 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.longFormat("Hartley"), UResource.forRpcRequest("Raise"));
         assertFalse(uri5.isResolved());
         assertTrue(uri5.isLongForm());
+        assertFalse(uri5.isMicroForm());
 
         UUri uri6 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.longFormat("Hartley"), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri6.isResolved());
         assertTrue(uri6.isLongForm());
+        assertFalse(uri6.isMicroForm());
 
         UUri uri7 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.longFormat("Hartley"), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri7.isResolved());
         assertTrue(uri7.isLongForm());
+        assertFalse(uri7.isMicroForm());
+
+        UUri uri14 = new UUri(UAuthority.resolvedRemote("vcu", "vin", null), UEntity.resolvedFormat("Hartley", 1, (short)2), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
+        assertFalse(uri14.isResolved());
+        assertTrue(uri14.isLongForm());
+        assertFalse(uri14.isMicroForm());
 
 
         UUri uri8 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.longFormat("Hartley"), UResource.forRpcRequest("Raise"));
         assertFalse(uri8.isResolved());
         assertTrue(uri8.isLongForm());
+        assertFalse(uri8.isMicroForm());
 
         UUri uri9 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.longFormat("Hartley"), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertFalse(uri9.isResolved());
         assertTrue(uri9.isLongForm());
+        assertFalse(uri9.isMicroForm());
 
         UUri uri10 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
         assertTrue(uri10.isResolved());
         assertTrue(uri10.isLongForm());
+        assertTrue(uri10.isMicroForm());
 
         UUri uri12 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.resolvedFormat("Hartley", null, (short)2), UResource.microFormat((short)2));
         assertFalse(uri12.isResolved());
         assertFalse(uri12.isLongForm());
+        assertTrue(uri12.isMicroForm());
+
+        UUri uri16 = new UUri(UAuthority.local(), UEntity.microFormat((short)2, 1), UResource.microFormat((short)2));
+        assertFalse(uri16.isResolved());
+        assertFalse(uri16.isLongForm());
+        assertTrue(uri16.isMicroForm());
+
+
+        UUri uri17 = new UUri(UAuthority.resolvedRemote("vcu", "vin", InetAddress.getByName("192.168.1.100")), UEntity.microFormat((short)2, 1), UResource.resolvedFormat("Raise", "Salary", "Bonus", (short)1));
+        assertFalse(uri17.isResolved());
+        assertFalse(uri17.isLongForm());
+        assertTrue(uri17.isMicroForm());
+
+        UUri uri18 = new UUri(UAuthority.local(), UEntity.microFormat((short)2, 1), UResource.microFormat((short)2));
+        assertFalse(uri18.isResolved());
+        assertFalse(uri18.isLongForm());
+        assertTrue(uri18.isMicroForm());
 
     }
 

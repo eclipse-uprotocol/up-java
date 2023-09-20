@@ -225,5 +225,12 @@ class UEntityTest {
         assertFalse(use5.isLongForm());
         assertFalse(use5.isResolved());
         assertFalse(use5.isMicroForm());
+
+        try {
+            UEntity use6 = UEntity.resolvedFormat(null, null, null);
+        } catch (NullPointerException e) {
+            assertTrue(e.getMessage().contains(" Software Entity must have a name"));
+        }
+
     }
 }

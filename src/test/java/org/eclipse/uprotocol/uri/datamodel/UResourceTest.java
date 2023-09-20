@@ -41,6 +41,7 @@ class UResourceTest {
         UResource uResource = UResource.longFormat("door", "front_left", "Door");
         String expected = "UResource{name='door', instance='front_left', message='Door', id=null, markedResolved=false}";
         assertEquals(expected, uResource.toString());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -52,6 +53,7 @@ class UResourceTest {
         assertEquals("front_left", uResource.instance().get());
         assertTrue(uResource.message().isPresent());
         assertEquals("Door", uResource.message().get());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -61,11 +63,13 @@ class UResourceTest {
         assertEquals("door", uResource.name());
         assertTrue(uResource.instance().isEmpty());
         assertTrue(uResource.message().isEmpty());
+        assertFalse(uResource.isEmpty());
 
         UResource uResource2 = UResource.longFormat("door", null, null);
         assertEquals("door", uResource2.name());
         assertTrue(uResource.instance().isEmpty());
         assertTrue(uResource.message().isEmpty());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -75,6 +79,7 @@ class UResourceTest {
         assertEquals("door", uResource.name());
         assertTrue(uResource.instance().isEmpty());
         assertTrue(uResource.message().isEmpty());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -85,6 +90,7 @@ class UResourceTest {
         assertTrue(uResource.instance().isPresent());
         assertEquals("front_left", uResource.instance().get());
         assertTrue(uResource.message().isEmpty());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -95,6 +101,7 @@ class UResourceTest {
         assertTrue(uResource.instance().isPresent());
         assertEquals("UpdateDoor", uResource.instance().get());
         assertTrue(uResource.isRPCMethod());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -109,6 +116,7 @@ class UResourceTest {
     public void test_Resource_represents_a_resource_and_not_an_rpc_method_call() {
         UResource uResource = UResource.longFormat("door");
         assertFalse(uResource.isRPCMethod());
+        assertFalse(uResource.isEmpty());
     }
 
 
@@ -120,6 +128,7 @@ class UResourceTest {
         assertTrue(uResource.name().isEmpty());
         assertTrue(uResource.instance().isEmpty());
         assertTrue(uResource.message().isEmpty());
+        assertTrue(uResource.isEmpty());
     }
 
     @Test
@@ -160,6 +169,7 @@ class UResourceTest {
         assertTrue(uResource.id().isPresent());
         assertEquals((int)5, (int)uResource.id().get());
         assertEquals("UResource{name='door', instance='front_left', message='Door', id=5, markedResolved=true}", uResource.toString());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -173,6 +183,7 @@ class UResourceTest {
         assertEquals("Door", uResource.message().get());
         assertFalse(uResource.id().isPresent());
         assertEquals("UResource{name='door', instance='front_left', message='Door', id=null, markedResolved=false}", uResource.toString());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -185,6 +196,7 @@ class UResourceTest {
         assertTrue(uResource.id().isPresent());
         assertEquals((int)5, (int)uResource.id().get());
         assertEquals("UResource{name='', instance='null', message='null', id=5, markedResolved=false}", uResource.toString());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -198,6 +210,7 @@ class UResourceTest {
         assertTrue(uResource.id().isPresent());
         assertEquals((int)0, (int)uResource.id().get());
         assertEquals("UResource{name='rpc', instance='response', message='null', id=0, markedResolved=true}", uResource.toString());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -211,6 +224,7 @@ class UResourceTest {
         assertTrue(uResource.id().isPresent());
         assertEquals((int)0, (int)uResource.id().get());
         assertEquals("UResource{name='rpc', instance='response', message='null', id=0, markedResolved=true}", uResource.toString());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -223,6 +237,7 @@ class UResourceTest {
         assertTrue(uResource.id().isPresent());
         assertEquals((int)0, (int)uResource.id().get());
         assertEquals("UResource{name='rpc', instance='null', message='null', id=0, markedResolved=false}", uResource.toString());
+        assertFalse(uResource.isEmpty());
     }
 
     @Test
@@ -318,6 +333,33 @@ class UResourceTest {
         assertFalse(uResource2.isResolved());
         assertFalse(uResource2.isLongForm());
         assertTrue(uResource2.isRPCMethod());
-        //assertFalse(uResource.isMicroForm());
+
+        UResource uResource3 = UResource.forRpcRequest(null, null);
+        assertEquals("rpc", uResource3.name());
+        assertFalse(uResource3.instance().isPresent());
+        assertTrue(uResource3.message().isEmpty());
+        assertFalse(uResource3.id().isPresent());
+        assertFalse(uResource3.isResolved());
+        assertFalse(uResource3.isLongForm());
+        assertTrue(uResource3.isRPCMethod());
+
+        UResource uResource4 = UResource.forRpcRequest("",  null);
+        assertEquals("rpc", uResource4.name());
+        assertFalse(uResource4.instance().isPresent());
+        assertTrue(uResource4.message().isEmpty());
+        assertFalse(uResource4.id().isPresent());
+        assertFalse(uResource4.isResolved());
+        assertFalse(uResource4.isLongForm());
+        assertTrue(uResource4.isRPCMethod());
+
+        UResource uResource5 = UResource.forRpcRequest(null,  (short)2);
+        assertEquals("rpc", uResource5.name());
+        assertFalse(uResource5.instance().isPresent());
+        assertTrue(uResource5.message().isEmpty());
+        assertTrue(uResource5.id().isPresent());
+        assertFalse(uResource5.isResolved());
+        assertFalse(uResource5.isLongForm());
+        assertTrue(uResource5.isRPCMethod());
+
     }
 }
