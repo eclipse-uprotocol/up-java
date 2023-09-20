@@ -86,4 +86,15 @@ public class UuidValidatorTest {
         assertEquals(Code.INVALID_ARGUMENT_VALUE, statusv8.getCode());
         assertEquals("Invalid Version 6", statusv8.getMessage());
     }
+
+    @Test
+    @DisplayName("Test using invalid validator when passed an invalid UUID type")
+    void test_invalid_validator_uuid_type() {
+        final UUID uuid = new UUID(0, 0);
+        UuidValidator validator = UuidValidator.getValidator(uuid);
+        final Status status = validator.validate(uuid);
+
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
+        assertEquals("Invalid UUID Format", status.getMessage());
+    }
 }
