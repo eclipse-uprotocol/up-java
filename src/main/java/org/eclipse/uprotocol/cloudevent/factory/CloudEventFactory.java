@@ -159,8 +159,7 @@ public interface CloudEventFactory {
      *
      * @param id                 Event unique identifier.
      * @param source             Identifies who is sending this event in the format of a uProtocol URI that
-     *                           can be built from a {@link UUri} object using
-     *                           the {@link UriFactory}
+     *                           can be built from a {@link UUri} object.
      * @param protoPayloadBytes  The serialized Event data with the content type of "application/x-protobuf".
      * @param protoPayloadSchema The schema of the proto payload bytes, for example you can use <code>protoPayload.getTypeUrl()</code> on your service/app object.
      * @param attributes        Additional cloud event attributes that can be passed in. All attributes are optional and will be added only if they

@@ -33,21 +33,27 @@ import java.util.stream.Collectors;
 
 /**
  * UUri Serializer that serializes a UUri to a string (long format) per
- *  https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
+ *  <&lt;a href="<a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc">...</a>"&gt;...&lt;/a&gt;
  */
 public class LongUriSerializer implements UriSerializer<String> {
 
+    private static final LongUriSerializer INSTANCE = new LongUriSerializer();
+
+    private LongUriSerializer(){}
+
+    public static LongUriSerializer instance() {
+        return INSTANCE;
+    }
+
     /**
-     * Serialize the UUri object Into a string in Long Form.
-     * 
-     * @param Uri The  URI data object.
-     * @return Returns the uProtocol URI string from an  URI data object
-     *      that can be used as a sink or a source in a uProtocol publish communication.
+     * Support for serializing {@link UUri} objects into their String format.
+     * @param Uri {@link UUri} object to be serialized to the String format.
+     * @return Returns the String format of the supplied {@link UUri} that can be used as a sink or a source in a uProtocol publish communication.
      */
     @Override
     public String serialize(UUri Uri) {
         if (Uri == null || Uri.isEmpty()) {
-            return new String();
+            return "";
         }
 
         StringBuilder sb = new StringBuilder();
@@ -189,9 +195,7 @@ public class LongUriSerializer implements UriSerializer<String> {
             if (!useVersion.isBlank()) {
                 useVersionInt = Integer.valueOf(useVersion);
             }
-        } catch (NumberFormatException e) {
-            useVersionInt = null;
-        }
+        } catch (NumberFormatException ignored) {}
 
         return new UUri(uAuthority, UEntity.longFormat(useName, useVersionInt), uResource);
     }
@@ -200,7 +204,7 @@ public class LongUriSerializer implements UriSerializer<String> {
      * Static factory method for creating a UResource using a string that contains 
      * name + instance + message.
      * @param resourceString String that contains the UResource information.
-     * @return Returns a UResource object
+     * @return Returns a UResource object.
      */
     private static UResource parseFromString(String resourceString) {
         Objects.requireNonNull(resourceString, " Resource must have a command name.");

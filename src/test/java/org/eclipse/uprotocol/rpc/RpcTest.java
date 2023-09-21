@@ -26,10 +26,9 @@ import com.google.protobuf.Int32Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.serializer.UriSerializer;
+import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
 import org.eclipse.uprotocol.utransport.datamodel.UPayload;
 import org.eclipse.uprotocol.utransport.datamodel.USerializationHint;
@@ -542,7 +541,7 @@ class RpcTest {
     }
 
     private static UUri buildTopic() {
-        return UriSerializer.LONG.deserialize("//vcu.vin/hartley/1/rpc.Raise");
+        return LongUriSerializer.instance().deserialize("//vcu.vin/hartley/1/rpc.Raise");
     }
 
     private static UAttributes buildUAttributes() {

@@ -21,16 +21,15 @@
 
 package org.eclipse.uprotocol.cloudevent.validate;
 
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import io.cloudevents.CloudEvent;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
 import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.serializer.UriSerializer;
-
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.cloudevents.CloudEvent;
+import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -152,7 +151,7 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateUEntityUri(String uri) {
-        UUri Uri = UriSerializer.LONG.deserialize(uri);
+        UUri Uri = LongUriSerializer.instance().deserialize(uri);
         return validateUEntityUri(Uri);
     }
 
@@ -175,7 +174,7 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateTopicUri(String uri) {
-        UUri Uri = UriSerializer.LONG.deserialize(uri);
+        UUri Uri = LongUriSerializer.instance().deserialize(uri);
         return validateTopicUri(Uri);
     }
 
@@ -206,7 +205,7 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateRpcTopicUri(String uri) {
-        UUri Uri = UriSerializer.LONG.deserialize(uri);
+        UUri Uri = LongUriSerializer.instance().deserialize(uri);
         return validateRpcTopicUri(Uri);
     }
 
@@ -234,7 +233,7 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateRpcMethod(String uri) {
-        UUri Uri = UriSerializer.LONG.deserialize(uri);
+        UUri Uri = LongUriSerializer.instance().deserialize(uri);
         ValidationResult validationResult = validateUEntityUri(Uri);
         if (validationResult.isFailure()){
             return ValidationResult.failure(String.format("Invalid RPC method uri. %s", validationResult.getMessage()));

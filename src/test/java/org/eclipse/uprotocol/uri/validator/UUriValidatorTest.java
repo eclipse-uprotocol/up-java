@@ -22,46 +22,44 @@
 package org.eclipse.uprotocol.uri.validator;
 
 
+import org.eclipse.uprotocol.uri.datamodel.UAuthority;
+import org.eclipse.uprotocol.uri.datamodel.UEntity;
+import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+import org.eclipse.uprotocol.utransport.datamodel.UStatus;
+import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-
-import org.eclipse.uprotocol.uri.serializer.UriSerializer;
-import org.eclipse.uprotocol.utransport.datamodel.UStatus;
-import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 
 class UUriValidatorTest {
 
     @Test
     @DisplayName("Test validate blank uri")
     public void test_validate_blank_uri() {
-        final UUri uri = UriSerializer.LONG.deserialize(null);
+        final UUri uri = LongUriSerializer.instance().deserialize(null);
         final UStatus status = UriValidator.validate(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("UriPart is empty.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
 
     @Test
     @DisplayName("Test validate uri with no device name")
     public void test_validate_uri_with_no_entity_name() {
-        final UUri uri = UriSerializer.LONG.deserialize("//");
+        final UUri uri = LongUriSerializer.instance().deserialize("//");
         final UStatus status = UriValidator.validate(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("UriPart is empty.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
 
     @Test
     @DisplayName("Test validate uri with uEntity")
     public void test_validate_uri_with_uEntity() {
-        final UUri uri = UriSerializer.LONG.deserialize("/hartley");
+        final UUri uri = LongUriSerializer.instance().deserialize("/hartley");
         final UStatus status = UriValidator.validate(uri);
         assertEquals(UStatus.ok(), status);
     }
@@ -69,11 +67,11 @@ class UUriValidatorTest {
     @Test
     @DisplayName("Test validate with malformed URI")
     public void test_validate_with_malformed_uri() {
-        final UUri uri = UriSerializer.LONG.deserialize("hartley");
+        final UUri uri = LongUriSerializer.instance().deserialize("hartley");
         final UStatus status = UriValidator.validate(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("UriPart is empty.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
    
 
@@ -84,13 +82,13 @@ class UUriValidatorTest {
         final UStatus status = UriValidator.validate(uri);
         assertFalse(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("UriPart is missing uSoftware Entity name.", status.msg());
+        assertEquals("Uri is missing uSoftware Entity name.", status.msg());
     }
 
     @Test
     @DisplayName("Test validateRpcMethod with valid URI")
     public void test_validateRpcMethod_with_valid_uri() {
-        final UUri uri = UriSerializer.LONG.deserialize("/hartley//rpc.echo");
+        final UUri uri = LongUriSerializer.instance().deserialize("/hartley//rpc.echo");
         final UStatus status = UriValidator.validateRpcMethod(uri);
         assertEquals(UStatus.ok(), status);
     }
@@ -98,26 +96,26 @@ class UUriValidatorTest {
     @Test
     @DisplayName("Test validateRpcMethod with valid URI")
     public void test_validateRpcMethod_with_invalid_uri() {
-        final UUri uri = UriSerializer.LONG.deserialize("/hartley/echo");
+        final UUri uri = LongUriSerializer.instance().deserialize("/hartley/echo");
         final UStatus status = UriValidator.validateRpcMethod(uri);
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Invalid RPC method uri. UriPart should be the method to be called, or method from response.", status.msg());
+        assertEquals("Invalid RPC method uri. Uri should be the method to be called, or method from response.", status.msg());
     }
 
     @Test
     @DisplayName("Test validateRpcMethod with malformed URI")
     public void test_validateRpcMethod_with_malformed_uri() {
-        final UUri uri = UriSerializer.LONG.deserialize("hartley");
+        final UUri uri = LongUriSerializer.instance().deserialize("hartley");
         final UStatus status = UriValidator.validateRpcMethod(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("UriPart is empty.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
 
     @Test
     @DisplayName("Test validateRpcResponse with valid URI")
     public void test_validateRpcResponse_with_valid_uri() {
-        final UUri uri = UriSerializer.LONG.deserialize("/hartley//rpc.response");
+        final UUri uri = LongUriSerializer.instance().deserialize("/hartley//rpc.response");
         final UStatus status = UriValidator.validateRpcResponse(uri);
         assertEquals(UStatus.ok(), status);
     }
@@ -125,17 +123,17 @@ class UUriValidatorTest {
     @Test
     @DisplayName("Test validateRpcResponse with malformed URI")
     public void test_validateRpcResponse_with_malformed_uri() {
-        final UUri uri = UriSerializer.LONG.deserialize("hartley");
+        final UUri uri = LongUriSerializer.instance().deserialize("hartley");
         final UStatus status = UriValidator.validateRpcResponse(uri);
         assertTrue(uri.isEmpty());
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("UriPart is empty.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
 
     @Test
     @DisplayName("Test validateRpcResponse with rpc type")
     public void test_validateRpcResponse_with_rpc_type() {
-        final UUri uri = UriSerializer.LONG.deserialize("/hartley//dummy.wrong");
+        final UUri uri = LongUriSerializer.instance().deserialize("/hartley//dummy.wrong");
         final UStatus status = UriValidator.validateRpcResponse(uri);
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
         assertEquals("Invalid RPC response type.", status.msg());
@@ -144,18 +142,10 @@ class UUriValidatorTest {
     @Test
     @DisplayName("Test validateRpcResponse with invalid rpc response type")
     public void test_validateRpcResponse_with_invalid_rpc_response_type() {
-        final UUri uri = UriSerializer.LONG.deserialize("/hartley//rpc.wrong");
+        final UUri uri = LongUriSerializer.instance().deserialize("/hartley//rpc.wrong");
         final UStatus status = UriValidator.validateRpcResponse(uri);
         assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
         assertEquals("Invalid RPC response type.", status.msg());
-    }
-
-    @Test
-    @DisplayName("Test validateLongUUri with valid URI")
-    public void test_validateLongUUri_with_valid_uri() {
-        final UUri uri = UriSerializer.LONG.deserialize("/hartley//rpc.echo");
-        final UStatus status = UriValidator.validateLongUUri(UriSerializer.LONG.serialize(uri));
-        assertEquals(UStatus.ok(), status);
     }
 
 }

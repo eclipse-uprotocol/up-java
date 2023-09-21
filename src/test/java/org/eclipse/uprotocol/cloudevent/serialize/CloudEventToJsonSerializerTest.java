@@ -21,21 +21,20 @@
 
 package org.eclipse.uprotocol.cloudevent.serialize;
 
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
-import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
-import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.serializer.UriSerializer;
-
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
+import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
+import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
+import org.eclipse.uprotocol.uri.datamodel.UAuthority;
+import org.eclipse.uprotocol.uri.datamodel.UEntity;
+import org.eclipse.uprotocol.uri.datamodel.UResource;
+import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -168,7 +167,7 @@ class CloudEventToJsonSerializerTest {
         UEntity use = UEntity.longFormat("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
                 UResource.longFormat("door", "front_left", "Door"));
-        String source = UriSerializer.LONG.serialize(Uri);
+        String source = LongUriSerializer.instance().serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest1();

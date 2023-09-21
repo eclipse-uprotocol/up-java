@@ -26,81 +26,63 @@ import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 
+import java.util.Optional;
+
 /**
- * UUri serializer that will serialize to either String or byte[] the UUri object.
- * 
- * For more information, please refer to https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
- * 
- * @param T The serialization formation
+ * UUris are used in transport layers and hence need to be serialised.
+ * Each transport supports different serialisation formats.
+ * For more information, please refer to <a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc">...</a>
+ * @param <T> The data structure that the UUri will be serialised into. For example String or byte[].
  */
 public interface UriSerializer<T> {
 
     /**
-     * Deserialize from the format to a UUri
-     * @param uri serialized UUri
-     * @return deserialized UUri object
+     * Deserialize from the format to a {@link UUri}.
+     * @param uri serialized UUri.
+     * @return Returns a {@link UUri} object from the serialized format from the wire.
      */
     UUri deserialize(T uri);
 
     /**
-     * Serialize from a UUri to the format
-     * @param uri UUri object to be serialized to the format T
-     * @return serialized UUri
+     * Serialize from a {@link UUri} to a specific serialization format.
+     * @param uri UUri object to be serialized to the format T.
+     * @return Returns the {@link UUri} in the transport serialized format.
      */
     T serialize(UUri uri);
 
     /**
-     * Long form serializer
+     * Build a fully resolved {@link UUri} from the serialized long format and the serializes micro format.
+     * @param longUri {@link UUri} serialized as a Sting.
+     * @param microUri {@link UUri} serialized as a byte[].
+     * @return Returns a {@link UUri} object serialized from one of the forms.
      */
-    static LongUriSerializer LONG = new LongUriSerializer();
-    
-    /**
-     * Micro form serializer
-     */
-    static MicroUriSerializer MICRO = new MicroUriSerializer();
-
-    
-    /** 
-     * Deserialize from a both a long and micro into a resolved UUri
-     */
-    default UUri deserialize(String longUri, byte[] microUri) {
+    default Optional<UUri> buildResolved(String longUri, byte[] microUri) {
         
-        if (longUri == null || longUri.isEmpty() || microUri == null || microUri.length == 0) {
-            return UUri.empty();
+        if ((longUri == null || longUri.isEmpty()) && (microUri == null || microUri.length == 0)) {
+            return Optional.of(UUri.empty());
         }
 
-        UUri longUUri = LONG.deserialize(longUri);
-        UUri microUUri = MICRO.deserialize(microUri);
-
-       
-        // Check if the UUris built are valid
-        if (!longUUri.isLongForm() || !microUUri.isMicroForm()) {
-            return UUri.empty();
-        }
-
-        // Both authority types should match (both local or both remote)
-        if (longUUri.uAuthority().isLocal() != microUUri.uAuthority().isLocal()) {
-            return UUri.empty();
-        }
-
+        UUri longUUri = LongUriSerializer.instance().deserialize(longUri);
+        UUri microUUri = MicroUriSerializer.instance().deserialize(microUri);
 
         UAuthority uAuthority = longUUri.uAuthority().isLocal() ? UAuthority.local() :
             UAuthority.resolvedRemote(
-                longUUri.uAuthority().device().get(), 
+                longUUri.uAuthority().device().orElse(null),
                 longUUri.uAuthority().domain().orElse(null),
-                microUUri.uAuthority().address().get());
+                microUUri.uAuthority().address().orElse(null));
         
         UEntity uEntity = UEntity.resolvedFormat(
             longUUri.uEntity().name(), longUUri.uEntity().version().orElse(null), 
-            microUUri.uEntity().id().get());
+            microUUri.uEntity().id().orElse(null));
 
         UResource uResource = UResource.resolvedFormat(
             longUUri.uResource().name(), 
             longUUri.uResource().instance().orElse(null), 
             longUUri.uResource().message().orElse(null), 
-            microUUri.uResource().id().get());
+            microUUri.uResource().id().orElse(null));
             
-        return new UUri(uAuthority, uEntity, uResource);
+        UUri uUri = new UUri(uAuthority, uEntity, uResource);
+        return uUri.isResolved() ? Optional.of(uUri) : Optional.empty();
     }
 
 }

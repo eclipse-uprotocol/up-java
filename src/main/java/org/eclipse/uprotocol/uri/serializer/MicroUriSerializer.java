@@ -35,7 +35,7 @@ import java.util.Optional;
 
 /**
  * UUri Serializer that serializes a UUri to a byte[] (micro format) per
- * https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
+ * <a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc">...</a>
  */
 public class MicroUriSerializer implements UriSerializer<byte[]> {
 
@@ -47,6 +47,14 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
 
     static final byte UP_VERSION = 0x1; // UP version
 
+    private static final MicroUriSerializer INSTANCE = new MicroUriSerializer();
+
+    private MicroUriSerializer(){}
+
+    public static MicroUriSerializer instance() {
+        return INSTANCE;
+    }
+
     /**
      * The type of address used for Micro URI.
      */
@@ -57,7 +65,7 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
 
         private final int value;
 
-        private AddressType(int value) {
+        AddressType(int value) {
             this.value = value;
         }
 
@@ -73,10 +81,10 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
     }
 
     /**
-     * Serialize a UUri into a byte[] following the Micro-URI specifications
-     * 
-     * @param Uri The  URI data object.
-     * @return Returns the serialized URI into a byte[] 
+     * TODO Steven this needs to be fixed
+     * Serialize a UUri into a byte[] following the Micro-URI specifications.
+     * @param Uri The {@link UUri} data object.
+     * @return Returns a byte[] representing the serialized {@link UUri}.
      */
     @Override
     public byte[] serialize(UUri Uri) {
@@ -89,7 +97,7 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
         Optional<Short> maybeUResourceId = Uri.uResource().id();
 
         // Cannot create a micro URI without UResource ID or uEntity ID
-        if (!maybeUResourceId.isPresent() || !maybeUeId.isPresent()) {
+        if (maybeUResourceId.isEmpty() || maybeUeId.isEmpty()) {
             return new byte[0];
         }
 
@@ -109,11 +117,13 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
         os.write(maybeUResourceId.get()>>8);
         os.write(maybeUResourceId.get());
 
-            // UAUTHORITY_ADDRESS
-        if (maybeAddress.isPresent()) {
+        // UAUTHORITY_ADDRESS
+        final Optional<byte[]> maybeUAuthorityAddressBytes = calculateUAuthorityBytes(Uri.uAuthority());
+        if (maybeUAuthorityAddressBytes.isPresent()) {
             try {
-                os.write(maybeAddress.get().getAddress());
+                os.write(maybeUAuthorityAddressBytes.get());
             } catch (IOException e) {
+                //TODO Steven this is not correct - maybe write an empty byte into the stream
                 return new byte[0];
             }
         }
@@ -121,23 +131,27 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
         // UENTITY_ID
         os.write(maybeUeId.get()>>8);
         os.write(maybeUeId.get());
-        
+
         // UE_VERSION
         Optional<Integer> version = Uri.uEntity().version();
-        os.write(!version.isPresent() ? (byte)0 : version.get().byteValue());
+        os.write(version.map(Integer::byteValue).orElseGet(() -> (byte) 0));
 
         // UNUSED
         os.write((byte)0);
 
         return os.toByteArray();
-        
+
     }
 
-        
+    private static Optional<byte[]> calculateUAuthorityBytes(UAuthority uAuthority) {
+        Optional<InetAddress> maybeAddress = uAuthority.address();
+        return maybeAddress.map(InetAddress::getAddress);
+    }
+
     /**
-     * Deserialize a byte[] into a UUri object
+     * Deserialize a byte[] into a {@link UUri} object.
      * @param microUri A byte[] uProtocol micro URI.
-     * @return Returns an  URI data object.
+     * @return Returns an {@link UUri} data object from the serialized format of a microUri.
      */
     @Override
     public UUri deserialize(byte[] microUri) {
@@ -151,45 +165,49 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
         }
 
         int uResourceId = ((microUri[2] & 0xFF) << 8) | (microUri[3] & 0xFF);
-
-        Optional<InetAddress> maybeAddress = Optional.empty();
         
         Optional<AddressType> type = AddressType.from(microUri[1]);
  
         // Validate Type is found
-        if (!type.isPresent()) {
+        if (type.isEmpty()) {
             return UUri.empty();
         }
 
         // Validate that the microUri is the correct length for the type
-        if (type.get() == AddressType.LOCAL && microUri.length != LOCAL_MICRO_URI_LENGTH) {
+        final AddressType addressType = type.get();
+        if (addressType == AddressType.LOCAL && microUri.length != LOCAL_MICRO_URI_LENGTH) {
             return UUri.empty();
         }
-        else if (type.get() == AddressType.IPv4 && microUri.length != IPV4_MICRO_URI_LENGTH) {
+        else if (addressType == AddressType.IPv4 && microUri.length != IPV4_MICRO_URI_LENGTH) {
             return UUri.empty();
         }
-        else if (type.get() == AddressType.IPv6 && microUri.length != IPV6_MICRO_URI_LENGTH) {
+        else if (addressType == AddressType.IPv6 && microUri.length != IPV6_MICRO_URI_LENGTH) {
             return UUri.empty();
         }
 
+        // Calculate uAuthority
+        UAuthority uAuthority;
         int index = 4;
-        if (!(type.get() == AddressType.LOCAL)) {
+        if (addressType == AddressType.LOCAL) {
+            uAuthority = UAuthority.local();
+        } else {
             try {
-                maybeAddress = Optional.of(InetAddress.getByAddress(
-                    Arrays.copyOfRange(microUri, index, (type.get() == AddressType.IPv4) ? 8 : 20)));
+                final InetAddress inetAddress = InetAddress.getByAddress(
+                        Arrays.copyOfRange(microUri, index, (addressType == AddressType.IPv4) ? 8 : 20));
+                uAuthority = UAuthority.microRemote(inetAddress);
             } catch (Exception e) {
-                maybeAddress = Optional.empty();
+                uAuthority = UAuthority.local();
             }
-            index += type.get() == AddressType.IPv4 ? 4 : 16;
+            index += addressType == AddressType.IPv4 ? 4 : 16;
         }
-        
+
         // UENTITY_ID
         int ueId = ((microUri[index++] & 0xFF) << 8) | (microUri[index++] & 0xFF);
 
         // UE_VERSION
-        int uiVersion = microUri[index++];
-        
-        return new UUri((type.get() == AddressType.LOCAL) ? UAuthority.local() : UAuthority.microRemote(maybeAddress.get()),
+        int uiVersion = microUri[index];
+
+        return new UUri(uAuthority,
                 UEntity.microFormat((short)ueId, uiVersion == 0 ? null : uiVersion),
                 UResource.microFormat((short)uResourceId));
     }    

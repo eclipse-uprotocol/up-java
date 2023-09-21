@@ -25,7 +25,7 @@ import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.serializer.UriSerializer;
+import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
 import org.eclipse.uprotocol.utransport.datamodel.UAttributes.UAttributesBuilder;
 import org.eclipse.uprotocol.utransport.datamodel.UMessageType;
@@ -167,7 +167,7 @@ class UAttributesValidatorTest {
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
         final UStatus status = validator.validate(attributes);
         assertTrue(status.isFailed());
-        assertEquals("UriPart is empty.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
 
     @Test
@@ -551,7 +551,7 @@ class UAttributesValidatorTest {
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
         final UStatus status = validator.validate(attributes);
         assertTrue(status.isFailed());
-        assertEquals("UriPart is missing uSoftware Entity name.", status.msg());
+        assertEquals("Uri is missing uSoftware Entity name.", status.msg());
     }
 
     @Test
@@ -763,7 +763,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("test validating invalid sink attribute")
     public void test_validating_invalid_sink_attribute() {
-        final UUri uri = UriSerializer.LONG.deserialize("//");
+        final UUri uri = LongUriSerializer.instance().deserialize("//");
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.PUBLISH, UPriority.LOW).withSink(uri).build();
 
@@ -772,13 +772,13 @@ class UAttributesValidatorTest {
 
         assertTrue(status.isFailed());
         assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("UriPart is empty.", status.msg());
+        assertEquals("Uri is empty.", status.msg());
     }
 
     @Test
     @DisplayName("test validating valid sink attribute")
     public void test_validating_valid_sink_attribute() {
-        final UUri uri = UriSerializer.LONG.deserialize("/haartley/1");
+        final UUri uri = LongUriSerializer.instance().deserialize("/haartley/1");
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.PUBLISH, UPriority.LOW).withSink(uri).build();
 
@@ -894,7 +894,7 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("test validating request message types")
     public void test_validating_request_message_types() {
-        final UUri sink = UriSerializer.LONG.deserialize("/hartley/1/rpc.response");
+        final UUri sink = LongUriSerializer.instance().deserialize("/hartley/1/rpc.response");
 
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.NETWORK_CONTROL)
@@ -931,7 +931,7 @@ class UAttributesValidatorTest {
 
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.NETWORK_CONTROL)
-                .withSink(UriSerializer.LONG.deserialize("/hartley/1/rpc.response"))
+                .withSink(LongUriSerializer.instance().deserialize("/hartley/1/rpc.response"))
                 .withTtl(-1)
                 .build();
 
@@ -949,7 +949,7 @@ class UAttributesValidatorTest {
 
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.RESPONSE, UPriority.NETWORK_CONTROL)
-                .withSink(UriSerializer.LONG.deserialize("/hartley/1/rpc.response"))
+                .withSink(LongUriSerializer.instance().deserialize("/hartley/1/rpc.response"))
                 .withTtl(-1)
                 .withReqId(UUIDFactory.Factories.UPROTOCOL.factory().create())
                 .build();
@@ -969,7 +969,7 @@ class UAttributesValidatorTest {
         final UUID id = UUID.randomUUID();
         final UAttributes attributes = new UAttributesBuilder(id,
                 UMessageType.RESPONSE, UPriority.NETWORK_CONTROL)
-                .withSink(UriSerializer.LONG.deserialize("/hartley/1/rpc.response"))
+                .withSink(LongUriSerializer.instance().deserialize("/hartley/1/rpc.response"))
                 .withTtl(100)
                 .withReqId(UUIDFactory.Factories.UPROTOCOL.factory().create())
                 .build();

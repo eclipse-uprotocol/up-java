@@ -21,20 +21,20 @@
 
 package org.eclipse.uprotocol.cloudevent.factory;
 
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.serializer.UriSerializer;
-import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
+import org.eclipse.uprotocol.uri.datamodel.UAuthority;
+import org.eclipse.uprotocol.uri.datamodel.UEntity;
+import org.eclipse.uprotocol.uri.datamodel.UResource;
+import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,8 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -683,7 +684,7 @@ class UCloudEventTest {
         UEntity use = UEntity.longFormat("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
                 UResource.longFormat("door", "front_left", "Door"));
-        String source = UriSerializer.LONG.serialize(Uri);
+        String source = LongUriSerializer.instance().serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
