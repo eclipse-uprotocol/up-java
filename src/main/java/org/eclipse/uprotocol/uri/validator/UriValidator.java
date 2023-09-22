@@ -1,9 +1,9 @@
 package org.eclipse.uprotocol.uri.validator;
 
+import org.eclipse.uprotocol.transport.datamodel.UStatus;
+import org.eclipse.uprotocol.transport.datamodel.UStatus.Code;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.utransport.datamodel.UStatus;
-import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 
 /**
  * class for validating Uris.

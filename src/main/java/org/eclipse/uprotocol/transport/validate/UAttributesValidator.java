@@ -18,14 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eclipse.uprotocol.utransport.validate;
+package org.eclipse.uprotocol.transport.validate;
 
+import org.eclipse.uprotocol.transport.datamodel.UAttributes;
+import org.eclipse.uprotocol.transport.datamodel.UMessageType;
+import org.eclipse.uprotocol.transport.datamodel.UPriority;
+import org.eclipse.uprotocol.transport.datamodel.UStatus;
+import org.eclipse.uprotocol.transport.datamodel.UStatus.Code;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
-import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
-import org.eclipse.uprotocol.utransport.datamodel.UMessageType;
-import org.eclipse.uprotocol.utransport.datamodel.UPriority;
-import org.eclipse.uprotocol.utransport.datamodel.UStatus;
-import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
 
 import java.util.Optional;

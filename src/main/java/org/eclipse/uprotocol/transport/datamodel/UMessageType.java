@@ -19,7 +19,7 @@
  * under the License.
  */
 
- package org.eclipse.uprotocol.utransport.datamodel;
+ package org.eclipse.uprotocol.transport.datamodel;
 
 import java.util.Arrays;
 import java.util.Optional;

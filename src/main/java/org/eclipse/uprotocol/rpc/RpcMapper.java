@@ -30,7 +30,7 @@ import com.google.rpc.Status;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import org.eclipse.uprotocol.utransport.datamodel.UPayload;
+import org.eclipse.uprotocol.transport.datamodel.UPayload;
 
 /**
  * RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with 

@@ -23,9 +23,9 @@ package org.eclipse.uprotocol.rpc;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.uprotocol.transport.datamodel.UAttributes;
+import org.eclipse.uprotocol.transport.datamodel.UPayload;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
-import org.eclipse.uprotocol.utransport.datamodel.UPayload;
 
 /**
  * RpcClient is an interface used by code generators for uProtocol services defined in proto files such as

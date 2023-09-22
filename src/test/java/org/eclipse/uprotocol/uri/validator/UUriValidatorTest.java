@@ -22,13 +22,13 @@
 package org.eclipse.uprotocol.uri.validator;
 
 
+import org.eclipse.uprotocol.transport.datamodel.UStatus;
+import org.eclipse.uprotocol.transport.datamodel.UStatus.Code;
 import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
-import org.eclipse.uprotocol.utransport.datamodel.UStatus;
-import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

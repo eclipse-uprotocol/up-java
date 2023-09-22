@@ -1,7 +1,9 @@
-package org.eclipse.uprotocol.utransport.datamodel;
+package org.eclipse.uprotocol.transport.datamodel;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
+
+import org.eclipse.uprotocol.transport.datamodel.UStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

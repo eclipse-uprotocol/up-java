@@ -1,9 +1,11 @@
-package org.eclipse.uprotocol.utransport.datamodel;
+package org.eclipse.uprotocol.transport.datamodel;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.eclipse.uprotocol.transport.datamodel.UMessageType;
 
 class UMessageTypeTest {
 

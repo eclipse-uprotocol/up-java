@@ -26,12 +26,13 @@ import com.google.protobuf.Int32Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+
+import org.eclipse.uprotocol.transport.datamodel.UAttributes;
+import org.eclipse.uprotocol.transport.datamodel.UPayload;
+import org.eclipse.uprotocol.transport.datamodel.USerializationHint;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
-import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
-import org.eclipse.uprotocol.utransport.datamodel.UPayload;
-import org.eclipse.uprotocol.utransport.datamodel.USerializationHint;
 import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

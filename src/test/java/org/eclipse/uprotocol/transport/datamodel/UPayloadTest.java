@@ -1,6 +1,9 @@
-package org.eclipse.uprotocol.utransport.datamodel;
+package org.eclipse.uprotocol.transport.datamodel;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
+
+import org.eclipse.uprotocol.transport.datamodel.UPayload;
+import org.eclipse.uprotocol.transport.datamodel.USerializationHint;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

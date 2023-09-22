@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 /**
  * UUri Serializer that serializes a UUri to a string (long format) per
- *  <&lt;a href="<a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc">...</a>"&gt;...&lt;/a&gt;
+ * https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
  */
 public class LongUriSerializer implements UriSerializer<String> {
 

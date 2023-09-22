@@ -19,20 +19,20 @@
  * under the License.
  */
 
-package org.eclipse.uprotocol.utransport.validator;
+package org.eclipse.uprotocol.transport.validator;
 
+import org.eclipse.uprotocol.transport.datamodel.UAttributes;
+import org.eclipse.uprotocol.transport.datamodel.UMessageType;
+import org.eclipse.uprotocol.transport.datamodel.UPriority;
+import org.eclipse.uprotocol.transport.datamodel.UStatus;
+import org.eclipse.uprotocol.transport.datamodel.UAttributes.UAttributesBuilder;
+import org.eclipse.uprotocol.transport.datamodel.UStatus.Code;
+import org.eclipse.uprotocol.transport.validate.UAttributesValidator;
 import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
 import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
-import org.eclipse.uprotocol.utransport.datamodel.UAttributes;
-import org.eclipse.uprotocol.utransport.datamodel.UAttributes.UAttributesBuilder;
-import org.eclipse.uprotocol.utransport.datamodel.UMessageType;
-import org.eclipse.uprotocol.utransport.datamodel.UPriority;
-import org.eclipse.uprotocol.utransport.datamodel.UStatus;
-import org.eclipse.uprotocol.utransport.datamodel.UStatus.Code;
-import org.eclipse.uprotocol.utransport.validate.UAttributesValidator;
 import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

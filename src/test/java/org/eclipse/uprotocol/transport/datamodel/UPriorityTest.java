@@ -1,10 +1,12 @@
-package org.eclipse.uprotocol.utransport.datamodel;
+package org.eclipse.uprotocol.transport.datamodel;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.eclipse.uprotocol.transport.datamodel.UPriority;
 
 class UPriorityTest {
 
