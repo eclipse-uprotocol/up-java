@@ -21,8 +21,11 @@
 
 package org.eclipse.uprotocol.transport;
 
+import java.util.Objects;
+
 import org.eclipse.uprotocol.transport.datamodel.UAttributes;
 import org.eclipse.uprotocol.transport.datamodel.UListener;
+import org.eclipse.uprotocol.transport.datamodel.UMessage;
 import org.eclipse.uprotocol.transport.datamodel.UPayload;
 import org.eclipse.uprotocol.transport.datamodel.UStatus;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
@@ -44,7 +47,7 @@ public interface UTransport {
      * @return Returns OKSTATUS if authenticate was successful, FAILSTATUS if the calling uE 
      * is not authenticated.
      */
-    UStatus authenticate (UEntity uEntity) ;
+    UStatus authenticate(UEntity uEntity) ;
 
 
     /**
@@ -56,6 +59,17 @@ public interface UTransport {
      * returns FAILSTATUS with the appropriate failure.
      */
     UStatus send(UUri topic, UPayload payload, UAttributes attributes);
+    
+    /**
+     * Transmit a UMessage object that contains the topic, payload, and UAttributes.
+     * @param message UMessage object that contains the topic, payload, and UAttributes.
+     * @return Returns OKSTATUS if the payload has been successfully sent (ACK'ed), otherwise it
+     * returns FAILSTATUS with the appropriate failure.
+     */
+    default UStatus send(UMessage message) {
+        Objects.requireNonNull(message);
+        return send(message.topic(), message.payload(), message.attributes());
+    }
 
     /**
      * Register listener to be called when UPayload is received for the specific topic.
