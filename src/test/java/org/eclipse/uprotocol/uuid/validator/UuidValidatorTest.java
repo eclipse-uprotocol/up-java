@@ -31,25 +31,21 @@ import com.google.rpc.Status;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UuidValidatorTest {
     @Test
-    @DisplayName("Test UUIDv8 validator with good uuid")
-    void test_uuidv8_validator_with_good_uuid() {
+    @DisplayName("Test validator with good uuid")
+    void test_validator_with_good_uuid() {
+        //final UuidValidator validator = new UuidValidator();
         final UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
         final Status status = UuidValidator.getValidator(uuid).validate(uuid);
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test UUIDv6 validator with good uuid")
-    void test_uuidv6_validator_with_good_uuid() {
-        final UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create();
-        final Status status = UuidValidator.getValidator(uuid).validate(uuid);
-        System.out.println("UUIDv6 is" + uuid.toString());
         assertEquals(ValidationResult.STATUS_SUCCESS, status);
     }
 
@@ -59,30 +55,113 @@ public class UuidValidatorTest {
         final Status status = UuidValidator.Validators.UPROTOCOL.validator().validate(UUIDFactory.Factories.UPROTOCOL.factory().create());
         assertEquals(status, ValidationResult.STATUS_SUCCESS);
     }
-    @Test
-    @DisplayName("Test null uuid")
-    void test_null_uuid() {
-        final UUID uuid = new UUID(0,0);
-        final String str = UUIDUtils.toString(uuid);
-        try {
-            final UUID uuid2 = UUIDUtils.fromString(str);
-        } catch(IllegalArgumentException e) {
 
-        }
+    @Test
+    @DisplayName("Test fetching the invalid Validator for when UUID passed is garbage")
+    void test_invalid_uuid() {
+        final UUID uuid = new UUID(0L, 0L);
+        final Status status = UuidValidator.getValidator(uuid).validate(uuid);
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
+        assertEquals("Invalid UUID Version,Invalid UUID Variant,Invalid UUID Time", status.getMessage());
     }
 
     @Test
-    @DisplayName("Test using wrong validator for version")
-    void test_invalid_validator_uuid() {
-        final UUID uuidv8 = UUIDFactory.Factories.UPROTOCOL.factory().create();
+    @DisplayName("Test invalid time uuid")
+    void test_invalid_time_uuid() {
+        final UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create(Instant.ofEpochSecond(0));
+        final Status status = UuidValidator.Validators.UPROTOCOL.validator().validate(uuid);
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
+        assertEquals("Invalid UUID Time", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("Test UUIDv8 validator for null UUID")
+    void test_uuidv8_with_invalid_uuids() {
+        final UuidValidator validator = UuidValidator.Validators.UPROTOCOL.validator();
+        assertNotNull(validator);
+        final Status status = validator.validate(null);
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
+        assertEquals("Invalid UUIDv8 Version,Invalid UUID Time", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("Test UUIDv8 validator for invalid types")
+    void test_uuidv8_with_invalid_types() {
         final UUID uuidv6 = UUIDFactory.Factories.UUIDV6.factory().create();
-        final Status statusv6 = UuidValidator.Validators.UUIDV6.validator().validate(uuidv8);
-        final Status statusv8 = UuidValidator.Validators.UPROTOCOL.validator().validate(uuidv6);
+        final UUID uuid = new UUID(0L, 0L);
+        final UUID uuidv4 = UUID.randomUUID();
 
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, statusv6.getCode());
-        assertEquals("Invalid Version 8", statusv6.getMessage());
+        final UuidValidator validator = UuidValidator.Validators.UPROTOCOL.validator();
+        assertNotNull(validator);
+        
+        final Status status = validator.validate(uuidv6);
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
+        assertEquals("Invalid UUIDv8 Version", status.getMessage());
 
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, statusv8.getCode());
-        assertEquals("Invalid Version 6", statusv8.getMessage());
+        final Status status1 = validator.validate(uuid);
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status1.getCode());
+        assertEquals("Invalid UUIDv8 Version,Invalid UUID Time", status1.getMessage());
+
+        final Status status2 = validator.validate(uuidv4);
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status2.getCode());
+        assertEquals("Invalid UUIDv8 Version,Invalid UUID Time", status2.getMessage());
     }
+
+    @Test
+    @DisplayName("Test good UUIDv6")
+    void test_good_uuidv6() {
+        final UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create();
+
+        UuidValidator validator = UuidValidator.getValidator(uuid);
+        assertNotNull(validator);
+        assertTrue(UUIDUtils.isUuidv6(uuid));
+        assertEquals(Code.OK_VALUE, validator.validate(uuid).getCode());
+    }
+
+
+    @Test
+    @DisplayName("Test UUIDv6 with bad variant")
+    void test_uuidv6_with_bad_variant() {
+        final Optional<UUID> uuid = UUIDUtils.fromString("1ee57e66-d33a-65e0-4a77-3c3f061c1e9e");
+        assertTrue(uuid.isPresent());
+        final UuidValidator validator = UuidValidator.getValidator(uuid.get());
+        assertNotNull(validator);
+        final Status status = validator.validate(uuid.get());
+        assertEquals("Invalid UUID Version,Invalid UUID Variant,Invalid UUID Time", status.getMessage());
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
+    }
+
+    @Test
+    @DisplayName("Test UUIDv6 with invalid UUID")
+    void test_uuidv6_with_invalid_uuid() {
+        final UUID uuid = new UUID(9<<12, 0L);
+        final UuidValidator validator = UuidValidator.Validators.UUIDV6.validator();
+        assertNotNull(validator);
+        final Status status = validator.validate(uuid);
+        assertEquals("Not a UUIDv6 Version,Invalid UUIDv6 variant,Invalid UUID Time", status.getMessage());
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
+    }
+
+
+    @Test
+    @DisplayName("Test using UUIDv6 Validator to validate null UUID")
+    void test_uuidv6_with_null_uuid() {
+        final UuidValidator validator = UuidValidator.Validators.UUIDV6.validator();
+        assertNotNull(validator);
+        final Status status = validator.validate(null);
+        assertEquals("Not a UUIDv6 Version,Invalid UUIDv6 variant,Invalid UUID Time", status.getMessage());
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
+    }
+
+    @Test
+    @DisplayName("Test using UUIDv6 Validator to validate a different types of UUIDs")
+    void test_uuidv6_with_uuidv8() {
+        final UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
+        final UuidValidator validator = UuidValidator.Validators.UUIDV6.validator();
+        assertNotNull(validator);
+        final Status status = validator.validate(uuid);
+        assertEquals("Not a UUIDv6 Version", status.getMessage());
+        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
+    }
+
 }

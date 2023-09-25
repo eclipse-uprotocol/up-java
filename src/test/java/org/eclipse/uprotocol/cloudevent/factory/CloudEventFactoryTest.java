@@ -37,7 +37,6 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.Objects;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class CloudEventFactoryTest {
@@ -527,6 +526,7 @@ class CloudEventFactoryTest {
         assertEquals("requestIdFromRequestCloudEvent", cloudEvent.getExtension("reqid"));
 
     }
+
 
     private Any buildProtoPayloadForTest() {
         io.cloudevents.v1.proto.CloudEvent cloudEventProto = io.cloudevents.v1.proto.CloudEvent.newBuilder()

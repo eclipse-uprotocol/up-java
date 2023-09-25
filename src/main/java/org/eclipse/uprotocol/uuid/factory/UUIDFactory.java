@@ -25,6 +25,7 @@ package org.eclipse.uprotocol.uuid.factory;
 import com.github.f4b6a3.uuid.UuidCreator;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
@@ -40,9 +41,10 @@ public abstract class UUIDFactory {
             return factory;
         }
 
-        Factories(UUIDFactory factory) {
+        private Factories(UUIDFactory factory) {
             this.factory = factory;
         }
+        
     }
 
     public UUID create() {
@@ -54,7 +56,7 @@ public abstract class UUIDFactory {
 
     private static class UUIDv6Factory extends UUIDFactory {
         public UUID create(Instant instant) {
-            return UuidCreator.getTimeOrdered(instant, null, null);
+            return UuidCreator.getTimeOrdered(Objects.requireNonNullElse(instant, Instant.now()), null, null);
         }
     }
 
@@ -83,12 +85,12 @@ public abstract class UUIDFactory {
      * | ver        | MUST be 8 per Section 4.2 of draft-ietf-uuidrev-rfc4122bis
      * | counter    | MUST be a 12 bit counter field that is reset at each unix_ts_ms tick, and incremented for each UUID generated
      *                within the 1ms precision of unix_ts_ms The counter provides the ability to generate 4096 events within 1ms
-     *                however the precision of the clock is still 1ms accuracyvarMUST be the The 2 bit variant defined by Section 4.1 of RFC |
+     *                however the precision of the clock is still 1ms accuracy
+     * | var        | MUST be the The 2 bit variant defined by Section 4.1 of RFC |
      * |rand_b      | MUST 62 bits random number that is generated at initialization time of the uE only and reused otherwise |
      *
      */
     private static class UUIDv8Factory extends UUIDFactory {
-        private static final int CLOCK_DRIFT_TOLERANCE = 10_000_000;
         private static final int MAX_COUNT = 0xfff;
 
         public static final int UUIDV8_VERSION = 8;
@@ -99,17 +101,13 @@ public abstract class UUIDFactory {
         private static final long lsb = (new Random().nextLong() & 0x3fffffffffffffffL) | 0x8000000000000000L;
 
         synchronized public UUID create(Instant instant) {
-            final long time = instant.toEpochMilli();
-            // Check if the current time is the same as the previous time or has moved
-            // backwards after a small system clock adjustment or after a leap second.
-            // Drift tolerance = (previous_time - 10s) < current_time <= previous_time
-            if ((time <= (msb >>16)) && (time > ((msb >>16) - CLOCK_DRIFT_TOLERANCE))) {
-
+            final long time = Objects.requireNonNullElse(instant, Instant.now()).toEpochMilli();
+            
+            // Check if the current time is the same as the previous time
+            if (time == (msb >>16)) {
                 // Increment the counter if we are not at MAX_COUNT
                 if ((msb & 0xFFFL) < MAX_COUNT) {
                     msb++;
-                } else {
-                    throw new IllegalArgumentException("Counters out of bounds");
                 }
 
                 // The previous time is not the same tick as the current so we reset msb

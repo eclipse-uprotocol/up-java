@@ -24,29 +24,32 @@ package org.eclipse.uprotocol.uuid.validate;
 import org.eclipse.uprotocol.cloudevent.validate.ValidationResult;
 import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
 
+import com.github.f4b6a3.uuid.enums.UuidVariant;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * UUIDv8 Validator class
- * Validates type v6 or v8 UUIDs
+ * UUID Validator class that validates UUIDs
  */
 public abstract class UuidValidator {
 
     public static UuidValidator getValidator(UUID uuid){
-        switch (UUIDUtils.getVersion(uuid)){
-            case VERSION_TIME_ORDERED:
-                return UuidValidator.Validators.UUIDV6.validator();
+        if (UUIDUtils.isUuidv6(uuid)) {
+            return UuidValidator.Validators.UUIDV6.validator();
+        } else if (UUIDUtils.isUProtocol(uuid)) {
+            return UuidValidator.Validators.UPROTOCOL.validator();
+        } else {
+            return UuidValidator.Validators.UNKNOWN.validator();
         }
-        return UuidValidator.Validators.UPROTOCOL.validator();
     }
 
-
     public enum Validators {
+        UNKNOWN(new UuidValidator.InvalidValidator()),
         UUIDV6 (new UuidValidator.UUIDv6Validator()),
 
         UPROTOCOL (new UuidValidator.UUIDv8Validator());
@@ -57,13 +60,15 @@ public abstract class UuidValidator {
             return uuidValidator;
         }
 
-        Validators(UuidValidator uuidValidator) {
+        private Validators(UuidValidator uuidValidator) {
             this.uuidValidator = uuidValidator;
         }
     }
 
     public Status validate(UUID uuid) {
-        final String errorMessage = Stream.of(validateVersion(uuid))
+        final String errorMessage = Stream.of(validateVersion(uuid),
+                        validateVariant(uuid),
+                        validateTime(uuid))
                 .filter(ValidationResult::isFailure)
                 .map(ValidationResult::getMessage)
                 .collect(Collectors.joining(","));
@@ -73,19 +78,54 @@ public abstract class UuidValidator {
 
     public abstract ValidationResult validateVersion(UUID uuid);
 
-    private static class UUIDv6Validator extends UuidValidator {
+    public ValidationResult validateTime(UUID uuid) {
+            final Optional<Long> time = UUIDUtils.getTime(uuid);
+            return time.isPresent() && (time.get() > 0) ?
+                    ValidationResult.success() : ValidationResult.failure(String.format("Invalid UUID Time"));
+    }
+
+    public abstract ValidationResult validateVariant(UUID uuid);
+
+    private static class InvalidValidator extends UuidValidator {
+ 
+        @Override
         public ValidationResult validateVersion(UUID uuid) {
-            final UUIDUtils.Version version = UUIDUtils.getVersion(uuid);
-            return version == UUIDUtils.Version.VERSION_TIME_ORDERED ?
-                    ValidationResult.success() : ValidationResult.failure(String.format("Invalid Version %d", version.getValue()));
+            return ValidationResult.failure(String.format("Invalid UUID Version"));
+        }
+  
+        @Override
+        public ValidationResult validateVariant(UUID uuid) {
+            return ValidationResult.failure(String.format("Invalid UUID Variant"));
+        }
+    }
+
+    private static class UUIDv6Validator extends UuidValidator {
+        @Override
+        public ValidationResult validateVersion(UUID uuid) {
+            final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
+            return (version.isPresent() && version.get() == UUIDUtils.Version.VERSION_TIME_ORDERED) ?
+                    ValidationResult.success() : ValidationResult.failure(String.format("Not a UUIDv6 Version"));
+        }
+
+        @Override
+        public ValidationResult validateVariant(UUID uuid) {
+            final Optional<Integer> variant = UUIDUtils.getVariant(uuid);
+            return (variant.isPresent() && (variant.get() == UuidVariant.VARIANT_RFC_4122.getValue())) ?
+                    ValidationResult.success() : ValidationResult.failure(String.format("Invalid UUIDv6 variant"));
         }
     }
 
     private static class UUIDv8Validator extends UuidValidator {
+        @Override
         public ValidationResult validateVersion(UUID uuid) {
-            final UUIDUtils.Version version = UUIDUtils.getVersion(uuid);
-            return version == UUIDUtils.Version.VERSION_UPROTOCOL ?
-                    ValidationResult.success() : ValidationResult.failure(String.format("Invalid Version %d", version.getValue()));
+            final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
+            return version.isPresent() && version.get() == UUIDUtils.Version.VERSION_UPROTOCOL ?
+                    ValidationResult.success() : ValidationResult.failure(String.format("Invalid UUIDv8 Version"));
+        }
+        
+        @Override
+        public ValidationResult validateVariant(UUID uuid) {
+            return ValidationResult.success();
         }
     }
 }
