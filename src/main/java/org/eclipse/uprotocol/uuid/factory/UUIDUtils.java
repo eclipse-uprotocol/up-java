@@ -67,6 +67,11 @@ import java.util.UUID;
             return this.value;
         }
 
+        /**
+         * Get the Version from the passed integer representation of the version.
+         * @param value The integer representation of the version.
+         * @return The Version object or Optional.empty() if the value is not a valid version.
+         */
         public static Optional<Version> getVersion(int value) {
             for (Version version : Version.values()) {
                 if (version.getValue() == value) {
@@ -79,16 +84,16 @@ import java.util.UUID;
 
 
     /**
-     * Convert the UUID to a String
-     * @return String representation of the UUID
+     * Convert the UUID to a String.
+     * @return String representation of the UUID or Optional.empty() if the UUID is null.
      */
     public static Optional<String> toString(UUID uuid) {
         return uuid == null ? Optional.empty() : Optional.of(uuid.toString());
     }
 
     /**
-     * Convert the UUID to byte array
-     * @return The byte array
+     * Convert the UUID to byte array.
+     * @return The byte array or Optional.empty() if the UUID is null.
      */
     public static Optional<byte[]> toBytes(UUID uuid) {
         if (uuid == null) {
@@ -100,9 +105,10 @@ import java.util.UUID;
     }
 
     /**
-     * Convert the byte array to a UUID
-     * @param bytes The UUID in bytes format
-     * @return  UUIDv8 object built from the byte array
+     * Convert the byte array to a UUID.
+     * @param bytes The UUID in bytes format.
+     * @return UUIDv8 object built from the byte array or Optional.empty() 
+     *         if the byte array is null or not 16 bytes long.
      */
     public static Optional<UUID> fromBytes(byte[] bytes) {
         if (bytes == null || bytes.length != 16) {
@@ -115,9 +121,10 @@ import java.util.UUID;
 
 
     /**
-     * Create a UUID from the passed string
-     * @param string the string representation of the uuid
-     * @return The UUID object representation of the string
+     * Create a UUID from the passed string.
+     * @param string the string representation of the uuid.
+     * @return The UUID object representation of the string or Optional.empty()
+     *         if the string is null, empty, or invalid.
      */
     public static Optional<UUID> fromString(String string) {
         UUID uuid = null;
@@ -133,27 +140,27 @@ import java.util.UUID;
     }
 
     /**
-     * Fetch an the UUID version
-     * @param uuid The UUID to fetch the version from
-     *
-     * @return Empty if uuid is null, otherwise the The UUID version
+     * Fetch the UUID version.
+     * @param uuid The UUID to fetch the version from.
+     * @return the UUID version from the UUID object or Optional.empty() if the uuid is null.
      */
     public static Optional<Version> getVersion(UUID uuid) {
         return uuid == null ? Optional.empty() : Version.getVersion(uuid.version());
     }
 
     /**
-     * Fetch the Variant from the passed UUID
-     * @param uuid The UUID to fetch the variant from
-     * @return Empty if uuid is null, otherwise the variant
+     * Fetch the Variant from the passed UUID.
+     * @param uuid The UUID to fetch the variant from.
+     * @return UUID variant or Empty if uuid is null.
      */
     public static Optional<Integer> getVariant(UUID uuid) {
         return uuid == null ? Optional.empty() : Optional.of(uuid.variant());
     }
     
     /**
-     * Verify if version is a formal UUIDv8 uProtocol ID
-     * @return true if is a UUIDv8 for uProtocol
+     * Verify if version is a formal UUIDv8 uProtocol ID.
+     * @return true if is a uProtocol UUID or false if uuid passed is null
+     *         or the UUID is not uProtocol format.
      */
     public static boolean isUProtocol(UUID uuid) {
         final Optional<Version> version = getVersion(uuid);
@@ -161,8 +168,8 @@ import java.util.UUID;
     }
 
     /**
-     * Verify if version is This one
-     * @return true if is UUID version 6
+     * Verify if version is UUIDv6
+     * @return true if is UUID version 6 or false if uuid is null or not version 6
      */
     public static boolean isUuidv6(UUID uuid) {
         final Optional<Version> version = getVersion(uuid);
@@ -178,9 +185,9 @@ import java.util.UUID;
     public static boolean isUuid(UUID uuid) { return isUProtocol(uuid) || isUuidv6(uuid); }
 
     /**
-     * Return the number of milliseconds since unix epoch from a passed UUID
-     * @param uuid passed uuid to fetch the time
-     * @return number of milliseconds since unix epoch or empty if uuid is null
+     * Return the number of milliseconds since unix epoch from a passed UUID.
+     * @param uuid passed uuid to fetch the time.
+     * @return number of milliseconds since unix epoch or empty if uuid is null.
      */
     public static Optional<Long> getTime(UUID uuid) {
         Long time = null;
