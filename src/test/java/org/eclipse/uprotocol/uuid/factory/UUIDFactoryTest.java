@@ -24,138 +24,322 @@ package org.eclipse.uprotocol.uuid.factory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UUIDFactoryTest {
-    @Test
-    @DisplayName("Test Conversion from string to obj")
-    public void test_string_to_obj_conversions() {
-        String str1 = "01868381-1590-8000-cfe2-68135f43b363";
-        UUID uuid = UUIDUtils.fromString(str1);
-        String str2 = uuid.toString();
-        assertEquals(str1, str2);
-    }
-    @Test
-    @DisplayName("Test Conversion from obj to string")
-    public void test_obj_to_string_conversions() {
-        UUID uuid1 = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str1 = uuid1.toString();
-        UUID uuid2 = UUID.fromString(str1);
-        assertEquals(str1, uuid2.toString());
-    }
 
     @Test
-    @DisplayName("Test consistent random")
-    public void test_uuid_for_constant_random() {
-        UUID uuid1 = UUIDFactory.Factories.UPROTOCOL.factory().create(Instant.now());
-        UUID uuid2 = UUIDFactory.Factories.UPROTOCOL.factory().create(Instant.now());
-        assertEquals(uuid1.getLeastSignificantBits(), uuid2.getLeastSignificantBits());
-    }
-
-    @Test
-    @DisplayName("test counter overflow size")
-    public void test_uuid_create_test_counters() {
-        List<UUID> uuid = new ArrayList<>();
-        // Keep time the same to text the counter
+    @DisplayName("Test UUIDv8 Creation")
+    void test_uuidv8_creation() {
         final Instant now = Instant.now();
-        try {
-            for (int i = 0; i < 4096; i++) {
-                uuid.add(UUIDFactory.Factories.UPROTOCOL.factory().create(now));
+        final UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create(now);
+        final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
+        final Optional<Long> time = UUIDUtils.getTime(uuid);
+        final Optional<byte[]> bytes = UUIDUtils.toBytes(uuid);
+        final Optional<String> uuidString = UUIDUtils.toString(uuid);
 
-                // Time should be the same as the 1st
-                assertEquals(UUIDUtils.getTime(uuid.get(0)), UUIDUtils.getTime(uuid.get(i)));
+        assertNotNull(uuid);
+        assertTrue(UUIDUtils.isUProtocol(uuid));
+        assertTrue(UUIDUtils.isUuid(uuid));
+        assertFalse(UUIDUtils.isUuidv6(uuid));
+        assertTrue(version.isPresent());
+        assertTrue(time.isPresent());
+        assertEquals(time.get(), now.toEpochMilli());
+        
+        assertTrue(bytes.isPresent());
+        assertTrue(uuidString.isPresent());
 
-                // Random should always remain the same be the same
-                assertEquals(uuid.get(0).getLeastSignificantBits(), uuid.get(i).getLeastSignificantBits());
+        final Optional<UUID> uuid1 = UUIDUtils.fromBytes(bytes.get());
+
+        assertTrue(uuid1.isPresent());
+        assertEquals(uuid, uuid1.get());
+
+        final Optional<UUID> uuid2 = UUIDUtils.fromString(uuidString.get());
+        assertTrue(uuid2.isPresent());
+        assertEquals(uuid, uuid2.get());
+    }
+
+    @Test
+    @DisplayName("Test UUIDv8 Creation with null Instant")
+    void test_uuidv8_creation_with_null_instant() {
+        final UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create(null);
+        final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
+        final Optional<Long> time = UUIDUtils.getTime(uuid);
+        final Optional<byte[]> bytes = UUIDUtils.toBytes(uuid);
+        final Optional<String> uuidString = UUIDUtils.toString(uuid);
+
+        assertNotNull(uuid);
+        assertTrue(UUIDUtils.isUProtocol(uuid));
+        assertTrue(UUIDUtils.isUuid(uuid));
+        assertFalse(UUIDUtils.isUuidv6(uuid));
+        assertTrue(version.isPresent());
+        assertTrue(time.isPresent());
+        assertTrue(bytes.isPresent());
+        assertTrue(uuidString.isPresent());
+
+        final Optional<UUID> uuid1 = UUIDUtils.fromBytes(bytes.get());
+
+        assertTrue(uuid1.isPresent());
+        assertEquals(uuid, uuid1.get());
+
+        final Optional<UUID> uuid2 = UUIDUtils.fromString(uuidString.get());
+        assertTrue(uuid2.isPresent());
+        assertEquals(uuid, uuid2.get());
+    }
+   
+
+
+    @Test
+    @DisplayName("Test UUIDv8 overflow")
+    void test_uuidv8_overflow() {
+        final List<UUID> uuidList = new ArrayList<>();
+        final int MAX_COUNT = 4095;
+        
+        // Build UUIDs above MAX_COUNT (4095) so we can test the limits
+        final Instant now = Instant.now();
+        for (int i = 0; i < MAX_COUNT*2; i++) {
+            uuidList.add(UUIDFactory.Factories.UPROTOCOL.factory().create(now));
+
+            // Time should be the same as the 1st
+            assertEquals(UUIDUtils.getTime(uuidList.get(0)), UUIDUtils.getTime(uuidList.get(i)));
+
+            // Random should always remain the same be the same
+            assertEquals(uuidList.get(0).getLeastSignificantBits(), uuidList.get(i).getLeastSignificantBits());
+            if (i > MAX_COUNT) {
+                assertEquals(uuidList.get(MAX_COUNT).getMostSignificantBits(), uuidList.get(i).getMostSignificantBits());
             }
+        }
+    }
+    
+    @Test
+    @DisplayName("Test UUIDv6 creation with Instance")
+    void test_uuidv6_creation_with_instant() {
+        final Instant now = Instant.now();
+        final UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create(now);
+        final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
+        final Optional<Long> time = UUIDUtils.getTime(uuid);
+        final Optional<byte[]> bytes = UUIDUtils.toBytes(uuid);
+        final Optional<String> uuidString = UUIDUtils.toString(uuid);
 
-            uuid.add(UUIDFactory.Factories.UPROTOCOL.factory().create(now));
-        }
-        catch (Exception e) {
-            assertEquals("Counters out of bounds", e.getMessage().toString());
-        }
+        assertNotNull(uuid);
+        assertTrue(UUIDUtils.isUuidv6(uuid));
+        assertTrue(UUIDUtils.isUuid(uuid));
+        assertFalse(UUIDUtils.isUProtocol(uuid));
+        assertTrue(version.isPresent());
+        assertTrue(time.isPresent());
+        assertEquals(time.get(), now.toEpochMilli());
+        assertTrue(bytes.isPresent());
+        assertTrue(uuidString.isPresent());
+
+        final Optional<UUID> uuid1 = UUIDUtils.fromBytes(bytes.get());
+
+        assertTrue(uuid1.isPresent());
+        assertEquals(uuid, uuid1.get());
+
+        final Optional<UUID> uuid2 = UUIDUtils.fromString(uuidString.get());
+        assertTrue(uuid2.isPresent());
+        assertEquals(uuid, uuid2.get());
     }
 
     @Test
-    @DisplayName("Test Conversion to/from bytes")
-    public void test_uuid_byte_obj_conversions() {
+    @DisplayName("Test UUIDv6 creation with null Instant")
+    void test_uuidv6_creation_with_null_instant() {
+        final UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create(null);
+        final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
+        final Optional<Long> time = UUIDUtils.getTime(uuid);
+        final Optional<byte[]> bytes = UUIDUtils.toBytes(uuid);
+        final Optional<String> uuidString = UUIDUtils.toString(uuid);
+
+        assertNotNull(uuid);
+        assertTrue(UUIDUtils.isUuidv6(uuid));
+        assertFalse(UUIDUtils.isUProtocol(uuid));
+        assertTrue(UUIDUtils.isUuid(uuid));
+        assertTrue(version.isPresent());
+        assertTrue(time.isPresent());
+        assertTrue(bytes.isPresent());
+        assertTrue(uuidString.isPresent());
+
+        final Optional<UUID> uuid1 = UUIDUtils.fromBytes(bytes.get());
+
+        assertTrue(uuid1.isPresent());
+        assertEquals(uuid, uuid1.get());
+
+        final Optional<UUID> uuid2 = UUIDUtils.fromString(uuidString.get());
+        assertTrue(uuid2.isPresent());
+        assertEquals(uuid, uuid2.get());
+    }
+
+    @Test
+    @DisplayName("Test UUIDUtils for Random UUID")
+    void test_uuidutils_for_random_uuid() {
+        final UUID uuid = UUID.randomUUID();
+        final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
+        final Optional<Long> time = UUIDUtils.getTime(uuid);
+        final Optional<byte[]> bytes = UUIDUtils.toBytes(uuid);
+        final Optional<String> uuidString = UUIDUtils.toString(uuid);
+
+        assertNotNull(uuid);
+        assertFalse(UUIDUtils.isUuidv6(uuid));
+        assertFalse(UUIDUtils.isUProtocol(uuid));
+        assertFalse(UUIDUtils.isUuid(uuid));
+        assertTrue(version.isPresent());
+        assertFalse(time.isPresent());
+        assertTrue(bytes.isPresent());
+        assertTrue(uuidString.isPresent());
+
+
+        final Optional<UUID> uuid1 = UUIDUtils.fromBytes(bytes.get());
+
+        assertTrue(uuid1.isPresent());
+        assertEquals(uuid, uuid1.get());
+
+        final Optional<UUID> uuid2 = UUIDUtils.fromString(uuidString.get());
+        assertTrue(uuid2.isPresent());
+        assertEquals(uuid, uuid2.get());
+    }
+
+    @Test
+    @DisplayName("Test UUIDUtils for empty UUID")
+    void test_uuidutils_for_empty_uuid() {
+        final UUID uuid = new UUID(0L, 0L);
+        final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
+        final Optional<Long> time = UUIDUtils.getTime(uuid);
+        final Optional<byte[]> bytes = UUIDUtils.toBytes(uuid);
+        final Optional<String> uuidString = UUIDUtils.toString(uuid);
+
+        assertNotNull(uuid);
+        assertFalse(UUIDUtils.isUuidv6(uuid));
+        assertFalse(UUIDUtils.isUProtocol(uuid));
+        assertTrue(version.isPresent());
+        assertEquals(version.get(), UUIDUtils.Version.VERSION_UNKNOWN);
+        assertFalse(time.isPresent());
+        assertTrue(bytes.isPresent());
+        assertTrue(uuidString.isPresent());
+        assertFalse(UUIDUtils.isUuidv6(null));
+        assertFalse(UUIDUtils.isUProtocol(null));
+        assertFalse(UUIDUtils.isUuid(null));
+
+        final Optional<UUID> uuid1 = UUIDUtils.fromBytes(bytes.get());
+
+        assertTrue(uuid1.isPresent());
+        assertEquals(uuid, uuid1.get());
+
+        final Optional<UUID> uuid2 = UUIDUtils.fromString(uuidString.get());
+        assertTrue(uuid2.isPresent());
+        assertEquals(uuid, uuid2.get());
+    }
+
+    @Test
+    @DisplayName("Test UUIDUtils for a null UUID")
+    void test_uuidutils_for_null_uuid() {
+        assertFalse(UUIDUtils.getVersion(null).isPresent());
+        assertFalse(UUIDUtils.toBytes(null).isPresent());
+        assertFalse(UUIDUtils.toString(null).isPresent());
+        assertFalse(UUIDUtils.isUuidv6(null));
+        assertFalse(UUIDUtils.isUProtocol(null));
+        assertFalse(UUIDUtils.isUuid(null));
+        assertFalse(UUIDUtils.getTime(null).isPresent());
+    }
+
+    @Test
+    @DisplayName("Test UUIDUtils fromString an invalid built UUID")
+    void test_uuidutils_from_invalid_uuid() {
+        final UUID uuid = new UUID(9<<12, 0L); // Invalid UUID type
+
+        assertFalse(UUIDUtils.getVersion(uuid).isPresent());
+        assertFalse(UUIDUtils.getTime(uuid).isPresent());
+        assertTrue(UUIDUtils.toBytes(uuid).isPresent());
+        assertTrue(UUIDUtils.toString(uuid).isPresent());
+        assertFalse(UUIDUtils.isUuidv6(uuid));
+        assertFalse(UUIDUtils.isUProtocol(uuid));
+        assertFalse(UUIDUtils.isUuid(uuid));
+        assertFalse(UUIDUtils.getTime(uuid).isPresent());
+    }
+
+
+
+    @Test
+    @DisplayName("Test UUIDUtils fromString with invalid string")
+    void test_uuidutils_fromstring_with_invalid_string() {
+        final Optional<UUID> uuid = UUIDUtils.fromString(null);
+        assertFalse(uuid.isPresent());
+        final Optional<UUID> uuid1 = UUIDUtils.fromString("");
+        assertFalse(uuid1.isPresent());
+    }
+    
+    @Test
+    @DisplayName("Test UUIDUtils fromBytes with invalid bytes")
+    void test_uuidutils_frombytes_with_invalid_bytes() {
+        final Optional<UUID> uuid = UUIDUtils.fromBytes(null);
+        assertFalse(uuid.isPresent());
+        final Optional<UUID> uuid1 = UUIDUtils.fromBytes(new byte[0]);
+        assertFalse(uuid1.isPresent());
+    }
+
+    @Test
+    @DisplayName("Test Create UProtocol UUID in the past")
+    void test_create_uprotocol_uuid_in_the_past() {
+
+        final Instant past = Instant.now().minusSeconds(10);
+        final UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create(past);
+
+        final Optional<Long> time = UUIDUtils.getTime(uuid);
+
+        assertTrue(UUIDUtils.isUProtocol(uuid));
+        assertTrue(UUIDUtils.isUuid(uuid));
+
+        assertTrue(time.isPresent());
+        assertEquals(time.get(), past.toEpochMilli());
+
+    }
+
+    @Test
+    @DisplayName("Test Create UProtocol UUID with different time values")
+    void test_create_uprotocol_uuid_with_different_time_values() throws InterruptedException {
+
+        final UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
+        Thread.sleep(10);
         final UUID uuid1 = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        final byte[] bytes = UUIDUtils.toBytes(uuid1);
-        final UUID uuid2 = UUIDUtils.fromBytes(bytes);
-        assertArrayEquals(bytes, UUIDUtils.toBytes(uuid2));
-        assertEquals(uuid1.toString(), uuid1.toString());
-    }
 
-    @Test
-    @DisplayName("Test UUIDv6 Builder")
-    public void test_uuid6_byte_obj_conversions() {
-        final UUID uuid1 = UUIDFactory.Factories.UUIDV6.factory().create();
-        final byte[] bytes = UUIDUtils.toBytes(uuid1);
-        final UUID uuid2 = UUIDUtils.fromBytes(bytes);
-        assertArrayEquals(bytes, UUIDUtils.toBytes(uuid2));
-        assertEquals(uuid1.toString(), uuid1.toString());
-    }
+        final Optional<Long> time = UUIDUtils.getTime(uuid);
+        final Optional<Long> time1 = UUIDUtils.getTime(uuid1);
 
+        assertTrue(UUIDUtils.isUProtocol(uuid));
+        assertTrue(UUIDUtils.isUuid(uuid));
+        assertTrue(UUIDUtils.isUProtocol(uuid1));
+        assertTrue(UUIDUtils.isUuid(uuid1));
+
+        assertTrue(time.isPresent());
+        assertNotEquals(time.get(), time1.get());
+
+    }
+    
     @Test
-    @DisplayName("Test multiple UUIDv6s Builder")
-    public void test_uuid6_build_many() {
-        List<UUID> uuid = new ArrayList<>();
-        for (int i = 0; i < 4096; i++) {
-            uuid.add(UUIDFactory.Factories.UUIDV6.factory().create());
+    @DisplayName("Test Create both UUIDv6 and v8 to compare performance")
+    void test_create_both_uuidv6_and_v8_to_compare_performance() throws InterruptedException {
+       final List<UUID> uuidv6List = new ArrayList<>();
+       final List<UUID> uuidv8List = new ArrayList<>();
+        final int MAX_COUNT = 10000;
+        
+        Instant start = Instant.now();
+        for (int i = 0; i < MAX_COUNT; i++) {
+            uuidv8List.add(UUIDFactory.Factories.UPROTOCOL.factory().create());
         }
-        try {
-            uuid.add(UUIDFactory.Factories.UUIDV6.factory().create());
+        final Duration v8Diff = Duration.between(start, Instant.now());
+
+        start = Instant.now();
+        for (int i = 0; i < MAX_COUNT; i++) {
+            uuidv6List.add(UUIDFactory.Factories.UUIDV6.factory().create());
         }
-        catch (Exception e) {
-            assertEquals("Counters out of bounds", e.getMessage().toString());
-        }
-        assertNotEquals(UUIDUtils.getTime(uuid.get(0)), UUIDUtils.getTime(uuid.get(uuid.size()-1)));
+        final Duration v6Diff = Duration.between(start, Instant.now());
+        System.out.println("UUIDv8:[" + v8Diff.toNanos()/MAX_COUNT + "ns]" + " UUIDv6:[" + v6Diff.toNanos()/MAX_COUNT + "ns]");
     }
-
-    @Test
-    @DisplayName("Test UUIDv1")
-    public void test_uuid1_gettime() {
-        UUID uuid = UUID.randomUUID();
-        try {
-            UUIDUtils.getTime(uuid);
-        } catch (Exception e) {
-            assertEquals("Unsupported UUID", e.getMessage().toString());
-        }
-    }
-
-    @Test
-    @DisplayName("Test isUUID types")
-    public void test_us_uuid_version_checks() {
-        final UUID uuid1 = UUID.randomUUID();
-        final UUID uuid2 = UUIDFactory.Factories.UUIDV6.factory().create();
-        final UUID uuid3 = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        assertTrue(UUIDUtils.isUProtocol(uuid3));
-        assertTrue(UUIDUtils.isUuidv6(uuid2));
-        assertTrue(UUIDUtils.isUuid(uuid2));
-        assertTrue(UUIDUtils.isUuid(uuid3));
-        assertFalse(UUIDUtils.isUuid(uuid1));
-    }
-
-    @Test
-    @DisplayName("Test size")
-    public void test_uuid_size() {
-        final UUID uuid1 = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        final byte[] bytes = UUIDUtils.toBytes(uuid1);
-
-        String s = Base64.getEncoder().encodeToString(bytes);
-        final byte[] bytes2 = Base64.getDecoder().decode(s);
-        final UUID uuid2 = UUIDUtils.fromBytes(bytes2);
-        System.out.println("Size of UUID as string is: " +
-                uuid1.toString().length() + " Length in binary is: " + s.length() );
-        assertArrayEquals(bytes, bytes2);
-        assertEquals(uuid1.toString(), uuid2.toString());
-    }
-
 }
 

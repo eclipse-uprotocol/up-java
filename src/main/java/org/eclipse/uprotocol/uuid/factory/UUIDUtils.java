@@ -21,15 +21,23 @@
 
 package org.eclipse.uprotocol.uuid.factory;
 
+import com.github.f4b6a3.uuid.enums.UuidVariant;
 import com.github.f4b6a3.uuid.util.UuidTime;
 import com.github.f4b6a3.uuid.util.UuidUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Optional;
 import java.util.UUID;
 
-public class UUIDUtils {
+/**
+ * UUID Utils class that provides utility methods for uProtocol IDs
+ */
+ public interface UUIDUtils {
 
+    /**
+     * UUID Version
+     */
     public enum Version {
 
         /**
@@ -37,33 +45,13 @@ public class UUIDUtils {
          */
         VERSION_UNKNOWN(0),
         /**
-         * The time-based version with gregorian epoch specified in RFC-4122.
-         */
-        VERSION_TIME_BASED(1),
-        /**
-         * The DCE Security version, with embedded POSIX UIDs.
-         */
-        VERSION_DCE_SECURITY(2),
-        /**
-         * The name-based version specified in RFC-4122 that uses MD5 hashing.
-         */
-        VERSION_NAME_BASED_MD5(3),
-        /**
          * The randomly or pseudo-randomly generated version specified in RFC-4122.
          */
         VERSION_RANDOM_BASED(4),
         /**
-         * The name-based version specified in RFC-4122 that uses SHA-1 hashing.
-         */
-        VERSION_NAME_BASED_SHA1(5),
-        /**
          * The time-ordered version with gregorian epoch proposed by Peabody and Davis.
          */
         VERSION_TIME_ORDERED(6),
-        /**
-         * The time-ordered version with Unix epoch proposed by Peabody and Davis.
-         */
-        VERSION_TIME_ORDERED_EPOCH(7),
         /**
          * The custom or free-form version proposed by Peabody and Davis.
          */
@@ -71,7 +59,7 @@ public class UUIDUtils {
 
         private final int value;
 
-        Version(int value) {
+        private Version(int value) {
             this.value = value;
         }
 
@@ -79,64 +67,115 @@ public class UUIDUtils {
             return this.value;
         }
 
-        public static Version getVersion(int value) {
-            Version result = VERSION_UNKNOWN;
+        /**
+         * Get the Version from the passed integer representation of the version.
+         * @param value The integer representation of the version.
+         * @return The Version object or Optional.empty() if the value is not a valid version.
+         */
+        public static Optional<Version> getVersion(int value) {
             for (Version version : Version.values()) {
                 if (version.getValue() == value) {
-                    result = version;
-                    break;
+                    return Optional.of(version);
                 }
             }
-            return result;
+            return Optional.empty();
         }
     }
 
-    private UUIDUtils() {}
 
     /**
-     * Convert the UUID to a String
-     * @return String representation of the UUID
+     * Convert the UUID to a String.
+     * @return String representation of the UUID or Optional.empty() if the UUID is null.
      */
-    public static String toString(UUID uuid) {
-        return uuid.toString();
+    public static Optional<String> toString(UUID uuid) {
+        return uuid == null ? Optional.empty() : Optional.of(uuid.toString());
     }
 
     /**
-     * Convert the UUID to byte array
-     * @return The byte array
+     * Convert the UUID to byte array.
+     * @return The byte array or Optional.empty() if the UUID is null.
      */
-    public static byte[] toBytes(UUID uuid) {
+    public static Optional<byte[]> toBytes(UUID uuid) {
+        if (uuid == null) {
+            return Optional.empty();
+        }
         byte[] b = new byte[16];
-        return ByteBuffer.wrap(b).order(ByteOrder.BIG_ENDIAN).putLong(uuid.getMostSignificantBits())
-                .putLong(uuid.getLeastSignificantBits()).array();
+        return Optional.of(ByteBuffer.wrap(b).order(ByteOrder.BIG_ENDIAN).putLong(uuid.getMostSignificantBits())
+                .putLong(uuid.getLeastSignificantBits()).array());
     }
 
     /**
-     * Convert the byte array to a UUID
-     * @param bytes The UUID in bytes format
-     * @return  UUIDv8 object built from the byte array
+     * Convert the byte array to a UUID.
+     * @param bytes The UUID in bytes format.
+     * @return UUIDv8 object built from the byte array or Optional.empty() 
+     *         if the byte array is null or not 16 bytes long.
      */
-    public static UUID fromBytes(byte[] bytes) {
+    public static Optional<UUID> fromBytes(byte[] bytes) {
+        if (bytes == null || bytes.length != 16) {
+            return Optional.empty();
+        }
+
         final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-        return new UUID(byteBuffer.getLong(), byteBuffer.getLong());
+        return Optional.of(new UUID(byteBuffer.getLong(), byteBuffer.getLong()));
+    }
+
+
+    /**
+     * Create a UUID from the passed string.
+     * @param string the string representation of the uuid.
+     * @return The UUID object representation of the string or Optional.empty()
+     *         if the string is null, empty, or invalid.
+     */
+    public static Optional<UUID> fromString(String string) {
+        UUID uuid = null;
+        if (string == null || string.isBlank()) {
+            return Optional.empty();
+        }
+        try {
+            uuid = UUID.fromString(string);
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(uuid);
     }
 
     /**
-     * Create a UUID from the passed string
-     * @param string the string representation of the uuid
-     * @return The UUIDv8 representation of the string
+     * Fetch the UUID version.
+     * @param uuid The UUID to fetch the version from.
+     * @return the UUID version from the UUID object or Optional.empty() if the uuid is null.
      */
-    public static UUID fromString(String string) {
-        return UUID.fromString(string);
+    public static Optional<Version> getVersion(UUID uuid) {
+        return uuid == null ? Optional.empty() : Version.getVersion(uuid.version());
     }
 
     /**
-     * Fetch the UUID version
-     *
-     * @return The UUID version
+     * Fetch the Variant from the passed UUID.
+     * @param uuid The UUID to fetch the variant from.
+     * @return UUID variant or Empty if uuid is null.
      */
-    public static Version getVersion(UUID uuid) {
-        return Version.getVersion(uuid.version());
+    public static Optional<Integer> getVariant(UUID uuid) {
+        return uuid == null ? Optional.empty() : Optional.of(uuid.variant());
+    }
+    
+    /**
+     * Verify if version is a formal UUIDv8 uProtocol ID.
+     * @return true if is a uProtocol UUID or false if uuid passed is null
+     *         or the UUID is not uProtocol format.
+     */
+    public static boolean isUProtocol(UUID uuid) {
+        final Optional<Version> version = getVersion(uuid);
+        return uuid == null || version.isEmpty() ? false : version.get() == Version.VERSION_UPROTOCOL;
+    }
+
+    /**
+     * Verify if version is UUIDv6
+     * @return true if is UUID version 6 or false if uuid is null or not version 6
+     */
+    public static boolean isUuidv6(UUID uuid) {
+        final Optional<Version> version = getVersion(uuid);
+        final Optional<Integer> variant = getVariant(uuid);
+        return uuid != null && !version.isEmpty() ? version.get() == Version.VERSION_TIME_ORDERED && 
+            variant.get() == UuidVariant.VARIANT_RFC_4122.getValue() : false;
     }
 
     /**
@@ -146,38 +185,34 @@ public class UUIDUtils {
     public static boolean isUuid(UUID uuid) { return isUProtocol(uuid) || isUuidv6(uuid); }
 
     /**
-     * Verify if version is a formal UUIDv8 uProtocol ID
-     * @return true if is a UUIDv8 for uProtocol
+     * Return the number of milliseconds since unix epoch from a passed UUID.
+     * @param uuid passed uuid to fetch the time.
+     * @return number of milliseconds since unix epoch or empty if uuid is null.
      */
-    public static boolean isUProtocol(UUID uuid) {
-        return getVersion(uuid) == Version.VERSION_UPROTOCOL;
-    }
+    public static Optional<Long> getTime(UUID uuid) {
+        Long time = null;
+        Optional<Version> version = getVersion(uuid);
+        if (uuid == null || version.isEmpty()) {
+            return Optional.empty();
+        }
 
-    /**
-     * Verify if version is This one
-     * @return true if is UUID version 6
-     */
-    public static boolean isUuidv6(UUID uuid) {
-        return getVersion(uuid) == Version.VERSION_TIME_ORDERED;
-    }
-
-    /**
-     *  Return the number of miliseconds since unix epoch
-     * @param uuid passed uuid to fetch the time
-     * @return number of miliseconds since unix epoch
-     */
-    public static long getTime(UUID uuid) {
-        final long time;
-        switch (getVersion(uuid)) {
+        switch (version.get()) {
             case VERSION_UPROTOCOL:
                 time = uuid.getMostSignificantBits() >> 16;
                 break;
             case VERSION_TIME_ORDERED:
-                time = UuidTime.toUnixTimestamp(UuidUtil.getTimestamp(uuid));
+                //convert Ticks to Millis
+                try {
+                    time =  UuidTime.toUnixTimestamp(UuidUtil.getTimestamp(uuid)) / UuidTime.TICKS_PER_MILLI;
+                } catch (IllegalArgumentException e) {
+                    return Optional.empty();
+                }
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported UUID");
+                break;
         }
-        return time;
+
+        return Optional.ofNullable(time);
     }
 }
+

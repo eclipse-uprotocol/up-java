@@ -159,12 +159,9 @@ public interface UCloudEvent {
      */
     static Optional<Long> getCreationTimestamp(CloudEvent cloudEvent) {
         final String cloudEventId = cloudEvent.getId();
-        try {
-            final UUID uuid = UUIDUtils.fromString(cloudEventId);
-            return Optional.of(UUIDUtils.getTime(uuid));
-        } catch (Exception e) {
-            return Optional.empty();
-        }
+        final Optional<UUID> uuid = UUIDUtils.fromString(cloudEventId);
+
+        return uuid.isEmpty() ? Optional.empty() : UUIDUtils.getTime(uuid.get());
     }
 
     /**
@@ -208,27 +205,28 @@ public interface UCloudEvent {
             return false;
         }
         final String cloudEventId = cloudEvent.getId();
-        final UUID uuid = UUIDUtils.fromString(cloudEventId);
-
-        long delta = System.currentTimeMillis() - UUIDUtils.getTime(uuid);
+        final Optional<UUID> uuid = UUIDUtils.fromString(cloudEventId);
+        
+        if (uuid.isEmpty()) {
+            return false;
+        }
+        long delta = System.currentTimeMillis() - UUIDUtils.getTime(uuid.get()).orElse(0L);
 
         return delta >= ttl;
     }
 
     /**
-     * Check if a CloudEvent is a UUIDv8 id.
+     * Check if a CloudEvent is a valid UUIDv6 or v8 .
      * @param cloudEvent The CloudEvent with the id to inspect.
      * @return Returns true if the CloudEvent is valid.
      */
     static boolean isCloudEventId(CloudEvent cloudEvent) {
         final String cloudEventId = cloudEvent.getId();
-        try {
-            UUID uuid = UUIDUtils.fromString(cloudEventId);
-            return UUIDUtils.isUuid(uuid);
-        } catch (Exception e) {
-            return false;
-        }
+        final Optional<UUID> uuid = UUIDUtils.fromString(cloudEventId);
+        
+        return uuid.isEmpty() ? false : UUIDUtils.isUuid(uuid.get());
     }
+
     /**
      * Extract the payload from the CloudEvent as a protobuf Any object. <br>
      * An all or nothing error handling strategy is implemented. If anything goes wrong, an Any.getDefaultInstance() will be returned.
