@@ -44,6 +44,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CloudEventValidatorTest {
 
@@ -1062,10 +1064,10 @@ class CloudEventValidatorTest {
     public void test_create_a_v6_cloudevent_and_validate_it_against_sdk() {
         
         // source
-        UEntity use = UEntity.fromName("body.access");
+        UEntity use = UEntity.longFormat("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
-                new UResource("door", "front_left", "Door"));
-        String source = UriFactory.buildUProtocolUri(Uri);
+                UResource.longFormat("door", "front_left", "Door"));
+        String source = LongUriSerializer.instance().serialize(Uri);
         UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create();
         String id = uuid.toString();
 
@@ -1093,10 +1095,10 @@ class CloudEventValidatorTest {
     public void test_create_an_expired_v6_cloudevent() {
         
         // source
-        UEntity use = UEntity.fromName("body.access");
+        UEntity use = UEntity.longFormat("body.access");
         UUri Uri = new UUri(UAuthority.local(), use,
-                new UResource("door", "front_left", "Door"));
-        String source = UriFactory.buildUProtocolUri(Uri);
+                UResource.longFormat("door", "front_left", "Door"));
+        String source = LongUriSerializer.instance().serialize(Uri);
         UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create(Instant.now().minusSeconds(100));
         String id = uuid.toString();
 

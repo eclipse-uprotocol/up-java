@@ -23,9 +23,6 @@ package org.eclipse.uprotocol.transport.datamodel;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-import org.eclipse.uprotocol.transport.datamodel.UAttributes;
-import org.eclipse.uprotocol.transport.datamodel.UMessageType;
-import org.eclipse.uprotocol.transport.datamodel.UPriority;
 import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;

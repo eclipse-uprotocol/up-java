@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -693,8 +694,8 @@ class UAttributesValidatorTest {
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
         final UStatus status = validator.isExpired(attributes);
-        assertTrue(status.isSuccess());
-        assertEquals("Not Expired", status.msg());
+        assertFalse(status.isSuccess());
+        assertEquals("Invalid Time", status.msg());
     }
 
     // ----

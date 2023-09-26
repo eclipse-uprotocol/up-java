@@ -114,6 +114,10 @@ public abstract class UAttributesValidator {
     public UStatus isExpired(UAttributes uAttributes) {
         try {
             final Optional<Integer> maybeTtl = uAttributes.ttl();
+            final Optional<Long> maybeTime = UUIDUtils.getTime(uAttributes.id());
+            if (maybeTime.isEmpty()) {
+                return UStatus.failed("Invalid Time", Code.INVALID_ARGUMENT);
+            }
             if (maybeTtl.isEmpty()) {
                 return UStatus.ok("Not Expired");
             }
@@ -122,7 +126,7 @@ public abstract class UAttributesValidator {
                 return UStatus.ok("Not Expired");
             }
 
-            long delta = System.currentTimeMillis() - UUIDUtils.getTime(uAttributes.id());
+            long delta = System.currentTimeMillis() - maybeTime.get();
 
             return delta >= ttl ? UStatus.failed("Payload is expired", Code.DEADLINE_EXCEEDED) : UStatus.ok("Not Expired");
         } catch (Exception e) {
