@@ -29,6 +29,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
+import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
 import org.eclipse.uprotocol.uri.datamodel.UAuthority;
 import org.eclipse.uprotocol.uri.datamodel.UEntity;
 import org.eclipse.uprotocol.uri.datamodel.UResource;
@@ -39,6 +40,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -1055,4 +1057,65 @@ class CloudEventValidatorTest {
         return Any.pack(cloudEventProto);
     }
 
+    @Test
+    @DisplayName("Test create a v6 Cloudevent and validate it works with this SDK")
+    public void test_create_a_v6_cloudevent_and_validate_it_against_sdk() {
+        
+        // source
+        UEntity use = UEntity.fromName("body.access");
+        UUri Uri = new UUri(UAuthority.local(), use,
+                new UResource("door", "front_left", "Door"));
+        String source = UriFactory.buildUProtocolUri(Uri);
+        UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create();
+        String id = uuid.toString();
+
+        // fake payload
+        final Any protoPayload = buildProtoPayloadForTest();
+        
+        final UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+        .withPriority(UCloudEventAttributes.Priority.LOW)
+        .withTtl(1000) // live for 1 second
+        .build();
+
+        // build the cloud event
+        final CloudEvent cloudEvent = CloudEventFactory.buildBaseCloudEvent(id, source,
+                protoPayload.toByteArray(), protoPayload.getTypeUrl(),
+                attributes).withType(UCloudEventType.PUBLISH.type()).build();
+        
+        final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
+        final Status status = validator.validate(cloudEvent);
+        assertEquals(Code.OK_VALUE, status.getCode());
+        assertFalse(UCloudEvent.isExpired(cloudEvent));
+    }
+
+    @Test
+    @DisplayName("Test create an expired v6 Cloudevent to ensure we report the expiration")
+    public void test_create_an_expired_v6_cloudevent() {
+        
+        // source
+        UEntity use = UEntity.fromName("body.access");
+        UUri Uri = new UUri(UAuthority.local(), use,
+                new UResource("door", "front_left", "Door"));
+        String source = UriFactory.buildUProtocolUri(Uri);
+        UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create(Instant.now().minusSeconds(100));
+        String id = uuid.toString();
+
+        // fake payload
+        final Any protoPayload = buildProtoPayloadForTest();
+
+        final UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+        .withPriority(UCloudEventAttributes.Priority.LOW)
+        .withTtl(1000) // live for 1 second
+        .build();
+        
+        // build the cloud event
+        final CloudEvent cloudEvent = CloudEventFactory.buildBaseCloudEvent(id, source,
+                protoPayload.toByteArray(), protoPayload.getTypeUrl(),
+                attributes).withType(UCloudEventType.PUBLISH.type()).build();
+        
+        final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
+        final Status status = validator.validate(cloudEvent);
+        assertEquals(Code.OK_VALUE, status.getCode());
+        assertTrue(UCloudEvent.isExpired(cloudEvent));
+    }
 }

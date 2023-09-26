@@ -463,6 +463,16 @@ class UCloudEventTest {
     }
 
     @Test
+    @DisplayName("Test if the CloudEvent isExpired when passed invalid UUID")
+    public void test_cloudevent_is_expired_for_invalid_uuid() {
+       CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
+                .withExtension("ttl", 50000)
+                .withId("");
+        CloudEvent cloudEvent = builder.build();
+        assertFalse(UCloudEvent.isExpired(cloudEvent));
+    }
+    
+    @Test
     @DisplayName("Test if the CloudEvent has a UUIDV8 id.")
     public void test_cloudevent_has_a_UUIDV8_id() {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
