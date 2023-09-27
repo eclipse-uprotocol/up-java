@@ -75,6 +75,73 @@ class UStatusTest {
 
         assertEquals(6, statuses.size());
     }
+    
+    @Test
+    @DisplayName("Make sure the equals barfs when we compare uStatus that are not the same")
+    public void testHashCodeEquals_barfs_when_not_same() {
+        UStatus ok = UStatus.ok();
+        UStatus failed = UStatus.failed();
+        assertFalse(failed.equals(ok));
+        assertFalse(ok.equals(failed));
+    }
+
+    @Test
+    @DisplayName("Test equals when there are differences in message and code")
+    public void testHashCodeEquals_different_message_and_code() {
+        UStatus failed = UStatus.failed("boom", UStatus.Code.UNKNOWN);
+        UStatus failed1 = UStatus.failed("boom", UStatus.Code.INVALID_ARGUMENT);
+        UStatus failed2 = UStatus.failed("bang", UStatus.Code.UNKNOWN);
+        UStatus failed3 = UStatus.failed("bang", UStatus.Code.INVALID_ARGUMENT);
+        assertFalse(failed.equals(failed1));
+        assertFalse(failed.equals(failed2));
+        assertFalse(failed.equals(failed3));
+
+        assertFalse(failed1.equals(failed));
+        assertFalse(failed1.equals(failed2));
+        assertFalse(failed1.equals(failed3));
+
+        assertFalse(failed2.equals(failed));
+        assertFalse(failed2.equals(failed1));
+        assertFalse(failed2.equals(failed3));
+
+        assertFalse(failed3.equals(failed));
+        assertFalse(failed3.equals(failed2));
+        assertFalse(failed3.equals(failed1));
+    }
+
+    @Test
+    @DisplayName("Make sure the equals is successful when comparing the same failed status")
+    public void testHashCodeEquals_same_failed_status() {
+        UStatus failed = UStatus.failed("boom", UStatus.Code.UNKNOWN);
+        UStatus failed1 = UStatus.failed("boom", UStatus.Code.UNKNOWN);
+        assertTrue(failed.equals(failed1));
+    }
+
+    @Test
+    @DisplayName("Make sure the equals is successful when comparing the same ok status")
+    public void testHashCodeEquals_same_ok_status() {
+        UStatus ok = UStatus.ok();
+        UStatus ok1 = UStatus.ok();
+        assertTrue(ok.equals(ok1));
+    } 
+    
+    @Test
+    @DisplayName("Make sure the equals passing the same object is successful")
+    public void testHashCodeEquals_same_object() {
+        final UStatus ok = UStatus.ok();
+        final UStatus failed = UStatus.failed();
+        assertTrue(ok.equals(ok));
+        assertTrue(failed.equals(failed));
+    }
+
+    @Test
+    @DisplayName("Make sure the equals passing null reports not equals")
+    public void testHashCodeEquals_null() {
+        final UStatus ok = UStatus.ok();
+        final UStatus failed = UStatus.failed();
+        assertFalse(ok.equals(null));
+        assertFalse(failed.equals(null));
+    }
 
     @Test
     @DisplayName("Make sure the toString works on ok status")

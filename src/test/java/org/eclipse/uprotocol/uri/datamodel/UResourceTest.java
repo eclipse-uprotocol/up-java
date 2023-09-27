@@ -468,5 +468,18 @@ class UResourceTest {
         assertTrue(uResource.isRPCMethod());
     }
 
-
+    @Test
+    @DisplayName("Test creating invalid uResource with only the message")
+    public void test_create_invalid_uresource_with_only_message() {
+        UResource uResource = UResource.resolvedFormat("", null, "Door", null);
+        assertTrue(uResource.name().isBlank());
+        assertTrue(uResource.instance().isEmpty());
+        assertFalse(uResource.message().isEmpty());
+        assertTrue(uResource.id().isEmpty());
+        assertFalse(uResource.isEmpty());
+        assertFalse(uResource.isResolved());
+        assertFalse(uResource.isLongForm());
+        assertFalse(uResource.isMicroForm());
+        assertFalse(uResource.isRPCMethod());
+    }
 }
