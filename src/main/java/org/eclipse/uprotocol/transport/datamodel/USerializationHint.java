@@ -38,7 +38,10 @@ public enum USerializationHint {
     SOMEIP(3, "application/x-someip"),
 
     // Raw binary data that has not been serialized
-    RAW(4, "application/octet-stream");
+    RAW(4, "application/octet-stream"),
+
+    // Text Format
+    TEXT(5, "text/plain");
 
     private final int hintNumber;
     private final String mimeType;

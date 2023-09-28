@@ -27,14 +27,12 @@ import java.util.Optional;
 
 /**
  * The UPayload contains the clean Payload information along with its raw serialized structure of a byte[].
- */
+  */
 public class UPayload {
 
-    private static final UPayload EMPTY = new UPayload(new byte[0], null);
+    private static final UPayload EMPTY = new UPayload(new byte[0], USerializationHint.UNKNOWN);
 
     private final byte[] data;
-
-    private final Integer size; // The size of the payload in bytes
 
     private final USerializationHint hint;  // Hint regarding the bytes contained within the UPayload
 
@@ -44,17 +42,8 @@ public class UPayload {
      * @param data A byte array of the actual data.
      */
     public UPayload(byte[] data, USerializationHint hint) {
-        this(data, data == null ? 0 : data.length, hint);
-    }
-
-    /**
-     * Create a UPayload passing a fixed size
-     * @param data A byte array of the actual data.
-     */
-    public UPayload(byte[] data, Integer size, USerializationHint hint) {
-        this.hint = hint;
-        this.data = data;
-        this.size = size;
+        this.data = Objects.requireNonNullElse(data, new byte[0]);
+        this.hint = Objects.requireNonNullElse(hint, USerializationHint.UNKNOWN);
     }
 
 
@@ -63,15 +52,15 @@ public class UPayload {
      * @return Returns the actual serialized or raw data, which can be deserialized or simply used as is.
      */
     public byte[] data() {
-        return this.data == null ? EMPTY.data() : this.data;
+        return this.data;
     }
 
     /**
      * The hint regarding the bytes contained within the UPayload.
      * @return Returns the hint regarding the bytes contained within the UPayload.
      */
-    public Optional<USerializationHint> hint() {
-        return (hint == null) ? Optional.empty() : Optional.of(hint);
+    public USerializationHint hint() {
+        return this.hint;
     }
     
     /**
@@ -81,29 +70,12 @@ public class UPayload {
         return EMPTY;
     }
 
-    /**
-     * Static factory method for creating the payload from a simple String.
-     * @param payload String payload.
-     * @param hint Optional hint regarding the bytes contained within the UPayload.
-     * @return Returns a UPayload from the string argument.
-     */
-    public static UPayload fromString(String payload, USerializationHint hint) {
-        return new UPayload(payload.getBytes(), hint);
-    }
 
     /**
      * @return Returns true if the data in the UPayload is empty.
      */
     public boolean isEmpty() {
-        return this.data == null || this.data.length == 0;
-    }
-
-    /**
-     * The size of the payload in bytes
-     * @return Returns the size of the payload in bytes
-     */
-    public Integer size() {
-        return size;
+        return this.data.length == 0;
     }
 
     
@@ -112,19 +84,18 @@ public class UPayload {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UPayload uPayload = (UPayload) o;
-        return Arrays.equals(data, uPayload.data) && this.hint == uPayload.hint
-                && Objects.equals(this.size, uPayload.size);
+        return Arrays.equals(data, uPayload.data) && this.hint == uPayload.hint;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.hashCode(data),hint, size);
+        return Objects.hash(Arrays.hashCode(data),hint);
     }
 
     @Override
     public String toString() {
         return "UPayload{" +
-                "data=" + Arrays.toString(data()) + " size=" + size + 
+                "data=" + Arrays.toString(data()) + 
                 ", hint=" + hint +'}';
     }
 }

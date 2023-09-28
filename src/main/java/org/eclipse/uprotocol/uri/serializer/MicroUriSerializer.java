@@ -81,14 +81,13 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
     }
 
     /**
-     * TODO Steven this needs to be fixed
      * Serialize a UUri into a byte[] following the Micro-URI specifications.
      * @param Uri The {@link UUri} data object.
      * @return Returns a byte[] representing the serialized {@link UUri}.
      */
     @Override
     public byte[] serialize(UUri Uri) {
-        if (Uri == null || Uri.isEmpty()) {
+        if (Uri == null || Uri.isEmpty() || !Uri.isMicroForm()) {
             return new byte[0];
         }
 
@@ -96,11 +95,7 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
         Optional<Short> maybeUeId = Uri.uEntity().id();
         Optional<Short> maybeUResourceId = Uri.uResource().id();
 
-        // Cannot create a micro URI without UResource ID or uEntity ID
-        if (maybeUResourceId.isEmpty() || maybeUeId.isEmpty()) {
-            return new byte[0];
-        }
-
+ 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         // UP_VERSION
         os.write(UP_VERSION);
@@ -123,7 +118,7 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
             try {
                 os.write(maybeUAuthorityAddressBytes.get());
             } catch (IOException e) {
-                //TODO Steven this is not correct - maybe write an empty byte into the stream
+                //NOTE: It is impossible for this exception to be thrown as we can never pass invalid address
                 return new byte[0];
             }
         }
@@ -196,6 +191,8 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
                         Arrays.copyOfRange(microUri, index, (addressType == AddressType.IPv4) ? 8 : 20));
                 uAuthority = UAuthority.microRemote(inetAddress);
             } catch (Exception e) {
+                // NOTE: It is impossible for this exception to be thrown as we cannot put invalid data in the fixed size
+                // microUri
                 uAuthority = UAuthority.local();
             }
             index += addressType == AddressType.IPv4 ? 4 : 16;

@@ -41,22 +41,10 @@ class UPayloadTest {
     @DisplayName("Make sure the toString works on empty")
     public void testToString_with_empty() {
         UPayload uPayload = UPayload.empty();
-        assertEquals("UPayload{data=[] size=0, hint=null}", uPayload.toString());
+        assertEquals("UPayload{data=[], hint=UNKNOWN}", uPayload.toString());
+        assertEquals(USerializationHint.UNKNOWN, uPayload.hint());
     }
 
-    @Test
-    @DisplayName("Make sure the toString works on null")
-    public void testToString_with_null() {
-        UPayload uPayload = new UPayload(null, null);
-        assertEquals("UPayload{data=[] size=0, hint=null}", uPayload.toString());
-    }
-
-    @Test
-    @DisplayName("Make sure the toString works")
-    public void testToString() {
-        UPayload uPayload = UPayload.fromString("hello", null);
-        assertEquals("UPayload{data=[104, 101, 108, 108, 111] size=5, hint=null}", uPayload.toString());
-    }
 
     @Test
     @DisplayName("Create an empty UPayload")
@@ -67,43 +55,42 @@ class UPayloadTest {
     }
 
     @Test
-    @DisplayName("Create a UPyload with null")
+    @DisplayName("Create a UPayload with null")
     public void create_upayload_with_null() {
         UPayload uPayload = new UPayload(null, null);
         assertEquals(0, uPayload.data().length);
         assertTrue(uPayload.isEmpty());
+        assertEquals(USerializationHint.UNKNOWN, uPayload.hint());
     }
 
     @Test
-    @DisplayName("Create a UPayload from some bytes")
-    public void create_upayload_from_bytes() {
+    @DisplayName("Create a UPayload from string with hint")
+    public void create_upayload_from_string_with_hint() {
+        String stringData = "hello";
+        UPayload uPayload = new UPayload(stringData.getBytes(StandardCharsets.UTF_8), USerializationHint.TEXT);
+        assertEquals(stringData.length(), uPayload.data().length);
+        assertFalse(uPayload.isEmpty());
+        assertEquals(USerializationHint.TEXT, uPayload.hint());
+        assertEquals(stringData, new String(uPayload.data()));
+    }
+
+    @Test
+    @DisplayName("Create a UPayload from some string without hint")
+    public void create_upayload_from_string_without_hint() {
         String stringData = "hello";
         UPayload uPayload = new UPayload(stringData.getBytes(StandardCharsets.UTF_8), null);
         assertEquals(stringData.length(), uPayload.data().length);
         assertFalse(uPayload.isEmpty());
-        assertEquals(stringData, new String(uPayload.data()));
+        assertEquals(USerializationHint.UNKNOWN, uPayload.hint());
     }
 
     @Test
-    @DisplayName("Create a UPayload from a string")
-    public void create_upayload_from_a_string() {
-        String stringData = "hello world";
-        UPayload uPayload = UPayload.fromString(stringData, null);
-        assertEquals(stringData.length(), uPayload.data().length);
-        assertFalse(uPayload.isEmpty());
-        assertEquals(stringData, new String(uPayload.data()));
-        assertFalse(uPayload.hint().isPresent());
+    @DisplayName("Create a UPayload without a byte array but with some weird hint")
+    public void create_upayload_without_byte_array_but_with_weird_hint() {
+        UPayload uPayload = new UPayload(null, USerializationHint.PROTOBUF);
+        assertEquals(0, uPayload.data().length);
+        assertTrue(uPayload.isEmpty());
+        assertEquals(USerializationHint.PROTOBUF, uPayload.hint());
+        assertFalse(UPayload.empty().equals(uPayload));
     }
-
-    @Test
-    @DisplayName("Create a UPayload from a string with a hint")
-    public void create_upayload_from_a_string_with_a_hint() {
-        String stringData = "hello world";
-        UPayload uPayload = UPayload.fromString(stringData, USerializationHint.JSON);
-        assertEquals(stringData.length(), uPayload.data().length);
-        assertFalse(uPayload.isEmpty());
-        assertEquals(stringData, new String(uPayload.data()));
-        assertEquals(USerializationHint.JSON, uPayload.hint().get());
-    }
-
 }

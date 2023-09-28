@@ -29,10 +29,10 @@ import org.eclipse.uprotocol.uri.datamodel.UUri;
 import java.util.Optional;
 
 /**
- * UUris are used in transport layers and hence need to be serialised.
- * Each transport supports different serialisation formats.
+ * UUris are used in transport layers and hence need to be serialized.
+ * Each transport supports different serialization formats.
  * For more information, please refer to <a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc">...</a>
- * @param <T> The data structure that the UUri will be serialised into. For example String or byte[].
+ * @param <T> The data structure that the UUri will be serialized into. For example String or byte[].
  */
 public interface UriSerializer<T> {
 

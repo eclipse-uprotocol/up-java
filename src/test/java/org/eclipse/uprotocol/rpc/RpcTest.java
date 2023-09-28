@@ -91,7 +91,7 @@ class RpcTest {
     RpcClient ThatBarfsCrapyPayload = new RpcClient() {
         @Override
         public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
-            UPayload response = new UPayload(new byte[] {0}, null, USerializationHint.RAW);
+            UPayload response = new UPayload(new byte[] {0}, USerializationHint.RAW);
             return CompletableFuture.completedFuture(response);
         }
     };
@@ -514,8 +514,7 @@ class RpcTest {
         RpcClient client  = new RpcClient() {
             @Override
             public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
-                UPayload data = new UPayload(null, null, null);
-                return CompletableFuture.completedFuture(data);
+                return CompletableFuture.completedFuture(UPayload.empty());
             }
         };
 

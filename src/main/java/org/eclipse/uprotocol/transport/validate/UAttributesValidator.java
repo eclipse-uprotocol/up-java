@@ -112,26 +112,22 @@ public abstract class UAttributesValidator {
      * @return Returns a {@link UStatus} that is success meaning not expired or failed with a validation message or expiration.
      */
     public UStatus isExpired(UAttributes uAttributes) {
-        try {
-            final Optional<Integer> maybeTtl = uAttributes.ttl();
-            final Optional<Long> maybeTime = UUIDUtils.getTime(uAttributes.id());
-            if (maybeTime.isEmpty()) {
-                return UStatus.failed("Invalid Time", Code.INVALID_ARGUMENT);
-            }
-            if (maybeTtl.isEmpty()) {
-                return UStatus.ok("Not Expired");
-            }
-            int ttl = maybeTtl.get();
-            if (ttl <= 0) {
-                return UStatus.ok("Not Expired");
-            }
-
-            long delta = System.currentTimeMillis() - maybeTime.get();
-
-            return delta >= ttl ? UStatus.failed("Payload is expired", Code.DEADLINE_EXCEEDED) : UStatus.ok("Not Expired");
-        } catch (Exception e) {
+        final Optional<Integer> maybeTtl = uAttributes.ttl();
+        final Optional<Long> maybeTime = UUIDUtils.getTime(uAttributes.id());
+        if (maybeTime.isEmpty()) {
+            return UStatus.failed("Invalid Time", Code.INVALID_ARGUMENT);
+        }
+        if (maybeTtl.isEmpty()) {
             return UStatus.ok("Not Expired");
         }
+        int ttl = maybeTtl.get();
+        if (ttl <= 0) {
+            return UStatus.ok("Not Expired");
+        }
+
+        long delta = System.currentTimeMillis() - maybeTime.get();
+
+        return delta >= ttl ? UStatus.failed("Payload is expired", Code.DEADLINE_EXCEEDED) : UStatus.ok("Not Expired");
     }
 
     /**
@@ -141,12 +137,8 @@ public abstract class UAttributesValidator {
      */
     public UStatus validateId(UAttributes attributes) {
         final UUID id = attributes.id();
-        try {
-            return UUIDUtils.isUuid(id) ? UStatus.ok() :
-                    UStatus.failed(String.format("Invalid UUID [%s]", id), Code.INVALID_ARGUMENT.value());
-        } catch (Exception e) {
-            return UStatus.failed(String.format("Invalid UUID [%s] [%s]", id, e.getMessage()), Code.INVALID_ARGUMENT.value());
-        }
+        return UUIDUtils.isUuid(id) ? UStatus.ok() :
+                UStatus.failed(String.format("Invalid UUID [%s]", id), Code.INVALID_ARGUMENT.value());
     }
 
     /**
