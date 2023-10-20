@@ -179,7 +179,7 @@ public class MicroUriSerializerTest
     @DisplayName("Test deserialize with valid IPv4 micro uri")
     public void test_deserialize_with_valid_ipv4_uri() {
         
-        byte[] bytes = {0x1, 0x1, 0x0, 0x5, (byte)192, (byte)168, 1, (byte)100, 0x0, 0x2, 0x1, 0x0};
+        byte[] bytes = {0x1, 0x1, 0x0, 0x5, 0x0, 0x2, 0x1, 0x0, (byte)192, (byte)168, 1, (byte)100};
         
         UUri uri = MicroUriSerializer.instance().deserialize(bytes);
         assertFalse(uri.isEmpty());
@@ -208,13 +208,11 @@ public class MicroUriSerializerTest
             InetAddress ipv6 = InetAddress.getByName("2001:db8:85a3:0:0:8a2e:370:7334");
             byte[] ipv6Bytes = ipv6.getAddress();
 
-            byte[] header = {0x1, 0x2, 0x0, 0x5};
-            byte[] footer = {0x0, 0x2, 0x1, 0x0};
+            byte[] header = {0x1, 0x2, 0x0, 0x5, 0x0, 0x2, 0x1, 0x0};
             
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             outputStream.write(header);
             outputStream.write(ipv6Bytes);
-            outputStream.write(footer);
 
             byte[] bytes = outputStream.toByteArray();
 
@@ -273,7 +271,7 @@ public class MicroUriSerializerTest
     @Test
     @DisplayName("Test deserialize with wrong size for IPv4 micro URI")
     public void test_deserialize_with_wrong_size_for_ipv4_micro_uri() {
-        byte[] bytes = {0x1, 0x1, 0x0, 0x5, (byte)192, (byte)168, 1, (byte)100, 0x0, 0x2, 0x1, 0x0, 0x0};
+        byte[] bytes = {0x1, 0x1, 0x0, 0x5, 0x0, 0x2, 0x1, 0x0, 0x0, (byte)192, (byte)168, 1, (byte)100};
         
         UUri uri = MicroUriSerializer.instance().deserialize(bytes);
         assertTrue(uri.isEmpty());
@@ -287,13 +285,11 @@ public class MicroUriSerializerTest
         try {
             byte[] ipv6Bytes = new byte[30];
 
-            byte[] header = {0x1, 0x2, 0x0, 0x5};
-            byte[] footer = {0x0, 0x2, 0x1, 0x0};
+            byte[] header = {0x1, 0x2, 0x0, 0x5, 0x0, 0x2, 0x1, 0x0};
             
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             outputStream.write(header);
             outputStream.write(ipv6Bytes);
-            outputStream.write(footer);
 
             byte[] bytes = outputStream.toByteArray();
 
@@ -305,6 +301,5 @@ public class MicroUriSerializerTest
             assertTrue(false);
         }
     }
-
-    
+   
 }

@@ -112,17 +112,6 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
         os.write(maybeUResourceId.get()>>8);
         os.write(maybeUResourceId.get());
 
-        // UAUTHORITY_ADDRESS
-        final Optional<byte[]> maybeUAuthorityAddressBytes = calculateUAuthorityBytes(Uri.uAuthority());
-        if (maybeUAuthorityAddressBytes.isPresent()) {
-            try {
-                os.write(maybeUAuthorityAddressBytes.get());
-            } catch (IOException e) {
-                //NOTE: It is impossible for this exception to be thrown as we can never pass invalid address
-                return new byte[0];
-            }
-        }
-
         // UENTITY_ID
         os.write(maybeUeId.get()>>8);
         os.write(maybeUeId.get());
@@ -133,6 +122,17 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
 
         // UNUSED
         os.write((byte)0);
+
+        // UAUTHORITY_ADDRESS
+        final Optional<byte[]> maybeUAuthorityAddressBytes = calculateUAuthorityBytes(Uri.uAuthority());
+        if (maybeUAuthorityAddressBytes.isPresent()) {
+            try {
+                os.write(maybeUAuthorityAddressBytes.get());
+            } catch (IOException e) {
+                //NOTE: It is impossible for this exception to be thrown as we can never pass invalid address
+                return new byte[0];
+            }
+        }
 
         return os.toByteArray();
 
@@ -180,33 +180,31 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
             return UUri.empty();
         }
 
+        // UENTITY_ID
+        int ueId = ((microUri[4] & 0xFF) << 8) | (microUri[5] & 0xFF);
+
+        // UE_VERSION
+        int uiVersion = microUri[6];
+
         // Calculate uAuthority
         UAuthority uAuthority;
-        int index = 4;
         if (addressType == AddressType.LOCAL) {
             uAuthority = UAuthority.local();
         } else {
             try {
                 final InetAddress inetAddress = InetAddress.getByAddress(
-                        Arrays.copyOfRange(microUri, index, (addressType == AddressType.IPv4) ? 8 : 20));
+                        Arrays.copyOfRange(microUri, 8, (addressType == AddressType.IPv4) ?
+                            IPV4_MICRO_URI_LENGTH : IPV6_MICRO_URI_LENGTH));
                 uAuthority = UAuthority.microRemote(inetAddress);
             } catch (Exception e) {
                 // NOTE: It is impossible for this exception to be thrown as we cannot put invalid data in the fixed size
                 // microUri
                 uAuthority = UAuthority.local();
             }
-            index += addressType == AddressType.IPv4 ? 4 : 16;
         }
-
-        // UENTITY_ID
-        int ueId = ((microUri[index++] & 0xFF) << 8) | (microUri[index++] & 0xFF);
-
-        // UE_VERSION
-        int uiVersion = microUri[index];
-
         return new UUri(uAuthority,
                 UEntity.microFormat((short)ueId, uiVersion == 0 ? null : uiVersion),
                 UResource.microFormat((short)uResourceId));
-    }    
+    }
 
 }
