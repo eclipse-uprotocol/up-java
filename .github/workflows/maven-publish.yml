@@ -1,33 +1,49 @@
-name: Publish to github maven
+name: Release to maven central
 
 on:
-  release:
-    types: [created]
   workflow_dispatch:
 
 jobs:
-  build:
+  release:
+    if: github.event.ref == 'refs/heads/main'
 
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: write
+      contents: write
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
+    - run: |
+        git config --global user.name 'eclipse-uprotocol-bot'
+        git config --global user.email 'uprotocol-bot@eclipse.org'
+
+    - uses: actions/checkout@v4
       with:
-        java-version: '11'
+        token: ${{ secrets.BOT_GITHUB_TOKEN }}
+
+    - name: Set up Apache Maven Central
+      uses: actions/setup-java@v3
+      with: # configure settings.xml
         distribution: 'temurin'
-        server-id: github
-        settings-path: ${{ github.workspace }} 
+        java-version: '11'
+        server-id: ossrh
+        server-username: OSSRH_USER
+        server-password: OSSRH_PASSWORD
+        gpg-private-key: ${{ secrets.ORG_GPG_PRIVATE_KEY }}
+        gpg-passphrase: GPG_PASSPHRASE
 
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-
-    - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+    - name: Stage to Nexus and Release to Maven central
+      run: |
+        mvn -B release:clean release:prepare -P release release:perform
       env:
-        # GITHUB_TOKEN: ${{ github.token }}
-       GITHUB_TOKEN: ${{ secrets.PKG_PUSH_TOKEN }}
+        OSSRH_USER: ${{ secrets.ORG_OSSRH_USERNAME }}
+        OSSRH_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
+        GPG_PASSPHRASE: ${{ secrets.ORG_GPG_PASSPHRASE }}
+        GH_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+
+    - if: cancelled() || failure()
+      run: |
+        mvn -B release:rollback
+      env:
+        GH_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
