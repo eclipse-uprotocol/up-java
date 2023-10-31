@@ -166,7 +166,7 @@ class UStatusTest {
 
     @Test
     @DisplayName("Make sure the toString works on failed status with message")
-    public void testToString_for_failed_status_with_message() {
+    public void testToString_for_failed_status_with_getMessage() {
         UStatus failed = UStatus.failed("boom");
         assertEquals("UStatus failed msg=boom code=2", failed.toString());
     }
@@ -217,7 +217,7 @@ class UStatusTest {
 
     @Test
     @DisplayName("Create failed status with message")
-    public void create_failed_status_with_message() {
+    public void create_failed_status_with_getMessage() {
         UStatus failed = UStatus.failed("boom");
         assertFalse(failed.isSuccess());
         assertTrue(failed.isFailed());

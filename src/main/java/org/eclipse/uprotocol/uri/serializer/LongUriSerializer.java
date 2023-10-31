@@ -21,15 +21,14 @@
 
 package org.eclipse.uprotocol.uri.serializer;
 
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import org.eclipse.uprotocol.uri.validator.UriValidator;
+import org.eclipse.uprotocol.v1.UAuthority;
+import org.eclipse.uprotocol.v1.UEntity;
+import org.eclipse.uprotocol.v1.UResource;
+import org.eclipse.uprotocol.v1.UUri;
 
 /**
  * UUri Serializer that serializes a UUri to a long format string per
@@ -52,38 +51,40 @@ public class LongUriSerializer implements UriSerializer<String> {
      */
     @Override
     public String serialize(UUri Uri) {
-        if (Uri == null || Uri.isEmpty()) {
+        if (Uri == null || UriValidator.isEmpty(Uri)) {
             return "";
         }
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append(buildAuthorityPartOfUri(Uri.uAuthority()));
-
-        if (Uri.uAuthority().isMarkedRemote()) {
-            sb.append("/");
+        if (Uri.hasAuthority()) {
+            sb.append(buildAuthorityPartOfUri(Uri.getAuthority()));
         }
+        sb.append("/");
 
-        if (Uri.uEntity().isEmpty()) {
-            return sb.toString();
-        }
-
-        sb.append(buildSoftwareEntityPartOfUri(Uri.uEntity()));
+        sb.append(buildSoftwareEntityPartOfUri(Uri.getEntity()));
         
-        sb.append(buildResourcePartOfUri(Uri.uResource()));
+        sb.append(buildResourcePartOfUri(Uri));
 
         return sb.toString().replaceAll("/+$", "");
     }
 
-    private static String buildResourcePartOfUri(UResource uResource) {
-        if (uResource.isEmpty()) {
+    private static String buildResourcePartOfUri(UUri uri) {
+        if (!uri.hasResource()) {
             return "";
         }
-        StringBuilder sb = new StringBuilder("/");
-        sb.append(uResource.name());
-        uResource.instance().ifPresent(instance -> sb.append(".").append(instance));
-        uResource.message().ifPresent(message -> sb.append("#").append(message));
+        final UResource uResource = uri.getResource();
 
+        StringBuilder sb = new StringBuilder("/");
+        sb.append(uResource.getName());
+
+        if (uResource.hasInstance()) {
+            sb.append(".").append(uResource.getInstance());
+        }
+        if (uResource.hasMessage()) {
+            sb.append("#").append(uResource.getMessage());
+        }
+        
         return sb.toString();
     }
 
@@ -92,9 +93,11 @@ public class LongUriSerializer implements UriSerializer<String> {
      * @param use  Software Entity representing a service or an application.
      */
     private static String buildSoftwareEntityPartOfUri(UEntity use) {
-        StringBuilder sb = new StringBuilder(use.name().trim());
+        StringBuilder sb = new StringBuilder(use.getName().trim());
         sb.append("/");
-        use.version().ifPresent(sb::append);
+        if (use.getVersionMajor() > 0) {
+            sb.append(use.getVersionMajor());
+        }
 
         return sb.toString();
     }
@@ -102,22 +105,17 @@ public class LongUriSerializer implements UriSerializer<String> {
 
     /**
      * Create the authority part of the uProtocol URI from an  authority object.
-     * @param Authority represents the deployment location of a specific  Software Entity in the Ultiverse.
+     * @param Authority represents the deployment location of a specific  Software Entity.
      * @return Returns the String representation of the  Authority in the uProtocol URI.
      */
     private static String buildAuthorityPartOfUri(UAuthority Authority) {
-        if (Authority.isLocal()) {
-            return "/";
-        }
+ 
         StringBuilder partialURI = new StringBuilder("//");
-        final Optional<String> maybeDevice = Authority.device();
-        final Optional<String> maybeDomain = Authority.domain();
+        final Optional<String> maybeName = Optional.ofNullable(Authority.getName());
 
-        if (maybeDevice.isPresent()) {
-            partialURI.append(maybeDevice.get());
-            maybeDomain.ifPresent(domain -> partialURI.append("."));
+        if (maybeName.isPresent()) {
+            partialURI.append(maybeName.get());
         }
-        maybeDomain.ifPresent(partialURI::append);
 
         return partialURI.toString();
     }
@@ -130,7 +128,7 @@ public class LongUriSerializer implements UriSerializer<String> {
     @Override
     public UUri deserialize(String uProtocolUri) {
         if (uProtocolUri == null || uProtocolUri.isBlank()) {
-            return UUri.empty();
+            return UUri.getDefaultInstance();
         }
 
         String uri = uProtocolUri.contains(":") ? uProtocolUri.substring(uProtocolUri.indexOf(":")+1) : uProtocolUri 
@@ -142,52 +140,43 @@ public class LongUriSerializer implements UriSerializer<String> {
         final int numberOfPartsInUri = uriParts.length;
 
         if(numberOfPartsInUri == 0 || numberOfPartsInUri == 1) {
-            return isLocal ? UUri.empty() :
-                    new UUri(UAuthority.longRemote("", ""), UEntity.empty(), UResource.empty());
+            return UUri.getDefaultInstance();
         }
 
         String useName;
         String useVersion = "";
 
-        UResource uResource;
+        UResource uResource = null;
 
-        UAuthority uAuthority;
+        UAuthority uAuthority = null;
+
         if(isLocal) {
-            uAuthority = UAuthority.local();
             useName = uriParts[1];
             if (numberOfPartsInUri > 2) {
                 useVersion = uriParts[2];
 
-                uResource = numberOfPartsInUri > 3 ? parseFromString(uriParts[3]) : UResource.empty();
-
-            } else {
-                uResource = UResource.empty();
-            }
+                if (numberOfPartsInUri > 3) {
+                    uResource = parseFromString(uriParts[3]);
+                }
+            } 
         } else {
-            String[] authorityParts = uriParts[2].split("\\.");
-            String device = authorityParts[0];
-            String domain = "";
-            if (authorityParts.length > 1) {
-                domain = Arrays.stream(authorityParts)
-                        .skip(1)
-                        .collect(Collectors.joining("."));
-            }
-            uAuthority = UAuthority.longRemote(device, domain);
+            uAuthority = UAuthority.newBuilder().setName(uriParts[2]).build();
 
             if (uriParts.length > 3) {
                 useName = uriParts[3];
                 if (numberOfPartsInUri > 4) {
                     useVersion = uriParts[4];
 
-                    uResource = numberOfPartsInUri > 5 ? parseFromString(uriParts[5]) : UResource.empty();
+                    if (numberOfPartsInUri > 5) { 
+                        uResource = parseFromString(uriParts[5]);
+                    }
 
-                } else {
-                    uResource = UResource.empty();
-                }
+                } 
             } else {
-                return new UUri(uAuthority, UEntity.empty(), UResource.empty());
+                return UUri.newBuilder()
+                .setAuthority(uAuthority)
+                .build();
             }
-
         }
 
         Integer useVersionInt = null;
@@ -195,9 +184,24 @@ public class LongUriSerializer implements UriSerializer<String> {
             if (!useVersion.isBlank()) {
                 useVersionInt = Integer.valueOf(useVersion);
             }
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException ignored) {
+            return UUri.getDefaultInstance();
+        }
 
-        return new UUri(uAuthority, UEntity.longFormat(useName, useVersionInt), uResource);
+        UEntity.Builder uEntityBuilder = UEntity.newBuilder().setName(useName);
+
+        if (useVersionInt != null) {
+            uEntityBuilder.setVersionMajor(useVersionInt);
+        }
+            
+        UUri.Builder uriBuilder = UUri.newBuilder().setEntity(uEntityBuilder);
+        if (uAuthority != null) {
+            uriBuilder.setAuthority(uAuthority);
+        }
+        if (uResource != null) {
+            uriBuilder.setResource(uResource);
+        }
+        return uriBuilder.build();
     }
 
     /**
@@ -215,7 +219,16 @@ public class LongUriSerializer implements UriSerializer<String> {
         String resourceName = nameAndInstanceParts[0];
         String resourceInstance = nameAndInstanceParts.length > 1 ? nameAndInstanceParts[1] : null;
         String resourceMessage = parts.length > 1 ? parts[1] : null;
-        return UResource.longFormat(resourceName, resourceInstance, resourceMessage);
+
+        UResource.Builder uResourceBuilder = UResource.newBuilder().setName(resourceName);
+        if (resourceInstance != null) {
+            uResourceBuilder.setInstance(resourceInstance);
+        }
+        if (resourceMessage != null) {
+            uResourceBuilder.setMessage(resourceMessage);
+        }
+        
+        return uResourceBuilder.build();
     }
 
 }

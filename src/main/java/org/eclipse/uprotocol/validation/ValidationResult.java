@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package org.eclipse.uprotocol.cloudevent.validate;
+package org.eclipse.uprotocol.validation;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;

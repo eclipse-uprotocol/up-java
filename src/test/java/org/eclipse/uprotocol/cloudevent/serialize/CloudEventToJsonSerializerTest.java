@@ -30,11 +30,7 @@ import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -163,11 +159,7 @@ class CloudEventToJsonSerializerTest {
 
         final CloudEventSerializer serializer = CloudEventSerializers.JSON.serializer();
 
-        // source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use,
-                UResource.longFormat("door", "front_left", "Door"));
-        String source = LongUriSerializer.instance().serialize(Uri);
+        String source = "/body.access//door.front_left#Door";
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest1();

@@ -27,6 +27,8 @@ import org.eclipse.uprotocol.transport.datamodel.UStatus;
 import org.eclipse.uprotocol.transport.datamodel.UStatus.Code;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
+import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.validation.ValidationResult;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -169,9 +171,8 @@ public abstract class UAttributesValidator {
      * @return Returns a {@link UStatus} that is success or failed with a failure message.
      */
     public UStatus validateSink(UAttributes attributes) {
-        return attributes.sink()
-                .map(UriValidator::validate)
-                .orElse(UStatus.ok());
+        return UriValidator.validate(attributes.sink().orElse(UUri.getDefaultInstance())) == ValidationResult.success() ?
+                UStatus.ok() : UStatus.failed("Missing Sink", Code.INVALID_ARGUMENT.value());
     }
 
     /**
@@ -262,9 +263,8 @@ public abstract class UAttributesValidator {
         */
         @Override
         public UStatus validateSink(UAttributes attributes) {
-            return attributes.sink()
-                    .map(UriValidator::validateRpcResponse)
-                    .orElse(UStatus.failed("Missing Sink", Code.INVALID_ARGUMENT.value()));
+            return UriValidator.validateRpcResponse(attributes.sink().orElse(UUri.getDefaultInstance())) == ValidationResult.success() ?
+                UStatus.ok() : UStatus.failed("Missing Sink", Code.INVALID_ARGUMENT.value());
         }
 
         /**
@@ -310,9 +310,8 @@ public abstract class UAttributesValidator {
          */
         @Override
         public UStatus validateSink(UAttributes attributes) {
-            return attributes.sink()
-                    .map(UriValidator::validateRpcMethod)
-                    .orElse(UStatus.failed("Missing Sink", Code.INVALID_ARGUMENT.value()));
+            return UriValidator.validateRpcMethod(attributes.sink().orElse(UUri.getDefaultInstance())) == ValidationResult.success() ?
+                UStatus.ok() : UStatus.failed("Missing Sink", Code.INVALID_ARGUMENT.value());
         }
 
 

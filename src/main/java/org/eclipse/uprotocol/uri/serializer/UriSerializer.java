@@ -21,12 +21,14 @@
 
 package org.eclipse.uprotocol.uri.serializer;
 
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
 
 import java.util.Optional;
+
+import org.eclipse.uprotocol.uri.validator.UriValidator;
+import org.eclipse.uprotocol.v1.UAuthority;
+import org.eclipse.uprotocol.v1.UEntity;
+import org.eclipse.uprotocol.v1.UResource;
+import org.eclipse.uprotocol.v1.UUri;
 
 /**
  * UUris are used in transport layers and hence need to be serialized.
@@ -59,30 +61,30 @@ public interface UriSerializer<T> {
     default Optional<UUri> buildResolved(String longUri, byte[] microUri) {
         
         if ((longUri == null || longUri.isEmpty()) && (microUri == null || microUri.length == 0)) {
-            return Optional.of(UUri.empty());
+            return Optional.of(UUri.getDefaultInstance());
         }
 
         UUri longUUri = LongUriSerializer.instance().deserialize(longUri);
         UUri microUUri = MicroUriSerializer.instance().deserialize(microUri);
-
-        UAuthority uAuthority = longUUri.uAuthority().isLocal() ? UAuthority.local() :
-            UAuthority.resolvedRemote(
-                longUUri.uAuthority().device().orElse(null),
-                longUUri.uAuthority().domain().orElse(null),
-                microUUri.uAuthority().address().orElse(null));
+ 
+        final UAuthority.Builder uAuthorityBuilder = 
+            UAuthority.newBuilder(microUUri.getAuthority())
+                .setName(longUUri.getAuthority().getName());
+ 
         
-        UEntity uEntity = UEntity.resolvedFormat(
-            longUUri.uEntity().name(), longUUri.uEntity().version().orElse(null), 
-            microUUri.uEntity().id().orElse(null));
-
-        UResource uResource = UResource.resolvedFormat(
-            longUUri.uResource().name(), 
-            longUUri.uResource().instance().orElse(null), 
-            longUUri.uResource().message().orElse(null), 
-            microUUri.uResource().id().orElse(null));
+        final UEntity.Builder uEntityBuilder = UEntity.newBuilder(microUUri.getEntity())
+            .setName(longUUri.getEntity().getName());
             
-        UUri uUri = new UUri(uAuthority, uEntity, uResource);
-        return uUri.isResolved() ? Optional.of(uUri) : Optional.empty();
-    }
+
+        final UResource.Builder uResourceBuilder = UResource.newBuilder(longUUri.getResource())
+            .setId(microUUri.getResource().getId());
+            
+        UUri uUri = UUri.newBuilder()
+            .setAuthority(uAuthorityBuilder)
+            .setEntity(uEntityBuilder)
+            .setResource(uResourceBuilder)
+            .build();
+        return UriValidator.isResolved(uUri) ? Optional.of(uUri) : Optional.empty();
+        }
 
 }

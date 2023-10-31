@@ -1,9 +1,10 @@
 package org.eclipse.uprotocol.uri.validator;
 
-import org.eclipse.uprotocol.transport.datamodel.UStatus;
-import org.eclipse.uprotocol.transport.datamodel.UStatus.Code;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
+import java.util.Objects;
+
+import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.v1.UAuthority;
+import org.eclipse.uprotocol.validation.ValidationResult;
 
 /**
  * class for validating Uris.
@@ -15,15 +16,15 @@ public interface UriValidator {
      * @param uri {@link UUri} to validate.
      * @return Returns UStatus containing a success or a failure with the error message.
      */
-    static UStatus validate(UUri uri) {
-        if (uri.isEmpty()) {
-            return UStatus.failed("Uri is empty.", Code.INVALID_ARGUMENT);
+    static ValidationResult validate(UUri uri) {
+        if (isEmpty(uri)) {
+            return ValidationResult.failure("Uri is empty.");
         }
 
-        if (uri.uEntity().name().isBlank()) {
-            return UStatus.failed("Uri is missing uSoftware Entity name.", Code.INVALID_ARGUMENT);
+        if (uri.getEntity().getName().isBlank()) {
+            return ValidationResult.failure("Uri is missing uSoftware Entity name.");
         }
-        return UStatus.ok();
+        return ValidationResult.success();
     }
 
     /**
@@ -31,16 +32,16 @@ public interface UriValidator {
      * @param uri {@link UUri} to validate.
      * @return Returns UStatus containing a success or a failure with the error message.
      */
-    static UStatus validateRpcMethod(UUri uri) {
-        UStatus status = validate(uri);
-        if (status.isFailed()){
+    static ValidationResult validateRpcMethod(UUri uri) {
+        ValidationResult status = validate(uri);
+        if (status.isFailure()){
             return status;
         }
-        final UResource uResource = uri.uResource();
-        if (!uResource.isRPCMethod()) {
-            return UStatus.failed("Invalid RPC method uri. Uri should be the method to be called, or method from response.", Code.INVALID_ARGUMENT);
+        
+        if (!isRpcMethod(uri)) {
+            return ValidationResult.failure("Invalid RPC method uri. Uri should be the method to be called, or method from response.");
         }
-        return UStatus.ok();
+        return ValidationResult.success();
     }
 
     /**
@@ -48,17 +49,86 @@ public interface UriValidator {
      * @param uri {@link UUri} to validate.
      * @return Returns UStatus containing a success or a failure with the error message.
      */
-    static UStatus validateRpcResponse(UUri uri) {
-        UStatus status = validate(uri);
-        if (status.isFailed()){
+    static ValidationResult validateRpcResponse(UUri uri) {
+        ValidationResult status = validate(uri);
+        if (status.isFailure()){
             return status;
         }
         
-        final UResource uResource = uri.uResource();
-        if (!uResource.isRPCMethod() || !uResource.instance().equals(UResource.forRpcResponse().instance())) {
-            return UStatus.failed("Invalid RPC response type.", Code.INVALID_ARGUMENT);
+        if (!isRpcResponse(uri)) {
+            return ValidationResult.failure("Invalid RPC response type.");
         }
 
-        return UStatus.ok();
+        return ValidationResult.success();
     }
+
+
+    /**
+     * Indicates that this  URI is an empty as it does not contain authority, entity, and resource.
+     * @param uri {@link UUri} to check if it is empty
+     * @return Returns true if this  URI is an empty container and has no valuable information in building uProtocol sinks or sources.
+     */
+    static boolean isEmpty(UUri uri) {
+        Objects.requireNonNull(uri, "Uri cannot be null.");
+        return !uri.hasAuthority() && !uri.hasEntity() && !uri.hasResource();
+    }
+
+
+    /**
+     * Returns true if URI is of type RPC.
+     * @param uri {@link UUri} to check if it is of type RPC method
+     * @return Returns true if URI is of type RPC.
+     */
+    static boolean isRpcMethod(UUri uri) {
+        Objects.requireNonNull(uri, "Uri cannot be null.");
+        return !isEmpty(uri) && (uri.getResource().getName().contains("rpc") && 
+        (uri.getResource().hasInstance()) || uri.getResource().hasId());
+    }
+
+    /**
+     * Returns true if URI contains both names and numeric representations of the names inside its belly.
+     * Meaning that this UUri can be serialized to long or micro formats.
+     * @param uri {@link UUri} to check if resolved.
+     * @return Returns true if URI contains both names and numeric representations of the names inside its belly.
+     *      Meaning that this UUri can buree serialized to long or micro formats.
+     */
+    static boolean isResolved(UUri uri) {
+        Objects.requireNonNull(uri, "Uri cannot be null.");
+        return !isEmpty(uri);
+        // TODO: Finish this
+    }
+
+
+    /**
+     * Returns true if URI is of type RPC response.
+     * @param uri {@link UUri} to check response
+     * @return Returns true if URI is of type RPC response.
+     */
+    static boolean isRpcResponse(UUri uri) {
+        Objects.requireNonNull(uri, "Uri cannot be null.");
+        return !isEmpty(uri);
+    }
+
+
+
+    /**
+     * Returns true if URI contains numbers so that it can be serialized into micro format.
+     * @param uri {@link UUri} to check
+     * @return Returns true if URI contains numbers so that it can be serialized into micro format.
+     */
+    static boolean isMicroForm(UUri uri) {
+        Objects.requireNonNull(uri, "Uri cannot be null.");
+        return !isEmpty(uri);
+    }
+
+    /**
+     * Returns true if URI contains names so that it can be serialized into long format.
+     * @param uri {@link UUri} to check
+     * @return Returns true if URI contains names so that it can be serialized into long format.
+     */
+    static boolean isLongForm(UUri uri) {
+        Objects.requireNonNull(uri, "Uri cannot be null.");
+        return !isEmpty(uri);
+    }
+
 }

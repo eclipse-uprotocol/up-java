@@ -21,8 +21,8 @@
 
 package org.eclipse.uprotocol.uuid.validate;
 
-import org.eclipse.uprotocol.cloudevent.validate.ValidationResult;
 import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
+import org.eclipse.uprotocol.validation.ValidationResult;
 
 import com.github.f4b6a3.uuid.enums.UuidVariant;
 import com.google.rpc.Code;

@@ -23,7 +23,7 @@ package org.eclipse.uprotocol.cloudevent.factory;
 
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
+
 import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
 import com.google.rpc.Code;

@@ -29,12 +29,12 @@ import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
+
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
+import org.eclipse.uprotocol.v1.UEntity;
+import org.eclipse.uprotocol.v1.UResource;
+import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -634,7 +634,7 @@ class UCloudEventTest {
 
     @Test
     @DisplayName("Test unpack payload by class from cloud event when protobuf Message is not unpack-able")
-    public void test_unpack_payload_by_class_from_cloud_event_proto_message_object_when_not_valid_message() {
+    public void test_unpack_payload_by_class_from_cloud_event_proto_message_object_when_not_valid_getMessage() {
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId("someId")
                 .withType("pub.v1")
@@ -691,9 +691,14 @@ class UCloudEventTest {
 
     private CloudEventBuilder buildBaseCloudEventBuilderForTest() {
         // source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use,
-                UResource.longFormat("door", "front_left", "Door"));
+        UUri Uri = UUri.newBuilder()
+            .setEntity(UEntity.newBuilder().setName("body.access"))
+            .setResource(UResource.newBuilder()
+                .setName("door")
+                .setInstance("front_left")
+                .setMessage("Door"))
+            .build();
+        
         String source = LongUriSerializer.instance().serialize(Uri);
 
         // fake payload

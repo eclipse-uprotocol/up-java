@@ -26,10 +26,11 @@ import com.google.rpc.Status;
 import io.cloudevents.CloudEvent;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.v1.UResource;
+import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.validation.ValidationResult;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+import org.eclipse.uprotocol.uri.validator.UriValidator;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -156,16 +157,7 @@ public abstract class CloudEventValidator {
     }
 
     public static ValidationResult validateUEntityUri(UUri Uri) {
-        final UAuthority uAuthority = Uri.uAuthority();
-        if (uAuthority.isMarkedRemote()) {
-            if (uAuthority.device().isEmpty()) {
-                return ValidationResult.failure("UriPart is configured to be microRemote and is missing uAuthority device name.");
-            }
-        }
-        if (Uri.uEntity().name().isBlank()) {
-            return ValidationResult.failure("UriPart is missing uSoftware Entity name.");
-        }
-        return ValidationResult.success();
+        return UriValidator.validate(Uri);
     }
 
     /**
@@ -188,11 +180,11 @@ public abstract class CloudEventValidator {
         if (validationResult.isFailure()) {
             return validationResult;
         }
-        final UResource uResource = Uri.uResource();
-        if (uResource.name().isBlank()) {
+        final UResource uResource = Uri.getResource();
+        if (uResource.getName().isBlank()) {
             return ValidationResult.failure("UriPart is missing uResource name.");
         }
-        if (uResource.message().isEmpty()) {
+        if (uResource.getMessage().isEmpty()) {
             return ValidationResult.failure("UriPart is missing Message information.");
         }
         return ValidationResult.success();
@@ -219,8 +211,8 @@ public abstract class CloudEventValidator {
         if (validationResult.isFailure()){
             return ValidationResult.failure(String.format("Invalid RPC uri application response topic. %s", validationResult.getMessage()));
         }
-        final UResource uResource = Uri.uResource();
-        String topic = String.format("%s.%s", uResource.name(), uResource.instance().isPresent() ? uResource.instance().get() : "" );
+        final UResource uResource = Uri.getResource();
+        String topic = String.format("%s.%s", uResource.getName(), uResource.getInstance());
         if (!"rpc.response".equals(topic)) {
             return ValidationResult.failure("Invalid RPC uri application response topic. UriPart is missing rpc.response.");
         }
@@ -238,8 +230,8 @@ public abstract class CloudEventValidator {
         if (validationResult.isFailure()){
             return ValidationResult.failure(String.format("Invalid RPC method uri. %s", validationResult.getMessage()));
         }
-        final UResource uResource = Uri.uResource();
-        if (!uResource.isRPCMethod()) {
+        
+        if (!UriValidator.isRpcMethod(Uri)) {
             return ValidationResult.failure("Invalid RPC method uri. UriPart should be the method to be called, or method from response.");
         }
         return ValidationResult.success();
