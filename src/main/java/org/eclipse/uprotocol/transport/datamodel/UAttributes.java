@@ -25,10 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
+import org.eclipse.uprotocol.v1.UUri;
 
 /**
  * When sending data over uTransport the basic API for send uses a source topic and the UPayload as the data.
@@ -108,18 +105,6 @@ public class UAttributes {
                 .withSink(sink);
     }
 
-    /**
-     * Static factory method for creating a base UAttributes for an RPC request.
-     * @param id Unique identifier for the RPC request message.
-     * @param uAuthority Indicates where the software for RPC request is installed.
-     * @param serviceUEntity Indicates what service we want to RPC request to change.
-     * @param commandName String command name the RPC is executing.
-     * @return Returns a base UAttributes that can be used to build an RPC request.
-     */
-    public static UAttributesBuilder forRpcRequest(UUID id, UAuthority uAuthority, UEntity serviceUEntity, String commandName) {
-        return new UAttributesBuilder(id, UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
-                .withSink(new UUri(uAuthority, serviceUEntity, UResource.forRpcRequest(commandName)));
-    }
 
     /**
      * Static factory method for creating a base UAttributes for an RPC response.
@@ -134,19 +119,6 @@ public class UAttributes {
                 .withReqId(requestId);
     }
 
-    /**
-     * Static factory method for creating a base UAttributes for an RPC response.
-     * @param id Unique identifier for the RPC response message.
-     * @param uAuthority Indicates where the software for RPC response is for is installed.
-     * @param callerUEntity Indicates what service called the RPC request and this response is for.
-     * @param requestId The id of the RPC request that this message is responding to.
-     * @return Returns a base UAttributes that can be used to build an RPC response.
-     */
-    public static UAttributesBuilder forRpcResponse(UUID id, UAuthority uAuthority, UEntity callerUEntity, UUID requestId) {
-        return new UAttributesBuilder(id, UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
-                .withSink(new UUri(uAuthority, callerUEntity, UResource.forRpcResponse()))
-                .withReqId(requestId);
-    }
 
     /**
      * Unique identifier for the message.

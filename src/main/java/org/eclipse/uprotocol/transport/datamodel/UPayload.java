@@ -23,7 +23,6 @@
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * The UPayload contains the clean Payload information along with its raw serialized structure of a byte[].

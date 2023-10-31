@@ -30,10 +30,10 @@ import com.google.rpc.Status;
 import org.eclipse.uprotocol.transport.datamodel.UAttributes;
 import org.eclipse.uprotocol.transport.datamodel.UPayload;
 import org.eclipse.uprotocol.transport.datamodel.USerializationHint;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
+import org.eclipse.uprotocol.v1.UEntity;
+import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -547,7 +547,9 @@ class RpcTest {
     private static UAttributes buildUAttributes() {
         return UAttributes.forRpcRequest(
             UUIDFactory.Factories.UPROTOCOL.factory().create(), 
-            UUri.rpcResponse(null, UEntity.longFormat("hartley"))).build();
+            UUri.newBuilder()
+            .setEntity(UEntity.newBuilder().setName("hartley"))
+            .build()).build();
     }
 
     private static CompletableFuture<io.cloudevents.v1.proto.CloudEvent> rpcResponse(CompletableFuture<UPayload> invokeMethodResponse) {

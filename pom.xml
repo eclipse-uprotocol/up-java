@@ -132,6 +132,27 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>io.cloudevents</groupId>
+                <artifactId>cloudevents-protobuf</artifactId>
+                <version>2.4.2</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>2.11.0</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.checkerframework</groupId>
+                <artifactId>checker-qual</artifactId>
+                <version>3.12.0</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-bom</artifactId>
@@ -189,7 +210,7 @@
         <dependency>
             <groupId>io.cloudevents</groupId>
             <artifactId>cloudevents-protobuf</artifactId>
-            <version>2.2.0</version>
+            
         </dependency>
 
         <!-- CloudEvents support https://cloudevents.github.io/sdk-java/  https://github.com/cloudevents/sdk-java-->
@@ -224,14 +245,6 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>com.google.truth.extensions</groupId>
-            <artifactId>truth-proto-extension</artifactId>
-            <version>1.1</version>
-            <scope>test</scope>
-        </dependency>
-
-
         <!-- https://search.maven.org/artifact/com.github.f4b6a3/uuid-creator -->
         <dependency>
             <groupId>com.github.f4b6a3</groupId>
@@ -243,6 +256,13 @@
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
             <version>1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.uprotocol </groupId>
+            <artifactId>uprotocol-core-api</artifactId>
+            <version>1.4.9-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/uprotocol-core-api-1.4.9-SNAPSHOT.jar</systemPath>
         </dependency>
 
     </dependencies>

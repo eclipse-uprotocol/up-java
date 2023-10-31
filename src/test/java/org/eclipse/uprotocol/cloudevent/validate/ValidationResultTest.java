@@ -28,6 +28,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.eclipse.uprotocol.validation.ValidationResult;
+
 class ValidationResultTest {
 
     @Test
@@ -60,14 +62,14 @@ class ValidationResultTest {
 
     @Test
     @DisplayName("Test success message")
-    void test_success_validation_result_message() {
+    void test_success_validation_result_getMessage() {
         ValidationResult success = ValidationResult.success();
         assertTrue(success.getMessage().isBlank());
     }
 
     @Test
     @DisplayName("Test failure message")
-    void test_failure_validation_result_message() {
+    void test_failure_validation_result_getMessage() {
         ValidationResult failure = ValidationResult.failure("boom");
         assertEquals("boom", failure.getMessage());
     }

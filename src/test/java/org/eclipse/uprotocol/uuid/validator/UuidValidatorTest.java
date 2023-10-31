@@ -21,10 +21,11 @@
 
 package org.eclipse.uprotocol.uuid.validator;
 
-import org.eclipse.uprotocol.cloudevent.validate.ValidationResult;
 import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
 import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
 import org.eclipse.uprotocol.uuid.validate.UuidValidator;
+import org.eclipse.uprotocol.validation.ValidationResult;
+
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 

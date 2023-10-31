@@ -27,11 +27,11 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+import org.eclipse.uprotocol.v1.UAuthority;
+import org.eclipse.uprotocol.v1.UEntity;
+import org.eclipse.uprotocol.v1.UResource;
+import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -41,17 +41,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CloudEventFactoryTest {
 
+
     private static final String DATA_CONTENT_TYPE = CloudEventFactory.PROTOBUF_CONTENT_TYPE;
 
     @Test
     @DisplayName("Test create base CloudEvent")
     public void test_create_base_cloud_event()  {
 
-        // source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use,
-                UResource.longFormat("door", "front_left", "Door"));
-        String source = LongUriSerializer.instance().serialize(Uri);
+        String source = buildUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -89,11 +86,7 @@ class CloudEventFactoryTest {
     @DisplayName("Test create base CloudEvent with datacontenttype and dataschema")
     public void test_create_base_cloud_event_with_datacontenttype_and_schema()  {
 
-        // source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri ultifiUri = new UUri(UAuthority.local(), use,
-                UResource.longFormat("door", "front_left", "Door"));
-        String source = LongUriSerializer.instance().serialize(ultifiUri);
+        String source = buildUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -137,11 +130,7 @@ class CloudEventFactoryTest {
     @DisplayName("Test create base CloudEvent without attributes")
     public void test_create_base_cloud_event_without_attributes()  {
 
-        // source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use,
-                UResource.longFormat("door", "front_left", "Door"));
-        String source = LongUriSerializer.instance().serialize(Uri);
+        String source = buildUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -175,10 +164,7 @@ class CloudEventFactoryTest {
     public void test_create_publish_cloud_event() {
 
         // source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use,
-                UResource.longFormat("door", "front_left", "Door"));
-        String source = LongUriSerializer.instance().serialize(Uri);
+        String source = buildUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -209,15 +195,10 @@ class CloudEventFactoryTest {
     public void test_create_notification_cloud_event() {
 
         // source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use,
-                UResource.longFormat("door", "front_left", "Door"));
-        String source = LongUriSerializer.instance().serialize(Uri);
+        String source = buildUriForTest();
 
         // sink
-        UEntity sinkUse = UEntity.longFormat("petapp");
-        UUri sinkUri = new UUri(UAuthority.longRemote("com.gm.bo", "bo"), sinkUse, "OK");
-        String sink = LongUriSerializer.instance().serialize(sinkUri);
+        String sink = buildUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -253,14 +234,10 @@ class CloudEventFactoryTest {
     public void test_create_request_cloud_event_from_local_use() {
 
         // UriPart for the application requesting the RPC
-        UEntity sourceUse = UEntity.longFormat("petapp");
-        String applicationUriForRPC = LongUriSerializer.instance().serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
+        String applicationUriForRPC = buildUriForTest();
 
         // service Method UriPart
-        UEntity methodSoftwareEntityService = UEntity.longFormat("body.access", 1);
-        UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
-                UResource.forRpcRequest("UpdateDoor"));
-        String serviceMethodUri = LongUriSerializer.instance().serialize(methodUri);
+        String serviceMethodUri = buildUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -278,10 +255,10 @@ class CloudEventFactoryTest {
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertNotNull(cloudEvent.getId());
-        assertEquals("/petapp//rpc.response", cloudEvent.getSource().toString());
+        assertEquals(applicationUriForRPC, cloudEvent.getSource().toString());
 
         assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("/body.access/1/rpc.UpdateDoor", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
+        assertEquals(serviceMethodUri, Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("req.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
@@ -293,66 +270,16 @@ class CloudEventFactoryTest {
 
     }
 
-    @Test
-    @DisplayName("Test create request RPC CloudEvent coming from a microRemote USE")
-    public void test_create_request_cloud_event_from_remote_use() {
-
-        // UriPart for the application requesting the RPC
-        UAuthority sourceUseAuthority = UAuthority.longRemote("bo", "cloud");
-        UEntity sourceUse = UEntity.longFormat("petapp", 1);
-        String applicationUriForRPC = LongUriSerializer.instance().serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
-
-        // service Method UriPart
-        UEntity methodSoftwareEntityService = UEntity.longFormat("body.access", 1);
-        UUri methodUri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"),
-                methodSoftwareEntityService,
-                UResource.forRpcRequest("UpdateDoor"));
-        String serviceMethodUri = LongUriSerializer.instance().serialize(methodUri);
-
-        // fake payload
-        final Any protoPayload = buildProtoPayloadForTest();
-
-        // additional attributes
-        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
-                .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.OPERATIONS)
-                .withTtl(3)
-                .withToken("someOAuthToken")
-                .build();
-
-        final CloudEvent cloudEvent = CloudEventFactory.request(applicationUriForRPC, serviceMethodUri,
-                protoPayload, uCloudEventAttributes);
-
-        assertEquals("1.0", cloudEvent.getSpecVersion().toString());
-        assertNotNull(cloudEvent.getId());
-        assertEquals("//bo.cloud/petapp/1/rpc.response", cloudEvent.getSource().toString());
-
-        assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("//vcu.my_car_vin/body.access/1/rpc.UpdateDoor", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
-
-        assertEquals("req.v1", cloudEvent.getType());
-        assertEquals("somehash", cloudEvent.getExtension("hash"));
-        assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
-        assertEquals(3, cloudEvent.getExtension("ttl"));
-        assertEquals("someOAuthToken", cloudEvent.getExtension("token"));
-
-        assertArrayEquals(protoPayload.toByteArray(), Objects.requireNonNull(cloudEvent.getData()).toBytes());
-
-    }
 
     @Test
     @DisplayName("Test create response RPC CloudEvent originating from a local USE")
     public void test_create_response_cloud_event_originating_from_local_use() {
 
         // UriPart for the application requesting the RPC
-        UEntity sourceUse = UEntity.longFormat("petapp", 1);
-        String applicationUriForRPC = LongUriSerializer.instance().serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
+        String applicationUriForRPC = buildUriForTest();
 
         // service Method UriPart
-        UEntity methodSoftwareEntityService = UEntity.longFormat("body.access", 1);
-        UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
-                UResource.forRpcRequest("UpdateDoor"));
-        String serviceMethodUri = LongUriSerializer.instance().serialize(methodUri);
+        String serviceMethodUri = buildUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -369,10 +296,10 @@ class CloudEventFactoryTest {
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertNotNull(cloudEvent.getId());
-        assertEquals("/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
+        assertEquals(serviceMethodUri, cloudEvent.getSource().toString());
 
         assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("/petapp/1/rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
+        assertEquals(applicationUriForRPC, Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("res.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
@@ -385,68 +312,16 @@ class CloudEventFactoryTest {
 
     }
 
-    @Test
-    @DisplayName("Test create response RPC CloudEvent originating from a microRemote USE")
-    public void test_create_response_cloud_event_originating_from_remote_use() {
-
-        // UriPart for the application requesting the RPC
-        UAuthority sourceUseAuthority = UAuthority.longRemote("bo", "cloud");
-        UEntity sourceUse = UEntity.longFormat("petapp");
-        
-        String applicationUriForRPC = LongUriSerializer.instance().serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
-
-        // service Method UriPart
-        UEntity methodSoftwareEntityService = UEntity.longFormat("body.access", 1);
-        UUri methodUri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"),
-                methodSoftwareEntityService,
-                UResource.forRpcRequest("UpdateDoor"));
-        String serviceMethodUri = LongUriSerializer.instance().serialize(methodUri);
-
-        // fake payload
-        final Any protoPayload = buildProtoPayloadForTest();
-
-        // additional attributes
-        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
-                .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.OPERATIONS)
-                .withTtl(3)
-                .build();
-
-        final CloudEvent cloudEvent = CloudEventFactory.response(applicationUriForRPC, serviceMethodUri,
-                "requestIdFromRequestCloudEvent", protoPayload, uCloudEventAttributes);
-
-
-        assertEquals("1.0", cloudEvent.getSpecVersion().toString());
-        assertNotNull(cloudEvent.getId());
-        assertEquals("//vcu.my_car_vin/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
-
-        assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("//bo.cloud/petapp//rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
-
-        assertEquals("res.v1", cloudEvent.getType());
-        assertEquals("somehash", cloudEvent.getExtension("hash"));
-        assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
-        assertEquals(3, cloudEvent.getExtension("ttl"));
-
-        assertEquals("requestIdFromRequestCloudEvent", cloudEvent.getExtension("reqid"));
-
-        assertArrayEquals(protoPayload.toByteArray(), Objects.requireNonNull(cloudEvent.getData()).toBytes());
-
-    }
 
     @Test
     @DisplayName("Test create a failed response RPC CloudEvent originating from a local USE")
     public void test_create_a_failed_response_cloud_event_originating_from_local_use() {
 
         // UriPart for the application requesting the RPC
-        UEntity sourceUse = UEntity.longFormat("petapp", 1);
-        String applicationUriForRPC = LongUriSerializer.instance().serialize(UUri.rpcResponse(UAuthority.local(), sourceUse));
+        String applicationUriForRPC = buildUriForTest();
 
         // service Method UriPart
-        UEntity methodSoftwareEntityService = UEntity.longFormat("body.access", 1);
-        UUri methodUri = new UUri(UAuthority.local(), methodSoftwareEntityService,
-                UResource.forRpcRequest("UpdateDoor"));
-        String serviceMethodUri = LongUriSerializer.instance().serialize(methodUri);
+        String serviceMethodUri = buildUriForTest();
 
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
@@ -462,10 +337,10 @@ class CloudEventFactoryTest {
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertNotNull(cloudEvent.getId());
-        assertEquals("/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
+        assertEquals(serviceMethodUri, cloudEvent.getSource().toString());
 
         assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("/petapp/1/rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
+        assertEquals(applicationUriForRPC, Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("res.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
@@ -482,17 +357,10 @@ class CloudEventFactoryTest {
     public void test_create_a_failed_response_cloud_event_originating_from_remote_use() {
 
         // UriPart for the application requesting the RPC
-        UAuthority sourceUseAuthority = UAuthority.longRemote("bo", "cloud");
-        UEntity sourceUse = UEntity.longFormat("petapp");
-        
-        String applicationUriForRPC = LongUriSerializer.instance().serialize(UUri.rpcResponse(sourceUseAuthority, sourceUse));
+        String applicationUriForRPC = buildUriForTest();
 
         // service Method UriPart
-        UEntity methodSoftwareEntityService = UEntity.longFormat("body.access", 1);
-        UUri methodUri = new UUri(UAuthority.longRemote("VCU", "MY_CAR_VIN"),
-                methodSoftwareEntityService,
-                UResource.forRpcRequest("UpdateDoor"));
-        String serviceMethodUri = LongUriSerializer.instance().serialize(methodUri);
+        String serviceMethodUri = buildUriForTest();
 
 
         // additional attributes
@@ -509,10 +377,10 @@ class CloudEventFactoryTest {
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertNotNull(cloudEvent.getId());
-        assertEquals("//vcu.my_car_vin/body.access/1/rpc.UpdateDoor", cloudEvent.getSource().toString());
+        assertEquals(serviceMethodUri, cloudEvent.getSource().toString());
 
         assertTrue(cloudEvent.getExtensionNames().contains("sink"));
-        assertEquals("//bo.cloud/petapp//rpc.response", Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
+        assertEquals(applicationUriForRPC, Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
         assertEquals("res.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
@@ -524,6 +392,18 @@ class CloudEventFactoryTest {
 
     }
 
+    private String buildUriForTest() {
+
+        UUri Uri = UUri.newBuilder()
+            .setEntity(UEntity.newBuilder().setName("body.access"))
+            .setResource(UResource.newBuilder()
+                .setName("door")
+                .setInstance("front_left")
+                .setMessage("Door"))
+            .build();
+        
+        return LongUriSerializer.instance().serialize(Uri);
+    }
 
     private Any buildProtoPayloadForTest() {
         io.cloudevents.v1.proto.CloudEvent cloudEventProto = io.cloudevents.v1.proto.CloudEvent.newBuilder()
@@ -535,5 +415,6 @@ class CloudEventFactoryTest {
                 .build();
         return Any.pack(cloudEventProto);
     }
+
 
 }

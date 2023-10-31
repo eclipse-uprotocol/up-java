@@ -1,0 +1,38 @@
+{
+    "validUris" : [
+        "/",
+        "//",
+        "//vcu",
+        "//vcu.vin/",
+        "/hartley",
+        "/hartley//",
+        "hartley/0",
+        "/1",
+        "/body.access/1",
+        "/body.access/1/door.front_left#Door",
+        "//vcu.vin/body.access/1/door.front_left#Door",
+        "/body.access/1/rpc.OpenWindow",
+        "/body.access/1/rpc.response"
+    ],
+    "invalidUris" : [
+        {"uri": "", "reason" : "Empty Uri"},
+        {"uri": ":", "reason": "Contains only schema"},
+        {"uri": "///", "reason" : "Empty Authority"},
+        {"uri": "////", "reason" : "Empty Uri"},
+        {"uri": "1", "reason" : "Invalid Uri, must begin with \"\/\""},
+        {"uri": "a", "reason" : "Invalid Uri, must begin with \"\/\""},
+        {"uri": "/1", "reason" : "Invalid Uri, must begin with \"\/\""}
+    ],
+    "validRpcUris": [
+        "/petapp/1/rpc.OpenWindow",
+        "/petapp/1.2/rpc.response"
+    ],
+    "invalidRpcUris" : [
+        {"uri": "/petapp//", "reason" : "Missing uE version"},
+        {"uri": "/petapp", "reason" : "Missing uE version"},
+        {"uri": "/petapp/1/", "reason" : "Missing RPC Method Name"},
+        {"uri": "/petapp/1/rpc", "reason" : "Missing RPC Method Name"},
+        {"uri": "/petapp/1/dummy", "reason" : "Missing RPC Method Name"},
+        {"uri": "/petapp/1/rpc_dummy", "reason" : "Missing RPC Method Name"}
+    ]
+}
