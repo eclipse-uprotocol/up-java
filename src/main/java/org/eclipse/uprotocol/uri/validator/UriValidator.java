@@ -2,8 +2,9 @@ package org.eclipse.uprotocol.uri.validator;
 
 import java.util.Objects;
 
-import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.v1.UAuthority;
+import org.eclipse.uprotocol.v1.UResource;
+import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.validation.ValidationResult;
 
 /**
@@ -20,10 +21,14 @@ public interface UriValidator {
         if (isEmpty(uri)) {
             return ValidationResult.failure("Uri is empty.");
         }
+        if (uri.hasAuthority() && !isRemote(uri.getAuthority())) {
+            return ValidationResult.failure("Uri is remote missing uAuthority.");
+        }
 
         if (uri.getEntity().getName().isBlank()) {
             return ValidationResult.failure("Uri is missing uSoftware Entity name.");
         }
+
         return ValidationResult.success();
     }
 
@@ -81,8 +86,7 @@ public interface UriValidator {
      */
     static boolean isRpcMethod(UUri uri) {
         Objects.requireNonNull(uri, "Uri cannot be null.");
-        return !isEmpty(uri) && (uri.getResource().getName().contains("rpc") && 
-        (uri.getResource().hasInstance()) || uri.getResource().hasId());
+        return !isEmpty(uri) && uri.getResource().getName().contains("rpc");
     }
 
     /**
@@ -106,7 +110,10 @@ public interface UriValidator {
      */
     static boolean isRpcResponse(UUri uri) {
         Objects.requireNonNull(uri, "Uri cannot be null.");
-        return !isEmpty(uri);
+        final UResource resource = uri.getResource();
+        return isRpcMethod(uri) && 
+            ((resource.hasInstance() && resource.getInstance().contains("response")) || 
+             (resource.hasId() && resource.getId() == 0));
     }
 
 
@@ -118,7 +125,11 @@ public interface UriValidator {
      */
     static boolean isMicroForm(UUri uri) {
         Objects.requireNonNull(uri, "Uri cannot be null.");
-        return !isEmpty(uri);
+
+        return !isEmpty(uri) && 
+            uri.getEntity().hasId() &&
+            uri.getResource().hasId() &&
+            (!uri.hasAuthority() || uri.getAuthority().hasIp() || uri.getAuthority().hasId());
     }
 
     /**
@@ -128,7 +139,15 @@ public interface UriValidator {
      */
     static boolean isLongForm(UUri uri) {
         Objects.requireNonNull(uri, "Uri cannot be null.");
-        return !isEmpty(uri);
+        return !isEmpty(uri) && 
+            !(uri.hasAuthority() && !uri.getAuthority().hasName()) &&
+            !uri.getEntity().getName().isBlank() &&
+            !uri.getResource().getName().isBlank();
     }
 
+
+    static boolean isRemote(UAuthority authority) {
+        Objects.requireNonNull(authority, "Uri cannot be null.");
+        return authority.getRemoteCase() != UAuthority.RemoteCase.REMOTE_NOT_SET;
+    }
 }

@@ -24,7 +24,6 @@ package org.eclipse.uprotocol.transport.validator;
 import org.eclipse.uprotocol.transport.datamodel.UAttributes;
 import org.eclipse.uprotocol.transport.datamodel.UMessageType;
 import org.eclipse.uprotocol.transport.datamodel.UPriority;
-import org.eclipse.uprotocol.transport.datamodel.UStatus;
 import org.eclipse.uprotocol.transport.datamodel.UAttributes.UAttributesBuilder;
 import org.eclipse.uprotocol.transport.datamodel.UStatus.Code;
 import org.eclipse.uprotocol.transport.validate.UAttributesValidator;
@@ -34,6 +33,7 @@ import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UEntity;
 import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.validation.ValidationResult;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class UAttributesValidatorTest {
-/*
+
     @Test
     @DisplayName("test fetching validator for valid types")
     public void test_fetching_validator_for_valid_types() {
@@ -84,9 +84,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(attributes);
+        final ValidationResult status = validator.validate(attributes);
         assertTrue(status.isSuccess());
-        assertEquals("ok", status.msg());
+        assertEquals("", status.getMessage());
     }
 
     @Test
@@ -102,9 +102,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(attributes);
+        final ValidationResult status = validator.validate(attributes);
         assertTrue(status.isSuccess());
-        assertEquals("ok", status.msg());
+        assertEquals("", status.getMessage());
     }
 
     @Test
@@ -114,9 +114,9 @@ class UAttributesValidatorTest {
                 UMessageType.PUBLISH, UPriority.LOW).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertTrue(status.msg().contains("Invalid UUID [null]"));
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertTrue(status.getMessage().contains("Invalid UUID [null]"));
     }
 
     @Test
@@ -126,9 +126,9 @@ class UAttributesValidatorTest {
                 UMessageType.RESPONSE, UPriority.LOW).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Wrong Attribute Type [RESPONSE]", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Wrong Attribute Type [RESPONSE]", status.getMessage());
     }
 
     @Test
@@ -138,9 +138,9 @@ class UAttributesValidatorTest {
                 UMessageType.PUBLISH, null).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Priority is missing", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Priority is missing", status.getMessage());
     }
 
     @Test
@@ -152,9 +152,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid TTL [-1]", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid TTL [-1]", status.getMessage());
     }
 
     @Test
@@ -162,13 +162,13 @@ class UAttributesValidatorTest {
     public void test_validate_uAttributes_for_publish_message_payload_invalid_sink() {
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.PUBLISH, UPriority.LOW)
-                .withSink(buildSink())
+                .withSink(UUri.getDefaultInstance())
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Uri is empty.", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Uri is empty.", status.getMessage());
     }
 
     @Test
@@ -180,9 +180,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid Permission Level", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid Permission Level", status.getMessage());
     }
 
     @Test
@@ -194,9 +194,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid Communication Status Code", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid Communication Status Code", status.getMessage());
     }
 
     @Test
@@ -208,9 +208,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid UUID", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid UUID", status.getMessage());
     }
 
     // ----
@@ -225,9 +225,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
+        final ValidationResult status = validator.validate(attributes);
         assertTrue(status.isSuccess());
-        assertEquals("ok", status.msg());
+        assertEquals("", status.getMessage());
     }
 
     @Test
@@ -243,9 +243,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
+        final ValidationResult status = validator.validate(attributes);
         assertTrue(status.isSuccess());
-        assertEquals("ok", status.msg());
+        assertEquals("", status.getMessage());
     }
 
     @Test
@@ -259,9 +259,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertTrue(status.msg().contains("Invalid UUID [null]"));
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertTrue(status.getMessage().contains("Invalid UUID [null]"));
     }
 
     @Test
@@ -274,9 +274,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Wrong Attribute Type [RESPONSE]", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Wrong Attribute Type [RESPONSE]", status.getMessage());
     }
 
     @Test
@@ -289,9 +289,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Priority is missing", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Priority is missing", status.getMessage());
     }
 
     @Test
@@ -303,9 +303,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Missing TTL", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Missing TTL", status.getMessage());
     }
 
     @Test
@@ -318,9 +318,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid TTL [-1]", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid TTL [-1]", status.getMessage());
     }
 
     @Test
@@ -331,9 +331,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Missing TTL,Missing Sink", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Missing TTL,Missing Sink", status.getMessage());
     }
 
     @Test
@@ -341,14 +341,14 @@ class UAttributesValidatorTest {
     public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_sink() {
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.REALTIME_INTERACTIVE)
-                .withSink(buildSink())
+                .withSink(UUri.getDefaultInstance())
                 .withTtl(1000)
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid RPC response type.", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Uri is empty.", status.getMessage());
     }
 
     @Test
@@ -362,9 +362,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid Permission Level", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid Permission Level", status.getMessage());
     }
 
     @Test
@@ -378,9 +378,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid Communication Status Code", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid Communication Status Code", status.getMessage());
     }
 
     @Test
@@ -394,9 +394,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid UUID", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid UUID", status.getMessage());
     }
 
     // ----
@@ -411,9 +411,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
+        final ValidationResult status = validator.validate(attributes);
         assertTrue(status.isSuccess());
-        assertEquals("ok", status.msg());
+        assertEquals("", status.getMessage());
     }
 
     @Test
@@ -428,9 +428,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
+        final ValidationResult status = validator.validate(attributes);
         assertTrue(status.isSuccess());
-        assertEquals("ok", status.msg());
+        assertEquals("", status.getMessage());
     }
 
     @Test
@@ -443,9 +443,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertTrue(status.msg().contains("Invalid UUID [null]"));
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertTrue(status.getMessage().contains("Invalid UUID [null]"));
     }
 
     @Test
@@ -458,9 +458,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Wrong Attribute Type [PUBLISH]", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Wrong Attribute Type [PUBLISH]", status.getMessage());
     }
 
     @Test
@@ -473,9 +473,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Priority is missing", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Priority is missing", status.getMessage());
     }
 
     @Test
@@ -489,9 +489,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid TTL [-1]", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid TTL [-1]", status.getMessage());
     }
 
     @Test
@@ -502,9 +502,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Missing Sink,Missing correlationId", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Missing Sink,Missing correlationId", status.getMessage());
     }
 
     @Test
@@ -512,14 +512,14 @@ class UAttributesValidatorTest {
     public void test_validate_uAttributes_for_rpc_response_message_payload_invalid_sink() {
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.RESPONSE, UPriority.REALTIME_INTERACTIVE)
-                .withSink(buildSink())
+                .withSink(null)
                 .withReqId(UUIDFactory.Factories.UPROTOCOL.factory().create())
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Uri is missing uSoftware Entity name.", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Missing Sink", status.getMessage());
     }
 
     @Test
@@ -533,9 +533,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid Permission Level", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid Permission Level", status.getMessage());
     }
 
     @Test
@@ -549,9 +549,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid Communication Status Code", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid Communication Status Code", status.getMessage());
     }
 
     @Test
@@ -563,9 +563,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Missing correlationId", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Missing correlationId", status.getMessage());
     }
 
     @Test
@@ -579,9 +579,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(String.format("Invalid correlationId [%s]", reqid), status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals(String.format("Invalid correlationId [%s]", reqid), status.getMessage());
     }
 
     // ----
@@ -594,9 +594,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.isExpired(attributes);
+        final ValidationResult status = validator.isExpired(attributes);
         assertTrue(status.isSuccess());
-        assertEquals("Not Expired", status.msg());
+        assertEquals("", status.getMessage());
     }
 
     @Test
@@ -608,9 +608,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.isExpired(attributes);
+        final ValidationResult status = validator.isExpired(attributes);
         assertTrue(status.isSuccess());
-        assertEquals("Not Expired", status.msg());
+        assertEquals("", status.getMessage());
     }
 
     @Test
@@ -622,9 +622,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.isExpired(attributes);
+        final ValidationResult status = validator.isExpired(attributes);
         assertTrue(status.isSuccess());
-        assertEquals("Not Expired", status.msg());
+        assertEquals("", status.getMessage());
     }
 
     @Test
@@ -638,9 +638,9 @@ class UAttributesValidatorTest {
         Thread.sleep(800);
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.isExpired(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Payload is expired", status.msg());
+        final ValidationResult status = validator.isExpired(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Payload is expired", status.getMessage());
     }
 
     @Test
@@ -652,9 +652,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.isExpired(attributes);
+        final ValidationResult status = validator.isExpired(attributes);
         assertFalse(status.isSuccess());
-        assertEquals("Invalid Time", status.msg());
+        assertEquals("Invalid Time", status.getMessage());
     }
 
     // ----
@@ -668,10 +668,9 @@ class UAttributesValidatorTest {
                 .withTtl(-1).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validateTtl(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Invalid TTL [-1]", status.msg());
+        final ValidationResult status = validator.validateTtl(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid TTL [-1]", status.getMessage());
     }
 
     @Test
@@ -683,8 +682,8 @@ class UAttributesValidatorTest {
                 .withTtl(100).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validateTtl(attributes);
-        assertEquals(UStatus.ok(), status);
+        final ValidationResult status = validator.validateTtl(attributes);
+        assertEquals(ValidationResult.success(), status);
     }
 
     @Test
@@ -698,15 +697,13 @@ class UAttributesValidatorTest {
                 UMessageType.PUBLISH, UPriority.LOW).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        UStatus status = validator.validateId(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertTrue(status.msg().contains("Invalid UUID [null]"));
+        ValidationResult status = validator.validateId(attributes);
+        assertTrue(status.isFailure());
+        assertTrue(status.getMessage().contains("Invalid UUID [null]"));
 
-        UStatus status1 = validator.validateId(attributes1);
-        assertTrue(status1.isFailed());
-        assertEquals(status1.getCode(), Code.INVALID_ARGUMENT.value());
-        assertTrue(status.msg().contains("Invalid UUID [null]"));
+        ValidationResult status1 = validator.validateId(attributes1);
+        assertTrue(status1.isFailure());
+        assertTrue(status.getMessage().contains("Invalid UUID [null]"));
     }
 
     @Test
@@ -716,8 +713,8 @@ class UAttributesValidatorTest {
                 UMessageType.PUBLISH, UPriority.LOW).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validateId(attributes);
-        assertEquals(UStatus.ok(), status);
+        final ValidationResult status = validator.validateId(attributes);
+        assertEquals(ValidationResult.success(), status);
     }
 
     @Test
@@ -728,11 +725,10 @@ class UAttributesValidatorTest {
                 UMessageType.PUBLISH, UPriority.LOW).withSink(uri).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validateSink(attributes);
+        final ValidationResult status = validator.validateSink(attributes);
 
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Uri is empty.", status.msg());
+        assertTrue(status.isFailure());
+        assertEquals("Uri is empty.", status.getMessage());
     }
 
     @Test
@@ -743,8 +739,8 @@ class UAttributesValidatorTest {
                 UMessageType.PUBLISH, UPriority.LOW).withSink(uri).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validateSink(attributes);
-        assertEquals(UStatus.ok(), status);
+        final ValidationResult status = validator.validateSink(attributes);
+        assertEquals(ValidationResult.success(), status);
     }
 
     @Test
@@ -755,10 +751,9 @@ class UAttributesValidatorTest {
                 UMessageType.PUBLISH, UPriority.LOW).withReqId(UUID.randomUUID()).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validateReqId(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Invalid UUID", status.msg());
+        final ValidationResult status = validator.validateReqId(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid UUID", status.getMessage());
     }
 
     @Test
@@ -771,8 +766,8 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validateReqId(attributes);
-        assertEquals(UStatus.ok(), status);
+        final ValidationResult status = validator.validateReqId(attributes);
+        assertEquals(ValidationResult.success(), status);
     }
 
 
@@ -786,10 +781,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validatePermissionLevel(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Invalid Permission Level", status.msg());
+        final ValidationResult status = validator.validatePermissionLevel(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid Permission Level", status.getMessage());
     }
 
     @Test
@@ -801,8 +795,8 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validatePermissionLevel(attributes);
-        assertEquals(UStatus.ok(), status);
+        final ValidationResult status = validator.validatePermissionLevel(attributes);
+        assertEquals(ValidationResult.success(), status);
     }
 
     @Test
@@ -814,10 +808,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validatePermissionLevel(attributes);
-        assertTrue(status.isFailed());
-        assertEquals("Invalid Permission Level", status.msg());
-        assertEquals(3, status.getCode());
+        final ValidationResult status = validator.validatePermissionLevel(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid Permission Level", status.getMessage());
     }
 
     @Test
@@ -830,10 +823,9 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validateCommStatus(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals( "Invalid Communication Status Code", status.msg());
+        final ValidationResult status = validator.validateCommStatus(attributes);
+        assertTrue(status.isFailure());
+        assertEquals( "Invalid Communication Status Code", status.getMessage());
     }
 
     @Test
@@ -846,8 +838,8 @@ class UAttributesValidatorTest {
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validateCommStatus(attributes);
-        assertEquals(UStatus.ok(), status);
+        final ValidationResult status = validator.validateCommStatus(attributes);
+        assertEquals(ValidationResult.success(), status);
     }
 
 
@@ -864,9 +856,9 @@ class UAttributesValidatorTest {
 
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         assertEquals("UAttributesValidator.Request", validator.toString());
-        final UStatus status = validator.validate(attributes);
+        final ValidationResult status = validator.validate(attributes);
         assertTrue(status.isSuccess());
-        assertEquals("ok", status.msg());
+        assertEquals("", status.getMessage());
     }
 
     @Test
@@ -879,10 +871,9 @@ class UAttributesValidatorTest {
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
         assertEquals("UAttributesValidator.Request", validator.toString());
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Wrong Attribute Type [PUBLISH],Missing TTL,Missing Sink", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Wrong Attribute Type [PUBLISH],Missing TTL,Missing Sink", status.getMessage());
     }
 
     @Test
@@ -897,10 +888,9 @@ class UAttributesValidatorTest {
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
         assertEquals("UAttributesValidator.Request", validator.toString());
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Invalid TTL [-1]", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid TTL [-1]", status.getMessage());
     }
 
     @Test
@@ -916,10 +906,9 @@ class UAttributesValidatorTest {
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
         assertEquals("UAttributesValidator.Response", validator.toString());
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Invalid TTL [-1]", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid TTL [-1]", status.getMessage());
     }
 
     @Test
@@ -936,10 +925,9 @@ class UAttributesValidatorTest {
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
         assertEquals("UAttributesValidator.Response", validator.toString());
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals(String.format("Invalid UUID [%s]", id), status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals(String.format("Invalid UUID [%s]", id), status.getMessage());
     }
 
 
@@ -953,10 +941,9 @@ class UAttributesValidatorTest {
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
         assertEquals("UAttributesValidator.Publish", validator.toString());
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Wrong Attribute Type [REQUEST]", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Wrong Attribute Type [REQUEST]", status.getMessage());
     }
 
     @Test
@@ -968,10 +955,9 @@ class UAttributesValidatorTest {
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
         assertEquals("UAttributesValidator.Response", validator.toString());
-        final UStatus status = validator.validate(attributes);
-        assertTrue(status.isFailed());
-        assertEquals(status.getCode(), Code.INVALID_ARGUMENT.value());
-        assertEquals("Wrong Attribute Type [PUBLISH],Missing Sink,Missing correlationId", status.msg());
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Wrong Attribute Type [PUBLISH],Missing Sink,Missing correlationId", status.getMessage());
     }
 
 
@@ -986,10 +972,9 @@ class UAttributesValidatorTest {
 
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         assertEquals("UAttributesValidator.Publish", validator.toString());
-        final UStatus status = validator.validate(attributes);
-        assertEquals(UStatus.ok(), status);
+        final ValidationResult status = validator.validate(attributes);
+        assertEquals(ValidationResult.success(), status);
     }
-
 
     private UUri buildSink() {
         return UUri.newBuilder()
@@ -998,5 +983,5 @@ class UAttributesValidatorTest {
                 .setResource(UResourceBuilder.forRpcResponse())
                 .build();
     }
-    */
+    
 }

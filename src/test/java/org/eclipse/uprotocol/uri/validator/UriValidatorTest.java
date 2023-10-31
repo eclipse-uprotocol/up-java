@@ -22,126 +22,492 @@
 package org.eclipse.uprotocol.uri.validator;
 
 
-import org.eclipse.uprotocol.transport.datamodel.UStatus;
-import org.eclipse.uprotocol.transport.datamodel.UStatus.Code;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.validation.ValidationResult;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class UriValidatorTest {
-/*
+
     @Test
     @DisplayName("Test validate blank uri")
     public void test_validate_blank_uri() {
         final UUri uri = LongUriSerializer.instance().deserialize(null);
-        final UStatus status = UriValidator.validate(uri);
-        assertTrue(uri.isEmpty());
-        assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is empty.", status.msg());
+        final ValidationResult status = UriValidator.validate(uri);
+        assertTrue(UriValidator.isEmpty(uri));
+        assertEquals("Uri is empty.", status.getMessage());
     }
 
     @Test
     @DisplayName("Test validate uri with no device name")
     public void test_validate_uri_with_no_entity_getName() {
         final UUri uri = LongUriSerializer.instance().deserialize("//");
-        final UStatus status = UriValidator.validate(uri);
-        assertTrue(uri.isEmpty());
-        assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is empty.", status.msg());
+        final ValidationResult status = UriValidator.validate(uri);
+        assertTrue(UriValidator.isEmpty(uri));
+        assertEquals("Uri is empty.", status.getMessage());
     }
 
     @Test
     @DisplayName("Test validate uri with uEntity")
     public void test_validate_uri_with_getEntity() {
         final UUri uri = LongUriSerializer.instance().deserialize("/hartley");
-        final UStatus status = UriValidator.validate(uri);
-        assertEquals(UStatus.ok(), status);
+        final ValidationResult status = UriValidator.validate(uri);
+        assertEquals(ValidationResult.success(), status);
     }
 
     @Test
     @DisplayName("Test validate with malformed URI")
     public void test_validate_with_malformed_uri() {
         final UUri uri = LongUriSerializer.instance().deserialize("hartley");
-        final UStatus status = UriValidator.validate(uri);
-        assertTrue(uri.isEmpty());
-        assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is empty.", status.msg());
+        final ValidationResult status = UriValidator.validate(uri);
+        assertTrue(UriValidator.isEmpty(uri));
+        assertEquals("Uri is empty.", status.getMessage());
     }
    
 
     @Test
     @DisplayName("Test validate with blank UEntity Name")
     public void test_validate_with_blank_uentity_name_uri() {
-        final UUri uri = new UUri(UAuthority.local(), UEntity.empty(), UResource.forRpcRequest("echo"));
-        final UStatus status = UriValidator.validate(uri);
-        assertFalse(uri.isEmpty());
-        assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is missing uSoftware Entity name.", status.msg());
+        final ValidationResult status = UriValidator.validate(UUri.getDefaultInstance());
+        assertTrue(status.isFailure());
+        assertEquals("Uri is empty.", status.getMessage());
     }
 
     @Test
     @DisplayName("Test validateRpcMethod with valid URI")
     public void test_validateRpcMethod_with_valid_uri() {
         final UUri uri = LongUriSerializer.instance().deserialize("/hartley//rpc.echo");
-        final UStatus status = UriValidator.validateRpcMethod(uri);
-        assertEquals(UStatus.ok(), status);
+        final ValidationResult status = UriValidator.validateRpcMethod(uri);
+        assertEquals(ValidationResult.success(), status);
     }
     
     @Test
     @DisplayName("Test validateRpcMethod with valid URI")
     public void test_validateRpcMethod_with_invalid_uri() {
         final UUri uri = LongUriSerializer.instance().deserialize("/hartley/echo");
-        final UStatus status = UriValidator.validateRpcMethod(uri);
-        assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Invalid RPC method uri. Uri should be the method to be called, or method from response.", status.msg());
+        final ValidationResult status = UriValidator.validateRpcMethod(uri);
+        assertTrue(status.isFailure());
+        assertEquals("Uri is empty.", status.getMessage());
     }
 
     @Test
     @DisplayName("Test validateRpcMethod with malformed URI")
     public void test_validateRpcMethod_with_malformed_uri() {
         final UUri uri = LongUriSerializer.instance().deserialize("hartley");
-        final UStatus status = UriValidator.validateRpcMethod(uri);
-        assertTrue(uri.isEmpty());
-        assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is empty.", status.msg());
+        final ValidationResult status = UriValidator.validateRpcMethod(uri);
+        assertTrue(UriValidator.isEmpty(uri));
+        assertEquals("Uri is empty.", status.getMessage());
     }
 
     @Test
     @DisplayName("Test validateRpcResponse with valid URI")
     public void test_validateRpcResponse_with_valid_uri() {
         final UUri uri = LongUriSerializer.instance().deserialize("/hartley//rpc.response");
-        final UStatus status = UriValidator.validateRpcResponse(uri);
-        assertEquals(UStatus.ok(), status);
+        final ValidationResult status = UriValidator.validateRpcResponse(uri);
+        assertEquals(ValidationResult.success(), status);
     }
 
     @Test
     @DisplayName("Test validateRpcResponse with malformed URI")
     public void test_validateRpcResponse_with_malformed_uri() {
         final UUri uri = LongUriSerializer.instance().deserialize("hartley");
-        final UStatus status = UriValidator.validateRpcResponse(uri);
-        assertTrue(uri.isEmpty());
-        assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Uri is empty.", status.msg());
+        final ValidationResult status = UriValidator.validateRpcResponse(uri);
+        assertTrue(UriValidator.isEmpty(uri));
+        assertEquals("Uri is empty.", status.getMessage());
     }
 
     @Test
     @DisplayName("Test validateRpcResponse with rpc type")
     public void test_validateRpcResponse_with_rpc_type() {
         final UUri uri = LongUriSerializer.instance().deserialize("/hartley//dummy.wrong");
-        final UStatus status = UriValidator.validateRpcResponse(uri);
-        assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Invalid RPC response type.", status.msg());
+        final ValidationResult status = UriValidator.validateRpcResponse(uri);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid RPC response type.", status.getMessage());
     }
 
     @Test
     @DisplayName("Test validateRpcResponse with invalid rpc response type")
     public void test_validateRpcResponse_with_invalid_rpc_response_type() {
         final UUri uri = LongUriSerializer.instance().deserialize("/hartley//rpc.wrong");
-        final UStatus status = UriValidator.validateRpcResponse(uri);
-        assertEquals(Code.INVALID_ARGUMENT.value(), status.getCode());
-        assertEquals("Invalid RPC response type.", status.msg());
+        final ValidationResult status = UriValidator.validateRpcResponse(uri);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid RPC response type.", status.getMessage());
     }
- */
+
+    @Test
+    @DisplayName("Test validate topic uri with version, when it is valid microRemote")
+    void test_topic_uri_with_version_when_it_is_valid_remote() {
+
+        final String uri = "//VCU.MY_CAR_VIN/body.access/1/door.front_left#Door";
+
+        final ValidationResult status = UriValidator.validate(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate topic uri no version, when it is valid microRemote")
+    void test_topic_uri_no_version_when_it_is_valid_remote() {
+
+        final String uri = "//VCU.MY_CAR_VIN/body.access//door.front_left#Door";
+
+        final ValidationResult status = UriValidator.validate(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate topic uri with version, when it is valid local")
+    void test_topic_uri_with_version_when_it_is_valid_local() {
+
+        final String uri = "/body.access/1/door.front_left#Door";
+
+        final ValidationResult status = UriValidator.validate(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate topic uri no version, when it is valid local")
+    void test_topic_uri_no_version_when_it_is_valid_local() {
+
+        final String uri = "/body.access//door.front_left#Door";
+
+        final ValidationResult status = UriValidator.validate(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate topic uri is invalid when uri contains nothing but schema")
+    void test_topic_uri_invalid_when_uri_has_schema_only() {
+
+        final String uri = ":";
+
+        final ValidationResult status = UriValidator.validate(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate topic uri is invalid when uri contains empty use name local")
+    void test_topic_uri_invalid_when_uri_has_empty_use_name_local() {
+
+        final String uri = "/";
+
+        final ValidationResult status = UriValidator.validate(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate topic uri is invalid when uri is microRemote but missing authority")
+    void test_topic_uri_invalid_when_uri_is_remote_no_authority() {
+
+        final String uri = "//";
+
+        final ValidationResult status = UriValidator.validate(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate topic uri is invalid when uri is microRemote with use but missing authority")
+    void test_topic_uri_invalid_when_uri_is_remote_no_authority_with_use() {
+
+        final String uri = "///body.access/1/door.front_left#Door";
+
+        final ValidationResult status = UriValidator.validate(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+        
+    }
+
+    @Test
+    @DisplayName("Test validate topic uri is invalid when uri has no use information")
+    void test_topic_uri_invalid_when_uri_is_missing_use_remote() {
+
+        final String uri = "//VCU.myvin///door.front_left#Door";
+
+        final ValidationResult status = UriValidator.validate(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate microRemote topic uri is invalid when uri is missing use name")
+    void test_topic_uri_invalid_when_uri_is_missing_use_name_remote() {
+
+        final String uri = "/1/door.front_left#Door";
+
+        final ValidationResult status = UriValidator.validate(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate local topic uri is invalid when uri is missing use name")
+    void test_topic_uri_invalid_when_uri_is_missing_use_name_local() {
+
+        final String uri = "//VCU.myvin//1";
+
+        final ValidationResult status = UriValidator.validate(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    
+    @Test
+    @DisplayName("Test validate rpc topic uri with version, when it is valid microRemote")
+    void test_rpc_topic_uri_with_version_when_it_is_valid_remote() {
+
+        final String uri = "//bo.cloud/petapp/1/rpc.response";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc topic uri no version, when it is valid microRemote")
+    void test_rpc_topic_uri_no_version_when_it_is_valid_remote() {
+
+        final String uri = "//bo.cloud/petapp//rpc.response";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc topic uri with version, when it is valid local")
+    void test_rpc_topic_uri_with_version_when_it_is_valid_local() {
+
+        final String uri = "/petapp/1/rpc.response";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc topic uri no version, when it is valid local")
+    void test_rpc_topic_uri_no_version_when_it_is_valid_local() {
+
+        final String uri = "/petapp//rpc.response";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc topic uri is invalid when uri contains nothing but schema")
+    void test_rpc_topic_uri_invalid_when_uri_has_schema_only() {
+
+        final String uri = ":";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc topic uri with version, when it is local but missing rpc.respons")
+    void test_rpc_topic_uri_with_version_when_it_is_not_valid_missing_rpc_response_local() {
+
+        final String uri = "/petapp/1/dog";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc topic uri with version, when it is microRemote but missing rpc.respons")
+    void test_rpc_topic_uri_with_version_when_it_is_not_valid_missing_rpc_response_remote() {
+
+        final String uri = "//petapp/1/dog";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc topic uri is invalid when uri is microRemote but missing authority")
+    void test_rpc_topic_uri_invalid_when_uri_is_remote_no_authority() {
+
+        final String uri = "//";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc topic uri is invalid when uri is microRemote with use but missing authority")
+    void test_rpc_topic_uri_invalid_when_uri_is_remote_no_authority_with_use() {
+
+        final String uri = "///body.access/1";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc topic uri is invalid when uri has no use information")
+    void test_rpc_topic_uri_invalid_when_uri_is_missing_use() {
+
+        final String uri = "//VCU.myvin";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate microRemote rpc topic uri is invalid when uri is missing use name")
+    void test_rpc_topic_uri_invalid_when_uri_is_missing_use_name_remote() {
+
+        final String uri = "/1";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate local rpc topic uri is invalid when uri is missing use name")
+    void test_rpc_topic_uri_invalid_when_uri_is_missing_use_name_local() {
+
+        final String uri = "//VCU.myvin//1";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+
+    @Test
+    @DisplayName("Test validate rpc method uri with version, when it is valid microRemote")
+    void test_rpc_method_uri_with_version_when_it_is_valid_remote() {
+
+        final String uri = "//VCU.myvin/body.access/1/rpc.UpdateDoor";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc method uri no version, when it is valid microRemote")
+    void test_rpc_method_uri_no_version_when_it_is_valid_remote() {
+
+        final String uri = "//VCU.myvin/body.access//rpc.UpdateDoor";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc method uri with version, when it is valid local")
+    void test_rpc_method_uri_with_version_when_it_is_valid_local() {
+
+        final String uri = "/body.access/1/rpc.UpdateDoor";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc method uri no version, when it is valid local")
+    void test_rpc_method_uri_no_version_when_it_is_valid_local() {
+
+        final String uri = "/body.access//rpc.UpdateDoor";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc method uri is invalid when uri contains nothing but schema")
+    void test_rpc_method_uri_invalid_when_uri_has_schema_only() {
+
+        final String uri = ":";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc method uri with version, when it is local but not an rpc method")
+    void test_rpc_method_uri_with_version_when_it_is_not_valid_not_rpc_method_local() {
+
+        final String uri = "/body.access//UpdateDoor";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc method uri with version, when it is microRemote but not an rpc method")
+    void test_rpc_method_uri_with_version_when_it_is_not_valid_not_rpc_method_remote() {
+
+        final String uri = "//body.access/1/UpdateDoor";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc method uri is invalid when uri is microRemote but missing authority")
+    void test_rpc_method_uri_invalid_when_uri_is_remote_no_authority() {
+
+        final String uri = "//";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate rpc method uri is invalid when uri is microRemote with use but missing authority")
+    void test_rpc_method_uri_invalid_when_uri_is_remote_no_authority_with_use() {
+
+        final String uri = "///body.access/1/rpc.UpdateDoor";
+
+        final UUri uuri = LongUriSerializer.instance().deserialize(uri);
+        final ValidationResult status = UriValidator.validateRpcMethod(uuri);
+        assertEquals("", uuri.toString());
+        assertTrue(status.isFailure());
+
+    }
+
+    @Test
+    @DisplayName("Test validate rpc method uri is invalid when uri has no use information")
+    void test_rpc_method_uri_invalid_when_uri_is_missing_use() {
+
+        final String uri = "//VCU.myvin";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate local rpc method uri is invalid when uri is missing use name")
+    void test_rpc_method_uri_invalid_when_uri_is_missing_use_name_local() {
+
+        final String uri = "/1/rpc.UpdateDoor";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+
+        assertTrue(status.isFailure());
+    }
+
+    @Test
+    @DisplayName("Test validate microRemote rpc method uri is invalid when uri is missing use name")
+    void test_rpc_method_uri_invalid_when_uri_is_missing_use_name_remote() {
+
+        final String uri = "//VCU.myvin//1/rpc.UpdateDoor";
+
+        final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
+        assertTrue(status.isFailure());
+    }
+
 }

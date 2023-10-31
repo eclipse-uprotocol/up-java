@@ -87,7 +87,6 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
      * Serialize a UUri into a byte[] following the Micro-URI specifications.
      * @param Uri The {@link UUri} data object.
      * @return Returns a byte[] representing the serialized {@link UUri}.
-     * @throws IOException
      */
     @Override
     public byte[] serialize(UUri Uri) {
@@ -223,11 +222,8 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
         int uiVersion = Byte.toUnsignedInt(microUri[6]);
 
         // Calculate uAuthority
-        UAuthority uAuthority;
+        UAuthority uAuthority = null;
         switch (addressType) {
-            case LOCAL:
-                uAuthority = UAuthority.getDefaultInstance();
-                break;
             case IPv4:
             case IPv6:
                 uAuthority = UAuthority.newBuilder().setIp(ByteString.copyFrom(microUri, 8, 
@@ -239,16 +235,20 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
                     length)).build();
                 break;
             default:
-                return UUri.getDefaultInstance();
+                break;
         }
-        return UUri.newBuilder()
-                .setAuthority(uAuthority)
+
+        UUri.Builder uriBuilder = UUri.newBuilder()
                 .setEntity(UEntity.newBuilder()
                     .setId(ueId)
                     .setVersionMajor(uiVersion))
                 .setResource(UResource.newBuilder()
-                    .setId(uResourceId))
-                .build();
+                    .setId(uResourceId));
+        if (uAuthority != null) {
+            uriBuilder.setAuthority(uAuthority);
+        }
+
+        return uriBuilder.build();
     }
 
 }

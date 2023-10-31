@@ -32,6 +32,11 @@ import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
+import org.eclipse.uprotocol.v1.UAuthority;
+import org.eclipse.uprotocol.v1.UEntity;
+import org.eclipse.uprotocol.v1.UResource;
+import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.validation.ValidationResult;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +50,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CloudEventValidatorTest {
 
-    /*
     @Test
     @DisplayName("Test get a publish cloud event validator")
     void test_get_a_publish_cloud_event_validator() {
@@ -224,439 +228,6 @@ class CloudEventValidatorTest {
     }
 
     @Test
-    @DisplayName("Test validate topic uri with version, when it is valid microRemote")
-    void test_topic_uri_with_version_when_it_is_valid_remote() {
-
-        final String uri = "//VCU.MY_CAR_VIN/body.access/1/door.front_left#Door";
-
-        final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate topic uri no version, when it is valid microRemote")
-    void test_topic_uri_no_version_when_it_is_valid_remote() {
-
-        final String uri = "//VCU.MY_CAR_VIN/body.access//door.front_left#Door";
-
-        final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate topic uri with version, when it is valid local")
-    void test_topic_uri_with_version_when_it_is_valid_local() {
-
-        final String uri = "/body.access/1/door.front_left#Door";
-
-        final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate topic uri no version, when it is valid local")
-    void test_topic_uri_no_version_when_it_is_valid_local() {
-
-        final String uri = "/body.access//door.front_left#Door";
-
-        final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate topic uri is invalid when uri contains nothing but schema")
-    void test_topic_uri_invalid_when_uri_has_schema_only() {
-
-        final String uri = ":";
-
-        final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("UriPart is missing uSoftware Entity name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate topic uri is invalid when uri contains empty use name local")
-    void test_topic_uri_invalid_when_uri_has_empty_use_name_local() {
-
-        final String uri = "/";
-
-        final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("UriPart is missing uSoftware Entity name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate topic uri is invalid when uri is microRemote but missing authority")
-    void test_topic_uri_invalid_when_uri_is_remote_no_authority() {
-
-        final String uri = "//";
-
-        final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("UriPart is configured to be microRemote and is missing uAuthority device name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate topic uri is invalid when uri is microRemote with use but missing authority")
-    void test_topic_uri_invalid_when_uri_is_remote_no_authority_with_use() {
-
-        final String uri = "///body.access/1/door.front_left#Door";
-
-        final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("UriPart is configured to be microRemote and is missing uAuthority device name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate topic uri is invalid when uri has no use information")
-    void test_topic_uri_invalid_when_uri_is_missing_use_remote() {
-
-        final String uri = "//VCU.myvin///door.front_left#Door";
-
-        final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("UriPart is missing uSoftware Entity name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate microRemote topic uri is invalid when uri is missing use name")
-    void test_topic_uri_invalid_when_uri_is_missing_use_name_remote() {
-
-        final String uri = "/1/door.front_left#Door";
-
-        final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("UriPart is missing uResource name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate local topic uri is invalid when uri is missing use name")
-    void test_topic_uri_invalid_when_uri_is_missing_use_name_local() {
-
-        final String uri = "//VCU.myvin//1";
-
-        final Status status = CloudEventValidator.validateTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("UriPart is missing uSoftware Entity name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate microRemote topic uri, when uri has authority and use no version missing resource")
-    void test_topic_uri_when_uri_is_with_authority_with_use_no_version_missing_resource_remote() {
-
-        final String source = "//VCU.myvin/body.access";
-
-        final Status status = CloudEventValidator.validateTopicUri(source).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("UriPart is missing uResource name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate microRemote topic uri, when uri has authority and use with version missing resource")
-    void test_topic_uri_when_uri_is_with_authority_with_use_with_version_missing_resource_remote() {
-
-        final String source = "//VCU.myvin/body.access/";
-
-        final Status status = CloudEventValidator.validateTopicUri(source).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("UriPart is missing uResource name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate microRemote topic uri, when uri has authority and use and resource missing Message")
-    void test_topic_uri_when_uri_is_with_authority_with_use_with_resource_missing_message_remote() {
-
-        final String source = "//VCU.myvin/body.access/1/door.front_left";
-
-        final Status status = CloudEventValidator.validateTopicUri(source).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("UriPart is missing Message information.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic uri with version, when it is valid microRemote")
-    void test_rpc_topic_uri_with_version_when_it_is_valid_remote() {
-
-        final String uri = "//bo.cloud/petapp/1/rpc.response";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic uri no version, when it is valid microRemote")
-    void test_rpc_topic_uri_no_version_when_it_is_valid_remote() {
-
-        final String uri = "//bo.cloud/petapp//rpc.response";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic uri with version, when it is valid local")
-    void test_rpc_topic_uri_with_version_when_it_is_valid_local() {
-
-        final String uri = "/petapp/1/rpc.response";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic uri no version, when it is valid local")
-    void test_rpc_topic_uri_no_version_when_it_is_valid_local() {
-
-        final String uri = "/petapp//rpc.response";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic uri is invalid when uri contains nothing but schema")
-    void test_rpc_topic_uri_invalid_when_uri_has_schema_only() {
-
-        final String uri = ":";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC uri application response topic. UriPart is missing uSoftware Entity name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic uri with version, when it is local but missing rpc.respons")
-    void test_rpc_topic_uri_with_version_when_it_is_not_valid_missing_rpc_response_local() {
-
-        final String uri = "/petapp/1/dog";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC uri application response topic. UriPart is missing rpc.response.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic uri with version, when it is microRemote but missing rpc.respons")
-    void test_rpc_topic_uri_with_version_when_it_is_not_valid_missing_rpc_response_remote() {
-
-        final String uri = "//petapp/1/dog";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC uri application response topic. UriPart is missing rpc.response.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic uri is invalid when uri is microRemote but missing authority")
-    void test_rpc_topic_uri_invalid_when_uri_is_remote_no_authority() {
-
-        final String uri = "//";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC uri application response topic. UriPart is configured to be microRemote and is missing uAuthority device name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic uri is invalid when uri is microRemote with use but missing authority")
-    void test_rpc_topic_uri_invalid_when_uri_is_remote_no_authority_with_use() {
-
-        final String uri = "///body.access/1";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC uri application response topic. UriPart is configured to be microRemote and is missing uAuthority device name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic uri is invalid when uri has no use information")
-    void test_rpc_topic_uri_invalid_when_uri_is_missing_use() {
-
-        final String uri = "//VCU.myvin";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC uri application response topic. UriPart is missing uSoftware Entity name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate microRemote rpc topic uri is invalid when uri is missing use name")
-    void test_rpc_topic_uri_invalid_when_uri_is_missing_use_name_remote() {
-
-        final String uri = "/1";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC uri application response topic. UriPart is missing rpc.response.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate local rpc topic uri is invalid when uri is missing use name")
-    void test_rpc_topic_uri_invalid_when_uri_is_missing_use_name_local() {
-
-        final String uri = "//VCU.myvin//1";
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC uri application response topic. UriPart is missing uSoftware Entity name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic  uri with version, when it is valid")
-    void test_rpc_topic__uri_with_version_when_it_is_valid() {
-
-        UEntity use = UEntity.longFormat("petapp", 1);
-        UAuthority uAuthority = UAuthority.longRemote("bo", "cloud");
-        UResource uResource = UResource.forRpcResponse();
-        UUri Uri = new UUri(uAuthority, use, uResource);
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(Uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate rpc topic  uri with version, when it is not valid")
-    void test_rpc_topic__uri_with_version_when_it_is_not_valid() {
-
-        UEntity use = UEntity.longFormat("petapp", 1);
-        UAuthority uAuthority = UAuthority.longRemote("bo", "cloud");
-        UResource uResource = UResource.longFormat("body.access", "front_left", null);
-        UUri Uri = new UUri(uAuthority, use, uResource);
-
-        final Status status = CloudEventValidator.validateRpcTopicUri(Uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC uri application response topic. UriPart is missing rpc.response.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc method uri with version, when it is valid microRemote")
-    void test_rpc_method_uri_with_version_when_it_is_valid_remote() {
-
-        final String uri = "//VCU.myvin/body.access/1/rpc.UpdateDoor";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate rpc method uri no version, when it is valid microRemote")
-    void test_rpc_method_uri_no_version_when_it_is_valid_remote() {
-
-        final String uri = "//VCU.myvin/body.access//rpc.UpdateDoor";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate rpc method uri with version, when it is valid local")
-    void test_rpc_method_uri_with_version_when_it_is_valid_local() {
-
-        final String uri = "/body.access/1/rpc.UpdateDoor";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate rpc method uri no version, when it is valid local")
-    void test_rpc_method_uri_no_version_when_it_is_valid_local() {
-
-        final String uri = "/body.access//rpc.UpdateDoor";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
-    }
-
-    @Test
-    @DisplayName("Test validate rpc method uri is invalid when uri contains nothing but schema")
-    void test_rpc_method_uri_invalid_when_uri_has_schema_only() {
-
-        final String uri = ":";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC method uri. UriPart is missing uSoftware Entity name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc method uri with version, when it is local but not an rpc method")
-    void test_rpc_method_uri_with_version_when_it_is_not_valid_not_rpc_method_local() {
-
-        final String uri = "/body.access//UpdateDoor";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC method uri. UriPart should be the method to be called, or method from response.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc method uri with version, when it is microRemote but not an rpc method")
-    void test_rpc_method_uri_with_version_when_it_is_not_valid_not_rpc_method_remote() {
-
-        final String uri = "//body.access/1/UpdateDoor";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC method uri. UriPart should be the method to be called, or method from response.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc method uri is invalid when uri is microRemote but missing authority")
-    void test_rpc_method_uri_invalid_when_uri_is_remote_no_authority() {
-
-        final String uri = "//";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC method uri. UriPart is configured to be microRemote and is missing uAuthority device name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc method uri is invalid when uri is microRemote with use but missing authority")
-    void test_rpc_method_uri_invalid_when_uri_is_remote_no_authority_with_use() {
-
-        final String uri = "///body.access/1/rpc.UpdateDoor";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC method uri. UriPart is configured to be microRemote and is missing uAuthority device name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate rpc method uri is invalid when uri has no use information")
-    void test_rpc_method_uri_invalid_when_uri_is_missing_use() {
-
-        final String uri = "//VCU.myvin";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC method uri. UriPart is missing uSoftware Entity name.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate local rpc method uri is invalid when uri is missing use name")
-    void test_rpc_method_uri_invalid_when_uri_is_missing_use_name_local() {
-
-        final String uri = "/1/rpc.UpdateDoor";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC method uri. UriPart should be the method to be called, or method from response.", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("Test validate microRemote rpc method uri is invalid when uri is missing use name")
-    void test_rpc_method_uri_invalid_when_uri_is_missing_use_name_remote() {
-
-        final String uri = "//VCU.myvin//1/rpc.UpdateDoor";
-
-        final Status status = CloudEventValidator.validateRpcMethod(uri).toStatus();
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid RPC method uri. UriPart is missing uSoftware Entity name.", status.getMessage());
-    }
-
-    @Test
     @DisplayName("Test local Publish type CloudEvent is valid everything is valid")
     void test_publish_type_cloudevent_is_valid_when_everything_is_valid_local() {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
@@ -712,7 +283,7 @@ class CloudEventValidatorTest {
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid CloudEvent sink [//bo.cloud]. UriPart is missing uSoftware Entity name.", status.getMessage());
+        assertEquals("Invalid CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.", status.getMessage());
     }
 
     @Test
@@ -727,7 +298,7 @@ class CloudEventValidatorTest {
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid Publish type CloudEvent source [/]. UriPart is missing uSoftware Entity name.", status.getMessage());
+        assertEquals("Invalid Publish type CloudEvent source [/]. Uri is empty.", status.getMessage());
     }
 
     @Test
@@ -788,7 +359,7 @@ class CloudEventValidatorTest {
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final Status status = validator.validate(cloudEvent);
         assertEquals(Code.INVALID_ARGUMENT_VALUE, status.getCode());
-        assertEquals("Invalid Notification type CloudEvent sink [//bo.cloud]. UriPart is missing uSoftware Entity name.", status.getMessage());
+        assertEquals("Invalid Notification type CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.", status.getMessage());
     }
 
 
@@ -925,10 +496,7 @@ class CloudEventValidatorTest {
 
     private CloudEventBuilder buildBaseCloudEventBuilderForTest() {
         // source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use,
-                UResource.longFormat("door", "front_left", "Door"));
-        String source = LongUriSerializer.instance().serialize(Uri);
+        String source = buildLongUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -966,10 +534,7 @@ class CloudEventValidatorTest {
     public void test_create_a_v6_cloudevent_and_validate_it_against_sdk() {
         
         // source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use,
-                UResource.longFormat("door", "front_left", "Door"));
-        String source = LongUriSerializer.instance().serialize(Uri);
+        String source = buildLongUriForTest();
         UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create();
         String id = uuid.toString();
 
@@ -997,10 +562,7 @@ class CloudEventValidatorTest {
     public void test_create_an_expired_v6_cloudevent() {
         
         // source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use,
-                UResource.longFormat("door", "front_left", "Door"));
-        String source = LongUriSerializer.instance().serialize(Uri);
+        String source = buildLongUriForTest();
         UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create(Instant.now().minusSeconds(100));
         String id = uuid.toString();
 
@@ -1022,5 +584,19 @@ class CloudEventValidatorTest {
         assertEquals(Code.OK_VALUE, status.getCode());
         assertTrue(UCloudEvent.isExpired(cloudEvent));
     }
-    */
+
+ 
+    private String buildLongUriForTest() {
+        return LongUriSerializer.instance().serialize(buildUUriForTest());
+    }
+
+    private UUri buildUUriForTest() {
+        return UUri.newBuilder()
+            .setEntity(UEntity.newBuilder().setName("body.access"))
+            .setResource(UResource.newBuilder()
+                .setName("door")
+                .setInstance("front_left")
+                .setMessage("Door"))
+            .build();
+    }
 }

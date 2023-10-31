@@ -31,6 +31,10 @@ import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+import org.eclipse.uprotocol.v1.UAuthority;
+import org.eclipse.uprotocol.v1.UEntity;
+import org.eclipse.uprotocol.v1.UResource;
+import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +46,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CloudEventToProtobufSerializerTest {
 
-        /*
     private final CloudEventSerializer serializer = new CloudEventToProtobufSerializer();
 
     private final String protoContentType = CloudEventFactory.PROTOBUF_CONTENT_TYPE;
@@ -52,9 +55,7 @@ class CloudEventToProtobufSerializerTest {
     public void test_serialize_and_desirialize_cloud_event_to_protobuf() {
 
         // build the source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use, UResource.longFormat("Door", "front_left", null));
-        String source = LongUriSerializer.instance().serialize(Uri);
+        String source = buildUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -141,10 +142,7 @@ class CloudEventToProtobufSerializerTest {
         final CloudEventSerializer serializer = CloudEventSerializers.PROTOBUF.serializer();
 
         // source
-        UEntity use = UEntity.longFormat("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use,
-                UResource.longFormat("door", "front_left", "Door"));
-        String source = LongUriSerializer.instance().serialize(Uri);
+        String source = buildUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest1();
@@ -327,6 +325,18 @@ class CloudEventToProtobufSerializerTest {
         return Any.pack(cloudEventProto);
     }
 
+    private String buildUriForTest() {
+        UUri Uri = UUri.newBuilder()
+            .setEntity(UEntity.newBuilder().setName("body.access"))
+            .setResource(UResource.newBuilder()
+                .setName("door")
+                .setInstance("front_left")
+                .setMessage("Door"))
+            .build();
+        
+        return LongUriSerializer.instance().serialize(Uri);
+    }
+
     private Any buildProtoPayloadForTest() {
         io.cloudevents.v1.proto.CloudEvent cloudEventProto = io.cloudevents.v1.proto.CloudEvent.newBuilder()
                 .setSpecVersion("1.0")
@@ -339,5 +349,5 @@ class CloudEventToProtobufSerializerTest {
                 .build();
         return Any.pack(cloudEventProto);
     }
- */
+
 }

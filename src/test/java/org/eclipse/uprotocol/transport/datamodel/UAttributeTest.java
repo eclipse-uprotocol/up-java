@@ -66,9 +66,8 @@ public class UAttributeTest {
                 .withCommStatus(5)
                 .build();
         assertEquals(String.format("UAttributes{id=%s, type=RESPONSE, priority=LOW, ttl=1000, token='someToken', " +
-                "sink=UriPart{uAuthority=UAuthority{device='null', domain='null', markedRemote=false, address=null, markedResolved=true}, " +
-                "uEntity=UEntity{name='body.access', version=null, id=null, markedResolved=false}, " +
-                "uResource=UResource{name='', instance='null', message='null', id=null, markedResolved=false}}, plevel=1, commstatus=5, " +
+                "sink=entity {\n  name: \"body.access\"\n}\n" +
+                ", plevel=1, commstatus=5, " +
                 "reqid=%s}",id, requestId),uAttributes.toString());
 
     }

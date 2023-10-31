@@ -160,6 +160,10 @@ public class LongUriSerializer implements UriSerializer<String> {
                 }
             } 
         } else {
+            // If authority is blank, it is an error
+            if (uriParts[2].isBlank()) {
+                return UUri.getDefaultInstance();
+            }
             uAuthority = UAuthority.newBuilder().setName(uriParts[2]).build();
 
             if (uriParts.length > 3) {

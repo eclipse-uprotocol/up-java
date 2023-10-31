@@ -160,7 +160,7 @@ public abstract class CloudEventValidator {
         return UriValidator.validate(Uri);
     }
 
-    /**
+/**
      * Validate a UriPart that is to be used as a topic in publish scenarios for events such as publish, file and notification.
      * @param uri String UriPart to validate.
      * @return Returns the ValidationResult containing a success or a failure with the error message.
