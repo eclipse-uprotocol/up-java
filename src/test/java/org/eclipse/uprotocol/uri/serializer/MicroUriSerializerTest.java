@@ -30,6 +30,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Base64;
 
+import com.google.protobuf.ByteString;
 import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UAuthority;
@@ -118,5 +119,29 @@ public class MicroUriSerializerTest
         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
         assertTrue(bytes.length == 0);
     }
-    
-}
+     @Test
+     @DisplayName("Test Serialize a remote UUri to micro")
+     public void test_serialize_remote_uri() {
+         UUri uri = UUri.newBuilder()
+                 .setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom("10.0.3.3".getBytes())))
+                 .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254))
+                 .setResource(UResource.newBuilder().setId(19999))
+                 .build();
+
+         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+         UUri uri1 = MicroUriSerializer.instance().deserialize(bytes);
+
+//         assertEquals(uri, uri2);
+         UUri uri2 = UUri.newBuilder()
+                 .setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom("2001:0db8:85a3:0000:0000:8a2e:0370:7334".getBytes())))
+                 .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254))
+                 .setResource(UResource.newBuilder().setId(19999))
+                 .build();
+
+         byte[] bytes1 = MicroUriSerializer.instance().serialize(uri2);
+         UUri uri3 = MicroUriSerializer.instance().deserialize(bytes1);
+
+
+     }
+
+ }

@@ -51,7 +51,7 @@ public class LongUriSerializer implements UriSerializer<String> {
      */
     @Override
     public String serialize(UUri Uri) {
-        if (Uri == null || UriValidator.isEmpty(Uri)|| !UriValidator.isLongForm(Uri)) {
+        if (Uri == null || UriValidator.isEmpty(Uri)) {
             return "";
         }
 
