@@ -557,7 +557,7 @@ class UriValidatorTest {
             UUri uuri = LongUriSerializer.instance().deserialize(map.get("uri"));
             final ValidationResult status = UriValidator.validate(uuri);
             assertTrue(status.isFailure());
-            assertEquals(status.getMessage(), map.get("reason"));
+            assertEquals(status.getMessage(), map.get("status_message"));
         }
 
     }
