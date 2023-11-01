@@ -86,7 +86,7 @@ public interface UriValidator {
      */
     static boolean isRpcMethod(UUri uri) {
         Objects.requireNonNull(uri, "Uri cannot be null.");
-        return !isEmpty(uri) && uri.getResource().getName().contains("rpc");
+        return !isEmpty(uri) && uri.getResource().getName().contains("rpc")&& !uri.getResource().getInstance().trim().isEmpty();
     }
 
     /**

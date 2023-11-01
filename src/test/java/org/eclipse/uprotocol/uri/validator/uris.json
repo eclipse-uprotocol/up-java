@@ -1,9 +1,5 @@
 {
     "validUris" : [
-        "/",
-        "//",
-        "//vcu",
-        "//vcu.vin/",
         "/hartley",
         "/hartley//",
         "hartley/0",
@@ -15,24 +11,35 @@
         "/body.access/1/rpc.response"
     ],
     "invalidUris" : [
-        {"uri": "", "reason" : "Empty Uri"},
-        {"uri": ":", "reason": "Contains only schema"},
-        {"uri": "///", "reason" : "Empty Authority"},
-        {"uri": "////", "reason" : "Empty Uri"},
-        {"uri": "1", "reason" : "Invalid Uri, must begin with \"\/\""},
-        {"uri": "a", "reason" : "Invalid Uri, must begin with \"\/\""},
-        {"uri": "/1", "reason" : "Invalid Uri, must begin with \"\/\""}
+        {"uri": "/", "reason" : "Uri is empty."},
+        {"uri": "//", "reason" : "Uri is empty."},
+        {"uri": "//vcu", "reason" : "Uri is missing uSoftware Entity name."},
+        {"uri": "//vcu.vin/", "reason" : "Uri is missing uSoftware Entity name."},
+        {"uri": "", "reason" : "Uri is empty."},
+        {"uri": ":", "reason": "Uri is empty."},
+        {"uri": "///", "reason" : "Uri is empty."},
+        {"uri": "////", "reason" : "Uri is empty."},
+        {"uri": "1", "reason" : "Uri is empty."},
+        {"uri": "a", "reason" : "Uri is empty."}
     ],
     "validRpcUris": [
         "/petapp/1/rpc.OpenWindow",
-        "/petapp/1.2/rpc.response"
+        "/petapp/1/rpc.response"
+    ],
+    "validRpcResponseUris": [
+        "/petapp/1/rpc.response"
+
+    ],
+    "invalidRpcResponseUris": [
+        "/petapp/1/rpc.OpenWindow"
+
     ],
     "invalidRpcUris" : [
-        {"uri": "/petapp//", "reason" : "Missing uE version"},
-        {"uri": "/petapp", "reason" : "Missing uE version"},
-        {"uri": "/petapp/1/", "reason" : "Missing RPC Method Name"},
-        {"uri": "/petapp/1/rpc", "reason" : "Missing RPC Method Name"},
-        {"uri": "/petapp/1/dummy", "reason" : "Missing RPC Method Name"},
-        {"uri": "/petapp/1/rpc_dummy", "reason" : "Missing RPC Method Name"}
+        {"uri": "/petapp//", "reason" : "Missing uE version","status_message": "Invalid RPC method uri. Uri should be the method to be called, or method from response."},
+        {"uri": "/petapp", "reason" : "Missing uE version","status_message": "Invalid RPC method uri. Uri should be the method to be called, or method from response."},
+        {"uri": "/petapp/1/", "reason" : "Missing RPC Method Name","status_message": "Invalid RPC method uri. Uri should be the method to be called, or method from response."},
+        {"uri": "/petapp/1/rpc", "reason" : "Missing RPC Method Name","status_message": "Invalid RPC method uri. Uri should be the method to be called, or method from response."},
+        {"uri": "/petapp/1/dummy", "reason" : "Missing RPC Method Name","status_message": "Invalid RPC method uri. Uri should be the method to be called, or method from response."},
+        {"uri": "/petapp/1/rpc_dummy", "reason" : "Missing RPC Method Name","status_message": "Invalid RPC method uri. Uri should be the method to be called, or method from response."}
     ]
 }
