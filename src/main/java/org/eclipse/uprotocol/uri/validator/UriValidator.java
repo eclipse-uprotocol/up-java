@@ -118,7 +118,7 @@ public interface UriValidator {
     static boolean isRpcResponse(UUri uri) {
         Objects.requireNonNull(uri, "Uri cannot be null.");
         final UResource resource = uri.getResource();
-        return isRpcMethod(uri) && ((resource.hasInstance() && resource.getInstance().contains("response")) || (resource.hasId() && resource.getId() == 0));
+        return isRpcMethod(uri) && ((resource.hasInstance() && resource.getInstance().contains("response")) || (resource.hasId() && resource.getId() != 0));
     }
 
 

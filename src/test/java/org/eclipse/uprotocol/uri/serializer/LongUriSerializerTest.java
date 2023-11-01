@@ -21,6 +21,7 @@
 package org.eclipse.uprotocol.uri.serializer;
 
 import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
+import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UEntity;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
@@ -31,34 +32,32 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class LongUriSerializerTest {
 
+
     @Test
     @DisplayName("Test using the serializers")
     public void test_using_the_serializers() {
-        final UUri uri = UUri.newBuilder()
-            .setEntity(UEntity.newBuilder().setName("hartley"))
-            .setResource(UResourceBuilder.forRpcRequest("raise"))
-            .build();
+        final UUri uri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley")).setResource(UResourceBuilder.forRpcRequest("raise")).build();
         final String strUri = LongUriSerializer.instance().serialize(uri);
         assertEquals("/hartley//rpc.raise", strUri);
         final UUri uri2 = LongUriSerializer.instance().deserialize(strUri);
         assertEquals(uri, uri2);
     }
-/*  
-        @Test
+
+    @Test
     @DisplayName("Test parse uProtocol uri that is null")
     public void test_parse_protocol_uri_when_is_null() {
         UUri uri = LongUriSerializer.instance().deserialize(null);
-        assertTrue(uri.isEmpty());
-        assertFalse(uri.isResolved());
-        assertTrue(uri.isLongForm());
+        assertTrue(UriValidator.isEmpty(uri));
+        assertFalse(UriValidator.isResolved(uri));
+        assertFalse(UriValidator.isLongForm(uri));
     }
-    
+
     @Test
     @DisplayName("Test parse uProtocol uri that is empty string")
     public void test_parse_protocol_uri_when_is_empty_string() {
         String uri = "";
-        UUri Uri = LongUriSerializer.instance().deserialize(uri);
-        assertTrue(Uri.isEmpty());
+        UUri uuri = LongUriSerializer.instance().deserialize(uri);
+        assertTrue(UriValidator.isEmpty(uuri));
 
         String uri2 = LongUriSerializer.instance().serialize(null);
         assertTrue(uri2.isEmpty());
@@ -68,12 +67,13 @@ public class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with schema and slash")
     public void test_parse_protocol_uri_with_schema_and_slash() {
         String uri = "/";
-        UUri Uri = LongUriSerializer.instance().deserialize(uri);
-        assertTrue(Uri.getAuthority().isLocal());
-        assertFalse(!Uri.getAuthority().getLocal());
-        assertTrue(Uri.isEmpty());
+        UUri uuri = LongUriSerializer.instance().deserialize(uri);
+        assertFalse(uuri.hasAuthority());
+        assertTrue(UriValidator.isEmpty(uuri));
+        assertFalse(uuri.hasResource());
+        assertFalse(uuri.hasEntity());
 
-        String uri2 = LongUriSerializer.instance().serialize(UUri.empty());
+        String uri2 = LongUriSerializer.instance().serialize(UUri.newBuilder().build());
         assertTrue(uri2.isEmpty());
     }
 
@@ -81,49 +81,49 @@ public class LongUriSerializerTest {
     @DisplayName("Test parse uProtocol uri with schema and double slash")
     public void test_parse_protocol_uri_with_schema_and_double_slash() {
         String uri = "//";
-        UUri Uri = LongUriSerializer.instance().deserialize(uri);
-        assertFalse(Uri.getAuthority().isLocal());
-        assertTrue(!Uri.getAuthority().getLocal());
-        assertTrue(Uri.isEmpty());
+        UUri uuri = LongUriSerializer.instance().deserialize(uri);
+        assertFalse(uuri.hasAuthority());
+        assertFalse(uuri.hasResource());
+        assertFalse(uuri.hasEntity());
+        assertTrue(UriValidator.isEmpty(uuri));
     }
 
     @Test
     @DisplayName("Test parse uProtocol uri with schema and 3 slash and something")
     public void test_parse_protocol_uri_with_schema_and_3_slash_and_something() {
         String uri = "///body.access";
-        UUri Uri = LongUriSerializer.instance().deserialize(uri);
-        assertFalse(Uri.getAuthority().isLocal());
-        assertTrue(!Uri.getAuthority().getLocal());
-        assertEquals("body.access", Uri.getEntity().getName());
-        assertTrue(Uri.getEntity().version().isEmpty());
-        assertTrue(Uri.getResource().isEmpty());
+        UUri uuri = LongUriSerializer.instance().deserialize(uri);
+        assertFalse(uuri.hasAuthority());
+        assertFalse(uuri.hasResource());
+        assertFalse(uuri.hasEntity());
+        assertTrue(UriValidator.isEmpty(uuri));
+        assertNotEquals("body.access", uuri.getEntity().getName());
+        assertEquals(0, uuri.getEntity().getVersionMajor());
     }
 
     @Test
     @DisplayName("Test parse uProtocol uri with schema and 4 slash and something")
     public void test_parse_protocol_uri_with_schema_and_4_slash_and_something() {
         String uri = "////body.access";
-        UUri Uri = LongUriSerializer.instance().deserialize(uri);
-        assertFalse(Uri.getAuthority().isLocal());
-        assertTrue(!Uri.getAuthority().getLocal());
-        assertTrue(Uri.getEntity().getName().isBlank());
-        assertTrue(Uri.getEntity().version().isEmpty());
-        assertTrue(Uri.getResource().isEmpty());
+        UUri uuri = LongUriSerializer.instance().deserialize(uri);
+        assertFalse(uuri.hasAuthority());
+        assertFalse(uuri.hasResource());
+        assertFalse(uuri.hasEntity());
+        assertTrue(uuri.getEntity().getName().isBlank());
+        assertEquals(0, uuri.getEntity().getVersionMajor());
     }
 
     @Test
     @DisplayName("Test parse uProtocol uri with schema and 5 slash and something")
     public void test_parse_protocol_uri_with_schema_and_5_slash_and_something() {
         String uri = "/////body.access";
-        UUri Uri = LongUriSerializer.instance().deserialize(uri);
-        assertFalse(Uri.getAuthority().isLocal());
-        assertTrue(!Uri.getAuthority().getLocal());
-        assertTrue(Uri.getEntity().isEmpty());
-        assertEquals("body", Uri.getResource().getName());
-        assertEquals("access", Uri.getResource().instance().orElse(""));
-        assertTrue(Uri.getResource().getMessage().isEmpty());
+        UUri uuri = LongUriSerializer.instance().deserialize(uri);
+        assertFalse(uuri.hasAuthority());
+        assertFalse(uuri.hasResource());
+        assertFalse(uuri.hasEntity());
+        assertTrue(UriValidator.isEmpty(uuri));
     }
- 
+ /*
     @Test
     @DisplayName("Test parse uProtocol uri with schema and 6 slash and something")
     public void test_parse_protocol_uri_with_schema_and_6_slash_and_something() {

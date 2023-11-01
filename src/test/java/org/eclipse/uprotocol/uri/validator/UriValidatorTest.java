@@ -34,7 +34,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -546,6 +545,7 @@ class UriValidatorTest {
         }
 
     }
+
     @Test
     @DisplayName("Test all invalid uris from uris.json")
     public void test_all_invalid_uris() throws IOException {
@@ -557,10 +557,11 @@ class UriValidatorTest {
             UUri uuri = LongUriSerializer.instance().deserialize(map.get("uri"));
             final ValidationResult status = UriValidator.validate(uuri);
             assertTrue(status.isFailure());
-            assertEquals(status.getMessage(),map.get("reason"));
+            assertEquals(status.getMessage(), map.get("reason"));
         }
 
     }
+
     @Test
     @DisplayName("Test all valid rpc uris from uris.json")
     public void test_all_valid_rpc_uris() throws IOException {
@@ -575,22 +576,23 @@ class UriValidatorTest {
         }
 
     }
+
     @Test
     @DisplayName("Test all invalid rpc uris from uris.json")
     public void test_all_invalid_rpc_uris() throws IOException {
 
         // Access the "validUris" array
-        List<LinkedHashMap<String, String>> invalidRpcUris = (List<LinkedHashMap<String, String>>)  getJsonMap().get(
-                "invalidRpcUris");
+        List<LinkedHashMap<String, String>> invalidRpcUris = (List<LinkedHashMap<String, String>>) getJsonMap().get("invalidRpcUris");
 
         for (LinkedHashMap<String, String> map : invalidRpcUris) {
             UUri uuri = LongUriSerializer.instance().deserialize(map.get("uri"));
             final ValidationResult status = UriValidator.validateRpcMethod(uuri);
             assertTrue(status.isFailure());
-            assertEquals(status.getMessage(),map.get("status_message"));
+            assertEquals(status.getMessage(), map.get("status_message"));
         }
 
     }
+
     @Test
     @DisplayName("Test all valid rpc response uris from uris.json")
     public void test_all_valid_rpc_response_uris() throws IOException {
@@ -601,10 +603,23 @@ class UriValidatorTest {
         for (String uri : validUris) {
             UUri uuri = LongUriSerializer.instance().deserialize(uri);
             final ValidationResult status = UriValidator.validateRpcResponse(uuri);
+            assertTrue(UriValidator.isRpcResponse(uuri));
             assertTrue(status.isSuccess());
         }
 
     }
+
+    @Test
+    @DisplayName("Test valid rpc response uri")
+    public void test_valid_rpc_response_uri() throws IOException {
+        UUri uuri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley")).setResource(UResource.newBuilder().setName("rpc").setId(19999)).build();
+
+        final ValidationResult status = UriValidator.validateRpcResponse(uuri);
+        assertTrue(UriValidator.isRpcResponse(uuri));
+        assertTrue(status.isSuccess());
+
+    }
+
     @Test
     @DisplayName("Test all invalid rpc response uris from uris.json")
     public void test_all_invalid_rpc_response_uris() throws IOException {
@@ -619,6 +634,7 @@ class UriValidatorTest {
         }
 
     }
+
     private Map<String, ?> getJsonMap() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -626,7 +642,7 @@ class UriValidatorTest {
         String pkgname = this.getClass().getPackage().getName().replace(".", "/");
         File jsonFile = new File(currentDirectory, "src" + File.separator + "test" + File.separator + "java" + File.separator + pkgname + File.separator + "uris.json");
         // Read JSON data from the file as a Map
-        Map<String,?> jsonMap = objectMapper.readValue(jsonFile, Map.class);
+        Map<String, ?> jsonMap = objectMapper.readValue(jsonFile, Map.class);
         return jsonMap;
     }
 
