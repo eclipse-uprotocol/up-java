@@ -20,8 +20,6 @@
  */
 package org.eclipse.uprotocol.uri.serializer;
 
-import com.google.protobuf.ByteString;
-import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UEntity;
@@ -30,30 +28,21 @@ import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.nio.ByteBuffer;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UriSerializerTest
- {
+public class UriSerializerTest {
 
     @Test
-    @DisplayName("Test serialize Uri missing resource")
-    public void test_serialize_uri_missing_resource_id() {
-        UUri longUUri = UUri.newBuilder()
-                .setAuthority(UAuthority.newBuilder().setName("testauth").build())
-            .setEntity(UEntity.newBuilder().setName("neelam"))
-                .setResource(UResource.newBuilder().setName("rpc").setInstance("response").build())
-            .build();
-        UUri microUUri = UUri.newBuilder()
-                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254))
-                .setResource(UResource.newBuilder().setId(39999))
-                .build();
+    @DisplayName("Test build resolve with valid long and micro uri")
+    public void test_build_resolved_valid_long_micro_uri() {
+        UUri longUUri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("testauth").build()).setEntity(UEntity.newBuilder().setName("neelam")).setResource(UResource.newBuilder().setName("rpc").setInstance("response").build()).build();
+        UUri microUUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254)).setResource(UResource.newBuilder().setId(39999)).build();
 
         byte[] microuri = MicroUriSerializer.instance().serialize(microUUri);
-        String longuri =LongUriSerializer.instance().serialize(longUUri);
-        Optional<UUri> resolvedUUri= LongUriSerializer.instance().buildResolved(longuri,microuri);
+        String longuri = LongUriSerializer.instance().serialize(longUUri);
+        Optional<UUri> resolvedUUri = LongUriSerializer.instance().buildResolved(longuri, microuri);
         assertTrue(resolvedUUri.isPresent());
         assertFalse(UriValidator.isEmpty(resolvedUUri.get()));
         assertEquals("testauth", resolvedUUri.get().getAuthority().getName());
@@ -66,16 +55,42 @@ public class UriSerializerTest
 
 
     }
-     @Test
-     public void testBuildResolvedWithInvalidInput() {
 
-         // Test the buildResolved method with invalid input
-         Optional<UUri> result = MicroUriSerializer.instance().buildResolved(null, null);
+    @Test
+    @DisplayName("Test build resolve with null long and null micro uri")
+    public void test_build_resolved_null_long_null_micro_uri() {
 
-         // Assert that the result is empty
-         assertTrue(result.isPresent());
-         assertTrue(UriValidator.isEmpty(result.get()));
+        // Test the buildResolved method with invalid input
+        Optional<UUri> result = MicroUriSerializer.instance().buildResolved(null, null);
+        assertTrue(result.isPresent());
+        // Assert that the result is empty
+        assertTrue(UriValidator.isEmpty(result.get()));
 
-     }
-    
+    }
+
+    @Test
+    @DisplayName("Test build resolve with null long and empty micro uri")
+    public void test_build_resolved_null_long_micro_uri() {
+
+        // Test the buildResolved method with invalid input
+        Optional<UUri> result = MicroUriSerializer.instance().buildResolved(null, new byte[0]);
+        assertTrue(result.isPresent());
+        // Assert that the result is empty
+        assertTrue(UriValidator.isEmpty(result.get()));
+
+    }
+
+    @Test
+    @DisplayName("Test build resolve with empty long and micro uri")
+    public void test_build_resolved_valid_long_null_micro_uri() {
+
+        // Test the buildResolved method with invalid input
+        Optional<UUri> result = MicroUriSerializer.instance().buildResolved("", new byte[0]);
+        assertTrue(result.isPresent());
+        // Assert that the result is not empty
+        assertTrue(UriValidator.isEmpty(result.get()));
+
+
+    }
+
 }
