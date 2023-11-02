@@ -164,7 +164,7 @@ public class MicroUriSerializerTest
      }
 
      @Test
-     @DisplayName("Test serialize with IP based authority")
+     @DisplayName("Test serialize with good IPv4 based authority")
      public void test_serialize_ip_based_authority() throws UnknownHostException {
 
          UUri uri = UUri.newBuilder()
@@ -176,7 +176,7 @@ public class MicroUriSerializerTest
          UUri uri2= MicroUriSerializer.instance().deserialize(bytes);
          assertTrue(UriValidator.isMicroForm(uri));
          assertTrue(bytes.length > 0);
-         assertSame(uri,uri2);
+         assertTrue(uri.equals(uri2));
      }
 
  }
