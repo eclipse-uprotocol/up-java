@@ -23,11 +23,9 @@ package org.eclipse.uprotocol.transport.validate;
 import org.eclipse.uprotocol.transport.datamodel.UAttributes;
 import org.eclipse.uprotocol.transport.datamodel.UMessageType;
 import org.eclipse.uprotocol.transport.datamodel.UPriority;
-import org.eclipse.uprotocol.transport.datamodel.UStatus;
 import org.eclipse.uprotocol.transport.datamodel.UStatus.Code;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
-import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.validation.ValidationResult;
 
 import java.util.Optional;

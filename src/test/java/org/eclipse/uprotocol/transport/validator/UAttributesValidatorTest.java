@@ -846,8 +846,6 @@ class UAttributesValidatorTest {
     @Test
     @DisplayName("test validating request message types")
     public void test_validating_request_message_types() {
-        final UUri sink = LongUriSerializer.instance().deserialize("/hartley/1/rpc.response");
-
         final UAttributes attributes = new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.REQUEST, UPriority.NETWORK_CONTROL)
                 .withSink(buildSink())
