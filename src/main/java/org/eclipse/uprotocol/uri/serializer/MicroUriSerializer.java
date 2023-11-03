@@ -128,8 +128,6 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
                 return new byte[0];
         }
 
-        
-
         os.write(type.getValue());
 
         // URESOURCE_ID
@@ -146,27 +144,27 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
         // UNUSED
         os.write((byte)0);
 
-        // UAUTHORITY_ADDRESS
-        final Optional<byte[]> maybeUAuthorityAddressBytes;
-        switch(Uri.getAuthority().getRemoteCase()) {
-            case IP:
-                maybeUAuthorityAddressBytes = Optional.ofNullable(Uri.getAuthority().getIp().toByteArray());
-                break;
-            case ID:
-                maybeUAuthorityAddressBytes = Optional.ofNullable(Uri.getAuthority().getId().toByteArray());
-                break;
-            default:
-                maybeUAuthorityAddressBytes = Optional.empty();
-        }
 
-        // Write the ID length if the type is ID
-        if (maybeUAuthorityAddressBytes.isPresent()) {
-            if (Uri.getAuthority().getRemoteCase() == UAuthority.RemoteCase.IP) {
+        // Populating the UAuthority
+        if (type != AddressType.LOCAL) {
+
+            // Write the ID length if the type is ID
+            if (type == AddressType.ID) {
                 os.write(Uri.getAuthority().getId().size());
             }
-            
+                
             try {
-                os.write(maybeUAuthorityAddressBytes.get());
+                switch(Uri.getAuthority().getRemoteCase()) {
+                    case IP:
+                        os.write(Uri.getAuthority().getIp().toByteArray());
+                        break;
+                    case ID:
+                        os.write(Uri.getAuthority().getId().toByteArray());
+                        break;
+                    default:
+                        break;
+                }
+                
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
