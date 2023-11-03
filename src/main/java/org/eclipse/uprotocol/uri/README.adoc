@@ -11,30 +11,40 @@ The data model is defined in https://github.com/eclipse-uprotocol/uprotocol-core
 IMPORTANT: For more details about the data model, various formats (object, long, micro) and their uses, please refer to  https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc[uProtocol URI Specifications].
 
 
-== Building UUris
+== Using the SDK
 
 When building UUri, you can choose to populate it with only names, only numbers, or both (resolved). When you should use each is described the best practice section of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc[uProtocol URI Specifications].
 
-1. Building a RPC Request for a remote method call:
+=== Building an RPC Method
 [,java]
 ----
 UUri uri = UUri.newBuilder()
     .setAuthority(UAuthority.newBuilder()
         .setName("MyDevice")
         .setIp(ByteString.copyFrom(InetAddress.getByName("192.168.1.100").getAddress()))
-        .setId(ByteString.copyFrom("3GTU2NEC8HG403825").build())
+        .setId(ByteString.copyFrom("3GTU2NEC8HG403825").build()))
     .setEntity(UEntity.newBuilder()
         .setName("HartleyService")
         .setId(10203)
         .setVersionMajor(1)
         .build())
-    .setResource(
-        UResource.newBuilder()
-        .setName("rpc")
-        .setInstancesetId(19999).build()).build();
-        
-        
-        .build()).setEntity(UEntity.newBuilder().setName("neelam")).setResource(UResource.newBuilder().setName("rpc").setInstance("response").build()).build();
-        UUri microUUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254)).setResource(UResource.newBuilder().setId(39999)).build();
+    .setResource(UResourceBuilder.forRpcRequest("Raise", 10))
+    .build();
+----
 
+=== Validating
+[,java]
+----
+final ValidationResult status = UriValidator.validateRpcMethod(uuri);
+            assertTrue(status.isSuccess());
+----
+
+=== Serializing & Deserializing
+[,java]
+----
+        UUri uri = .../* UUri example above */
+        byte[] micro = MicroUriSerializer.instance().serialize(uri);
+        String long = LongUriSerializer.instance().serialize(uri);
+        UUri uri2 = UriSerializer.buildResolved(long, micro);
+        assertTrue(uri.equals(uri2));
 ----
