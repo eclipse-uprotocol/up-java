@@ -150,11 +150,13 @@ public class MicroUriSerializerTest {
     @Test
     @DisplayName("Test serialize with good IPv4 based authority")
     public void test_serialize_good_ipv4_based_authority() throws UnknownHostException {
-        UUri uri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(InetAddress.getByName("10.0.3.3").getAddress())).build()).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build()).setResource(UResource.newBuilder().setId(19999).build()).build();
+        UUri uri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(InetAddress.getByName("10.0.3.3").getAddress())).build()).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build()).setResource(UResourceBuilder.forRpcRequest(99)).build();
         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
         UUri uri2 = MicroUriSerializer.instance().deserialize(bytes);
-        assertTrue(UriValidator.isMicroForm(uri));
         assertTrue(bytes.length > 0);
+        assertTrue(UriValidator.isMicroForm(uri));
+        assertTrue(UriValidator.isMicroForm(uri2));
+        assertEquals(uri.toString(), uri2.toString());
         assertTrue(uri.equals(uri2));
     }
 
@@ -196,5 +198,22 @@ public class MicroUriSerializerTest {
         assertTrue(bytes.length == 0);
     }
 
+
+    @Test
+    @DisplayName("Test serialize with ID based authority")
+    public void test_serialize_id_size_255_based_authority() {
+        int size = 129;
+        byte[] byteArray = new byte[size];
+        // Assign values to the elements of the byte array
+        for (int i = 0; i < size; i++) {
+            byteArray[i] = (byte) (i);
+        }
+        UUri uri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setId(ByteString.copyFrom(byteArray)).build()).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build()).setResource(UResource.newBuilder().setId(19999).build()).build();
+        byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+        assertEquals(bytes.length, 9+size);
+        UUri uri2 = MicroUriSerializer.instance().deserialize(bytes);
+        assertTrue(UriValidator.isMicroForm(uri));
+        assertTrue(uri.equals(uri2));
+    }
 
 }

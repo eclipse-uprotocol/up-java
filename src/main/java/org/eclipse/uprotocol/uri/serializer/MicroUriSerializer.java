@@ -27,12 +27,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
+import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UEntity;
-import org.eclipse.uprotocol.v1.UResource;
-
 import com.google.protobuf.ByteString;
 
 /**
@@ -228,7 +227,7 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
                     addressType == AddressType.IPv4 ? 4 : 16)).build();
                 break;
             case ID:
-                int length = microUri[8];
+                int length = Byte.toUnsignedInt(microUri[8]);
                 uAuthority = UAuthority.newBuilder().setId(ByteString.copyFrom(microUri, 9, 
                     length)).build();
                 break;
@@ -240,8 +239,8 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
                 .setEntity(UEntity.newBuilder()
                     .setId(ueId)
                     .setVersionMajor(uiVersion))
-                .setResource(UResource.newBuilder()
-                    .setId(uResourceId));
+                .setResource(UResourceBuilder.fromId(uResourceId));
+
         if (uAuthority != null) {
             uriBuilder.setAuthority(uAuthority);
         }
