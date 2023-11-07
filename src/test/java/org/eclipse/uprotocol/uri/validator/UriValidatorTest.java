@@ -22,21 +22,21 @@
 package org.eclipse.uprotocol.uri.validator;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UEntity;
 import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.validation.ValidationResult;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -351,44 +351,32 @@ class UriValidatorTest {
     @Test
     @DisplayName("Test validate rpc topic uri is invalid when uri is microRemote with use but missing authority")
     void test_rpc_topic_uri_invalid_when_uri_is_remote_no_authority_with_use() {
-
         final String uri = "///body.access/1";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
-
         assertTrue(status.isFailure());
     }
 
     @Test
     @DisplayName("Test validate rpc topic uri is invalid when uri has no use information")
     void test_rpc_topic_uri_invalid_when_uri_is_missing_use() {
-
         final String uri = "//VCU.myvin";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
-
         assertTrue(status.isFailure());
     }
 
     @Test
     @DisplayName("Test validate microRemote rpc topic uri is invalid when uri is missing use name")
     void test_rpc_topic_uri_invalid_when_uri_is_missing_use_name_remote() {
-
         final String uri = "/1";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
-
         assertTrue(status.isFailure());
     }
 
     @Test
     @DisplayName("Test validate local rpc topic uri is invalid when uri is missing use name")
     void test_rpc_topic_uri_invalid_when_uri_is_missing_use_name_local() {
-
         final String uri = "//VCU.myvin//1";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
-
         assertTrue(status.isFailure());
     }
 
@@ -396,9 +384,7 @@ class UriValidatorTest {
     @Test
     @DisplayName("Test validate rpc method uri with version, when it is valid microRemote")
     void test_rpc_method_uri_with_version_when_it_is_valid_remote() {
-
         final String uri = "//VCU.myvin/body.access/1/rpc.UpdateDoor";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
         assertTrue(status.isSuccess());
     }
@@ -406,9 +392,7 @@ class UriValidatorTest {
     @Test
     @DisplayName("Test validate rpc method uri no version, when it is valid microRemote")
     void test_rpc_method_uri_no_version_when_it_is_valid_remote() {
-
         final String uri = "//VCU.myvin/body.access//rpc.UpdateDoor";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
         assertTrue(status.isSuccess());
     }
@@ -416,9 +400,7 @@ class UriValidatorTest {
     @Test
     @DisplayName("Test validate rpc method uri with version, when it is valid local")
     void test_rpc_method_uri_with_version_when_it_is_valid_local() {
-
         final String uri = "/body.access/1/rpc.UpdateDoor";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
         assertTrue(status.isSuccess());
     }
@@ -426,9 +408,7 @@ class UriValidatorTest {
     @Test
     @DisplayName("Test validate rpc method uri no version, when it is valid local")
     void test_rpc_method_uri_no_version_when_it_is_valid_local() {
-
         final String uri = "/body.access//rpc.UpdateDoor";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
         assertTrue(status.isSuccess());
     }
@@ -436,53 +416,39 @@ class UriValidatorTest {
     @Test
     @DisplayName("Test validate rpc method uri is invalid when uri contains nothing but schema")
     void test_rpc_method_uri_invalid_when_uri_has_schema_only() {
-
         final String uri = ":";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
-
         assertTrue(status.isFailure());
     }
 
     @Test
     @DisplayName("Test validate rpc method uri with version, when it is local but not an rpc method")
     void test_rpc_method_uri_with_version_when_it_is_not_valid_not_rpc_method_local() {
-
         final String uri = "/body.access//UpdateDoor";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
-
         assertTrue(status.isFailure());
     }
 
     @Test
     @DisplayName("Test validate rpc method uri with version, when it is microRemote but not an rpc method")
     void test_rpc_method_uri_with_version_when_it_is_not_valid_not_rpc_method_remote() {
-
         final String uri = "//body.access/1/UpdateDoor";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
-
         assertTrue(status.isFailure());
     }
 
     @Test
     @DisplayName("Test validate rpc method uri is invalid when uri is microRemote but missing authority")
     void test_rpc_method_uri_invalid_when_uri_is_remote_no_authority() {
-
         final String uri = "//";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
-
         assertTrue(status.isFailure());
     }
 
     @Test
     @DisplayName("Test validate rpc method uri is invalid when uri is microRemote with use but missing authority")
     void test_rpc_method_uri_invalid_when_uri_is_remote_no_authority_with_use() {
-
         final String uri = "///body.access/1/rpc.UpdateDoor";
-
         final UUri uuri = LongUriSerializer.instance().deserialize(uri);
         final ValidationResult status = UriValidator.validateRpcMethod(uuri);
         assertEquals("", uuri.toString());
@@ -493,7 +459,8 @@ class UriValidatorTest {
     @Test
     @DisplayName("Test validate rpc method uri is invalid when uri has authority but missing remote case")
     void test_rpc_method_uri_invalid_when_uri_is_remote_missing_authority_remotecase() {
-        final UUri uuri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access").build()).setResource(UResource.newBuilder().setName("rpc").setInstance("UpdateDoor").build()).setAuthority(UAuthority.newBuilder().build()).build();
+        final UUri uuri =
+                UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access").build()).setResource(UResource.newBuilder().setName("rpc").setInstance("UpdateDoor").build()).setAuthority(UAuthority.newBuilder().build()).build();
         final ValidationResult status = UriValidator.validateRpcMethod(uuri);
         assertTrue(status.isFailure());
         assertEquals("Uri is remote missing uAuthority.", status.getMessage());
@@ -503,9 +470,7 @@ class UriValidatorTest {
     @Test
     @DisplayName("Test validate rpc method uri is invalid when uri has no use information")
     void test_rpc_method_uri_invalid_when_uri_is_missing_use() {
-
         final String uri = "//VCU.myvin";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
         assertTrue(status.isFailure());
     }
@@ -513,20 +478,15 @@ class UriValidatorTest {
     @Test
     @DisplayName("Test validate local rpc method uri is invalid when uri is missing use name")
     void test_rpc_method_uri_invalid_when_uri_is_missing_use_name_local() {
-
         final String uri = "/1/rpc.UpdateDoor";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
-
         assertTrue(status.isFailure());
     }
 
     @Test
     @DisplayName("Test validate microRemote rpc method uri is invalid when uri is missing use name")
     void test_rpc_method_uri_invalid_when_uri_is_missing_use_name_remote() {
-
         final String uri = "//VCU.myvin//1/rpc.UpdateDoor";
-
         final ValidationResult status = UriValidator.validateRpcMethod(LongUriSerializer.instance().deserialize(uri));
         assertTrue(status.isFailure());
     }
@@ -534,86 +494,73 @@ class UriValidatorTest {
     @Test
     @DisplayName("Test all valid uris from uris.json")
     public void test_all_valid_uris() throws IOException {
-
         // Access the "validUris" array
-        List<String> validUris = (List<String>) getJsonMap().get("validUris");
-
-        for (String uri : validUris) {
-            UUri uuri = LongUriSerializer.instance().deserialize(uri);
+        JSONArray validUris = getJsonObject().getJSONArray("validUris");
+        for (int i = 0; i < validUris.length(); i++) {
+            UUri uuri = LongUriSerializer.instance().deserialize(validUris.getString(i));
             final ValidationResult status = UriValidator.validate(uuri);
             assertTrue(status.isSuccess());
         }
-
     }
 
     @Test
     @DisplayName("Test all invalid uris from uris.json")
     public void test_all_invalid_uris() throws IOException {
-//
         // Access the "invalidUris" array
-        List<LinkedHashMap<String, String>> invalidUris = (List<LinkedHashMap<String, String>>) getJsonMap().get("invalidUris");
-
-        for (LinkedHashMap<String, String> map : invalidUris) {
-            UUri uuri = LongUriSerializer.instance().deserialize(map.get("uri"));
+        JSONArray invalidUris = getJsonObject().getJSONArray("invalidUris");
+        for (int i = 0; i < invalidUris.length(); i++) {
+            JSONObject uriObject = invalidUris.getJSONObject(i);
+            UUri uuri = LongUriSerializer.instance().deserialize(uriObject.getString("uri"));
             final ValidationResult status = UriValidator.validate(uuri);
             assertTrue(status.isFailure());
-            assertEquals(status.getMessage(), map.get("status_message"));
+            assertEquals(status.getMessage(), uriObject.getString("status_message"));
         }
-
     }
 
     @Test
     @DisplayName("Test all valid rpc uris from uris.json")
     public void test_all_valid_rpc_uris() throws IOException {
-
-        // Access the "validUris" array
-        List<String> validUris = (List<String>) getJsonMap().get("validRpcUris");
-
-        for (String uri : validUris) {
-            UUri uuri = LongUriSerializer.instance().deserialize(uri);
+        // Access the "validRpcUris" array
+        JSONArray validRpcUris = getJsonObject().getJSONArray("validRpcUris");
+        for (int i = 0; i < validRpcUris.length(); i++) {
+            UUri uuri = LongUriSerializer.instance().deserialize(validRpcUris.getString(i));
             final ValidationResult status = UriValidator.validateRpcMethod(uuri);
             assertTrue(status.isSuccess());
         }
-
     }
 
     @Test
     @DisplayName("Test all invalid rpc uris from uris.json")
     public void test_all_invalid_rpc_uris() throws IOException {
-
-        // Access the "validUris" array
-        List<LinkedHashMap<String, String>> invalidRpcUris = (List<LinkedHashMap<String, String>>) getJsonMap().get("invalidRpcUris");
-
-        for (LinkedHashMap<String, String> map : invalidRpcUris) {
-            UUri uuri = LongUriSerializer.instance().deserialize(map.get("uri"));
+        // Access the "invalidRpcUris" array
+        JSONArray invalidRpcUris = getJsonObject().getJSONArray("invalidRpcUris");
+        for (int i = 0; i < invalidRpcUris.length(); i++) {
+            JSONObject uriObject = invalidRpcUris.getJSONObject(i);
+            UUri uuri = LongUriSerializer.instance().deserialize(uriObject.getString("uri"));
             final ValidationResult status = UriValidator.validateRpcMethod(uuri);
             assertTrue(status.isFailure());
-            assertEquals(status.getMessage(), map.get("status_message"));
+            assertEquals(status.getMessage(), uriObject.getString("status_message"));
         }
-
     }
 
     @Test
     @DisplayName("Test all valid rpc response uris from uris.json")
     public void test_all_valid_rpc_response_uris() throws IOException {
-
-        // Access the "validUris" array
-        List<String> validUris = (List<String>) getJsonMap().get("validRpcResponseUris");
-
-        for (String uri : validUris) {
-            UUri uuri = LongUriSerializer.instance().deserialize(uri);
+        // Access the "validRpcResponseUris" array
+        JSONArray validRpcResponseUris = getJsonObject().getJSONArray("validRpcResponseUris");
+        for (int i = 0; i < validRpcResponseUris.length(); i++) {
+            UUri uuri = LongUriSerializer.instance().deserialize(validRpcResponseUris.getString(i));
             final ValidationResult status = UriValidator.validateRpcResponse(uuri);
             assertTrue(UriValidator.isRpcResponse(uuri));
             assertTrue(status.isSuccess());
         }
-
     }
 
     @Test
     @DisplayName("Test valid rpc response uri")
     public void test_valid_rpc_response_uri() throws IOException {
-        UUri uuri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley")).setResource(UResource.newBuilder().setName("rpc").setId(19999)).build();
-
+        UUri uuri =
+                UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley").build()).setResource(UResource.newBuilder().setName("rpc").setId(19999).build()).build();
         final ValidationResult status = UriValidator.validateRpcResponse(uuri);
         assertTrue(UriValidator.isRpcResponse(uuri));
         assertTrue(status.isSuccess());
@@ -623,27 +570,32 @@ class UriValidatorTest {
     @Test
     @DisplayName("Test all invalid rpc response uris from uris.json")
     public void test_all_invalid_rpc_response_uris() throws IOException {
-
-        // Access the "validUris" array
-        List<String> inValidUris = (List<String>) getJsonMap().get("invalidRpcResponseUris");
-
-        for (String uri : inValidUris) {
-            UUri uuri = LongUriSerializer.instance().deserialize(uri);
+        // Access the "invalidRpcResponseUris" array
+        JSONArray invalidRpcResponseUris = getJsonObject().getJSONArray("invalidRpcResponseUris");
+        for (int i = 0; i < invalidRpcResponseUris.length(); i++) {
+            UUri uuri = LongUriSerializer.instance().deserialize(invalidRpcResponseUris.getString(i));
             final ValidationResult status = UriValidator.validateRpcResponse(uuri);
             assertTrue(status.isFailure());
         }
-
     }
 
-    private Map<String, ?> getJsonMap() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-
+    private JSONObject getJsonObject() throws IOException {
         String currentDirectory = System.getProperty("user.dir");
         String pkgname = this.getClass().getPackage().getName().replace(".", "/");
-        File jsonFile = new File(currentDirectory, "src" + File.separator + "test" + File.separator + "java" + File.separator + pkgname + File.separator + "uris.json");
-        // Read JSON data from the file as a Map
-        Map<String, ?> jsonMap = objectMapper.readValue(jsonFile, Map.class);
-        return jsonMap;
+        File jsonFile = new File(currentDirectory,
+                "src" + File.separator + "test" + File.separator + "java" + File.separator + pkgname + File.separator + "uris.json");
+
+        // Open the file for reading
+        BufferedReader reader = new BufferedReader(new FileReader(jsonFile));
+        // Read the JSON data as a string
+        StringBuilder jsonStringBuilder = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            jsonStringBuilder.append(line);
+        }
+        reader.close();
+        // Parse the JSON data into a JSONObject
+        return new JSONObject(jsonStringBuilder.toString());
     }
 
 }
