@@ -373,7 +373,7 @@ public abstract class UAttributesValidator {
          */
         @Override
         public ValidationResult validateReqId(UAttributes attributes) {
-            if (!attributes.hasReqid()) {
+            if (!attributes.hasReqid()||attributes.getReqid()== UUID.getDefaultInstance()) {
                 return ValidationResult.failure("Missing correlationId");
             }
             if (!UUIDUtils.isUuid(attributes.getReqid())) {
