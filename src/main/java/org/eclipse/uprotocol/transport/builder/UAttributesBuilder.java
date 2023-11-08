@@ -23,6 +23,9 @@ package org.eclipse.uprotocol.transport.builder;
 
 
 import org.eclipse.uprotocol.v1.*;
+import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
+
+import java.util.Objects;
 
 /**
  * Builder for easy construction of the UAttributes object.
@@ -39,6 +42,68 @@ public class UAttributesBuilder {
     private Integer commstatus;
     private UUID reqid;
 
+
+    /**
+     * Construct a UAttributesBuilder for a publish message.
+     * @param priority The priority of the message.
+     * @return Returns the UAttributesBuilder with the configured priority.
+     */
+    public static UAttributesBuilder publish(UPriority priority) {
+        Objects.requireNonNull(priority, "UPriority cannot be null.");
+        return new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(), 
+        UMessageType.PUBLISH, priority);
+    }
+
+
+    /**
+     * Construct a UAttributesBuilder for a notification message.
+     * @param priority The priority of the message.
+     * @param sink The destination URI.
+     * @return Returns the UAttributesBuilder with the configured priority and sink.
+     */
+    public static UAttributesBuilder notification(UPriority priority, UUri sink) {
+        Objects.requireNonNull(priority, "UPriority cannot be null.");
+        Objects.requireNonNull(sink, "sink cannot be null.");
+
+        return new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(), 
+        UMessageType.PUBLISH, priority).withSink(sink);
+    }
+    
+
+    /**
+     * Construct a UAttributesBuilder for a request message.
+     * @param priority The priority of the message.
+     * @param sink The destination URI.
+     * @param ttl The time to live in milliseconds.
+     * @return Returns the UAttributesBuilder with the configured priority, sink and ttl.
+     */
+    public static UAttributesBuilder request(UPriority priority, UUri sink, Integer ttl) {
+        Objects.requireNonNull(priority, "UPriority cannot be null.");
+        Objects.requireNonNull(ttl, "ttl cannot be null.");
+        Objects.requireNonNull(sink, "sink cannot be null.");
+        
+        return new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(), 
+        UMessageType.REQUEST, priority).withTtl(ttl).withSink(sink);
+    }
+
+
+    /**
+     * Construct a UAttributesBuilder for a response message.
+     * @param priority The priority of the message.
+     * @param sink The destination URI.
+     * @param reqid The original request UUID used to correlate the response to the request.
+     * @return Returns the UAttributesBuilder with the configured priority, sink and reqid.
+     */
+    public static UAttributesBuilder response(UPriority priority, UUri sink, UUID reqid) {
+        Objects.requireNonNull(priority, "UPriority cannot be null.");
+        Objects.requireNonNull(sink, "sink cannot be null.");
+        Objects.requireNonNull(reqid, "reqid cannot be null.");
+        
+        return new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(), 
+        UMessageType.RESPONSE, priority).withSink(sink).withReqId(reqid);
+    }
+
+
     /**
      * Construct the UAttributesBuilder with the configurations that are required for every payload transport.
      *
@@ -46,7 +111,7 @@ public class UAttributesBuilder {
      * @param type     Message type such as Publish a state change, RPC request or RPC response.
      * @param priority uProtocol Prioritization classifications.
      */
-    public UAttributesBuilder(UUID id, UMessageType type, UPriority priority) {
+    private UAttributesBuilder(UUID id, UMessageType type, UPriority priority) {
         this.id = id;
         this.type = type;
         this.priority = priority;
@@ -63,6 +128,7 @@ public class UAttributesBuilder {
         return this;
     }
 
+
     /**
      * Add the authorization token used for TAP.
      *
@@ -73,6 +139,7 @@ public class UAttributesBuilder {
         this.token = token;
         return this;
     }
+
 
     /**
      * Add the explicit destination URI.
@@ -85,6 +152,7 @@ public class UAttributesBuilder {
         return this;
     }
 
+
     /**
      * Add the permission level of the message.
      *
@@ -95,6 +163,7 @@ public class UAttributesBuilder {
         this.plevel = plevel;
         return this;
     }
+
 
     /**
      * Add the communication status of the message.
@@ -107,6 +176,7 @@ public class UAttributesBuilder {
         return this;
     }
 
+
     /**
      * Add the request ID.
      *
@@ -118,6 +188,7 @@ public class UAttributesBuilder {
         return this;
     }
 
+    
     /**
      * Construct the UAttributes from the builder.
      *
@@ -153,6 +224,5 @@ public class UAttributesBuilder {
             attributesBuilder.setToken(token);
         }
         return attributesBuilder.build();
-
     }
 }

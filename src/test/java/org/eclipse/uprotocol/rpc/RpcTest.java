@@ -127,8 +127,8 @@ class RpcTest {
     }
 
     private static UAttributes buildUAttributes() {
-        return new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(), UMessageType.REQUEST,
-                UPriority.CS4).withSink(UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley")).build())
+        return UAttributesBuilder.request(UPriority.CS4, 
+            UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley")).build(), 1000)
                 .build();
 
     }
