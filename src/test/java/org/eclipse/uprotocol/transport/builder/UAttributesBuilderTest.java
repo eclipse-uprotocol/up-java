@@ -32,23 +32,23 @@ public class UAttributesBuilderTest {
 
     @Test
     public void testPublish() {
-        UAttributesBuilder builder = UAttributesBuilder.publish(UPriority.CS1);
+        UAttributesBuilder builder = UAttributesBuilder.publish(UPriority.UPRIORITY_CS1);
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
-        assertEquals(UMessageType.PUBLISH, attributes.getType());
-        assertEquals(UPriority.CS1, attributes.getPriority());
+        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.getType());
+        assertEquals(UPriority.UPRIORITY_CS1, attributes.getPriority());
     }
 
     @Test
     public void testNotification() {
         UUri sink = buildSink();
-        UAttributesBuilder builder = UAttributesBuilder.notification(UPriority.CS1, sink);
+        UAttributesBuilder builder = UAttributesBuilder.notification(UPriority.UPRIORITY_CS1, sink);
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
-        assertEquals(UMessageType.PUBLISH, attributes.getType());
-        assertEquals(UPriority.CS1, attributes.getPriority());
+        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.getType());
+        assertEquals(UPriority.UPRIORITY_CS1, attributes.getPriority());
         assertEquals(sink, attributes.getSink());
     }
 
@@ -56,12 +56,12 @@ public class UAttributesBuilderTest {
     public void testRequest() {
         UUri sink = buildSink();
         Integer ttl = 1000;
-        UAttributesBuilder builder = UAttributesBuilder.request(UPriority.CS4, sink, ttl);
+        UAttributesBuilder builder = UAttributesBuilder.request(UPriority.UPRIORITY_CS4, sink, ttl);
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
-        assertEquals(UMessageType.REQUEST, attributes.getType());
-        assertEquals(UPriority.CS4, attributes.getPriority());
+        assertEquals(UMessageType.UMESSAGE_TYPE_REQUEST, attributes.getType());
+        assertEquals(UPriority.UPRIORITY_CS4, attributes.getPriority());
         assertEquals(sink, attributes.getSink());
         assertEquals(ttl, attributes.getTtl());
     }
@@ -70,12 +70,12 @@ public class UAttributesBuilderTest {
     public void testResponse() {
         UUri sink = buildSink();
         UUID reqId = getUUID();
-        UAttributesBuilder builder = UAttributesBuilder.response(UPriority.CS6, sink, reqId);
+        UAttributesBuilder builder = UAttributesBuilder.response(UPriority.UPRIORITY_CS6, sink, reqId);
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
-        assertEquals(UMessageType.RESPONSE, attributes.getType());
-        assertEquals(UPriority.CS6, attributes.getPriority());
+        assertEquals(UMessageType.UMESSAGE_TYPE_RESPONSE, attributes.getType());
+        assertEquals(UPriority.UPRIORITY_CS6, attributes.getPriority());
         assertEquals(sink, attributes.getSink());
         assertEquals(reqId, attributes.getReqid());
     }
@@ -83,12 +83,12 @@ public class UAttributesBuilderTest {
     @Test
     public void testBuild() {
         final UUID reqId = getUUID();
-        UAttributesBuilder builder = UAttributesBuilder.publish(UPriority.CS1).withTtl(1000).withToken("test_token")
+        UAttributesBuilder builder = UAttributesBuilder.publish(UPriority.UPRIORITY_CS1).withTtl(1000).withToken("test_token")
                 .withSink(buildSink()).withPermissionLevel(2).withCommStatus(1).withReqId(reqId);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
-        assertEquals(UMessageType.PUBLISH, attributes.getType());
-        assertEquals(UPriority.CS1, attributes.getPriority());
+        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.getType());
+        assertEquals(UPriority.UPRIORITY_CS1, attributes.getPriority());
         assertEquals(1000, attributes.getTtl());
         assertEquals("test_token", attributes.getToken());
         assertEquals(buildSink(), attributes.getSink());

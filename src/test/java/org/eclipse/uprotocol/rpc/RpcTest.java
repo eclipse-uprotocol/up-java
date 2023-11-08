@@ -44,7 +44,7 @@ class RpcTest {
     RpcClient ReturnsNumber3 = new RpcClient() {
         @Override
         public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
-            UPayload data = new UPayload(Any.pack(Int32Value.of(3)).toByteArray(), SerializationHint.PROTOBUF);
+            UPayload data = new UPayload(Any.pack(Int32Value.of(3)).toByteArray(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
             return CompletableFuture.completedFuture(data);
         }
     };
@@ -62,7 +62,7 @@ class RpcTest {
         public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
             Status status = Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE).setMessage("boom").build();
             Any any = Any.pack(status);
-            UPayload data = new UPayload(any.toByteArray(), SerializationHint.PROTOBUF);
+            UPayload data = new UPayload(any.toByteArray(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
 
             return CompletableFuture.completedFuture(data);
         }
@@ -73,7 +73,7 @@ class RpcTest {
         public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
             Status status = Status.newBuilder().setCode(Code.OK_VALUE).setMessage("all good").build();
             Any any = Any.pack(status);
-            UPayload data = new UPayload(any.toByteArray(), SerializationHint.PROTOBUF);
+            UPayload data = new UPayload(any.toByteArray(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
 
             return CompletableFuture.completedFuture(data);
         }
@@ -82,7 +82,7 @@ class RpcTest {
     RpcClient ThatBarfsCrapyPayload = new RpcClient() {
         @Override
         public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
-            UPayload response = new UPayload(new byte[]{0}, SerializationHint.RAW);
+            UPayload response = new UPayload(new byte[]{0}, UPayloadFormat.UPAYLOAD_FORMAT_RAW);
             return CompletableFuture.completedFuture(response);
         }
     };
@@ -100,7 +100,7 @@ class RpcTest {
         @Override
         public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
             Any any = Any.pack(Int32Value.of(42));
-            return CompletableFuture.completedFuture(new UPayload(any.toByteArray(), SerializationHint.PROTOBUF));
+            return CompletableFuture.completedFuture(new UPayload(any.toByteArray(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF));
         }
     };
 
@@ -119,7 +119,7 @@ class RpcTest {
 
     private static UPayload buildUPayload() {
         Any any = Any.pack(buildCloudEvent());
-        return new UPayload(any.toByteArray(), SerializationHint.PROTOBUF);
+        return new UPayload(any.toByteArray(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
     }
 
     private static UUri buildTopic() {
@@ -127,7 +127,7 @@ class RpcTest {
     }
 
     private static UAttributes buildUAttributes() {
-        return UAttributesBuilder.request(UPriority.CS4, 
+        return UAttributesBuilder.request(UPriority.UPRIORITY_CS4,
             UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley")).build(), 1000)
                 .build();
 

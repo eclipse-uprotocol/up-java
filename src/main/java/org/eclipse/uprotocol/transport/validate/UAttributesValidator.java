@@ -56,9 +56,9 @@ public abstract class UAttributesValidator {
     public static UAttributesValidator getValidator(UAttributes attribute) {
 
         switch (attribute.getType()) {
-            case RESPONSE:
+            case UMESSAGE_TYPE_RESPONSE:
                 return Validators.RESPONSE.validator();
-            case REQUEST:
+            case UMESSAGE_TYPE_REQUEST:
                 return Validators.REQUEST.validator();
             default:
                 return Validators.PUBLISH.validator();
@@ -231,7 +231,7 @@ public abstract class UAttributesValidator {
          */
         @Override
         public ValidationResult validateType(UAttributes attributes) {
-            return UMessageType.PUBLISH == attributes.getType() ? ValidationResult.success() : ValidationResult.failure(
+            return UMessageType.UMESSAGE_TYPE_PUBLISH == attributes.getType() ? ValidationResult.success() : ValidationResult.failure(
                     String.format("Wrong Attribute Type [%s]", attributes.getType()));
         }
 
@@ -254,7 +254,7 @@ public abstract class UAttributesValidator {
          */
         @Override
         public ValidationResult validateType(UAttributes attributes) {
-            return UMessageType.REQUEST == attributes.getType() ? ValidationResult.success() : ValidationResult.failure(
+            return UMessageType.UMESSAGE_TYPE_REQUEST == attributes.getType() ? ValidationResult.success() : ValidationResult.failure(
                     String.format("Wrong Attribute Type [%s]", attributes.getType()));
         }
 
@@ -313,7 +313,7 @@ public abstract class UAttributesValidator {
          */
         @Override
         public ValidationResult validateType(UAttributes attributes) {
-            return UMessageType.RESPONSE == attributes.getType() ? ValidationResult.success() :
+            return UMessageType.UMESSAGE_TYPE_RESPONSE == attributes.getType() ? ValidationResult.success() :
                     ValidationResult.failure(
                     String.format("Wrong Attribute Type [%s]", attributes.getType()));
         }

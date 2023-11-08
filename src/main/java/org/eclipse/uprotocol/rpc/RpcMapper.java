@@ -35,7 +35,7 @@ import org.eclipse.uprotocol.transport.datamodel.UPayload;
 /**
  * RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with 
  * an RPC Response (uP-L2). APIs that return Message assumes that the payload is protobuf serialized 
- * com.google.protobuf.Any (SerializationHint.PROTOBUF) and will barf if anything else is passed
+ * com.google.protobuf.Any (UPayloadFormat.PROTOBUF) and will barf if anything else is passed
  */
 public interface RpcMapper {
 
