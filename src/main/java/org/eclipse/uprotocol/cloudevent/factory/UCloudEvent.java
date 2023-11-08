@@ -29,12 +29,12 @@ import com.google.rpc.Code;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import org.eclipse.uprotocol.v1.UUID;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Class to extract  information from a CloudEvent.

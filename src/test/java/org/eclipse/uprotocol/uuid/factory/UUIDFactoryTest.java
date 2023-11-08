@@ -21,6 +21,7 @@
 
 package org.eclipse.uprotocol.uuid.factory;
 
+import org.eclipse.uprotocol.v1.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +30,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,7 +52,7 @@ public class UUIDFactoryTest {
         assertTrue(version.isPresent());
         assertTrue(time.isPresent());
         assertEquals(time.get(), now.toEpochMilli());
-        
+
         assertTrue(bytes.isPresent());
         assertTrue(uuidString.isPresent());
 
@@ -93,7 +93,6 @@ public class UUIDFactoryTest {
         assertTrue(uuid2.isPresent());
         assertEquals(uuid, uuid2.get());
     }
-   
 
 
     @Test
@@ -101,23 +100,23 @@ public class UUIDFactoryTest {
     void test_uuidv8_overflow() {
         final List<UUID> uuidList = new ArrayList<>();
         final int MAX_COUNT = 4095;
-        
+
         // Build UUIDs above MAX_COUNT (4095) so we can test the limits
         final Instant now = Instant.now();
-        for (int i = 0; i < MAX_COUNT*2; i++) {
+        for (int i = 0; i < MAX_COUNT * 2; i++) {
             uuidList.add(UUIDFactory.Factories.UPROTOCOL.factory().create(now));
 
             // Time should be the same as the 1st
             assertEquals(UUIDUtils.getTime(uuidList.get(0)), UUIDUtils.getTime(uuidList.get(i)));
 
             // Random should always remain the same be the same
-            assertEquals(uuidList.get(0).getLeastSignificantBits(), uuidList.get(i).getLeastSignificantBits());
+            assertEquals(uuidList.get(0).getLsb(), uuidList.get(i).getLsb());
             if (i > MAX_COUNT) {
-                assertEquals(uuidList.get(MAX_COUNT).getMostSignificantBits(), uuidList.get(i).getMostSignificantBits());
+                assertEquals(uuidList.get(MAX_COUNT).getMsb(), uuidList.get(i).getMsb());
             }
         }
     }
-    
+
     @Test
     @DisplayName("Test UUIDv6 creation with Instance")
     void test_uuidv6_creation_with_instant() {
@@ -179,7 +178,9 @@ public class UUIDFactoryTest {
     @Test
     @DisplayName("Test UUIDUtils for Random UUID")
     void test_uuidutils_for_random_uuid() {
-        final UUID uuid = UUID.randomUUID();
+        final java.util.UUID uuid_java = java.util.UUID.randomUUID();
+        final UUID uuid = UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
+                .setLsb(uuid_java.getLeastSignificantBits()).build();
         final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
         final Optional<Long> time = UUIDUtils.getTime(uuid);
         final Optional<byte[]> bytes = UUIDUtils.toBytes(uuid);
@@ -208,7 +209,7 @@ public class UUIDFactoryTest {
     @Test
     @DisplayName("Test UUIDUtils for empty UUID")
     void test_uuidutils_for_empty_uuid() {
-        final UUID uuid = new UUID(0L, 0L);
+        final UUID uuid =  UUID.newBuilder().setMsb(0L).setLsb(0L).build();
         final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
         final Optional<Long> time = UUIDUtils.getTime(uuid);
         final Optional<byte[]> bytes = UUIDUtils.toBytes(uuid);
@@ -251,7 +252,7 @@ public class UUIDFactoryTest {
     @Test
     @DisplayName("Test UUIDUtils fromString an invalid built UUID")
     void test_uuidutils_from_invalid_uuid() {
-        final UUID uuid = new UUID(9<<12, 0L); // Invalid UUID type
+        final UUID uuid = UUID.newBuilder().setMsb(9 << 12).setLsb(0L).build(); // Invalid UUID type
 
         assertFalse(UUIDUtils.getVersion(uuid).isPresent());
         assertFalse(UUIDUtils.getTime(uuid).isPresent());
@@ -264,7 +265,6 @@ public class UUIDFactoryTest {
     }
 
 
-
     @Test
     @DisplayName("Test UUIDUtils fromString with invalid string")
     void test_uuidutils_fromstring_with_invalid_string() {
@@ -273,7 +273,7 @@ public class UUIDFactoryTest {
         final Optional<UUID> uuid1 = UUIDUtils.fromString("");
         assertFalse(uuid1.isPresent());
     }
-    
+
     @Test
     @DisplayName("Test UUIDUtils fromBytes with invalid bytes")
     void test_uuidutils_frombytes_with_invalid_bytes() {
@@ -320,14 +320,14 @@ public class UUIDFactoryTest {
         assertNotEquals(time.get(), time1.get());
 
     }
-    
+
     @Test
     @DisplayName("Test Create both UUIDv6 and v8 to compare performance")
     void test_create_both_uuidv6_and_v8_to_compare_performance() throws InterruptedException {
-       final List<UUID> uuidv6List = new ArrayList<>();
-       final List<UUID> uuidv8List = new ArrayList<>();
+        final List<UUID> uuidv6List = new ArrayList<>();
+        final List<UUID> uuidv8List = new ArrayList<>();
         final int MAX_COUNT = 10000;
-        
+
         Instant start = Instant.now();
         for (int i = 0; i < MAX_COUNT; i++) {
             uuidv8List.add(UUIDFactory.Factories.UPROTOCOL.factory().create());
@@ -339,7 +339,8 @@ public class UUIDFactoryTest {
             uuidv6List.add(UUIDFactory.Factories.UUIDV6.factory().create());
         }
         final Duration v6Diff = Duration.between(start, Instant.now());
-        System.out.println("UUIDv8:[" + v8Diff.toNanos()/MAX_COUNT + "ns]" + " UUIDv6:[" + v6Diff.toNanos()/MAX_COUNT + "ns]");
+        System.out.println(
+                "UUIDv8:[" + v8Diff.toNanos() / MAX_COUNT + "ns]" + " UUIDv6:[" + v6Diff.toNanos() / MAX_COUNT + "ns]");
     }
 }
 

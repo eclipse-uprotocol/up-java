@@ -30,8 +30,10 @@ import com.google.rpc.Code;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
+import org.eclipse.uprotocol.v1.UUID;
+import org.eclipse.uprotocol.v1.UUri;
+
 import java.net.URI;
-import java.util.UUID;
 
 /**
  * A factory is a part of the software has methods to generate concrete objects, usually of the same type or interface.<br>

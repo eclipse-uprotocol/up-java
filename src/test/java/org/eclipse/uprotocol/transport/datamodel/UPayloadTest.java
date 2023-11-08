@@ -22,6 +22,7 @@ package org.eclipse.uprotocol.transport.datamodel;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
+import org.eclipse.uprotocol.v1.SerializationHint;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +43,7 @@ class UPayloadTest {
     public void testToString_with_empty() {
         UPayload uPayload = UPayload.empty();
         assertEquals("UPayload{data=[], hint=UNKNOWN}", uPayload.toString());
-        assertEquals(USerializationHint.UNKNOWN, uPayload.hint());
+        assertEquals(SerializationHint.UNKNOWN, uPayload.hint());
     }
 
 
@@ -60,17 +61,17 @@ class UPayloadTest {
         UPayload uPayload = new UPayload(null, null);
         assertEquals(0, uPayload.data().length);
         assertTrue(uPayload.isEmpty());
-        assertEquals(USerializationHint.UNKNOWN, uPayload.hint());
+        assertEquals(SerializationHint.UNKNOWN, uPayload.hint());
     }
 
     @Test
     @DisplayName("Create a UPayload from string with hint")
     public void create_upayload_from_string_with_hint() {
         String stringData = "hello";
-        UPayload uPayload = new UPayload(stringData.getBytes(StandardCharsets.UTF_8), USerializationHint.TEXT);
+        UPayload uPayload = new UPayload(stringData.getBytes(StandardCharsets.UTF_8), SerializationHint.TEXT);
         assertEquals(stringData.length(), uPayload.data().length);
         assertFalse(uPayload.isEmpty());
-        assertEquals(USerializationHint.TEXT, uPayload.hint());
+        assertEquals(SerializationHint.TEXT, uPayload.hint());
         assertEquals(stringData, new String(uPayload.data()));
     }
 
@@ -81,16 +82,16 @@ class UPayloadTest {
         UPayload uPayload = new UPayload(stringData.getBytes(StandardCharsets.UTF_8), null);
         assertEquals(stringData.length(), uPayload.data().length);
         assertFalse(uPayload.isEmpty());
-        assertEquals(USerializationHint.UNKNOWN, uPayload.hint());
+        assertEquals(SerializationHint.UNKNOWN, uPayload.hint());
     }
 
     @Test
     @DisplayName("Create a UPayload without a byte array but with some weird hint")
     public void create_upayload_without_byte_array_but_with_weird_hint() {
-        UPayload uPayload = new UPayload(null, USerializationHint.PROTOBUF);
+        UPayload uPayload = new UPayload(null, SerializationHint.PROTOBUF);
         assertEquals(0, uPayload.data().length);
         assertTrue(uPayload.isEmpty());
-        assertEquals(USerializationHint.PROTOBUF, uPayload.hint());
+        assertEquals(SerializationHint.PROTOBUF, uPayload.hint());
         assertFalse(UPayload.empty().equals(uPayload));
     }
 }
