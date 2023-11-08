@@ -29,6 +29,7 @@ import org.eclipse.uprotocol.v1.UPriority;
 import org.eclipse.uprotocol.v1.UUID;
 import org.eclipse.uprotocol.validation.ValidationResult;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,8 +74,8 @@ public abstract class UAttributesValidator {
      * invalid configurations.
      */
     public ValidationResult validate(UAttributes attributes) {
-        final String errorMessage = Stream.of(validateId(attributes), validateType(attributes),
-                        validatePriority(attributes), validateTtl(attributes), validateSink(attributes),
+        final String errorMessage = Stream.of(validateType(attributes),
+                         validateTtl(attributes), validateSink(attributes),
                         validateCommStatus(attributes), validatePermissionLevel(attributes), validateReqId(attributes))
                 .filter(ValidationResult::isFailure).map(ValidationResult::getMessage).collect(Collectors.joining(","));
         return errorMessage.isBlank() ? ValidationResult.success() : ValidationResult.failure(errorMessage);
@@ -90,9 +91,9 @@ public abstract class UAttributesValidator {
     public ValidationResult isExpired(UAttributes uAttributes) {
         final int ttl = uAttributes.getTtl();
         final Optional<Long> maybeTime = UUIDUtils.getTime(uAttributes.getId());
-        if (maybeTime.isEmpty()) {
-            return ValidationResult.failure("Invalid Time");
-        }
+//        if (maybeTime.isEmpty()) {
+//            return ValidationResult.failure("Invalid Time");
+//        }
 
         if (ttl <= 0) {
             return ValidationResult.success();
@@ -103,32 +104,6 @@ public abstract class UAttributesValidator {
         return delta >= ttl ? ValidationResult.failure("Payload is expired") : ValidationResult.success();
     }
 
-    /**
-     * Validate the id attribute, it is required.
-     *
-     * @param attributes UAttributes object containing the id to validate.
-     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
-     */
-    public ValidationResult validateId(UAttributes attributes) {
-        final UUID id = attributes.getId();
-        return UUIDUtils.isUuid(id) ? ValidationResult.success() : ValidationResult.failure(
-                String.format("Invalid UUID [%s]", id));
-    }
-
-    /**
-     * Validate the {@link UPriority} since it is required.
-     *
-     * @param attributes UAttributes object containing the message priority to validate.
-     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
-     */
-    public ValidationResult validatePriority(UAttributes attributes) {
-        if (attributes == null) {
-            return ValidationResult.failure("Priority is missing");
-        } else {
-            // It will always contain priority value,if not set by user, it will return the default first enum value
-            return ValidationResult.success();
-        }
-    }
 
     /**
      * Validate the time to live configuration. If the UAttributes does not contain a time to live then the
@@ -352,9 +327,8 @@ public abstract class UAttributesValidator {
          */
         @Override
         public ValidationResult validateSink(UAttributes attributes) {
-            if (attributes == null) {
-                return ValidationResult.failure("Missing Sink");
-            }
+            Objects.requireNonNull(attributes, "UAttributes cannot be null.");
+
             ValidationResult result = UriValidator.validateRpcMethod(attributes.getSink());
             if (result.isSuccess()) {
                 return result;

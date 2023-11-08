@@ -195,19 +195,12 @@ public class UAttributesBuilder {
      * @return Returns a constructed
      */
     public UAttributes build() {
-        UAttributes.Builder attributesBuilder=UAttributes.newBuilder();
-        if(id!=null){
-            attributesBuilder.setId(id);
-        }
-        if(type!=null){
-            attributesBuilder.setType(type);
-        }
+        UAttributes.Builder attributesBuilder = UAttributes.newBuilder().setId(id).setType(type).setPriority(priority);
+
         if(sink!=null){
             attributesBuilder.setSink(sink);
         }
-        if(priority!=null){
-            attributesBuilder.setPriority(priority);
-        }
+
         if(ttl!=null){
             attributesBuilder.setTtl(ttl);
         }

@@ -445,15 +445,6 @@ class UAttributesValidatorTest {
     }
 
 
-    @Test
-    @DisplayName("test validating valid id attribute")
-    public void test_validating_valid_id_attribute() {
-        final UAttributes attributes = UAttributesBuilder.publish(UPriority.CS0).build();
-
-        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final ValidationResult status = validator.validateId(attributes);
-        assertEquals(ValidationResult.success(), status);
-    }
 
     @Test
     @DisplayName("test validating invalid sink attribute")
