@@ -29,7 +29,6 @@ import com.google.rpc.Status;
 import org.eclipse.uprotocol.transport.builder.UAttributesBuilder;
 import org.eclipse.uprotocol.transport.datamodel.UPayload;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
-import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
 import org.eclipse.uprotocol.v1.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

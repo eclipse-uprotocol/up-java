@@ -25,7 +25,6 @@ import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
 import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UMessageType;
-import org.eclipse.uprotocol.v1.UPriority;
 import org.eclipse.uprotocol.v1.UUID;
 import org.eclipse.uprotocol.validation.ValidationResult;
 
