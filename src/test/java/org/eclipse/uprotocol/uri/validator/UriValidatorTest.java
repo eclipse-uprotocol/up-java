@@ -96,7 +96,7 @@ class UriValidatorTest {
     }
 
     @Test
-    @DisplayName("Test validateRpcMethod with valid URI")
+    @DisplayName("Test validateRpcMethod with invalid URI")
     public void test_validateRpcMethod_with_invalid_uri() {
         final UUri uri = LongUriSerializer.instance().deserialize("/hartley/echo");
         final ValidationResult status = UriValidator.validateRpcMethod(uri);

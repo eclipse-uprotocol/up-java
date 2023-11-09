@@ -29,11 +29,12 @@ import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
-
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
+import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
 import org.eclipse.uprotocol.v1.UEntity;
 import org.eclipse.uprotocol.v1.UResource;
+import org.eclipse.uprotocol.v1.UUID;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -44,7 +45,6 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -67,8 +67,7 @@ class UCloudEventTest {
     public void test_extract_sink_from_cloudevent_when_sink_exists() {
         String sinkForTest = "//bo.cloud/petapp/1/rpc.response";
 
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("sink", URI.create(sinkForTest));
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("sink", URI.create(sinkForTest));
 
         CloudEvent cloudEvent = builder.build();
 
@@ -90,8 +89,7 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test extracting the request id from a CloudEvent when the request id exists.")
     public void test_extract_requestId_from_cloudevent_when_requestId_exists() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("reqid", "someRequestId");
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("reqid", "someRequestId");
 
         CloudEvent cloudEvent = builder.build();
 
@@ -114,8 +112,7 @@ class UCloudEventTest {
     @DisplayName("Test extracting the request id from a CloudEvent when the request id is null.")
     public void test_extract_requestId_from_cloudevent_when_requestId_value_is_null() {
         String reqid = null;
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("reqid", reqid);
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("reqid", reqid);
         CloudEvent cloudEvent = builder.build();
 
         final Optional<String> requestId = UCloudEvent.getRequestId(cloudEvent);
@@ -137,8 +134,7 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test extracting the hash from a CloudEvent when the hash does not exist.")
     public void test_extract_hash_from_cloudevent_when_hash_does_not_exist() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withoutExtension("hash");
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withoutExtension("hash");
         CloudEvent cloudEvent = builder.build();
 
         final Optional<String> hash = UCloudEvent.getHash(cloudEvent);
@@ -160,8 +156,7 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test extracting the priority from a CloudEvent when the priority does not exist.")
     public void test_extract_priority_from_cloudevent_when_priority_does_not_exist() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withoutExtension("priority");
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withoutExtension("priority");
         CloudEvent cloudEvent = builder.build();
 
         final Optional<String> priority = UCloudEvent.getPriority(cloudEvent);
@@ -183,8 +178,7 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test extracting the ttl from a CloudEvent when the ttl does not exist.")
     public void test_extract_ttl_from_cloudevent_when_ttl_does_not_exist() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withoutExtension("ttl");
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withoutExtension("ttl");
         CloudEvent cloudEvent = builder.build();
 
         final Optional<Integer> ttl = UCloudEvent.getTtl(cloudEvent);
@@ -206,8 +200,7 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test extracting the token from a CloudEvent when the token does not exist.")
     public void test_extract_token_from_cloudevent_when_token_does_not_exist() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withoutExtension("token");
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withoutExtension("token");
         CloudEvent cloudEvent = builder.build();
 
         final Optional<String> token = UCloudEvent.getToken(cloudEvent);
@@ -217,8 +210,7 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test a CloudEvent has a platform communication error when the platform communication error exists.")
     public void test_cloudevent_has_platform_error_when_platform_error_exists() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("commstatus", Code.ABORTED_VALUE);
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("commstatus", Code.ABORTED_VALUE);
 
         CloudEvent cloudEvent = builder.build();
 
@@ -227,7 +219,8 @@ class UCloudEventTest {
     }
 
     @Test
-    @DisplayName("Test a CloudEvent has a platform communication error when the platform communication error does not exist.")
+    @DisplayName("Test a CloudEvent has a platform communication error when the platform communication error does " +
+            "not" + " exist.")
     public void test_cloudevent_has_platform_error_when_platform_error_does_not_exist() {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest();
 
@@ -238,10 +231,10 @@ class UCloudEventTest {
     }
 
     @Test
-    @DisplayName("Test extracting the platform communication error from a CloudEvent when the platform communication error exists but in the wrong format.")
+    @DisplayName("Test extracting the platform communication error from a CloudEvent when the platform communication "
+            + "error exists but in the wrong format.")
     public void test_extract_platform_error_from_cloudevent_when_platform_error_exists_in_wrong_format() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("commstatus", "boom");
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("commstatus", "boom");
 
         CloudEvent cloudEvent = builder.build();
 
@@ -250,10 +243,11 @@ class UCloudEventTest {
     }
 
     @Test
-    @DisplayName("Test extracting the platform communication error from a CloudEvent when the platform communication error exists.")
+    @DisplayName("Test extracting the platform communication error from a CloudEvent when the platform communication "
+            + "error exists.")
     public void test_extract_platform_error_from_cloudevent_when_platform_error_exists() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("commstatus", Code.INVALID_ARGUMENT_VALUE);
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("commstatus",
+                Code.INVALID_ARGUMENT_VALUE);
 
         CloudEvent cloudEvent = builder.build();
 
@@ -262,7 +256,8 @@ class UCloudEventTest {
     }
 
     @Test
-    @DisplayName("Test extracting the platform communication error from a CloudEvent when the platform communication error does not exist.")
+    @DisplayName("Test extracting the platform communication error from a CloudEvent when the platform communication "
+            + "error does not exist.")
     public void test_extract_platform_error_from_cloudevent_when_platform_error_does_not_exist() {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest();
         CloudEvent cloudEvent = builder.build();
@@ -313,8 +308,12 @@ class UCloudEventTest {
     @DisplayName("Test extracting creation timestamp from the CloudEvent UUIDV8 id when the id is valid.")
     public void test_extract_creation_timestamp_from_cloudevent_UUIDV8_Id_when_UUIDV8_id_is_valid() {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withId(uuid.toString());
+        String str_uuid = "";
+        Optional<String> uuid_string = UUIDUtils.toString(uuid);
+        if (uuid_string.isPresent()) {
+            str_uuid = uuid_string.get();
+        }
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
 
         final Optional<Long> maybeCreationTimestamp = UCloudEvent.getCreationTimestamp(cloudEvent);
@@ -334,8 +333,7 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired using creation date when no ttl is configured.")
     public void test_cloudevent_is_not_expired_cd_when_no_ttl_configured() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withoutExtension("ttl");
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withoutExtension("ttl");
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpiredByCloudEventCreationDate(cloudEvent));
     }
@@ -343,8 +341,7 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired using creation date when configured ttl is zero.")
     public void test_cloudevent_is_not_expired_cd_when_ttl_is_zero() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("ttl", 0);
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 0);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpiredByCloudEventCreationDate(cloudEvent));
     }
@@ -352,56 +349,47 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired using creation date when configured ttl is minus one.")
     public void test_cloudevent_is_not_expired_cd_when_ttl_is_minus_one() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("ttl", -1);
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", -1);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpiredByCloudEventCreationDate(cloudEvent));
     }
 
     @Test
-    @DisplayName("Test if the CloudEvent is not expired using creation date when configured ttl is 500 milliseconds but no creation date.")
+    @DisplayName("Test if the CloudEvent is not expired using creation date when configured ttl is 500 milliseconds " + "but no creation date.")
     public void test_cloudevent_is_not_expired_cd_when_ttl_3_mili_no_creation_date() {
         final Any protoPayload = buildProtoPayloadForTest();
-        final CloudEventBuilder builder = CloudEventBuilder.v1()
-                .withId("id")
-                .withType("pub.v1")
-                .withSource(URI.create("/body.accss//door.front_left#Door"))
-                .withDataContentType(DATA_CONTENT_TYPE)
-                .withDataSchema(URI.create(protoPayload.getTypeUrl()))
-                .withData(protoPayload.toByteArray())
+        final CloudEventBuilder builder = CloudEventBuilder.v1().withId("id").withType("pub.v1")
+                .withSource(URI.create("/body.accss//door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
+                .withDataSchema(URI.create(protoPayload.getTypeUrl())).withData(protoPayload.toByteArray())
                 .withExtension("ttl", 500);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpiredByCloudEventCreationDate(cloudEvent));
     }
 
     @Test
-    @DisplayName("Test if the CloudEvent is not expired using creation date when configured ttl is 500 milliseconds with creation date of now.")
+    @DisplayName("Test if the CloudEvent is not expired using creation date when configured ttl is 500 milliseconds " + "with creation date of now.")
     public void test_cloudevent_is_not_expired_cd_when_ttl_500_mili_with_creation_date_of_now() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withTime(OffsetDateTime.now())
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withTime(OffsetDateTime.now())
                 .withExtension("ttl", 500);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpiredByCloudEventCreationDate(cloudEvent));
     }
 
     @Test
-    @DisplayName("Test if the CloudEvent is expired using creation date when configured ttl is 500 milliseconds with creation date of yesterday.")
+    @DisplayName("Test if the CloudEvent is expired using creation date when configured ttl is 500 milliseconds with "
+            + "creation date of yesterday.")
     public void test_cloudevent_is_expired_cd_when_ttl_500_mili_with_creation_date_of_yesterday() {
         OffsetDateTime yesterday = OffsetDateTime.now().minus(1, ChronoUnit.DAYS);
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withTime(yesterday)
-                .withExtension("ttl", 500);
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withTime(yesterday).withExtension("ttl", 500);
         CloudEvent cloudEvent = builder.build();
         assertTrue(UCloudEvent.isExpiredByCloudEventCreationDate(cloudEvent));
     }
 
     @Test
-    @DisplayName("Test if the CloudEvent is not expired using creation date when configured ttl is 500 milliseconds with creation date of tomorrow.")
+    @DisplayName("Test if the CloudEvent is not expired using creation date when configured ttl is 500 milliseconds " + "with creation date of tomorrow.")
     public void test_cloudevent_is_not_expired_cd_when_ttl_500_mili_with_creation_date_of_tomorrow() {
         OffsetDateTime tomorrow = OffsetDateTime.now().plus(1, ChronoUnit.DAYS);
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withTime(tomorrow)
-                .withExtension("ttl", 500);
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withTime(tomorrow).withExtension("ttl", 500);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpiredByCloudEventCreationDate(cloudEvent));
     }
@@ -410,9 +398,12 @@ class UCloudEventTest {
     @DisplayName("Test if the CloudEvent is not expired when no ttl is configured.")
     public void test_cloudevent_is_not_expired_when_no_ttl_configured() {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withoutExtension("ttl")
-                .withId(uuid.toString());
+        String str_uuid = "";
+        Optional<String> uuid_string = UUIDUtils.toString(uuid);
+        if (uuid_string.isPresent()) {
+            str_uuid = uuid_string.get();
+        }
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withoutExtension("ttl").withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpired(cloudEvent));
     }
@@ -421,9 +412,12 @@ class UCloudEventTest {
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is zero.")
     public void test_cloudevent_is_not_expired_when_ttl_is_zero() {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("ttl", 0)
-                .withId(uuid.toString());
+        String str_uuid = "";
+        Optional<String> uuid_string = UUIDUtils.toString(uuid);
+        if (uuid_string.isPresent()) {
+            str_uuid = uuid_string.get();
+        }
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 0).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpired(cloudEvent));
     }
@@ -432,9 +426,12 @@ class UCloudEventTest {
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is minus one.")
     public void test_cloudevent_is_not_expired_when_ttl_is_minus_one() {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("ttl", -1)
-                .withId(uuid.toString());
+        String str_uuid = "";
+        Optional<String> uuid_string = UUIDUtils.toString(uuid);
+        if (uuid_string.isPresent()) {
+            str_uuid = uuid_string.get();
+        }
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", -1).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpired(cloudEvent));
     }
@@ -443,9 +440,13 @@ class UCloudEventTest {
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is large number.")
     public void test_cloudevent_is_not_expired_when_ttl_is_large_number_mili() {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("ttl", Integer.MAX_VALUE)
-                .withId(uuid.toString());
+        String str_uuid = "";
+        Optional<String> uuid_string = UUIDUtils.toString(uuid);
+        if (uuid_string.isPresent()) {
+            str_uuid = uuid_string.get();
+        }
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", Integer.MAX_VALUE)
+                .withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpired(cloudEvent));
     }
@@ -454,9 +455,12 @@ class UCloudEventTest {
     @DisplayName("Test if the CloudEvent is expired when configured ttl is 1 milliseconds.")
     public void test_cloudevent_is_expired_when_ttl_1_mili() throws InterruptedException {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("ttl", 1)
-                .withId(uuid.toString());
+        String str_uuid = "";
+        Optional<String> uuid_string = UUIDUtils.toString(uuid);
+        if (uuid_string.isPresent()) {
+            str_uuid = uuid_string.get();
+        }
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 1).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         Thread.sleep(800);
         assertTrue(UCloudEvent.isExpired(cloudEvent));
@@ -465,19 +469,21 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent isExpired when passed invalid UUID")
     public void test_cloudevent_is_expired_for_invalid_uuid() {
-       CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("ttl", 50000)
-                .withId("");
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 50000).withId("");
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpired(cloudEvent));
     }
-    
+
     @Test
     @DisplayName("Test if the CloudEvent has a UUIDV8 id.")
     public void test_cloudevent_has_a_UUIDV8_id() {
         UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withId(uuid.toString());
+        String str_uuid = "";
+        Optional<String> uuid_string = UUIDUtils.toString(uuid);
+        if (uuid_string.isPresent()) {
+            str_uuid = uuid_string.get();
+        }
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         assertTrue(UCloudEvent.isCloudEventId(cloudEvent));
     }
@@ -485,10 +491,15 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent does not have a UUIDV8 id.")
     public void test_cloudevent_does_not_have_a_UUIDV8_id() {
-        UUID uuid = UUID.randomUUID();
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("ttl", 3)
-                .withId(uuid.toString());
+        final java.util.UUID uuid_java = java.util.UUID.randomUUID();
+        UUID uuid = UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
+                .setLsb(uuid_java.getLeastSignificantBits()).build();
+        String str_uuid = "";
+        Optional<String> uuid_string = UUIDUtils.toString(uuid);
+        if (uuid_string.isPresent()) {
+            str_uuid = uuid_string.get();
+        }
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 3).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isCloudEventId(cloudEvent));
     }
@@ -496,8 +507,7 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent does not have a valid UUID id but some string")
     public void test_cloudevent_does_not_have_a_UUID_id_just_some_string() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("ttl", 3);
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 3);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isCloudEventId(cloudEvent));
     }
@@ -508,13 +518,9 @@ class UCloudEventTest {
         Any payloadForCloudEvent = buildProtoPayloadForTest();
         byte[] cloudEventData = payloadForCloudEvent.toByteArray();
 
-        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withId("someId")
-                .withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door"))
-                .withDataContentType(DATA_CONTENT_TYPE)
-                .withDataSchema(URI.create(payloadForCloudEvent.getTypeUrl()))
-                .withData(cloudEventData);
+        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
+                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
+                .withDataSchema(URI.create(payloadForCloudEvent.getTypeUrl())).withData(cloudEventData);
         CloudEvent cloudEvent = cloudEventBuilder.build();
 
         final Any extracted = UCloudEvent.getPayload(cloudEvent);
@@ -524,15 +530,13 @@ class UCloudEventTest {
 
     @Test
     @DisplayName("Test extract payload from cloud event when payload is not an Any protobuf object")
-    public void test_extractPayload_from_cloud_event_when_payload_is_not_an_any_proto_object() throws InvalidProtocolBufferException {
+    public void test_extractPayload_from_cloud_event_when_payload_is_not_an_any_proto_object()
+            throws InvalidProtocolBufferException {
         io.cloudevents.v1.proto.CloudEvent payloadForCloudEvent = buildProtoPayloadForTest1();
         byte[] cloudEventData = payloadForCloudEvent.toByteArray();
 
-        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withId("someId")
-                .withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door"))
-                .withDataContentType(DATA_CONTENT_TYPE)
+        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
+                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent"))
                 .withData(cloudEventData);
         CloudEvent cloudEvent = cloudEventBuilder.build();
@@ -547,12 +551,9 @@ class UCloudEventTest {
 
     @Test
     @DisplayName("Test extract payload from cloud event when payload is a bad protobuf object")
-    public void test_extractPayload_from_cloud_event_when_payload_is_bad_proto_object()  {
-        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withId("someId")
-                .withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door"))
-                .withDataContentType(DATA_CONTENT_TYPE)
+    public void test_extractPayload_from_cloud_event_when_payload_is_bad_proto_object() {
+        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
+                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent"))
                 .withData("<html><head></head><body><p>Hello</p></body></html>".getBytes());
         CloudEvent cloudEvent = cloudEventBuilder.build();
@@ -568,11 +569,8 @@ class UCloudEventTest {
         Any payloadForCloudEvent = buildProtoPayloadForTest();
         byte[] cloudEventData = payloadForCloudEvent.toByteArray();
 
-        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withId("someId")
-                .withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door"))
-                .withDataContentType(DATA_CONTENT_TYPE)
+        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
+                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
                 .withData(cloudEventData);
         CloudEvent cloudEvent = cloudEventBuilder.build();
 
@@ -586,11 +584,8 @@ class UCloudEventTest {
     public void test_extractPayload_from_cloud_event_as_any_proto_object_when_no_data() {
         Any payloadForCloudEvent = buildProtoPayloadForTest();
 
-        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withId("someId")
-                .withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door"))
-                .withDataContentType(DATA_CONTENT_TYPE)
+        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
+                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create(payloadForCloudEvent.getTypeUrl()));
         CloudEvent cloudEvent = cloudEventBuilder.build();
 
@@ -602,26 +597,19 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test unpack payload by class from cloud event as protobuf Message object")
     public void test_unpack_payload_by_class_from_cloud_event_proto_message_object() {
-        Any payloadForCloudEvent = Any.pack(io.cloudevents.v1.proto.CloudEvent.newBuilder()
-                .setSpecVersion("1.0")
-                .setId("hello")
-                .setSource("//VCU.MY_CAR_VIN/someService")
-                .setType("example.demo")
-                .setProtoData(Any.newBuilder().build())
-                .build());
+        Any payloadForCloudEvent = Any.pack(
+                io.cloudevents.v1.proto.CloudEvent.newBuilder().setSpecVersion("1.0").setId("hello")
+                        .setSource("//VCU.MY_CAR_VIN/someService").setType("example.demo")
+                        .setProtoData(Any.newBuilder().build()).build());
         byte[] cloudEventData = payloadForCloudEvent.toByteArray();
 
-        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withId("someId")
-                .withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door"))
-                .withDataContentType(DATA_CONTENT_TYPE)
-                .withDataSchema(URI.create(payloadForCloudEvent.getTypeUrl()))
-                .withData(cloudEventData);
+        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
+                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
+                .withDataSchema(URI.create(payloadForCloudEvent.getTypeUrl())).withData(cloudEventData);
         CloudEvent cloudEvent = cloudEventBuilder.build();
 
-        final Optional<io.cloudevents.v1.proto.CloudEvent> extracted =
-                UCloudEvent.unpack(cloudEvent, io.cloudevents.v1.proto.CloudEvent.class);
+        final Optional<io.cloudevents.v1.proto.CloudEvent> extracted = UCloudEvent.unpack(cloudEvent,
+                io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(extracted.isPresent());
         final io.cloudevents.v1.proto.CloudEvent unpackedCE = extracted.get();
@@ -635,17 +623,14 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test unpack payload by class from cloud event when protobuf Message is not unpack-able")
     public void test_unpack_payload_by_class_from_cloud_event_proto_message_object_when_not_valid_getMessage() {
-        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withId("someId")
-                .withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door"))
-                .withDataContentType(DATA_CONTENT_TYPE)
+        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
+                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent"))
                 .withData("<html><head></head><body><p>Hello</p></body></html>".getBytes());
         CloudEvent cloudEvent = cloudEventBuilder.build();
 
-        final Optional<io.cloudevents.v1.proto.CloudEvent> extracted =
-                UCloudEvent.unpack(cloudEvent, io.cloudevents.v1.proto.CloudEvent.class);
+        final Optional<io.cloudevents.v1.proto.CloudEvent> extracted = UCloudEvent.unpack(cloudEvent,
+                io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(extracted.isEmpty());
 
@@ -657,13 +642,12 @@ class UCloudEventTest {
 
         String sinkForTest = "//bo.cloud/petapp/1/rpc.response";
 
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
-                .withExtension("sink", URI.create(sinkForTest));
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("sink", URI.create(sinkForTest));
         CloudEvent cloudEvent = builder.build();
 
         final String prettyPrint = UCloudEvent.toString(cloudEvent);
-        final String expected = "CloudEvent{id='testme', source='/body.access//door.front_left#Door', " +
-                "sink='//bo.cloud/petapp/1/rpc.response', type='pub.v1'}";
+        final String expected = "CloudEvent{id='testme', source='/body.access//door.front_left#Door', " + "sink='//bo"
+                + ".cloud/petapp/1/rpc.response', type='pub.v1'}";
 
         assertEquals(expected, prettyPrint);
     }
@@ -691,31 +675,25 @@ class UCloudEventTest {
 
     private CloudEventBuilder buildBaseCloudEventBuilderForTest() {
         // source
-        UUri Uri = UUri.newBuilder()
-            .setEntity(UEntity.newBuilder().setName("body.access"))
-            .setResource(UResource.newBuilder()
-                .setName("door")
-                .setInstance("front_left")
-                .setMessage("Door"))
-            .build();
-        
+        UUri Uri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access"))
+                .setResource(UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door"))
+                .build();
+
         String source = LongUriSerializer.instance().serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
 
         // additional attributes
-        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
-                .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.STANDARD)
-                .withTtl(3)
-                .withToken("someOAuthToken")
+        final UCloudEventAttributes uCloudEventAttributes =
+                new UCloudEventAttributes.UCloudEventAttributesBuilder().withHash(
+                        "somehash").withPriority(UCloudEventAttributes.Priority.STANDARD).withTtl(3).withToken(
+                                "someOAuthToken")
                 .build();
 
         // build the cloud event
         final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("testme", source,
-                protoPayload.toByteArray(), protoPayload.getTypeUrl(),
-                uCloudEventAttributes);
+                protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
         cloudEventBuilder.withType(UCloudEventType.PUBLISH.type());
 
         return cloudEventBuilder;
@@ -726,12 +704,8 @@ class UCloudEventTest {
     }
 
     private io.cloudevents.v1.proto.CloudEvent buildProtoPayloadForTest1() {
-        return io.cloudevents.v1.proto.CloudEvent.newBuilder()
-                .setSpecVersion("1.0")
-                .setId("hello")
-                .setSource("//VCU.MY_CAR_VIN/body.access//door.front_left#Door")
-                .setType("example.demo")
-                .setProtoData(Any.newBuilder().build())
-                .build();
+        return io.cloudevents.v1.proto.CloudEvent.newBuilder().setSpecVersion("1.0").setId("hello")
+                .setSource("//VCU.MY_CAR_VIN/body.access//door.front_left#Door").setType("example.demo")
+                .setProtoData(Any.newBuilder().build()).build();
     }
 }

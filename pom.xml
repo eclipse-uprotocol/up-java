@@ -9,7 +9,7 @@
     <groupId>org.eclipse.uprotocol</groupId>
     <artifactId>uprotocol-java</artifactId>
     <name>Java SDK for uProtocol</name>
-    <description>Core uProtocol functionality such as data models for  URI for source and sink values and building uProtocol CloudEvents </description>
+    <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more</description>
 
     <version>${revision}</version>
     <packaging>jar</packaging>
@@ -21,7 +21,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <revision>1.4-SNAPSHOT</revision>
+        <revision>1.5.0</revision>
 
         <junit.platform.version>1.9.1</junit.platform.version>
         <junit-jupiter.version>5.9.1</junit-jupiter.version>
@@ -278,13 +278,14 @@
             <artifactId>commons-validator</artifactId>
             <version>1.7</version>
         </dependency>
+        
+        <!-- uProtocol core API library -->
         <dependency>
-            <groupId>org.eclipse.uprotocol </groupId>
+            <groupId>org.eclipse.uprotocol</groupId>
             <artifactId>uprotocol-core-api</artifactId>
-            <version>1.4.9-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/uprotocol-core-api-1.4.9-SNAPSHOT.jar</systemPath>
+            <version>1.5.0</version>
         </dependency>
+        
         <!-- JSON library for JUnit test cases -->
         <dependency>
             <groupId>org.json</groupId>

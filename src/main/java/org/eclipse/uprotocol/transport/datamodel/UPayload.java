@@ -21,6 +21,8 @@
 
  package org.eclipse.uprotocol.transport.datamodel;
 
+import org.eclipse.uprotocol.v1.UPayloadFormat;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -29,20 +31,20 @@ import java.util.Objects;
   */
 public class UPayload {
 
-    private static final UPayload EMPTY = new UPayload(new byte[0], USerializationHint.UNKNOWN);
+    private static final UPayload EMPTY = new UPayload(new byte[0], UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED);
 
     private final byte[] data;
 
-    private final USerializationHint hint;  // Hint regarding the bytes contained within the UPayload
+    private final UPayloadFormat hint;  // Hint regarding the bytes contained within the UPayload
 
 
     /**
      * Create a UPayload.
      * @param data A byte array of the actual data.
      */
-    public UPayload(byte[] data, USerializationHint hint) {
+    public UPayload(byte[] data, UPayloadFormat hint) {
         this.data = Objects.requireNonNullElse(data, new byte[0]);
-        this.hint = Objects.requireNonNullElse(hint, USerializationHint.UNKNOWN);
+        this.hint = Objects.requireNonNullElse(hint, UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED);
     }
 
 
@@ -58,7 +60,7 @@ public class UPayload {
      * The hint regarding the bytes contained within the UPayload.
      * @return Returns the hint regarding the bytes contained within the UPayload.
      */
-    public USerializationHint hint() {
+    public UPayloadFormat hint() {
         return this.hint;
     }
     
