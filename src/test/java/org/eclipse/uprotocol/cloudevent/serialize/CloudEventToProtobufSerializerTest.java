@@ -17,24 +17,26 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.cloudevent.serialize;
 
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
-import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
-import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
-import org.eclipse.uprotocol.uri.datamodel.UAuthority;
-import org.eclipse.uprotocol.uri.datamodel.UEntity;
-import org.eclipse.uprotocol.uri.datamodel.UResource;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.factory.UriFactory;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
+import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
+import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
+import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+import org.eclipse.uprotocol.v1.UEntity;
+import org.eclipse.uprotocol.v1.UResource;
+import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -55,9 +57,7 @@ class CloudEventToProtobufSerializerTest {
     public void test_serialize_and_desirialize_cloud_event_to_protobuf() {
 
         // build the source
-        UEntity use = UEntity.fromName("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use, UResource.fromNameWithInstance("Door", "front_left"));
-        String source = UriFactory.buildUProtocolUri(Uri);
+        String source = buildUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -144,10 +144,7 @@ class CloudEventToProtobufSerializerTest {
         final CloudEventSerializer serializer = CloudEventSerializers.PROTOBUF.serializer();
 
         // source
-        UEntity use = UEntity.fromName("body.access");
-        UUri Uri = new UUri(UAuthority.local(), use,
-                new UResource("door", "front_left", "Door"));
-        String source = UriFactory.buildUProtocolUri(Uri);
+        String source = buildUriForTest();
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest1();
@@ -328,6 +325,18 @@ class CloudEventToProtobufSerializerTest {
                 .setProtoData(Any.newBuilder().build())
                 .build();
         return Any.pack(cloudEventProto);
+    }
+
+    private String buildUriForTest() {
+        UUri Uri = UUri.newBuilder()
+            .setEntity(UEntity.newBuilder().setName("body.access"))
+            .setResource(UResource.newBuilder()
+                .setName("door")
+                .setInstance("front_left")
+                .setMessage("Door"))
+            .build();
+        
+        return LongUriSerializer.instance().serialize(Uri);
     }
 
     private Any buildProtoPayloadForTest() {

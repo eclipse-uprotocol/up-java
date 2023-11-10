@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<!--
+ * Copyright (c) 2023 General Motors GTO LLC.
+ * 
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ * 
+ * SPDX-FileType: DOCUMENTATION
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -9,7 +19,7 @@
     <groupId>org.eclipse.uprotocol</groupId>
     <artifactId>uprotocol-java</artifactId>
     <name>Java SDK for uProtocol</name>
-    <description>Core uProtocol functionality such as data models for  URI for source and sink values and building uProtocol CloudEvents </description>
+    <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more</description>
 
     <version>${revision}</version>
     <packaging>jar</packaging>
@@ -21,7 +31,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <revision>1.4-SNAPSHOT</revision>
+        <revision>1.5.0-SNAPSHOT</revision>
 
         <junit.platform.version>1.9.1</junit.platform.version>
         <junit-jupiter.version>5.9.1</junit-jupiter.version>
@@ -148,12 +158,45 @@
                     <goals>deploy</goals>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.eclipse.dash</groupId>
+                <artifactId>license-tool-plugin</artifactId>
+                <version>1.0.3-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>license-check</id>
+                        <goals>
+                            <goal>license-check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>io.cloudevents</groupId>
+                <artifactId>cloudevents-protobuf</artifactId>
+                <version>2.4.2</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>2.11.0</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.checkerframework</groupId>
+                <artifactId>checker-qual</artifactId>
+                <version>3.12.0</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-bom</artifactId>
@@ -175,7 +218,7 @@
             <dependency>
                 <groupId>nl.jqno.equalsverifier</groupId>
                 <artifactId>equalsverifier</artifactId>
-                <version>3.10.1</version>
+                <version>3.14.1</version>
                 <scope>test</scope>
             </dependency>
 
@@ -195,6 +238,7 @@
         <dependency>
             <groupId>nl.jqno.equalsverifier</groupId>
             <artifactId>equalsverifier</artifactId>
+            <version>3.14.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -209,7 +253,7 @@
         <dependency>
             <groupId>io.cloudevents</groupId>
             <artifactId>cloudevents-protobuf</artifactId>
-            <version>2.2.0</version>
+            
         </dependency>
 
         <!-- CloudEvents support https://cloudevents.github.io/sdk-java/  https://github.com/cloudevents/sdk-java-->
@@ -243,12 +287,6 @@
             <version>2.16.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.google.truth.extensions</groupId>
-            <artifactId>truth-proto-extension</artifactId>
-            <version>1.1</version>
-            <scope>test</scope>
-        </dependency>
 
         <!-- https://search.maven.org/artifact/com.github.f4b6a3/uuid-creator -->
         <dependency>
@@ -257,6 +295,26 @@
             <version>5.1.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.7</version>
+        </dependency>
+        
+        <!-- uProtocol core API library -->
+        <dependency>
+            <groupId>org.eclipse.uprotocol</groupId>
+            <artifactId>uprotocol-core-api</artifactId>
+            <version>1.5.0</version>
+        </dependency>
+        
+        <!-- JSON library for JUnit test cases -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20230227</version> <!-- Use the latest version -->
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <distributionManagement>
@@ -270,6 +328,16 @@
       </repository>
     </distributionManagement>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>dash-licenses-snapshots</id>
+            <url>https://repo.eclipse.org/content/repositories/dash-licenses-snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+
+    </pluginRepositories>
     <profiles>
         <profile>
             <id>release</id>

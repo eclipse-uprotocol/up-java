@@ -17,22 +17,26 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.cloudevent.factory;
 
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
-import org.eclipse.uprotocol.uri.datamodel.UUri;
-import org.eclipse.uprotocol.uri.factory.UriFactory;
+
 import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
 import com.google.rpc.Code;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
+import org.eclipse.uprotocol.uuid.factory.UuidFactory;
+import org.eclipse.uprotocol.v1.UUID;
+import org.eclipse.uprotocol.v1.UUri;
+
 import java.net.URI;
-import java.util.UUID;
 
 /**
  * A factory is a part of the software has methods to generate concrete objects, usually of the same type or interface.<br>
@@ -150,7 +154,7 @@ public interface CloudEventFactory {
      * @return Returns a UUIDv8 id.
      */
     static String generateCloudEventId() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         return uuid.toString();
     }
 
@@ -159,8 +163,7 @@ public interface CloudEventFactory {
      *
      * @param id                 Event unique identifier.
      * @param source             Identifies who is sending this event in the format of a uProtocol URI that
-     *                           can be built from a {@link UUri} object using
-     *                           the {@link UriFactory}
+     *                           can be built from a {@link UUri} object.
      * @param protoPayloadBytes  The serialized Event data with the content type of "application/x-protobuf".
      * @param protoPayloadSchema The schema of the proto payload bytes, for example you can use <code>protoPayload.getTypeUrl()</code> on your service/app object.
      * @param attributes        Additional cloud event attributes that can be passed in. All attributes are optional and will be added only if they

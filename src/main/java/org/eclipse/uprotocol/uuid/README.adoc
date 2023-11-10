@@ -1,0 +1,38 @@
+= uProtocol UUID
+:toc:
+:sectnums:
+
+== Overview
+
+Implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uuid.adoc[uProtocol UUID specifications].
+
+== Examples
+
+[source,java]
+----
+    final UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
+    final Optional<UUIDUtils.Version> version = UUIDUtils.getVersion(uuid);
+    final Optional<Long> time = UUIDUtils.getTime(uuid);
+    final Optional<byte[]> bytes = UUIDUtils.toBytes(uuid);
+    final Optional<String> uuidString = UUIDUtils.toString(uuid);
+
+    assertNotNull(uuid);
+    assertTrue(UUIDUtils.isUProtocol(uuid));
+    assertTrue(UUIDUtils.isUuid(uuid));
+    assertFalse(UUIDUtils.isUuidv6(uuid));
+    assertTrue(version.isPresent());
+    assertTrue(time.isPresent());
+    assertEquals(time.get(), now.toEpochMilli());
+    
+    assertTrue(bytes.isPresent());
+    assertTrue(uuidString.isPresent());
+
+    final Optional<UUID> uuid1 = UUIDUtils.fromBytes(bytes.get());
+
+    assertTrue(uuid1.isPresent());
+    assertEquals(uuid, uuid1.get());
+
+    final Optional<UUID> uuid2 = UUIDUtils.fromString(uuidString.get());
+    assertTrue(uuid2.isPresent());
+    assertEquals(uuid, uuid2.get());
+----

@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.cloudevent.validate;
@@ -27,6 +30,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.eclipse.uprotocol.validation.ValidationResult;
 
 class ValidationResultTest {
 
@@ -60,14 +65,14 @@ class ValidationResultTest {
 
     @Test
     @DisplayName("Test success message")
-    void test_success_validation_result_message() {
+    void test_success_validation_result_getMessage() {
         ValidationResult success = ValidationResult.success();
         assertTrue(success.getMessage().isBlank());
     }
 
     @Test
     @DisplayName("Test failure message")
-    void test_failure_validation_result_message() {
+    void test_failure_validation_result_getMessage() {
         ValidationResult failure = ValidationResult.failure("boom");
         assertEquals("boom", failure.getMessage());
     }

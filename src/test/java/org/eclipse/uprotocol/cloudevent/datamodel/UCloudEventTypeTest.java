@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.cloudevent.datamodel;
@@ -36,12 +39,6 @@ class UCloudEventTypeTest {
         assertEquals("pub.v1", uCloudEventType.type());
     }
 
-    @Test
-    @DisplayName("Test the type for a file event type")
-    public void test_type_for_file() {
-        UCloudEventType uCloudEventType = UCloudEventType.FILE;
-        assertEquals("file.v1", uCloudEventType.type());
-    }
 
     @Test
     @DisplayName("Test the type for a request RPC event type")
@@ -63,14 +60,6 @@ class UCloudEventTypeTest {
         String type = "pub.v1";
         assertTrue(UCloudEventType.valueOfType(type).isPresent());
         assertEquals(UCloudEventType.PUBLISH, UCloudEventType.valueOfType(type).get());
-    }
-
-    @Test
-    @DisplayName("Test parsing the file event type from a string")
-    public void test_parse_file_event_type_from_string() {
-        String type = "file.v1";
-        assertTrue(UCloudEventType.valueOfType(type).isPresent());
-        assertEquals(UCloudEventType.FILE, UCloudEventType.valueOfType(type).get());
     }
 
     @Test

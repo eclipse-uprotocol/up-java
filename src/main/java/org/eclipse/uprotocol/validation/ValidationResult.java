@@ -17,9 +17,12 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.uprotocol.cloudevent.validate;
+package org.eclipse.uprotocol.validation;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;

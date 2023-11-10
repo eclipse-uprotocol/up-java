@@ -1,11 +1,12 @@
 = Eclipse uProtocol Contributors
 
-These are the contributors to Eclipse uProtocol Java SDK
+These are the major contributors to Eclipse uProtocol Java SDK
 
 |===
 | GitHub username | Name
 
 |https://github.com/tamarafischer[tamarafischer] |Tamara Fisher
 |https://github.com/stevenhartley[shartley] | Steven Hartley
+|https://github.com/neelam-kushwah[neelam-kushwah] | Neelam Kushwah
 
 |===

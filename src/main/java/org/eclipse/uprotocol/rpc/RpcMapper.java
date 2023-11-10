@@ -17,6 +17,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * SPDX-FileType: SOURCE
+ * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.rpc;
@@ -30,19 +33,23 @@ import com.google.rpc.Status;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import org.eclipse.uprotocol.transport.datamodel.UPayload;
+
 /**
- * An interface that maps the returned value from uProtocol Layer 2 to the response in Layer3.
+ * RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with 
+ * an RPC Response (uP-L2). APIs that return Message assumes that the payload is protobuf serialized 
+ * com.google.protobuf.Any (UPayloadFormat.PROTOBUF) and will barf if anything else is passed
  */
 public interface RpcMapper {
 
     /**
-     * Map a response of CompletableFuture&lt;Any&gt; from Link into a CompletableFuture containing the declared expected return type of the RPC method or an exception.
-     * @param responseFuture CompletableFuture&lt;Any&gt; response from Link.
+     * Map a response of CompletableFuture&lt;UPayload&gt; from Link into a CompletableFuture containing the declared expected return type of the RPC method or an exception.
+     * @param responseFuture CompletableFuture&lt;UPayload&gt; response from uTransport.
      * @param expectedClazz The class name of the declared expected return type of the RPC method.
      * @return Returns a CompletableFuture containing the declared expected return type of the RPC method or an exception.
      * @param <T> The declared expected return type of the RPC method.
      */
-    static <T extends Message> CompletableFuture<T> mapResponse(CompletableFuture<Any> responseFuture, Class<T> expectedClazz) {
+    static <T extends Message> CompletableFuture<T> mapResponse(CompletableFuture<UPayload> responseFuture, Class<T> expectedClazz) {
         return responseFuture.handle((payload, exception) -> {
             // Unexpected exception
             if (exception != null) {
@@ -51,12 +58,19 @@ public interface RpcMapper {
             if (payload == null) {
                 throw new RuntimeException("Server returned a null payload. Expected " + expectedClazz.getName());
             }
-            // Expected type
-            if (payload.is(expectedClazz)) {
-                return unpackPayload(payload, expectedClazz);
+            Any any;
+            try {
+                any = Any.parseFrom(payload.data());
+            
+                // Expected type
+                if (any.is(expectedClazz)) {
+                    return unpackPayload(any, expectedClazz);
+                }
+            } catch (InvalidProtocolBufferException e) {
+                throw new RuntimeException(String.format("%s [%s]", e.getMessage(), Status.class.getName()), e);
             }
             // Some other type instead of the expected one
-            throw new RuntimeException(String.format("Unknown payload type [%s]. Expected [%s]", payload.getTypeUrl(), expectedClazz.getName()));
+            throw new RuntimeException(String.format("Unknown payload type [%s]. Expected [%s]", any.getTypeUrl(), expectedClazz.getName()));
         });
     }
 
@@ -67,30 +81,39 @@ public interface RpcMapper {
      * @return Returns a CompletableFuture containing an RpcResult containing the declared expected return type T, or a Status containing any errors.
      * @param <T> The declared expected return type of the RPC method.
      */
-    static <T extends Message> CompletableFuture<RpcResult<T>> mapResponseToResult(CompletableFuture<Any> responseFuture, Class<T> expectedClazz) {
+    static <T extends Message> CompletableFuture<RpcResult<T>> mapResponseToResult(CompletableFuture<UPayload> responseFuture, Class<T> expectedClazz) {
         return responseFuture.handle((payload, exception) -> {
             // Unexpected exception
             if (exception != null) {
                 throw new RuntimeException(exception.getMessage(), exception);
             }
+
             if (payload == null) {
                 throw new RuntimeException("Server returned a null payload. Expected " + expectedClazz.getName());
             }
-            // Expected type
-            if (payload.is(expectedClazz)) {
-                if (Status.class.equals(expectedClazz)) {
-                    return calculateStatusResult(payload);
-                } else {
-                    return RpcResult.success(unpackPayload(payload, expectedClazz));
+            Any any;
+            try {
+                any = Any.parseFrom(payload.data());
+                
+                // Expected type
+                if (any.is(expectedClazz)) {
+                    if (Status.class.equals(expectedClazz)) {
+                        return calculateStatusResult(any);
+                    } else {
+                        return RpcResult.success(unpackPayload(any, expectedClazz));
+                    }
                 }
+                // Status instead of the expected one
+                if (any.is(Status.class)) {
+                    return calculateStatusResult(any);
+                }
+            } catch (InvalidProtocolBufferException e) {
+                throw new RuntimeException(String.format("%s [%s]", e.getMessage(), Status.class.getName()), e);
             }
-            // Status instead of the expected one
-            if (payload.is(Status.class)) {
-                return calculateStatusResult(payload);
-            }
+            
             // Some other type instead of the expected one
             throw new RuntimeException(String.format("Unknown payload type [%s]. Expected [%s]",
-                    payload.getTypeUrl(), expectedClazz.getName()));
+                    any.getTypeUrl(), expectedClazz.getName()));
         });
     }
 
