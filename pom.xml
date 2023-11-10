@@ -19,7 +19,7 @@
     <name>Java SDK for uProtocol</name>
     <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more</description>
 
-    <version>1.5.0</version>
+    <version>1.5.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -47,7 +47,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/eclipse-uprotocol/uprotocol-java.git</url>
-      <tag>uprotocol-java-1.5.0</tag>
+      <tag>HEAD</tag>
     </scm>
 
     <build>
