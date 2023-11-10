@@ -29,75 +29,12 @@ import com.github.f4b6a3.uuid.util.UuidTime;
 import com.github.f4b6a3.uuid.util.UuidUtil;
 import org.eclipse.uprotocol.v1.UUID;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Optional;
 
 /**
  * UUID Utils class that provides utility methods for uProtocol IDs
  */
-public interface UUIDUtils {
-
-    /**
-     * Convert the UUID to a String.
-     *
-     * @return String representation of the UUID or Optional.empty() if the UUID is null.
-     */
-    public static Optional<String> toString(UUID uuid) {
-        return uuid == null ? Optional.empty() : Optional.of(new java.util.UUID(uuid.getMsb(), uuid.getLsb()).toString());
-    }
-
-    /**
-     * Convert the UUID to byte array.
-     *
-     * @return The byte array or Optional.empty() if the UUID is null.
-     */
-    public static Optional<byte[]> toBytes(UUID uuid) {
-        if (uuid == null) {
-            return Optional.empty();
-        }
-        byte[] b = new byte[16];
-        return Optional.of(
-                ByteBuffer.wrap(b).order(ByteOrder.BIG_ENDIAN).putLong(uuid.getMsb()).putLong(uuid.getLsb()).array());
-    }
-
-    /**
-     * Convert the byte array to a UUID.
-     *
-     * @param bytes The UUID in bytes format.
-     * @return UUIDv8 object built from the byte array or Optional.empty()
-     * if the byte array is null or not 16 bytes long.
-     */
-    public static Optional<UUID> fromBytes(byte[] bytes) {
-        if (bytes == null || bytes.length != 16) {
-            return Optional.empty();
-        }
-
-        final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-        return Optional.of(UUID.newBuilder().setMsb(byteBuffer.getLong()).setLsb(byteBuffer.getLong()).build());
-    }
-
-    /**
-     * Create a UUID from the passed string.
-     *
-     * @param string the string representation of the uuid.
-     * @return The UUID object representation of the string or Optional.empty()
-     * if the string is null, empty, or invalid.
-     */
-    public static Optional<UUID> fromString(String string) {
-        if (string == null || string.isBlank()) {
-            return Optional.empty();
-        }
-        try {
-            java.util.UUID uuid_java = java.util.UUID.fromString(string);
-            UUID uuid = UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
-                    .setLsb(uuid_java.getLeastSignificantBits()).build();
-            return Optional.of(uuid);
-        } catch (IllegalArgumentException e) {
-            return Optional.empty();
-        }
-
-    }
+public interface UuidUtils {
 
     /**
      * Fetch the UUID version.

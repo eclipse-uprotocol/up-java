@@ -25,7 +25,7 @@ package org.eclipse.uprotocol.transport.validate;
 
 import org.eclipse.uprotocol.transport.datamodel.UStatus;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
-import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
+import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UUID;
@@ -92,7 +92,7 @@ public abstract class UAttributesValidator {
      */
     public ValidationResult isExpired(UAttributes uAttributes) {
         final int ttl = uAttributes.getTtl();
-        final Optional<Long> maybeTime = UUIDUtils.getTime(uAttributes.getId());
+        final Optional<Long> maybeTime = UuidUtils.getTime(uAttributes.getId());
 //        if (maybeTime.isEmpty()) {
 //            return ValidationResult.failure("Invalid Time");
 //        }
@@ -187,7 +187,7 @@ public abstract class UAttributesValidator {
      * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
      */
     public ValidationResult validateReqId(UAttributes attributes) {
-        if (attributes.hasReqid() && !UUIDUtils.isUuid(attributes.getReqid())) {
+        if (attributes.hasReqid() && !UuidUtils.isUuid(attributes.getReqid())) {
             return ValidationResult.failure("Invalid UUID");
         } else {
             return ValidationResult.success();
@@ -352,7 +352,7 @@ public abstract class UAttributesValidator {
             if (!attributes.hasReqid()||attributes.getReqid()== UUID.getDefaultInstance()) {
                 return ValidationResult.failure("Missing correlationId");
             }
-            if (!UUIDUtils.isUuid(attributes.getReqid())) {
+            if (!UuidUtils.isUuid(attributes.getReqid())) {
                 return ValidationResult.failure(String.format("Invalid correlationId [%s]", attributes.getReqid()));
             } else {
                 return ValidationResult.success();

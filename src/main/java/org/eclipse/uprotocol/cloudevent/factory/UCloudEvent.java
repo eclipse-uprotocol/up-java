@@ -24,7 +24,9 @@
 
 package org.eclipse.uprotocol.cloudevent.factory;
 
-import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
+import org.eclipse.uprotocol.uuid.factory.UuidUtils;
+import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
+
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -162,9 +164,9 @@ public interface UCloudEvent {
      */
     static Optional<Long> getCreationTimestamp(CloudEvent cloudEvent) {
         final String cloudEventId = cloudEvent.getId();
-        final Optional<UUID> uuid = UUIDUtils.fromString(cloudEventId);
+        final UUID uuid = LongUuidSerializer.instance().deserialize(cloudEventId);
 
-        return uuid.isEmpty() ? Optional.empty() : UUIDUtils.getTime(uuid.get());
+        return UuidUtils.getTime(uuid);
     }
 
     /**
@@ -208,12 +210,13 @@ public interface UCloudEvent {
             return false;
         }
         final String cloudEventId = cloudEvent.getId();
-        final Optional<UUID> uuid = UUIDUtils.fromString(cloudEventId);
-        
-        if (uuid.isEmpty()) {
+        final UUID uuid = LongUuidSerializer.instance().deserialize(cloudEventId);
+
+        if (uuid.equals(UUID.getDefaultInstance())) {
             return false;
         }
-        long delta = System.currentTimeMillis() - UUIDUtils.getTime(uuid.get()).orElse(0L);
+        
+        long delta = System.currentTimeMillis() - UuidUtils.getTime(uuid).orElse(0L);
 
         return delta >= ttl;
     }
@@ -225,9 +228,9 @@ public interface UCloudEvent {
      */
     static boolean isCloudEventId(CloudEvent cloudEvent) {
         final String cloudEventId = cloudEvent.getId();
-        final Optional<UUID> uuid = UUIDUtils.fromString(cloudEventId);
+        final UUID uuid = LongUuidSerializer.instance().deserialize(cloudEventId);
         
-        return uuid.isEmpty() ? false : UUIDUtils.isUuid(uuid.get());
+        return UuidUtils.isUuid(uuid);
     }
 
     /**

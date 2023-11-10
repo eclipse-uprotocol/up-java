@@ -34,8 +34,9 @@ import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
-import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
-import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
+import org.eclipse.uprotocol.uuid.factory.UuidFactory;
+import org.eclipse.uprotocol.uuid.factory.UuidUtils;
+import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
 import org.eclipse.uprotocol.v1.UEntity;
 import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUID;
@@ -158,12 +159,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test validate version")
     void validate_cloud_event_version_when_valid() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType(UCloudEventType.PUBLISH.type())
                 .withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
@@ -189,12 +187,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test validate cloudevent id when valid")
     void validate_cloud_event_id_when_valid() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType(UCloudEventType.PUBLISH.type())
                 .withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
@@ -209,11 +204,8 @@ class CloudEventValidatorTest {
         final java.util.UUID uuid_java = java.util.UUID.randomUUID();
         UUID uuid = UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
                 .setLsb(uuid_java.getLeastSignificantBits()).build();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType(UCloudEventType.PUBLISH.type())
                 .withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
@@ -237,12 +229,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test local Publish type CloudEvent is valid everything is valid")
     void test_publish_type_cloudevent_is_valid_when_everything_is_valid_local() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEventType.PUBLISH.type());
         CloudEvent cloudEvent = builder.build();
@@ -254,12 +243,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test microRemote Publish type CloudEvent is valid everything is valid")
     void test_publish_type_cloudevent_is_valid_when_everything_is_valid_remote() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
                 .withType(UCloudEventType.PUBLISH.type());
@@ -272,12 +258,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test microRemote Publish type CloudEvent is valid everything is valid with a sink")
     void test_publish_type_cloudevent_is_valid_when_everything_is_valid_remote_with_a_sink() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
                 .withExtension("sink", "//bo.cloud/petapp").withType(UCloudEventType.PUBLISH.type());
@@ -290,12 +273,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test microRemote Publish type CloudEvent is not valid everything is valid with invalid sink")
     void test_publish_type_cloudevent_is_not_valid_when_remote_with_invalid_sink() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
                 .withExtension("sink", "//bo.cloud").withType(UCloudEventType.PUBLISH.type());
@@ -310,12 +290,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Publish type CloudEvent is not valid when source is empty")
     void test_publish_type_cloudevent_is_not_valid_when_source_is_empty() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("/")).withType(UCloudEventType.PUBLISH.type());
         CloudEvent cloudEvent = builder.build();
@@ -358,12 +335,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Notification type CloudEvent is valid everything is valid")
     void test_notification_type_cloudevent_is_valid_when_everything_is_valid() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEventType.PUBLISH.type())
                 .withExtension("sink", "//bo.cloud/petapp");
@@ -376,12 +350,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Notification type CloudEvent is not valid missing sink")
     void test_notification_type_cloudevent_is_not_valid_missing_sink() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEventType.PUBLISH.type());
         CloudEvent cloudEvent = builder.build();
@@ -394,12 +365,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Notification type CloudEvent is not valid invalid sink")
     void test_notification_type_cloudevent_is_not_valid_invalid_sink() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEventType.PUBLISH.type())
                 .withExtension("sink", "//bo.cloud");
@@ -415,12 +383,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Request type CloudEvent is valid everything is valid")
     void test_request_type_cloudevent_is_valid_when_everything_is_valid() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("//bo.cloud/petapp//rpc.response")).withType(UCloudEventType.REQUEST.type())
                 .withExtension("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor");
@@ -433,12 +398,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Request type CloudEvent is not valid invalid source")
     void test_request_type_cloudevent_is_not_valid_invalid_source() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("//bo.cloud/petapp//dog"))
                 .withExtension("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor")
@@ -456,12 +418,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Request type CloudEvent is not valid missing sink")
     void test_request_type_cloudevent_is_not_valid_missing_sink() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("//bo.cloud/petapp//rpc.response")).withType(UCloudEventType.REQUEST.type());
         CloudEvent cloudEvent = builder.build();
@@ -476,12 +435,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Request type CloudEvent is not valid sink not rpc command")
     void test_request_type_cloudevent_is_not_valid_invalid_sink_not_rpc_command() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("//bo.cloud/petapp//rpc.response")).withType(UCloudEventType.REQUEST.type())
                 .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor");
@@ -498,12 +454,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Response type CloudEvent is valid everything is valid")
     void test_response_type_cloudevent_is_valid_when_everything_is_valid() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("//VCU.myvin/body.access/1/rpc.UpdateDoor"))
                 .withType(UCloudEventType.RESPONSE.type()).withExtension("sink", "//bo.cloud/petapp//rpc.response");
@@ -516,12 +469,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Response type CloudEvent is not valid invalid source")
     void test_response_type_cloudevent_is_not_valid_invalid_source() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("//VCU.myvin/body.access/1/UpdateDoor"))
                 .withExtension("sink", "//bo.cloud/petapp//rpc.response").withType(UCloudEventType.RESPONSE.type());
@@ -538,12 +488,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Response type CloudEvent is not valid missing sink and invalid source")
     void test_response_type_cloudevent_is_not_valid_missing_sink_and_invalid_source() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("//VCU.myvin/body.access/1/UpdateDoor"))
                 .withType(UCloudEventType.RESPONSE.type());
@@ -561,12 +508,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Response type CloudEvent is not valid sink and source, missing entity name.")
     void test_response_type_cloudevent_is_not_valid_invalid_sink() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withType(UCloudEventType.RESPONSE.type()).withSource(URI.create("//VCU.myvin"))
                 .withExtension("sink", "//bo.cloud");
@@ -584,12 +528,9 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Response type CloudEvent is not valid source not rpc command")
     void test_response_type_cloudevent_is_not_valid_invalid_source_not_rpc_command() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
                 .withSource(URI.create("//bo.cloud/petapp/1/dog")).withType(UCloudEventType.RESPONSE.type())
                 .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor");
@@ -640,13 +581,9 @@ class CloudEventValidatorTest {
 
         // source
         String source = buildLongUriForTest();
-        UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create();
-        String id = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            id = uuid_string.get();
-        }
-
+        UUID uuid = UuidFactory.Factories.UUIDV6.factory().create();
+        String id = LongUuidSerializer.instance().serialize(uuid);
+        
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
 
@@ -670,13 +607,9 @@ class CloudEventValidatorTest {
 
         // source
         String source = buildLongUriForTest();
-        UUID uuid = UUIDFactory.Factories.UUIDV6.factory().create(Instant.now().minusSeconds(100));
-        String id = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            id = uuid_string.get();
-        }
-
+        UUID uuid = UuidFactory.Factories.UUIDV6.factory().create(Instant.now().minusSeconds(100));
+        String id = LongUuidSerializer.instance().serialize(uuid);
+        
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
 

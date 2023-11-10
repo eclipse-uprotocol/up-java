@@ -3,9 +3,9 @@
 
 == Overview
 
-This library implements the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/languages.adoc[uProtocol Language Specific Library Requirements] for Java defined in https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications] and in particular this module implements.
+This library implements the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/languages.adoc[uProtocol Language Specific Library Requirements] for Java defined in https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications]. The library is organized into packages that are described in <<sdk-packages>> below. Each package contains a README.adoc file that describes the purpose of the package and how to use it.
 
-The module contains factory methods, serializers, validators, etc.. for all data types used in uProtocol. This library fits into the big picture of the <<uprotocol-sdk>> as seen below:
+The module contains the factory methods, serializers, and validators for all data types defined in the specifications, and any data models that either haven't or couldn't be defined in uprotocol-core-api yet (ex. UPayload) This library fits into the big picture of the uProtocol SDK as seen in <<uprotocol-sdk>> below.
 
 .uProtocol SDK
 image:https://raw.githubusercontent.com/eclipse-uprotocol/uprotocol-spec/main/uprotocol_sdk.drawio.svg[#uprotocol-sdk,width=100%,align="center"]
@@ -21,35 +21,52 @@ To pull the SDK from maven central, add the following dependency to your pom.xml
 <!-- uProtocol Core -->
 <dependency>
     <groupId>org.eclipse.uprotocol</groupId>
-    <artifactId>sdk-java</artifactId>
+    <artifactId>uprotocol-java</artifactId>
     <version>1.5.0</version>
 </dependency>
 ----
 
-=== Using the sdk
+=== Using The Sdk
 
-The SDK is organized into packages that are described in <<sdk-packages>> below. Each package contains a README.adoc file that describes the purpose of the package and how to use it.
+The SDK is broken up into different packages that are described in <<sdk-packages>> below. Each package contains a README.adoc file that describes the purpose of the package and how to use it. Packages are organized into the following directories:
+
+.Package Folders
+[#pkg-folders,width=100%,cols="20%,80%",options="header"]
+|===
+
+| Folder | Purpose
+
+| `*builder*` or `*factory*`
+| Contains factory methods for creating uProtocol data types
+
+| `*serializer*`
+| Contains serializers to convert the objects into byte or string form representation of said object
+
+| `*validator*`
+| Contains validators to validate the data types and report errors if the objects are missing or incorrect
+
+|===
+
 
 .SDK Packages
-[#sdk-packages,width=100%,cols="15%,25%,60%",options="header"]
+[#sdk-packages,width=100%,cols="20%,80%",options="header"]
 |===
 
-| Package | Requirements https://github.com/eclipse-uprotocol/uprotocol-spec[(uprotocol-spec)] | Purpose
+| Package | Purpose
 
-| link:src/main/java/org/eclipse/uprotocol/uri/README.adoc[*uuri*]
-| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc[UUri, UAthority, UEntity, UResource]
-| Uniform Resource Identifier (RFC3986) used to address things (devices, software, methods, topics, etc...) on the network
+| link:src/main/java/org/eclipse/uprotocol/uri/README.adoc[`*uuri*`]
+| Uniform Resource Identifier (RFC3986), how uProtocol addresses things (devices, software, methods, topics, etc...) on the network
 
-| link:src/main/java/org/eclipse/uprotocol/cloudevent/README.adoc[*cloudevent*] 
-| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/cloudevents.adoc[uProtocol CloudEvents]
-| Common way to represent uProtocol messages using CloudEvent data model
 
-| link:src/main/java/org/eclipse/uprotocol/uuid/README.adoc[*uuid*] 
-| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uuid.adoc[uProtocol UUIDs]
-| Identifier used to uniquely identify messages that are sent between devices. also includes timestamp for the message
+| link:src/main/java/org/eclipse/uprotocol/uuid/README.adoc[`*uuid*`] 
+| Identifier used to uniquely identify (and timestamp) messages that are sent
 
-| link:src/main/java/org/eclipse/uprotocol/utransport/README.adoc[*utransport*] 
-| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[uP-L1 Specifications]
+| link:src/main/java/org/eclipse/uprotocol/utransport/README.adoc[`*utransport*`] 
 | Interface and data model declaration used for bidirectional point-2-point communication between uEs. This interface is then implemented by https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/ulink.adoc[ulink] libraries for a given underlining transport (ex. Binder, MQTT, Zenoh, SOME/IP, DDS, HTTP, etc…​)
 
+| link:src/main/java/org/eclipse/uprotocol/cloudevent/README.adoc[`*cloudevent*`] 
+| Common way to represent uProtocol messages using CloudEvent data model used by some transports (ex. MQTT, HTTP, etc…​)
+
 |===
+
+NOTE: Please visit the READMEs in <<sdk-packages>> for examples of how to use the different data types and their factories, validators, and serializers.

@@ -32,7 +32,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Random;
 
-public abstract class UUIDFactory {
+public abstract class UuidFactory {
 
     public UUID create() {
         return this.create(Instant.now());
@@ -41,23 +41,23 @@ public abstract class UUIDFactory {
     public abstract UUID create(Instant instant);
 
     public enum Factories {
-        UUIDV6(new UUIDFactory.UUIDv6Factory()),
+        UUIDV6(new UuidFactory.Uuidv6Factory()),
 
-        UPROTOCOL(new UUIDFactory.UUIDv8Factory());
+        UPROTOCOL(new UuidFactory.Uuidv8Factory());
 
-        private final UUIDFactory factory;
+        private final UuidFactory factory;
 
-        private Factories(UUIDFactory factory) {
+        private Factories(UuidFactory factory) {
             this.factory = factory;
         }
 
-        public UUIDFactory factory() {
+        public UuidFactory factory() {
             return factory;
         }
 
     }
 
-    private static class UUIDv6Factory extends UUIDFactory {
+    private static class Uuidv6Factory extends UuidFactory {
         public UUID create(Instant instant) {
             java.util.UUID uuid_java = UuidCreator.getTimeOrdered(Objects.requireNonNullElse(instant, Instant.now()),
                     null, null);
@@ -98,7 +98,7 @@ public abstract class UUIDFactory {
      * |rand_b      | MUST 62 bits random number that is generated at initialization time of the uE only and reused
      * otherwise |
      */
-    private static class UUIDv8Factory extends UUIDFactory {
+    private static class Uuidv8Factory extends UuidFactory {
         public static final int UUIDV8_VERSION = 8;
         private static final int MAX_COUNT = 0xfff;
         private static final long lsb = (new Random().nextLong() & 0x3fffffffffffffffL) | 0x8000000000000000L;

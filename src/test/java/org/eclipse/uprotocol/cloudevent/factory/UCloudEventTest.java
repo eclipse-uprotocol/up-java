@@ -33,8 +33,9 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
-import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
-import org.eclipse.uprotocol.uuid.factory.UUIDUtils;
+import org.eclipse.uprotocol.uuid.factory.UuidFactory;
+import org.eclipse.uprotocol.uuid.factory.UuidUtils;
+import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
 import org.eclipse.uprotocol.v1.UEntity;
 import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUID;
@@ -310,12 +311,9 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test extracting creation timestamp from the CloudEvent UUIDV8 id when the id is valid.")
     public void test_extract_creation_timestamp_from_cloudevent_UUIDV8_Id_when_UUIDV8_id_is_valid() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
 
@@ -400,12 +398,9 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired when no ttl is configured.")
     public void test_cloudevent_is_not_expired_when_no_ttl_configured() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withoutExtension("ttl").withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpired(cloudEvent));
@@ -414,12 +409,9 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is zero.")
     public void test_cloudevent_is_not_expired_when_ttl_is_zero() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 0).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpired(cloudEvent));
@@ -428,12 +420,9 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is minus one.")
     public void test_cloudevent_is_not_expired_when_ttl_is_minus_one() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", -1).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isExpired(cloudEvent));
@@ -442,12 +431,9 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is large number.")
     public void test_cloudevent_is_not_expired_when_ttl_is_large_number_mili() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", Integer.MAX_VALUE)
                 .withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
@@ -457,12 +443,9 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent is expired when configured ttl is 1 milliseconds.")
     public void test_cloudevent_is_expired_when_ttl_1_mili() throws InterruptedException {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 1).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         Thread.sleep(800);
@@ -480,12 +463,9 @@ class UCloudEventTest {
     @Test
     @DisplayName("Test if the CloudEvent has a UUIDV8 id.")
     public void test_cloudevent_has_a_UUIDV8_id() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         assertTrue(UCloudEvent.isCloudEventId(cloudEvent));
@@ -497,11 +477,8 @@ class UCloudEventTest {
         final java.util.UUID uuid_java = java.util.UUID.randomUUID();
         UUID uuid = UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
                 .setLsb(uuid_java.getLeastSignificantBits()).build();
-        String str_uuid = "";
-        Optional<String> uuid_string = UUIDUtils.toString(uuid);
-        if (uuid_string.isPresent()) {
-            str_uuid = uuid_string.get();
-        }
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 3).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         assertFalse(UCloudEvent.isCloudEventId(cloudEvent));

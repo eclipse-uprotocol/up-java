@@ -26,7 +26,7 @@ package org.eclipse.uprotocol.transport.builder;
 
 
 import org.eclipse.uprotocol.v1.*;
-import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
+import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 
 import java.util.Objects;
 
@@ -53,7 +53,7 @@ public class UAttributesBuilder {
      */
     public static UAttributesBuilder publish(UPriority priority) {
         Objects.requireNonNull(priority, "UPriority cannot be null.");
-        return new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(), 
+        return new UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(), 
         UMessageType.UMESSAGE_TYPE_PUBLISH, priority);
     }
 
@@ -68,7 +68,7 @@ public class UAttributesBuilder {
         Objects.requireNonNull(priority, "UPriority cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
 
-        return new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(), 
+        return new UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(), 
         UMessageType.UMESSAGE_TYPE_PUBLISH, priority).withSink(sink);
     }
     
@@ -85,7 +85,7 @@ public class UAttributesBuilder {
         Objects.requireNonNull(ttl, "ttl cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
         
-        return new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(), 
+        return new UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(), 
         UMessageType.UMESSAGE_TYPE_REQUEST, priority).withTtl(ttl).withSink(sink);
     }
 
@@ -102,7 +102,7 @@ public class UAttributesBuilder {
         Objects.requireNonNull(sink, "sink cannot be null.");
         Objects.requireNonNull(reqid, "reqid cannot be null.");
         
-        return new UAttributesBuilder(UUIDFactory.Factories.UPROTOCOL.factory().create(), 
+        return new UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(), 
         UMessageType.UMESSAGE_TYPE_RESPONSE, priority).withSink(sink).withReqId(reqid);
     }
 

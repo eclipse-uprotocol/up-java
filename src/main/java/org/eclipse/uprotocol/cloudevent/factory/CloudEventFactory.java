@@ -32,7 +32,7 @@ import com.google.protobuf.Empty;
 import com.google.rpc.Code;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import org.eclipse.uprotocol.uuid.factory.UUIDFactory;
+import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 import org.eclipse.uprotocol.v1.UUID;
 import org.eclipse.uprotocol.v1.UUri;
 
@@ -154,7 +154,7 @@ public interface CloudEventFactory {
      * @return Returns a UUIDv8 id.
      */
     static String generateCloudEventId() {
-        UUID uuid = UUIDFactory.Factories.UPROTOCOL.factory().create();
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         return uuid.toString();
     }
 
