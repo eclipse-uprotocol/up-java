@@ -111,7 +111,7 @@ class CloudEventFactoryTest {
 
         final CloudEvent cloudEvent = cloudEventBuilder.build();
 
-        // test all attributes match the table in SDV-202
+        // test all attributes
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertEquals("testme", cloudEvent.getId());
         assertEquals(source, cloudEvent.getSource().toString());

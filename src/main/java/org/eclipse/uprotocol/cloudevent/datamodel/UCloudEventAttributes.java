@@ -43,7 +43,7 @@ public class UCloudEventAttributes {
      * Construct the properties object.
      *
      * @param hash     an HMAC generated on the data portion of the CloudEvent message using the device key.
-     * @param priority uProtocol Prioritization classifications defined at QoS in SDV-202.
+     * @param priority uProtocol Prioritization classifications.
      * @param ttl      How long this event should live for after it was generated (in milliseconds).
      *                 Events without this attribute (or value is 0) MUST NOT timeout.
      * @param token    Oauth2 access token to perform the access request defined in the request message.
@@ -88,7 +88,7 @@ public class UCloudEventAttributes {
     }
 
     /**
-     * uProtocol Prioritization classifications defined at QoS in SDV-202.
+     * uProtocol Prioritization classifications.
      * @return Returns an Optional priority attribute.
      */
     public Optional<Priority> priority() {
@@ -133,8 +133,8 @@ public class UCloudEventAttributes {
         }
 
         /**
-         * add a uProtocol Prioritization classifications defined at QoS in SDV-202.
-         * @param priority uProtocol Prioritization classifications defined at QoS in SDV-202.
+         * add a uProtocol Prioritization classifications.
+         * @param priority uProtocol Prioritization classifications.
          * @return Returns the UCloudEventAttributesBuilder with the configured priority.
          */
         public UCloudEventAttributesBuilder withPriority(Priority priority) {
