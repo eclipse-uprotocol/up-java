@@ -36,10 +36,7 @@ import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
-import org.eclipse.uprotocol.v1.UEntity;
-import org.eclipse.uprotocol.v1.UResource;
-import org.eclipse.uprotocol.v1.UUID;
-import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.v1.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -154,7 +151,7 @@ class UCloudEventTest {
 
         final Optional<String> priority = UCloudEvent.getPriority(cloudEvent);
         assertTrue(priority.isPresent());
-        Assertions.assertEquals(UCloudEventAttributes.Priority.STANDARD.qosString(), priority.get());
+        Assertions.assertEquals(UPriority.UPRIORITY_CS1.name(), priority.get());
     }
 
     @Test
@@ -667,7 +664,7 @@ class UCloudEventTest {
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes =
                 new UCloudEventAttributes.UCloudEventAttributesBuilder().withHash(
-                        "somehash").withPriority(UCloudEventAttributes.Priority.STANDARD).withTtl(3).withToken(
+                        "somehash").withPriority(UPriority.UPRIORITY_CS1).withTtl(3).withToken(
                                 "someOAuthToken")
                 .build();
 

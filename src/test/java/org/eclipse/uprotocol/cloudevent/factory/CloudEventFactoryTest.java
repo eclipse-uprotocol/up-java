@@ -32,6 +32,7 @@ import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.v1.UEntity;
+import org.eclipse.uprotocol.v1.UPriority;
 import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
@@ -58,7 +59,7 @@ class CloudEventFactoryTest {
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.STANDARD)
+                .withPriority(UPriority.UPRIORITY_CS1)
                 .withTtl(3)
                 .withToken("someOAuthToken")
                 .build();
@@ -77,7 +78,7 @@ class CloudEventFactoryTest {
         assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
         assertFalse(cloudEvent.getExtensionNames().contains("sink"));
         assertEquals("somehash", cloudEvent.getExtension("hash"));
-        assertEquals(UCloudEventAttributes.Priority.STANDARD.qosString(), cloudEvent.getExtension("priority"));
+        assertEquals(UPriority.UPRIORITY_CS1.name(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
         assertEquals("someOAuthToken", cloudEvent.getExtension("token"));
 
@@ -96,7 +97,7 @@ class CloudEventFactoryTest {
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.STANDARD)
+                .withPriority(UPriority.UPRIORITY_CS1)
                 .withTtl(3)
                 .withToken("someOAuthToken")
                 .build();
@@ -121,7 +122,7 @@ class CloudEventFactoryTest {
                 Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
         assertFalse(cloudEvent.getExtensionNames().contains("sink"));
         assertEquals("somehash", cloudEvent.getExtension("hash"));
-        assertEquals(UCloudEventAttributes.Priority.STANDARD.qosString(), cloudEvent.getExtension("priority"));
+        assertEquals(UPriority.UPRIORITY_CS1.name(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
         assertEquals("someOAuthToken", cloudEvent.getExtension("token"));
 
@@ -174,7 +175,7 @@ class CloudEventFactoryTest {
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.STANDARD)
+                .withPriority(UPriority.UPRIORITY_CS1)
                 .withTtl(3)
                 .build();
 
@@ -186,7 +187,7 @@ class CloudEventFactoryTest {
         assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
         assertFalse(cloudEvent.getExtensionNames().contains("sink"));
         assertEquals("somehash", cloudEvent.getExtension("hash"));
-        assertEquals(UCloudEventAttributes.Priority.STANDARD.qosString(), cloudEvent.getExtension("priority"));
+        assertEquals(UPriority.UPRIORITY_CS1.name(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
 
         assertArrayEquals(protoPayload.toByteArray(), Objects.requireNonNull(cloudEvent.getData()).toBytes());
@@ -208,7 +209,7 @@ class CloudEventFactoryTest {
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.OPERATIONS)
+                .withPriority(UPriority.UPRIORITY_CS2)
                 .withTtl(3)
                 .build();
 
@@ -224,7 +225,7 @@ class CloudEventFactoryTest {
 
         assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
-        assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
+        assertEquals(UPriority.UPRIORITY_CS2.name(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
 
         assertArrayEquals(protoPayload.toByteArray(), Objects.requireNonNull(cloudEvent.getData()).toBytes());
@@ -247,7 +248,7 @@ class CloudEventFactoryTest {
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.OPERATIONS)
+                .withPriority(UPriority.UPRIORITY_CS2)
                 .withTtl(3)
                 .withToken("someOAuthToken")
                 .build();
@@ -264,7 +265,7 @@ class CloudEventFactoryTest {
 
         assertEquals("req.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
-        assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
+        assertEquals(UPriority.UPRIORITY_CS2.name(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
         assertEquals("someOAuthToken", cloudEvent.getExtension("token"));
 
@@ -289,7 +290,7 @@ class CloudEventFactoryTest {
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.OPERATIONS)
+                .withPriority(UPriority.UPRIORITY_CS2)
                 .withTtl(3)
                 .build();
 
@@ -305,7 +306,7 @@ class CloudEventFactoryTest {
 
         assertEquals("res.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
-        assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
+        assertEquals(UPriority.UPRIORITY_CS2.name(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
 
         assertEquals("requestIdFromRequestCloudEvent", cloudEvent.getExtension("reqid"));
@@ -328,7 +329,7 @@ class CloudEventFactoryTest {
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.OPERATIONS)
+                .withPriority(UPriority.UPRIORITY_CS2)
                 .withTtl(3)
                 .build();
 
@@ -346,7 +347,7 @@ class CloudEventFactoryTest {
 
         assertEquals("res.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
-        assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
+        assertEquals(UPriority.UPRIORITY_CS2.name(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
         assertEquals(Code.INVALID_ARGUMENT_VALUE, cloudEvent.getExtension("commstatus"));
 
@@ -368,7 +369,7 @@ class CloudEventFactoryTest {
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.OPERATIONS)
+                .withPriority(UPriority.UPRIORITY_CS2)
                 .withTtl(3)
                 .build();
 
@@ -386,7 +387,7 @@ class CloudEventFactoryTest {
 
         assertEquals("res.v1", cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
-        assertEquals(UCloudEventAttributes.Priority.OPERATIONS.qosString(), cloudEvent.getExtension("priority"));
+        assertEquals(UPriority.UPRIORITY_CS2.name(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
         assertEquals(Code.INVALID_ARGUMENT_VALUE, cloudEvent.getExtension("commstatus"));
 

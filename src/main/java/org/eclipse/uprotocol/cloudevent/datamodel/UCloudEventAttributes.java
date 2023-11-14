@@ -24,6 +24,8 @@
 
 package org.eclipse.uprotocol.cloudevent.datamodel;
 
+import org.eclipse.uprotocol.v1.UPriority;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -35,7 +37,7 @@ public class UCloudEventAttributes {
     private static final UCloudEventAttributes EMPTY = new UCloudEventAttributes(null, null, null, null);
 
     private final String hash;
-    private final Priority priority;
+    private final UPriority priority;
     private final Integer ttl;
     private final String token;
 
@@ -48,7 +50,7 @@ public class UCloudEventAttributes {
      *                 Events without this attribute (or value is 0) MUST NOT timeout.
      * @param token    Oauth2 access token to perform the access request defined in the request message.
      */
-    private UCloudEventAttributes(String hash, Priority priority, Integer ttl, String token) {
+    private UCloudEventAttributes(String hash, UPriority priority, Integer ttl, String token) {
         this.hash = hash;
         this.priority = priority;
         this.ttl = ttl;
@@ -91,7 +93,7 @@ public class UCloudEventAttributes {
      * uProtocol Prioritization classifications.
      * @return Returns an Optional priority attribute.
      */
-    public Optional<Priority> priority() {
+    public Optional<UPriority> priority() {
         return priority == null ? Optional.empty() : Optional.of(priority);
     }
 
@@ -116,7 +118,7 @@ public class UCloudEventAttributes {
      */
     public static class UCloudEventAttributesBuilder {
         private String hash;
-        private Priority priority;
+        private UPriority priority;
         private Integer ttl;
         private String token;
 
@@ -137,7 +139,7 @@ public class UCloudEventAttributes {
          * @param priority uProtocol Prioritization classifications.
          * @return Returns the UCloudEventAttributesBuilder with the configured priority.
          */
-        public UCloudEventAttributesBuilder withPriority(Priority priority) {
+        public UCloudEventAttributesBuilder withPriority(UPriority priority) {
             this.priority = priority;
             return this;
         }
@@ -171,35 +173,6 @@ public class UCloudEventAttributes {
         public UCloudEventAttributes build() {
             // validation if needed
             return new UCloudEventAttributes(this);
-        }
-    }
-
-    /**
-     * Priority according to SDV 202 Quality of Service (QoS) and Prioritization.
-     */
-    public enum Priority {
-        // Low Priority. No bandwidth assurance such as File Transfer.
-        LOW ("CS0"),
-        // Standard, undifferentiated application such as General (unclassified).
-        STANDARD ("CS1"),
-        // Operations, Administration, and Management such as Streamer messages (sub, connect, etc…)
-        OPERATIONS ("CS2"),
-        // Multimedia streaming such as Video Streaming
-        MULTIMEDIA_STREAMING ("CS3"),
-        // Real-time interactive such as High priority (rpc events)
-        REALTIME_INTERACTIVE ("CS4"),
-        // Signaling such as Important
-        SIGNALING("CS5"),
-        // Network control such as Safety Critical
-        NETWORK_CONTROL ("CS6");
-
-        private final String qosString;
-        public String qosString() {
-            return qosString;
-        }
-
-        Priority(String qosString) {
-            this.qosString = qosString;
         }
     }
 
