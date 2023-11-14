@@ -25,6 +25,7 @@
 package org.eclipse.uprotocol.cloudevent.datamodel;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.eclipse.uprotocol.v1.UPriority;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -43,11 +44,11 @@ class UCloudEventAttributesTest {
     public void testToString() {
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.STANDARD)
+                .withPriority(UPriority.UPRIORITY_CS1)
                 .withTtl(3)
                 .withToken("someOAuthToken")
                 .build();
-        String expected = "UCloudEventAttributes{hash='somehash', priority=STANDARD, ttl=3, token='someOAuthToken'}";
+        String expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken'}";
         assertEquals(expected, uCloudEventAttributes.toString());
 
     }
@@ -57,14 +58,14 @@ class UCloudEventAttributesTest {
     public void test_create_valid() {
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.NETWORK_CONTROL)
+                .withPriority(UPriority.UPRIORITY_CS6)
                 .withTtl(3)
                 .withToken("someOAuthToken")
                 .build();
         assertTrue(uCloudEventAttributes.hash().isPresent());
         assertEquals("somehash", uCloudEventAttributes.hash().get());
         assertTrue(uCloudEventAttributes.priority().isPresent());
-        assertEquals(UCloudEventAttributes.Priority.NETWORK_CONTROL, uCloudEventAttributes.priority().get());
+        assertEquals(UPriority.UPRIORITY_CS6, uCloudEventAttributes.priority().get());
         assertTrue(uCloudEventAttributes.ttl().isPresent());
         assertEquals(3, uCloudEventAttributes.ttl().get());
         assertTrue(uCloudEventAttributes.token().isPresent());
@@ -118,7 +119,7 @@ class UCloudEventAttributesTest {
         assertFalse(uCloudEventAttributes3.isEmpty());
 
         final UCloudEventAttributes uCloudEventAttributes4 = new UCloudEventAttributes.UCloudEventAttributesBuilder()
-                .withPriority(UCloudEventAttributes.Priority.LOW)
+                .withPriority(UPriority.UPRIORITY_CS0)
                 .build();
         assertFalse(uCloudEventAttributes4.isEmpty());
 

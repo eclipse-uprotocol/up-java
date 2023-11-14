@@ -35,6 +35,7 @@ import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.v1.UEntity;
+import org.eclipse.uprotocol.v1.UPriority;
 import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
@@ -65,7 +66,7 @@ class CloudEventToProtobufSerializerTest {
         // configure cloud event
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.LOW)
+                .withPriority(UPriority.UPRIORITY_CS0)
                 .withTtl(3)
                 .build();
 
@@ -152,7 +153,7 @@ class CloudEventToProtobufSerializerTest {
         // additional attributes
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
-                .withPriority(UCloudEventAttributes.Priority.STANDARD)
+                .withPriority(UPriority.UPRIORITY_CS1)
                 .withTtl(3)
                 .withToken("someOAuthToken")
                 .build();
