@@ -29,12 +29,8 @@ import com.google.rpc.Code;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
-import org.eclipse.uprotocol.v1.UEntity;
-import org.eclipse.uprotocol.v1.UPriority;
-import org.eclipse.uprotocol.v1.UResource;
-import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.v1.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -68,14 +64,14 @@ class CloudEventFactoryTest {
         final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("testme", source,
                 protoPayload.toByteArray(), protoPayload.getTypeUrl(),
                 uCloudEventAttributes);
-        cloudEventBuilder.withType(UCloudEventType.PUBLISH.type());
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
 
         final CloudEvent cloudEvent = cloudEventBuilder.build();
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertEquals("testme", cloudEvent.getId());
         assertEquals(source, cloudEvent.getSource().toString());
-        assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
+        assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.getType());
         assertFalse(cloudEvent.getExtensionNames().contains("sink"));
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UPriority.UPRIORITY_CS1.name(), cloudEvent.getExtension("priority"));
@@ -106,7 +102,7 @@ class CloudEventFactoryTest {
         final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("testme", source,
                 protoPayload.toByteArray(), protoPayload.getTypeUrl(),
                 uCloudEventAttributes);
-        cloudEventBuilder.withType(UCloudEventType.PUBLISH.type())
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
                 .withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create(protoPayload.getTypeUrl()));
 
@@ -116,7 +112,7 @@ class CloudEventFactoryTest {
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertEquals("testme", cloudEvent.getId());
         assertEquals(source, cloudEvent.getSource().toString());
-        assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
+        assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.getType());
         assertEquals(DATA_CONTENT_TYPE, cloudEvent.getDataContentType());
         assertEquals("type.googleapis.com/io.cloudevents.v1.CloudEvent",
                 Objects.requireNonNull(cloudEvent.getDataSchema()).toString());
@@ -145,14 +141,14 @@ class CloudEventFactoryTest {
         final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("testme", source,
                 protoPayload.toByteArray(), protoPayload.getTypeUrl(),
                 uCloudEventAttributes);
-        cloudEventBuilder.withType(UCloudEventType.PUBLISH.type());
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
 
         final CloudEvent cloudEvent = cloudEventBuilder.build();
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertEquals("testme", cloudEvent.getId());
         assertEquals(source, cloudEvent.getSource().toString());
-        assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
+        assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.getType());
         assertFalse(cloudEvent.getExtensionNames().contains("sink"));
         assertFalse(cloudEvent.getExtensionNames().contains("hash"));
         assertFalse(cloudEvent.getExtensionNames().contains("priority"));
@@ -184,7 +180,7 @@ class CloudEventFactoryTest {
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
         assertNotNull(cloudEvent.getId());
         assertEquals(source, cloudEvent.getSource().toString());
-        assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
+        assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.getType());
         assertFalse(cloudEvent.getExtensionNames().contains("sink"));
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UPriority.UPRIORITY_CS1.name(), cloudEvent.getExtension("priority"));
@@ -223,7 +219,7 @@ class CloudEventFactoryTest {
         assertTrue(cloudEvent.getExtensionNames().contains("sink"));
         assertEquals(sink, Objects.requireNonNull(cloudEvent.getExtension("sink")).toString());
 
-        assertEquals(UCloudEventType.PUBLISH.type(), cloudEvent.getType());
+        assertEquals(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH), cloudEvent.getType());
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UPriority.UPRIORITY_CS2.name(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));

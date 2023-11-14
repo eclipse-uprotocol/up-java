@@ -25,7 +25,6 @@
 package org.eclipse.uprotocol.cloudevent.factory;
 
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
@@ -33,6 +32,7 @@ import com.google.rpc.Code;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
+import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UUID;
 import org.eclipse.uprotocol.v1.UUri;
 
@@ -63,7 +63,7 @@ public interface CloudEventFactory {
                               UCloudEventAttributes attributes) {
         String id = generateCloudEventId();
         return buildBaseCloudEvent(id, applicationUriForRPC, protoPayload.toByteArray(), protoPayload.getTypeUrl(), attributes )
-                .withType(UCloudEventType.REQUEST.type())
+                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST))
                 .withExtension("sink", URI.create(serviceMethodUri))
                 .build();
     }
@@ -86,7 +86,7 @@ public interface CloudEventFactory {
                                UCloudEventAttributes attributes) {
         String id = generateCloudEventId();
         return buildBaseCloudEvent(id, serviceMethodUri, protoPayload.toByteArray(), protoPayload.getTypeUrl(), attributes)
-                .withType(UCloudEventType.RESPONSE.type())
+                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
                 .withExtension("sink", URI.create(applicationUriForRPC))
                 .withExtension("reqid", requestId)
                 .build();
@@ -110,7 +110,7 @@ public interface CloudEventFactory {
         String id = generateCloudEventId();
         final Any protoPayload = Any.pack(Empty.getDefaultInstance());
         return buildBaseCloudEvent(id, serviceMethodUri, protoPayload.toByteArray(), protoPayload.getTypeUrl(), attributes)
-                .withType(UCloudEventType.RESPONSE.type())
+                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
                 .withExtension("sink", URI.create(applicationUriForRPC))
                 .withExtension("reqid", requestId)
                 .withExtension("commstatus", communicationStatus)
@@ -128,7 +128,7 @@ public interface CloudEventFactory {
     static CloudEvent publish(String source, Any protoPayload, UCloudEventAttributes attributes) {
         String id = generateCloudEventId();
         return buildBaseCloudEvent(id, source, protoPayload.toByteArray(), protoPayload.getTypeUrl(), attributes )
-                .withType(UCloudEventType.PUBLISH.type())
+                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
                 .build();
     }
 
@@ -145,7 +145,7 @@ public interface CloudEventFactory {
     static CloudEvent notification(String source, String sink, Any protoPayload, UCloudEventAttributes attributes) {
         String id = generateCloudEventId();
         return buildBaseCloudEvent(id, source, protoPayload.toByteArray(), protoPayload.getTypeUrl(), attributes )
-                .withType(UCloudEventType.PUBLISH.type())
+                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
                 .withExtension("sink", URI.create(sink))
                 .build();
     }

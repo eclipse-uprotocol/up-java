@@ -31,7 +31,7 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
+import org.eclipse.uprotocol.cloudevent.validate.CloudEventValidator;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
@@ -671,7 +671,7 @@ class UCloudEventTest {
         // build the cloud event
         final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("testme", source,
                 protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
-        cloudEventBuilder.withType(UCloudEventType.PUBLISH.type());
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
 
         return cloudEventBuilder;
     }
@@ -685,4 +685,33 @@ class UCloudEventTest {
                 .setSource("//VCU.MY_CAR_VIN/body.access//door.front_left#Door").setType("example.demo")
                 .setProtoData(Any.newBuilder().build()).build();
     }
+    @Test
+    @DisplayName("Test the type for a publish message type")
+    public void test_type_for_publish() {
+        String uCloudEventType = UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH);
+        assertEquals("pub.v1", uCloudEventType);
+    }
+
+
+    @Test
+    @DisplayName("Test the type for a request RPC message type")
+    public void test_type_for_request() {
+        String uCloudEventType = UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST);
+        assertEquals("req.v1", uCloudEventType);
+    }
+
+    @Test
+    @DisplayName("Test the type for a response RPC message type")
+    public void test_type_for_response() {
+        String uCloudEventType = UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE);
+        assertEquals("res.v1", uCloudEventType);
+    }
+
+    @Test
+    @DisplayName("Test the type for a unspecified message type")
+    public void test_parse_publish_event_type_from_string() {
+        String uCloudEventType = UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_UNSPECIFIED);
+        assertTrue(uCloudEventType.isBlank());
+    }
+
 }
