@@ -25,14 +25,20 @@
 package org.eclipse.uprotocol.rpc;
 
 import com.google.protobuf.Any;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import org.eclipse.uprotocol.transport.builder.UAttributesBuilder;
-import org.eclipse.uprotocol.transport.datamodel.UPayload;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
-import org.eclipse.uprotocol.v1.*;
+import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.v1.UPayload;
+import org.eclipse.uprotocol.v1.UPayloadFormat;
+import org.eclipse.uprotocol.v1.UAttributes;
+import org.eclipse.uprotocol.v1.UEntity;
+import org.eclipse.uprotocol.v1.UPriority;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -46,7 +52,10 @@ class RpcTest {
     RpcClient ReturnsNumber3 = new RpcClient() {
         @Override
         public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
-            UPayload data = new UPayload(Any.pack(Int32Value.of(3)).toByteArray(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
+            UPayload data = UPayload.newBuilder()
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setValue(Any.pack(Int32Value.of(3)).toByteString())
+                .build();
             return CompletableFuture.completedFuture(data);
         }
     };
@@ -64,8 +73,10 @@ class RpcTest {
         public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
             Status status = Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE).setMessage("boom").build();
             Any any = Any.pack(status);
-            UPayload data = new UPayload(any.toByteArray(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
-
+            UPayload data = UPayload.newBuilder()
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setValue(any.toByteString())
+                .build();
             return CompletableFuture.completedFuture(data);
         }
     };
@@ -75,8 +86,10 @@ class RpcTest {
         public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
             Status status = Status.newBuilder().setCode(Code.OK_VALUE).setMessage("all good").build();
             Any any = Any.pack(status);
-            UPayload data = new UPayload(any.toByteArray(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
-
+            UPayload data = UPayload.newBuilder()
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setValue(any.toByteString())
+                .build();
             return CompletableFuture.completedFuture(data);
         }
     };
@@ -84,7 +97,10 @@ class RpcTest {
     RpcClient ThatBarfsCrapyPayload = new RpcClient() {
         @Override
         public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
-            UPayload response = new UPayload(new byte[]{0}, UPayloadFormat.UPAYLOAD_FORMAT_RAW);
+            UPayload response = UPayload.newBuilder()
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_RAW)
+                .setValue(ByteString.copyFrom(new byte[]{0}))
+                .build();
             return CompletableFuture.completedFuture(response);
         }
     };
@@ -102,7 +118,11 @@ class RpcTest {
         @Override
         public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
             Any any = Any.pack(Int32Value.of(42));
-            return CompletableFuture.completedFuture(new UPayload(any.toByteArray(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF));
+            UPayload data = UPayload.newBuilder()
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setValue(any.toByteString())
+                .build();
+            return CompletableFuture.completedFuture(data);
         }
     };
 
@@ -121,7 +141,10 @@ class RpcTest {
 
     private static UPayload buildUPayload() {
         Any any = Any.pack(buildCloudEvent());
-        return new UPayload(any.toByteArray(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
+        return UPayload.newBuilder()
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setValue(any.toByteString())
+                .build();
     }
 
     private static UUri buildTopic() {
@@ -142,7 +165,7 @@ class RpcTest {
                 (payload, exception) -> {
                     Any any;
                     try {
-                        any = Any.parseFrom(payload.data());
+                        any = Any.parseFrom(payload.getValue());
                     } catch (InvalidProtocolBufferException e) {
                         throw new RuntimeException(e.getMessage(), e);
                     }
@@ -379,7 +402,7 @@ class RpcTest {
                     assertFalse(true);
 
                     try {
-                        any = Any.parseFrom(payload.data());
+                        any = Any.parseFrom(payload.getValue());
                         // happy flow, no exception
                         assertNull(exception);
 
@@ -409,7 +432,7 @@ class RpcTest {
         final CompletableFuture<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
                 (payload, exception) -> {
                     try {
-                        Any any = Any.parseFrom(payload.data());
+                        Any any = Any.parseFrom(payload.getValue());
                         // happy flow, no exception
                         assertNull(exception);
 
@@ -472,7 +495,7 @@ class RpcTest {
         final CompletableFuture<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
                 (payload, exception) -> {
                     try {
-                        Any any = Any.parseFrom(payload.data());
+                        Any any = Any.parseFrom(payload.getValue());
                         // happy flow, no exception
                         assertNull(exception);
 
@@ -609,7 +632,7 @@ class RpcTest {
         RpcClient client = new RpcClient() {
             @Override
             public CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
-                return CompletableFuture.completedFuture(UPayload.empty());
+                return CompletableFuture.completedFuture(UPayload.getDefaultInstance());
             }
         };
 
