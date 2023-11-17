@@ -34,6 +34,7 @@ import com.google.rpc.Code;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UUID;
 
 import java.time.OffsetDateTime;
@@ -215,7 +216,7 @@ public interface UCloudEvent {
         if (uuid.equals(UUID.getDefaultInstance())) {
             return false;
         }
-        
+
         long delta = System.currentTimeMillis() - UuidUtils.getTime(uuid).orElse(0L);
 
         return delta >= ttl;
@@ -229,7 +230,7 @@ public interface UCloudEvent {
     static boolean isCloudEventId(CloudEvent cloudEvent) {
         final String cloudEventId = cloudEvent.getId();
         final UUID uuid = LongUuidSerializer.instance().deserialize(cloudEventId);
-        
+
         return UuidUtils.isUuid(uuid);
     }
 
@@ -310,4 +311,30 @@ public interface UCloudEvent {
         return extractStringValueFromExtension(extensionName, cloudEvent)
                 .map(Integer::valueOf);
     }
+    static String getEventType(UMessageType type){
+        switch (type){
+            case UMESSAGE_TYPE_PUBLISH:
+                return "pub.v1";
+            case UMESSAGE_TYPE_REQUEST:
+                return "req.v1";
+            case UMESSAGE_TYPE_RESPONSE:
+                return "res.v1";
+            default:
+                return "";
+        }
+    }
+
+    static UMessageType getMessageType(String ce_type){
+        switch (ce_type){
+            case "pub.v1":
+                return UMessageType.UMESSAGE_TYPE_PUBLISH;
+            case "req.v1":
+                return UMessageType.UMESSAGE_TYPE_REQUEST;
+            case "res.v1":
+                return UMessageType.UMESSAGE_TYPE_RESPONSE;
+            default:
+                return UMessageType.UMESSAGE_TYPE_UNSPECIFIED;
+        }
+    }
+
 }

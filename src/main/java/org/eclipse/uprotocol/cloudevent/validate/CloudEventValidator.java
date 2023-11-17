@@ -27,7 +27,6 @@ package org.eclipse.uprotocol.cloudevent.validate;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.cloudevents.CloudEvent;
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventType;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
 import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
@@ -53,17 +52,16 @@ public abstract class CloudEventValidator {
      */
     public static CloudEventValidator getValidator(CloudEvent cloudEvent){
         final String cloudEventType = cloudEvent.getType();
-        Optional<UCloudEventType> maybeType = UCloudEventType.valueOfType(cloudEventType);
-        if (maybeType.isEmpty()) {
+        if (cloudEventType == null || cloudEventType.isEmpty()) {
             return Validators.PUBLISH.validator();
         }
         
         CloudEventValidator validator;
-        switch (maybeType.get()){
-            case RESPONSE:
+        switch (UCloudEvent.getMessageType(cloudEventType)){
+            case UMESSAGE_TYPE_RESPONSE:
                 validator = Validators.RESPONSE.validator();
                 break;
-            case REQUEST:
+            case UMESSAGE_TYPE_REQUEST:
                 validator = Validators.REQUEST.validator();
                 break;
             default:
