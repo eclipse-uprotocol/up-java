@@ -303,7 +303,7 @@
         <dependency>
             <groupId>org.eclipse.uprotocol</groupId>
             <artifactId>uprotocol-core-api</artifactId>
-            <version>1.5.1-SNAPSHOT</version>
+            <version>1.5.1</version>
         </dependency>
         
         <!-- JSON library for JUnit test cases -->
