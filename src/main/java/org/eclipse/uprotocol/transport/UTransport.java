@@ -25,11 +25,11 @@
 package org.eclipse.uprotocol.transport;
 
 import org.eclipse.uprotocol.transport.datamodel.UListener;
-import org.eclipse.uprotocol.transport.datamodel.UPayload;
 import org.eclipse.uprotocol.transport.datamodel.UStatus;
 import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UEntity;
 import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.v1.UPayload;
 
 /**
  * UTransport is the  uP-L1 interface that provides a common API for uE developers to send and receive messages.
