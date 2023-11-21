@@ -24,7 +24,7 @@
 
 package org.eclipse.uprotocol.rpc;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.uprotocol.v1.UPayload;
 import org.eclipse.uprotocol.v1.UAttributes;
@@ -46,5 +46,5 @@ public interface RpcClient {
      * @param attributes Metadata for the method invocation (i.e. priority, timeout, etc.)
      * @return Returns the CompletableFuture with the result or exception.
      */
-    CompletableFuture<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes);
+    CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes);
 }

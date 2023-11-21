@@ -32,6 +32,7 @@ import com.google.rpc.Status;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.uprotocol.v1.UPayload;
 
@@ -49,7 +50,7 @@ public interface RpcMapper {
      * @return Returns a CompletableFuture containing the declared expected return type of the RPC method or an exception.
      * @param <T> The declared expected return type of the RPC method.
      */
-    static <T extends Message> CompletableFuture<T> mapResponse(CompletableFuture<UPayload> responseFuture, Class<T> expectedClazz) {
+    static <T extends Message> CompletionStage<T> mapResponse(CompletionStage<UPayload> responseFuture, Class<T> expectedClazz) {
         return responseFuture.handle((payload, exception) -> {
             // Unexpected exception
             if (exception != null) {
@@ -81,7 +82,9 @@ public interface RpcMapper {
      * @return Returns a CompletableFuture containing an RpcResult containing the declared expected return type T, or a Status containing any errors.
      * @param <T> The declared expected return type of the RPC method.
      */
-    static <T extends Message> CompletableFuture<RpcResult<T>> mapResponseToResult(CompletableFuture<UPayload> responseFuture, Class<T> expectedClazz) {
+    static <T extends Message> CompletionStage<RpcResult<T>> mapResponseToResult(
+            CompletionStage<UPayload> responseFuture,
+            Class<T> expectedClazz) {
         return responseFuture.handle((payload, exception) -> {
             // Unexpected exception
             if (exception != null) {
