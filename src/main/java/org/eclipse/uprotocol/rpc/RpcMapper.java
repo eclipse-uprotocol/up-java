@@ -30,7 +30,6 @@ import com.google.protobuf.Message;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
@@ -44,10 +43,10 @@ import org.eclipse.uprotocol.v1.UPayload;
 public interface RpcMapper {
 
     /**
-     * Map a response of CompletableFuture&lt;UPayload&gt; from Link into a CompletableFuture containing the declared expected return type of the RPC method or an exception.
-     * @param responseFuture CompletableFuture&lt;UPayload&gt; response from uTransport.
+     * Map a response of CompletionStage&lt;UPayload&gt; from Link into a CompletionStage containing the declared expected return type of the RPC method or an exception.
+     * @param responseFuture CompletionStage&lt;UPayload&gt; response from uTransport.
      * @param expectedClazz The class name of the declared expected return type of the RPC method.
-     * @return Returns a CompletableFuture containing the declared expected return type of the RPC method or an exception.
+     * @return Returns a CompletionStage containing the declared expected return type of the RPC method or an exception.
      * @param <T> The declared expected return type of the RPC method.
      */
     static <T extends Message> CompletionStage<T> mapResponse(CompletionStage<UPayload> responseFuture, Class<T> expectedClazz) {
@@ -76,10 +75,10 @@ public interface RpcMapper {
     }
 
     /**
-     * Map a response of CompletableFuture&lt;Any&gt; from Link into a CompletableFuture containing an RpcResult containing the declared expected return type T, or a Status containing any errors.
-     * @param responseFuture CompletableFuture&lt;Any&gt; response from Link.
+     * Map a response of CompletionStage&lt;Any&gt; from Link into a CompletionStage containing an RpcResult containing the declared expected return type T, or a Status containing any errors.
+     * @param responseFuture CompletionStage&lt;Any&gt; response from Link.
      * @param expectedClazz The class name of the declared expected return type of the RPC method.
-     * @return Returns a CompletableFuture containing an RpcResult containing the declared expected return type T, or a Status containing any errors.
+     * @return Returns a CompletionStage containing an RpcResult containing the declared expected return type T, or a Status containing any errors.
      * @param <T> The declared expected return type of the RPC method.
      */
     static <T extends Message> CompletionStage<RpcResult<T>> mapResponseToResult(
