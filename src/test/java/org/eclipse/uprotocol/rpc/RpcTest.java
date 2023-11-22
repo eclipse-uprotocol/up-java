@@ -234,7 +234,7 @@ class RpcTest {
             assertEquals("boom", RpcResult.failureValue().getMessage());
         });
         assertFalse(test.toCompletableFuture().isCompletedExceptionally());
-        assertEquals(rpcResponse.toCompletableFuture().get().failureValue().getCode(), Code.INVALID_ARGUMENT);
+        assertEquals(rpcResponse.toCompletableFuture().get().failureValue().getCode(), UCode.INVALID_ARGUMENT);
         assertFalse(test.toCompletableFuture().isCompletedExceptionally());
     }
 
@@ -246,7 +246,7 @@ class RpcTest {
                         Int32Value.class)
                 .thenApply(ur -> ur.map(i -> Int32Value.of(i.getValue() + 5)));
         assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
-        Status status = Status.newBuilder().setCode(2).setMessage("Boom").build();
+        UStatus status = UStatus.newBuilder().setCode(UCode.UNKNOWN).setMessage("Boom").build();
         assertEquals(status, rpcResponse.toCompletableFuture().get().failureValue());
     }
 
@@ -312,7 +312,7 @@ class RpcTest {
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
-        Status status = Status.newBuilder().setCode(2).setMessage("Boom").build();
+        UStatus status = UStatus.newBuilder().setCode(UCode.UNKNOWN).setMessage("Boom").build();
         assertEquals(status, rpcResponse.toCompletableFuture().get().failureValue());
 
     }
@@ -327,7 +327,7 @@ class RpcTest {
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
-        Status status = Status.newBuilder().setCode(2).setMessage("Unknown payload type [type.googleapis.com/google.protobuf.Int32Value]. Expected [io.cloudevents.v1.proto.CloudEvent]").build();
+        UStatus status = UStatus.newBuilder().setCode(UCode.UNKNOWN).setMessage("Unknown payload type [type.googleapis.com/google.protobuf.Int32Value]. Expected [io.cloudevents.v1.proto.CloudEvent]").build();
         assertEquals(status, rpcResponse.toCompletableFuture().get().failureValue());
 
     }
@@ -546,7 +546,7 @@ class RpcTest {
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
-        Status status = Status.newBuilder().setCode(2).setMessage("Server returned a null payload. Expected io.cloudevents.v1.proto.CloudEvent").build();
+        UStatus status = UStatus.newBuilder().setCode(UCode.UNKNOWN).setMessage("Server returned a null payload. Expected io.cloudevents.v1.proto.CloudEvent").build();
         assertEquals(status, rpcResponse.toCompletableFuture().get().failureValue());
 
 
@@ -559,7 +559,7 @@ class RpcTest {
         final CompletionStage<UStatus> rpcResponse = RpcMapper.mapResponse(
                 WithUStatusCodeHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes()), UStatus.class);
 
-        assertFalse(rpcResponse.isCompletedExceptionally());
+        assertFalse(rpcResponse.toCompletableFuture().isCompletedExceptionally());
         final CompletionStage<Void> test = rpcResponse.thenAccept(status -> {
             assertEquals(UCode.OK, status.getCode());
             assertEquals("all good", status.getMessage());
