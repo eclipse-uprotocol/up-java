@@ -284,7 +284,7 @@
         <dependency>
             <groupId>org.eclipse.uprotocol</groupId>
             <artifactId>uprotocol-core-api</artifactId>
-            <version>1.5.2-SNAPSHOT</version>
+            <version>1.5.2</version>
         </dependency>
         
         <!-- JSON library for JUnit test cases -->
