@@ -27,13 +27,13 @@ package org.eclipse.uprotocol.rpc;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
 
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
 import org.eclipse.uprotocol.v1.UPayload;
+import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.UStatus;
 
 /**
  * RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with 
@@ -67,7 +67,7 @@ public interface RpcMapper {
                     return unpackPayload(any, expectedClazz);
                 }
             } catch (InvalidProtocolBufferException e) {
-                throw new RuntimeException(String.format("%s [%s]", e.getMessage(), Status.class.getName()), e);
+                throw new RuntimeException(String.format("%s [%s]", e.getMessage(), UStatus.class.getName()), e);
             }
             // Some other type instead of the expected one
             throw new RuntimeException(String.format("Unknown payload type [%s]. Expected [%s]", any.getTypeUrl(), expectedClazz.getName()));
@@ -101,20 +101,19 @@ public interface RpcMapper {
                 
                 // Expected type
                 if (any.is(expectedClazz)) {
-                    if (Status.class.equals(expectedClazz)) {
+                    if (UStatus.class.equals(expectedClazz)) {
                         return calculateStatusResult(any);
                     } else {
                         return RpcResult.success(unpackPayload(any, expectedClazz));
                     }
                 }
                 // Status instead of the expected one
-                if (any.is(Status.class)) {
+                if (any.is(UStatus.class)) {
                     return calculateStatusResult(any);
                 }
             } catch (InvalidProtocolBufferException e) {
-                exception = new RuntimeException(String.format("%s [%s]", e.getMessage(), Status.class.getName()), e);
+                exception = new RuntimeException(String.format("%s [%s]", e.getMessage(), UStatus.class.getName()), e);
                 return RpcResult.failure(exception.getMessage(), exception);
-
             }
             
             // Some other type instead of the expected one
@@ -127,8 +126,8 @@ public interface RpcMapper {
 
     @SuppressWarnings("unchecked")
     private static <T extends Message> RpcResult<T> calculateStatusResult(Any payload) {
-            final Status status = unpackPayload(payload, Status.class);
-            return status.getCode() == Code.OK_VALUE ?
+            final UStatus status = unpackPayload(payload, UStatus.class);
+            return status.getCode() == UCode.OK ?
                     RpcResult.success((T) status) : RpcResult.failure(status);
     }
 
@@ -143,7 +142,7 @@ public interface RpcMapper {
         try {
             return payload.unpack(expectedClazz);
         } catch (InvalidProtocolBufferException e) {
-            throw new RuntimeException(String.format("%s [%s]", e.getMessage(), Status.class.getName()), e);
+            throw new RuntimeException(String.format("%s [%s]", e.getMessage(), UStatus.class.getName()), e);
         }
     }
 

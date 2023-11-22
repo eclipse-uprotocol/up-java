@@ -24,11 +24,12 @@
 
 package org.eclipse.uprotocol.rpc;
 
-import com.google.rpc.Code;
-import com.google.rpc.Status;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.UStatus;
 
 class RpcResultTest {
 
@@ -40,7 +41,7 @@ class RpcResultTest {
 
     @Test
     public void test_isSuccess_on_Failure() {
-        RpcResult<Integer> result = RpcResult.failure(Code.INVALID_ARGUMENT, "boom");
+        RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         assertFalse(result.isSuccess());
     }
 
@@ -52,7 +53,7 @@ class RpcResultTest {
 
     @Test
     public void test_isFailure_on_Failure() {
-        RpcResult<Integer> result = RpcResult.failure(Code.INVALID_ARGUMENT, "boom");
+        RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         assertTrue(result.isFailure());
     }
 
@@ -64,7 +65,7 @@ class RpcResultTest {
 
     @Test
     public void testGetOrElseOnFailure() {
-        RpcResult<Integer> result = RpcResult.failure(Code.INVALID_ARGUMENT, "boom");
+        RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         assertEquals(getDefault(), result.getOrElse(this::getDefault));
     }
 
@@ -76,7 +77,7 @@ class RpcResultTest {
 
     @Test
     public void testGetOrElseOnFailure_() {
-        RpcResult<Integer> result = RpcResult.failure(Code.INVALID_ARGUMENT, "boom");
+        RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         assertEquals(Integer.valueOf(5), result.getOrElse(5));
     }
 
@@ -88,7 +89,7 @@ class RpcResultTest {
 
     @Test
     public void testSuccessValue_onFailure_() {
-        RpcResult<Integer> result = RpcResult.failure(Code.INVALID_ARGUMENT, "boom");
+        RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         Exception exception =  assertThrows(IllegalStateException.class, result::successValue);
         assertEquals(exception.getMessage(), "Method successValue() called on a Failure instance");
     }
@@ -102,10 +103,10 @@ class RpcResultTest {
 
     @Test
     public void testFailureValue_onFailure_() {
-        RpcResult<Integer> result = RpcResult.failure(Code.INVALID_ARGUMENT, "boom");
-        final Status resultValue = result.failureValue();
-        assertEquals(Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT.getNumber())
+        RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
+        final UStatus resultValue = result.failureValue();
+        assertEquals(UStatus.newBuilder()
+                .setCode(UCode.INVALID_ARGUMENT)
                 .setMessage("boom").build(), resultValue);
     }
 
@@ -126,7 +127,7 @@ class RpcResultTest {
         RpcResult<Integer> result = RpcResult.success(2);
         final RpcResult<Integer> mapped = result.map(this::funThatThrowsAnExceptionForMap);
         assertTrue(mapped.isFailure());
-        assertEquals(Code.UNKNOWN_VALUE, mapped.failureValue().getCode());
+        assertEquals(UCode.UNKNOWN, mapped.failureValue().getCode());
         assertEquals("2 went boom", mapped.failureValue().getMessage());
     }
 
@@ -136,11 +137,11 @@ class RpcResultTest {
 
     @Test
     public void testMapOnFailure() {
-        RpcResult<Integer> result = RpcResult.failure(Code.INVALID_ARGUMENT, "boom");
+        RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         final RpcResult<Integer> mapped = result.map(x -> x * 2);
         assertTrue(mapped.isFailure());
-        assertEquals(Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT.getNumber())
+        assertEquals(UStatus.newBuilder()
+                .setCode(UCode.INVALID_ARGUMENT)
                 .setMessage("boom").build(), mapped.failureValue());
     }
 
@@ -149,7 +150,7 @@ class RpcResultTest {
         RpcResult<Integer> result = RpcResult.success(2);
         final RpcResult<Integer> flatMapped = result.flatMap(this::funThatThrowsAnExceptionForFlatMap);
         assertTrue(flatMapped.isFailure());
-        assertEquals(Code.UNKNOWN_VALUE, flatMapped.failureValue().getCode());
+        assertEquals(UCode.UNKNOWN, flatMapped.failureValue().getCode());
         assertEquals("2 went boom", flatMapped.failureValue().getMessage());
     }
 
@@ -168,11 +169,11 @@ class RpcResultTest {
 
     @Test
     public void testFlatMapOnFailure() {
-        RpcResult<Integer> result = RpcResult.failure(Code.INVALID_ARGUMENT, "boom");
+        RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         final RpcResult<Integer> flatMapped = result.flatMap(x -> RpcResult.success(x * 2));
         assertTrue(flatMapped.isFailure());
-        assertEquals(Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT.getNumber())
+        assertEquals(UStatus.newBuilder()
+                .setCode(UCode.INVALID_ARGUMENT)
                 .setMessage("boom").build(), flatMapped.failureValue());
     }
 
@@ -181,8 +182,8 @@ class RpcResultTest {
         RpcResult<Integer> result = RpcResult.success(2);
         final RpcResult<Integer> filterResult = result.filter(i -> i > 5);
         assertTrue(filterResult.isFailure());
-        assertEquals(Status.newBuilder()
-                .setCode(Code.FAILED_PRECONDITION.getNumber())
+        assertEquals(UStatus.newBuilder()
+                .setCode(UCode.FAILED_PRECONDITION)
                 .setMessage("filtered out").build(), filterResult.failureValue());
     }
 
@@ -199,8 +200,8 @@ class RpcResultTest {
         RpcResult<Integer> result = RpcResult.success(2);
         final RpcResult<Integer> filterResult = result.filter(this::predicateThatThrowsAnException);
         assertTrue(filterResult.isFailure());
-        assertEquals(Status.newBuilder()
-                .setCode(Code.UNKNOWN_VALUE)
+        assertEquals(UStatus.newBuilder()
+                .setCode(UCode.UNKNOWN)
                 .setMessage("2 went boom").build(), filterResult.failureValue());
     }
 
@@ -210,11 +211,11 @@ class RpcResultTest {
 
     @Test
     public void testFilterOnFailure() {
-        RpcResult<Integer> result = RpcResult.failure(Code.INVALID_ARGUMENT, "boom");
+        RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         final RpcResult<Integer> filterResult = result.filter(i -> i > 5);
         assertTrue(filterResult.isFailure());
-        assertEquals(Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT.getNumber())
+        assertEquals(UStatus.newBuilder()
+                .setCode(UCode.INVALID_ARGUMENT)
                 .setMessage("boom").build(), filterResult.failureValue());
     }
 
@@ -233,18 +234,18 @@ class RpcResultTest {
         final RpcResult<RpcResult<Integer>> mapped = result.map(this::funThatThrowsAnExceptionForFlatMap);
         final RpcResult<Integer> mappedFlattened = RpcResult.flatten(mapped);
         assertTrue(mappedFlattened.isFailure());
-        assertEquals(Code.UNKNOWN_VALUE, mappedFlattened.failureValue().getCode());
+        assertEquals(UCode.UNKNOWN, mappedFlattened.failureValue().getCode());
         assertEquals("2 went boom", mappedFlattened.failureValue().getMessage());
     }
 
     @Test
     public void testFlattenOnFailure() {
-        RpcResult<Integer> result = RpcResult.failure(Code.INVALID_ARGUMENT, "boom");
+        RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         final RpcResult<RpcResult<Integer>> mapped = result.map(this::multiplyBy2);
         final RpcResult<Integer> mappedFlattened = RpcResult.flatten(mapped);
         assertTrue(mappedFlattened.isFailure());
-        assertEquals(Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT.getNumber())
+        assertEquals(UStatus.newBuilder()
+                .setCode(UCode.INVALID_ARGUMENT)
                 .setMessage("boom").build(), mappedFlattened.failureValue());
     }
 
@@ -260,8 +261,8 @@ class RpcResultTest {
 
     @Test
     public void testToStringFailure() {
-        RpcResult<Integer> result = RpcResult.failure(Code.INVALID_ARGUMENT, "boom");
-        assertEquals("Failure(code: 3\n" +
+        RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
+        assertEquals("Failure(code: INVALID_ARGUMENT\n" +
                 "message: \"boom\"\n" +
                 ")", result.toString());
     }

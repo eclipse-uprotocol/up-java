@@ -28,7 +28,6 @@ import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
-import com.google.rpc.Code;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
