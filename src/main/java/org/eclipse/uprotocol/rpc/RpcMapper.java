@@ -88,12 +88,14 @@ public interface RpcMapper {
         return responseFuture.handle((payload, exception) -> {
             // Unexpected exception
             if (exception != null) {
-                throw new RuntimeException(exception.getMessage(), exception);
+                return RpcResult.failure(exception.getMessage(), exception);
             }
 
             if (payload == null) {
-                throw new RuntimeException("Server returned a null payload. Expected " + expectedClazz.getName());
+                 exception = new RuntimeException("Server returned a null payload. Expected " + expectedClazz.getName());
+                 return RpcResult.failure(exception.getMessage(), exception);
             }
+
             Any any;
             try {
                 any = Any.parseFrom(payload.getValue());
@@ -111,12 +113,16 @@ public interface RpcMapper {
                     return calculateStatusResult(any);
                 }
             } catch (InvalidProtocolBufferException e) {
-                throw new RuntimeException(String.format("%s [%s]", e.getMessage(), Status.class.getName()), e);
+                exception = new RuntimeException(String.format("%s [%s]", e.getMessage(), Status.class.getName()), e);
+                return RpcResult.failure(exception.getMessage(), exception);
+
             }
             
             // Some other type instead of the expected one
-            throw new RuntimeException(String.format("Unknown payload type [%s]. Expected [%s]",
+            exception = new RuntimeException(String.format("Unknown payload type [%s]. Expected [%s]",
                     any.getTypeUrl(), expectedClazz.getName()));
+            return RpcResult.failure(exception.getMessage(), exception);
+
         });
     }
 

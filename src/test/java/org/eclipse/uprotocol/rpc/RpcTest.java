@@ -245,19 +245,19 @@ class RpcTest {
     }
 
     @Test
-    void test_compose_with_failure() {
+    void test_compose_with_failure() throws Exception {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<Int32Value>> rpcResponse = RpcMapper.mapResponseToResult(
                         ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes()),
                         Int32Value.class)
                 .thenApply(ur -> ur.map(i -> Int32Value.of(i.getValue() + 5)));
-        assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
-        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, rpcResponse.toCompletableFuture()::get);
-        assertEquals(exception.getMessage(), "java.lang.RuntimeException: Boom");
+        assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
+        Status status = Status.newBuilder().setCode(2).setMessage("Boom").build();
+        assertEquals(status, rpcResponse.toCompletableFuture().get().failureValue());
     }
 
     @Test
-    void test_compose_with_failure_transform_Exception() {
+    void test_compose_with_failure_transform_Exception() throws Exception {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<Int32Value>> rpcResponse = RpcMapper.mapResponseToResult(
                         ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes()),
@@ -266,13 +266,13 @@ class RpcTest {
                     System.out.println("in exceptionally");
                     return RpcResult.failure("boom", exception);
                 });
-        assertFalse(rpcResponse.toCompletableFuture().isCompletedExceptionally());
+
         final CompletionStage<Void> test = rpcResponse.thenAccept(RpcResult -> {
             assertTrue(RpcResult.isFailure());
             assertEquals(Code.UNKNOWN_VALUE, RpcResult.failureValue().getCode());
             assertEquals("boom", RpcResult.failureValue().getMessage());
         });
-        assertFalse(test.toCompletableFuture().isCompletedExceptionally());
+        assertTrue(test.toCompletableFuture().isCompletedExceptionally());
     }
 
     @Test
@@ -310,31 +310,32 @@ class RpcTest {
     }
 
     @Test
-    void test_fail_invoke_method_when_invoke_method_threw_an_exception_using_mapResponseToRpcResponse() {
+    void test_fail_invoke_method_when_invoke_method_threw_an_exception_using_mapResponseToRpcResponse() throws Exception {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<io.cloudevents.v1.proto.CloudEvent>> rpcResponse =
                 RpcMapper.mapResponseToResult(
                 ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
-        assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
-        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, rpcResponse.toCompletableFuture()::get);
-        assertEquals(exception.getMessage(), "java.lang.RuntimeException: Boom");
+        assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
+        Status status = Status.newBuilder().setCode(2).setMessage("Boom").build();
+        assertEquals(status, rpcResponse.toCompletableFuture().get().failureValue());
+
     }
 
     @Test
-    void test_fail_invoke_method_when_invoke_method_returns_a_bad_proto_using_mapResponseToRpcResponse() {
+    void test_fail_invoke_method_when_invoke_method_returns_a_bad_proto_using_mapResponseToRpcResponse()
+            throws Exception {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<io.cloudevents.v1.proto.CloudEvent>> rpcResponse =
                 RpcMapper.mapResponseToResult(
                 ThatReturnsTheWrongProto.invokeMethod(buildTopic(), payload, buildUAttributes()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
-        assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
-        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, rpcResponse.toCompletableFuture()::get);
-        assertEquals(exception.getMessage(),
-                "java.lang.RuntimeException: Unknown payload type [type.googleapis.com/google.protobuf.Int32Value]. " +
-                        "Expected [io.cloudevents.v1.proto.CloudEvent]");
+        assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
+        Status status = Status.newBuilder().setCode(2).setMessage("Unknown payload type [type.googleapis.com/google.protobuf.Int32Value]. Expected [io.cloudevents.v1.proto.CloudEvent]").build();
+        assertEquals(status, rpcResponse.toCompletableFuture().get().failureValue());
+
     }
 
     @Test
@@ -542,18 +543,18 @@ class RpcTest {
 
     @Test
     @DisplayName("Invoke method that returns successfully with null in the payload, mapResponseToResult")
-    void test_success_invoke_method_that_has_null_payload_mapResponseToResultToRpcResponse() {
+    void test_success_invoke_method_that_has_null_payload_mapResponseToResultToRpcResponse()
+            throws Exception {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<io.cloudevents.v1.proto.CloudEvent>> rpcResponse =
                 RpcMapper.mapResponseToResult(
                 WithNullInPayload.invokeMethod(buildTopic(), payload, buildUAttributes()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
-        assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
-        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, rpcResponse.toCompletableFuture()::get);
-        assertEquals(exception.getMessage(),
-                "java.lang.RuntimeException: Server returned a null payload. Expected io.cloudevents.v1.proto" +
-                        ".CloudEvent");
+        assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
+        Status status = Status.newBuilder().setCode(2).setMessage("Server returned a null payload. Expected io.cloudevents.v1.proto.CloudEvent").build();
+        assertEquals(status, rpcResponse.toCompletableFuture().get().failureValue());
+
 
     }
 
@@ -615,17 +616,16 @@ class RpcTest {
 
     @Test
     @DisplayName("test invalid payload that is not of type any")
-    void test_invalid_payload_that_is_not_type_any_map_to_result() {
+    void test_invalid_payload_that_is_not_type_any_map_to_result() throws Exception {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<Status>> rpcResponse = RpcMapper.mapResponseToResult(
                 ThatBarfsCrapyPayload.invokeMethod(buildTopic(), payload, buildUAttributes()), Status.class);
 
-        assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
-        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, rpcResponse.toCompletableFuture()::get);
-        assertEquals(exception.getMessage(),
-                "java.lang.RuntimeException: Protocol message contained an invalid tag (zero). [com.google.rpc" +
-                        ".Status]");
-        ;
+        assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
+        Status status = Status.newBuilder().setCode(2).setMessage("Protocol message contained an invalid tag (zero). [com.google.rpc.Status]").build();
+        assertEquals(status, rpcResponse.toCompletableFuture().get().failureValue());
+
+
     }
 
     @Test
