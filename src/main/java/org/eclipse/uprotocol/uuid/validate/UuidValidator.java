@@ -26,11 +26,11 @@ package org.eclipse.uprotocol.uuid.validate;
 
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.v1.UUID;
+import org.eclipse.uprotocol.v1.UStatus;
+import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.validation.ValidationResult;
 
 import com.github.f4b6a3.uuid.enums.UuidVariant;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -68,7 +68,7 @@ public abstract class UuidValidator {
         }
     }
 
-    public Status validate(UUID uuid) {
+    public UStatus validate(UUID uuid) {
         final String errorMessage = Stream.of(validateVersion(uuid),
                         validateVariant(uuid),
                         validateTime(uuid))
@@ -76,7 +76,7 @@ public abstract class UuidValidator {
                 .map(ValidationResult::getMessage)
                 .collect(Collectors.joining(","));
         return errorMessage.isBlank() ? ValidationResult.success().toStatus() :
-                Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE).setMessage(errorMessage).build();
+                UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage(errorMessage).build();
     }
 
     public abstract ValidationResult validateVersion(UUID uuid);

@@ -24,14 +24,14 @@
 
 package org.eclipse.uprotocol.rpc;
 
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.UStatus;
+
 /**
- * Wrapper class for RPC Stub calls. It contains a Success with the type of the RPC call, or a failure with the Status returned by the failed call.
+ * Wrapper class for RPC Stub calls. It contains a Success with the type of the RPC call, or a failure with the UStatus returned by the failed call.
  * @param <T> The type of the successful RPC call.
  */
 public abstract class RpcResult<T> {
@@ -49,7 +49,7 @@ public abstract class RpcResult<T> {
 
     public abstract RpcResult<T> filter(Function<T, Boolean> f);
 
-    public abstract Status failureValue();
+    public abstract UStatus failureValue();
 
     public abstract T successValue();
 
@@ -105,14 +105,14 @@ public abstract class RpcResult<T> {
             try {
                 return f.apply(successValue())
                         ? this
-                        : failure(Code.FAILED_PRECONDITION, "filtered out");
+                        : failure(UCode.FAILED_PRECONDITION, "filtered out");
             } catch (Exception e) {
                 return failure(e.getMessage(), e);
             }
         }
 
         @Override
-        public Status failureValue() {
+        public UStatus failureValue() {
             throw new IllegalStateException("Method failureValue() called on a Success instance");
         }
 
@@ -129,21 +129,21 @@ public abstract class RpcResult<T> {
 
     private static class Failure<T> extends RpcResult<T> {
 
-        private final Status value;
+        private final UStatus value;
 
-        private Failure(Status value) {
+        private Failure(UStatus value) {
             this.value = value;
         }
 
-        private Failure(Code code, String message) {
-            this.value = Status.newBuilder()
-                    .setCode(code.getNumber())
+        private Failure(UCode code, String message) {
+            this.value = UStatus.newBuilder()
+                    .setCode(code)
                     .setMessage(message).build();
         }
 
         private Failure(Exception e) {
-            this.value = Status.newBuilder()
-                    .setCode(Code.UNKNOWN_VALUE)
+            this.value = UStatus.newBuilder()
+                    .setCode(UCode.UNKNOWN)
                     .setMessage(e.getMessage()).build();
         }
 
@@ -183,7 +183,7 @@ public abstract class RpcResult<T> {
         }
 
         @Override
-        public Status failureValue() {
+        public UStatus failureValue() {
             return value;
         }
 
@@ -202,7 +202,7 @@ public abstract class RpcResult<T> {
         return new Success<>(value);
     }
 
-    public static <T> RpcResult<T> failure(Status value) {
+    public static <T> RpcResult<T> failure(UStatus value) {
         return new Failure<>(value);
     }
 
@@ -214,7 +214,7 @@ public abstract class RpcResult<T> {
         return new Failure<>(new IllegalStateException(message, e));
     }
 
-    public static <T> RpcResult<T> failure(Code code, String message) {
+    public static <T> RpcResult<T> failure(UCode code, String message) {
         return new Failure<>(code, message);
     }
 

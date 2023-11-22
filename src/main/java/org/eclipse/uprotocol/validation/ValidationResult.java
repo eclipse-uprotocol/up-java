@@ -24,8 +24,8 @@
 
 package org.eclipse.uprotocol.validation;
 
-import com.google.rpc.Code;
-import com.google.rpc.Status;
+import org.eclipse.uprotocol.v1.UStatus;
+import org.eclipse.uprotocol.v1.UCode;
 
 import java.util.Objects;
 
@@ -34,13 +34,13 @@ import java.util.Objects;
  */
 public abstract class ValidationResult {
 
-    public static final Status STATUS_SUCCESS = Status.newBuilder().setCode(Code.OK_VALUE).setMessage("OK").build();
+    public static final UStatus STATUS_SUCCESS = UStatus.newBuilder().setCode(UCode.OK).setMessage("OK").build();
 
     private static final ValidationResult SUCCESS = new Success();
 
     private ValidationResult(){}
 
-    public abstract Status toStatus();
+    public abstract UStatus toStatus();
 
     public abstract boolean isSuccess();
 
@@ -61,8 +61,8 @@ public abstract class ValidationResult {
         }
 
         @Override
-        public Status toStatus() {
-            return Status.newBuilder().setCode(3).setMessage(message).build();
+        public UStatus toStatus() {
+            return UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage(message).build();
         }
 
         @Override
@@ -82,12 +82,12 @@ public abstract class ValidationResult {
     }
 
     /**
-     * Implementation for success, wrapping a google.rpc.Status with Code 0 for success.
+     * Implementation for success, wrapping a UStatus with Code 0 for success.
      */
     private static class Success extends ValidationResult {
 
         @Override
-        public Status toStatus() {
+        public UStatus toStatus() {
             return STATUS_SUCCESS;
         }
 

@@ -1,5 +1,6 @@
-package org.eclipse.uprotocol.transport.datamodel;
+package org.eclipse.uprotocol.transport;
 
+import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.v1.UPayload;

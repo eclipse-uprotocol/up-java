@@ -30,12 +30,13 @@ import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import com.google.rpc.Code;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UUID;
+import org.eclipse.uprotocol.v1.UCode;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -121,16 +122,16 @@ public interface UCloudEvent {
     /**
      * Extract the integer value of the communication status attribute from a cloud event. The communication status attribute is optional.
      * If there was a platform communication error that occurred while delivering this cloudEvent, it will be indicated in this attribute.
-     * If the attribute does not exist, it is assumed that everything was Code.OK_VALUE.
+     * If the attribute does not exist, it is assumed that everything was UCode.OK_VALUE.
      * @param cloudEvent CloudEvent with the platformError to be extracted.
-     * @return Returns a {@link Code} value that indicates of a platform communication error while delivering this CloudEvent or Code.OK_VALUE.
+     * @return Returns a {@link Code} value that indicates of a platform communication error while delivering this CloudEvent or UCode.OK_VALUE.
      */
     static Integer getCommunicationStatus(CloudEvent cloudEvent) {
         try {
             return extractIntegerValueFromExtension("commstatus", cloudEvent)
-                    .orElse(Code.OK_VALUE);
+                    .orElse(UCode.OK_VALUE);
         } catch (Exception e) {
-            return Code.OK_VALUE;
+            return UCode.OK_VALUE;
         }
     }
 
@@ -140,7 +141,7 @@ public interface UCloudEvent {
      * @return returns true if the provided CloudEvent is marked with having a platform delivery problem.
      */
     static boolean hasCommunicationStatusProblem(CloudEvent cloudEvent) {
-        return getCommunicationStatus(cloudEvent) != Code.OK_VALUE;
+        return getCommunicationStatus(cloudEvent) != UCode.OK_VALUE;
     }
 
     /**
