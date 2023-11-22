@@ -122,9 +122,11 @@ public interface UCloudEvent {
     /**
      * Extract the integer value of the communication status attribute from a cloud event. The communication status attribute is optional.
      * If there was a platform communication error that occurred while delivering this cloudEvent, it will be indicated in this attribute.
-     * If the attribute does not exist, it is assumed that everything was UCode.OK_VALUE.
+     * If the attribute does not exist, it is assumed that everything was UCode.OK_VALUE. <br>
+     * If the attribute exists but is not a valid integer, we return UCode.OK_VALUE as we cannot determine that there was in fact a communication
+     * status error or not
      * @param cloudEvent CloudEvent with the platformError to be extracted.
-     * @return Returns a {@link Code} value that indicates of a platform communication error while delivering this CloudEvent or UCode.OK_VALUE.
+     * @return Returns a UCode value that indicates of a platform communication error while delivering this CloudEvent or UCode.OK_VALUE.
      */
     static Integer getCommunicationStatus(CloudEvent cloudEvent) {
         try {
@@ -312,6 +314,13 @@ public interface UCloudEvent {
         return extractStringValueFromExtension(extensionName, cloudEvent)
                 .map(Integer::valueOf);
     }
+
+
+    /**
+     * Get the string representation of the UMessageType
+     * @param type The UMessageType
+     * @return returns the string representation of the UMessageType
+     */
     static String getEventType(UMessageType type){
         switch (type){
             case UMESSAGE_TYPE_PUBLISH:
@@ -325,6 +334,11 @@ public interface UCloudEvent {
         }
     }
 
+    /**
+     * Get the UMessageType from the string representation
+     * @param ce_type The string representation of the UMessageType
+     * @return returns the UMessageType
+     */
     static UMessageType getMessageType(String ce_type){
         switch (ce_type){
             case "pub.v1":
