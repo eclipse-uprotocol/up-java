@@ -23,12 +23,14 @@
  */
 package org.eclipse.uprotocol.transport.validate;
 
-import org.eclipse.uprotocol.transport.datamodel.UStatus;
+
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UUID;
+import org.eclipse.uprotocol.v1.UStatus;
+import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.validation.ValidationResult;
 
 import java.util.Objects;
@@ -165,7 +167,7 @@ public abstract class UAttributesValidator {
         {
             if (attributes.hasCommstatus()) {
 
-                Optional<UStatus.Code> enumValue = UStatus.Code.from(attributes.getCommstatus());
+                Optional<UCode> enumValue = Optional.ofNullable(UCode.forNumber(attributes.getCommstatus()));
                 if (enumValue.isPresent()) {
                     return ValidationResult.success();
 

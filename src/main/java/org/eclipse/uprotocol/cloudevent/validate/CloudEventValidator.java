@@ -24,12 +24,13 @@
 
 package org.eclipse.uprotocol.cloudevent.validate;
 
-import com.google.rpc.Code;
-import com.google.rpc.Status;
+
 import io.cloudevents.CloudEvent;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
 import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.v1.UStatus;
+import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.validation.ValidationResult;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
@@ -39,9 +40,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Validates a CloudEvent using google.grpc.Status<br>
- *
- * <a href="https://grpc.github.io/grpc/core/md_doc_statuscodes.html">google.grpc.Status</a>
+ * Validates a CloudEvent using UStatus<br>
  */
 public abstract class CloudEventValidator {
 
@@ -95,14 +94,14 @@ public abstract class CloudEventValidator {
      * @param cloudEvent The CloudEvent to validate.
      * @return Returns a google.rpc.Status with success or a google.rpc.Status with failure containing all the errors that were found.
      */
-    public Status validate(CloudEvent cloudEvent) {
+    public UStatus validate(CloudEvent cloudEvent) {
         final String errorMessage = Stream.of(validateVersion(cloudEvent), validateId(cloudEvent),
                         validateSource(cloudEvent), validateType(cloudEvent), validateSink(cloudEvent))
                 .filter(ValidationResult::isFailure)
                 .map(ValidationResult::getMessage)
                 .collect(Collectors.joining(","));
         return errorMessage.isBlank() ? ValidationResult.success().toStatus() :
-                Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE).setMessage(errorMessage).build();
+                UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage(errorMessage).build();
     }
 
     public static ValidationResult validateVersion(CloudEvent cloudEvent) {

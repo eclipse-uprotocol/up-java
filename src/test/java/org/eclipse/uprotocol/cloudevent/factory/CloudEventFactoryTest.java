@@ -25,7 +25,6 @@
 package org.eclipse.uprotocol.cloudevent.factory;
 
 import com.google.protobuf.Any;
-import com.google.rpc.Code;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
@@ -331,7 +330,7 @@ class CloudEventFactoryTest {
 
         final CloudEvent cloudEvent = CloudEventFactory.failedResponse(applicationUriForRPC, serviceMethodUri,
                 "requestIdFromRequestCloudEvent",
-                Code.INVALID_ARGUMENT_VALUE,
+                UCode.INVALID_ARGUMENT_VALUE,
                 uCloudEventAttributes);
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
@@ -345,7 +344,7 @@ class CloudEventFactoryTest {
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UPriority.UPRIORITY_CS2.name(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, cloudEvent.getExtension("commstatus"));
+        assertEquals(UCode.INVALID_ARGUMENT_VALUE, cloudEvent.getExtension("commstatus"));
 
         assertEquals("requestIdFromRequestCloudEvent", cloudEvent.getExtension("reqid"));
 
@@ -371,7 +370,7 @@ class CloudEventFactoryTest {
 
         final CloudEvent cloudEvent = CloudEventFactory.failedResponse(applicationUriForRPC, serviceMethodUri,
                 "requestIdFromRequestCloudEvent",
-                Code.INVALID_ARGUMENT_VALUE,
+                UCode.INVALID_ARGUMENT_VALUE,
                 uCloudEventAttributes);
 
         assertEquals("1.0", cloudEvent.getSpecVersion().toString());
@@ -385,7 +384,7 @@ class CloudEventFactoryTest {
         assertEquals("somehash", cloudEvent.getExtension("hash"));
         assertEquals(UPriority.UPRIORITY_CS2.name(), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
-        assertEquals(Code.INVALID_ARGUMENT_VALUE, cloudEvent.getExtension("commstatus"));
+        assertEquals(UCode.INVALID_ARGUMENT_VALUE, cloudEvent.getExtension("commstatus"));
 
         assertEquals("requestIdFromRequestCloudEvent", cloudEvent.getExtension("reqid"));
 

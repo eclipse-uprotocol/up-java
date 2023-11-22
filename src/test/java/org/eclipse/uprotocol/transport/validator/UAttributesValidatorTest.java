@@ -25,7 +25,6 @@
 package org.eclipse.uprotocol.transport.validator;
 
 import org.eclipse.uprotocol.transport.builder.UAttributesBuilder;
-import org.eclipse.uprotocol.transport.datamodel.UStatus.Code;
 import org.eclipse.uprotocol.transport.validate.UAttributesValidator;
 import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
@@ -550,7 +549,7 @@ class UAttributesValidatorTest {
     @DisplayName("test validating valid commstatus attribute")
     public void test_validating_valid_commstatus_attribute() {
 
-        final UAttributes attributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).withCommStatus(Code.ABORTED.value())
+        final UAttributes attributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).withCommStatus(UCode.ABORTED_VALUE)
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
