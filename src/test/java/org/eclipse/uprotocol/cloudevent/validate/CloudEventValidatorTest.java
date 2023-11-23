@@ -228,8 +228,8 @@ class CloudEventValidatorTest {
                 .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
+        final ValidationResult result = validator.validate(cloudEvent);
+        assertEquals(ValidationResult.success(), result);
     }
 
     @Test
@@ -243,8 +243,8 @@ class CloudEventValidatorTest {
                 .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
+        final ValidationResult result = validator.validate(cloudEvent);
+        assertEquals(ValidationResult.success(), result);
     }
 
     @Test
@@ -258,8 +258,8 @@ class CloudEventValidatorTest {
                 .withExtension("sink", "//bo.cloud/petapp").withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
+        final ValidationResult result = validator.validate(cloudEvent);
+        assertEquals(ValidationResult.success(), result);
     }
 
     @Test
@@ -273,8 +273,7 @@ class CloudEventValidatorTest {
                 .withExtension("sink", "//bo.cloud").withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
+        final ValidationResult status = validator.validate(cloudEvent);
         assertEquals("Invalid CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.",
                 status.getMessage());
     }
@@ -289,9 +288,8 @@ class CloudEventValidatorTest {
                 .withSource(URI.create("/")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
-        assertEquals("Invalid Publish type CloudEvent source [/]. Uri is empty.", status.getMessage());
+        final ValidationResult result = validator.validate(cloudEvent);
+        assertEquals("Invalid Publish type CloudEvent source [/]. Uri is empty.", result.getMessage());
     }
 
     @Test
@@ -301,12 +299,11 @@ class CloudEventValidatorTest {
                 .withSource(URI.create("/body.access")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
         assertEquals(
                 "Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.," + "Invalid Publish type " +
                         "CloudEvent source [/body.access]. UriPart is missing uResource name.",
-                status.getMessage());
+                result.getMessage());
     }
 
     @Test
@@ -316,12 +313,11 @@ class CloudEventValidatorTest {
                 .withSource(URI.create("/body.access/1/door.front_left")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
         assertEquals(
                 "Invalid CloudEvent Id [testme]. CloudEvent Id must be of type UUIDv8.," + "Invalid Publish type " +
                         "CloudEvent source [/body.access/1/door.front_left]. UriPart is missing Message information.",
-                status.getMessage());
+                result.getMessage());
     }
 
     @Test
@@ -335,8 +331,8 @@ class CloudEventValidatorTest {
                 .withExtension("sink", "//bo.cloud/petapp");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
+        final ValidationResult result = validator.validate(cloudEvent);
+        assertEquals(ValidationResult.success(), result);
     }
 
     @Test
@@ -349,9 +345,8 @@ class CloudEventValidatorTest {
                 .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
-        assertEquals("Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.", status.getMessage());
+        final ValidationResult result = validator.validate(cloudEvent);
+        assertEquals("Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.", result.getMessage());
     }
 
     @Test
@@ -365,10 +360,9 @@ class CloudEventValidatorTest {
                 .withExtension("sink", "//bo.cloud");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
         assertEquals("Invalid Notification type CloudEvent sink [//bo.cloud]. Uri is missing uSoftware Entity name.",
-                status.getMessage());
+                result.getMessage());
     }
 
 
@@ -383,8 +377,8 @@ class CloudEventValidatorTest {
                 .withExtension("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
+        final ValidationResult result = validator.validate(cloudEvent);
+        assertEquals(ValidationResult.success(), result);
     }
 
     @Test
@@ -399,12 +393,11 @@ class CloudEventValidatorTest {
                 .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
         assertEquals(
                 "Invalid RPC Request CloudEvent source [//bo.cloud/petapp//dog]. " + "Invalid RPC uri application " +
                         "response topic. UriPart is missing rpc.response.",
-                status.getMessage());
+                result.getMessage());
     }
 
     @Test
@@ -417,11 +410,10 @@ class CloudEventValidatorTest {
                 .withSource(URI.create("//bo.cloud/petapp//rpc.response")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
         assertEquals(
                 "Invalid RPC Request CloudEvent sink. Request CloudEvent sink must be uri for the method to be called.",
-                status.getMessage());
+                result.getMessage());
     }
 
     @Test
@@ -435,12 +427,11 @@ class CloudEventValidatorTest {
                 .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
         assertEquals(
                 "Invalid RPC Request CloudEvent sink [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC method " +
                         "uri. UriPart should be the method to be called, or method from response.",
-                status.getMessage());
+                result.getMessage());
     }
 
     @Test
@@ -454,8 +445,8 @@ class CloudEventValidatorTest {
                 .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE)).withExtension("sink", "//bo.cloud/petapp//rpc.response");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(ValidationResult.STATUS_SUCCESS, status);
+        final ValidationResult result = validator.validate(cloudEvent);
+        assertEquals(ValidationResult.success(), result);
     }
 
     @Test
@@ -469,12 +460,11 @@ class CloudEventValidatorTest {
                 .withExtension("sink", "//bo.cloud/petapp//rpc.response").withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
         assertEquals(
                 "Invalid RPC Response CloudEvent source [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC " +
                         "method uri. UriPart should be the method to be called, or method from response.",
-                status.getMessage());
+                result.getMessage());
     }
 
     @Test
@@ -488,13 +478,12 @@ class CloudEventValidatorTest {
                 .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
         assertEquals(
                 "Invalid RPC Response CloudEvent source [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC " +
                         "method uri. UriPart should be the method to be called, or method from response.," + "Invalid" +
                         " CloudEvent sink. Response CloudEvent sink must be uri the destination of the response.",
-                status.getMessage());
+                result.getMessage());
     }
 
     @Test
@@ -508,13 +497,12 @@ class CloudEventValidatorTest {
                 .withExtension("sink", "//bo.cloud");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
         assertEquals(
                 "Invalid RPC Response CloudEvent source [//VCU.myvin]. Invalid RPC method uri. Uri is missing " +
                         "uSoftware Entity name.,Invalid RPC Response CloudEvent sink [//bo.cloud]. Invalid RPC uri " +
                         "application response topic. Uri is missing uSoftware Entity name.",
-                status.getMessage());
+                result.getMessage());
     }
 
     @Test
@@ -528,14 +516,13 @@ class CloudEventValidatorTest {
                 .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
         assertEquals(
                 "Invalid RPC Response CloudEvent source [//bo.cloud/petapp/1/dog]. Invalid RPC method uri. UriPart " +
                         "should be the method to be called, or method from response.," + "Invalid RPC Response " +
                         "CloudEvent sink [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC uri application " +
                         "response topic. UriPart is missing rpc.response.",
-                status.getMessage());
+                result.getMessage());
     }
 
     private CloudEventBuilder buildBaseCloudEventBuilderForTest() {
@@ -588,8 +575,8 @@ class CloudEventValidatorTest {
                 protoPayload.getTypeUrl(), attributes).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH)).build();
 
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.OK, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
+        assertTrue(result.isSuccess());
         assertFalse(UCloudEvent.isExpired(cloudEvent));
     }
 
@@ -614,8 +601,8 @@ class CloudEventValidatorTest {
                 protoPayload.getTypeUrl(), attributes).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH)).build();
 
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
-        final UStatus status = validator.validate(cloudEvent);
-        assertEquals(UCode.OK, status.getCode());
+        final ValidationResult result = validator.validate(cloudEvent);
+        assertTrue(result.isSuccess());
         assertTrue(UCloudEvent.isExpired(cloudEvent));
     }
 
