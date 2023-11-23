@@ -94,14 +94,14 @@ public abstract class CloudEventValidator {
      * @param cloudEvent The CloudEvent to validate.
      * @return Returns a google.rpc.Status with success or a google.rpc.Status with failure containing all the errors that were found.
      */
-    public UStatus validate(CloudEvent cloudEvent) {
+    public ValidationResult validate(CloudEvent cloudEvent) {
         final String errorMessage = Stream.of(validateVersion(cloudEvent), validateId(cloudEvent),
                         validateSource(cloudEvent), validateType(cloudEvent), validateSink(cloudEvent))
                 .filter(ValidationResult::isFailure)
                 .map(ValidationResult::getMessage)
                 .collect(Collectors.joining(","));
-        return errorMessage.isBlank() ? ValidationResult.success().toStatus() :
-                UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage(errorMessage).build();
+        return errorMessage.isBlank() ? ValidationResult.success() :
+                ValidationResult.failure(errorMessage);
     }
 
     public static ValidationResult validateVersion(CloudEvent cloudEvent) {
