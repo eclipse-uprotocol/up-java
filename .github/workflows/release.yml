@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      packages: write
 
     steps:
     - run: |
@@ -41,7 +42,6 @@ jobs:
     - name: Stage to Nexus and Release to Maven central
       run: |
         mvn -B release:clean release:prepare -P release release:perform -DpushChanges=false
-        git push --tags
       env:
         OSSRH_USER: ${{ secrets.ORG_OSSRH_USERNAME }}
         OSSRH_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
