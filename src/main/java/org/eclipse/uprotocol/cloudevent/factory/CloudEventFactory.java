@@ -31,6 +31,7 @@ import com.google.protobuf.Empty;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
+import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
 import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UUID;
 import org.eclipse.uprotocol.v1.UUri;
@@ -154,7 +155,7 @@ public interface CloudEventFactory {
      */
     static String generateCloudEventId() {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
-        return uuid.toString();
+        return LongUuidSerializer.instance().serialize(uuid);
     }
 
     /**
