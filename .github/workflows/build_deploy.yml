@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - debug_push_ticket_3944
 
 jobs:
   build-and-deploy:
