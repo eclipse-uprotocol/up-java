@@ -37,6 +37,23 @@
         <protobuf.version>3.21.10</protobuf.version>
     </properties>
 
+    <licenses>
+      <license>
+        <name>The Apache License, Version 2.0</name>
+        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      </license>
+    </licenses>
+
+
+    <developers>
+        <developer>
+          <name>Steven Hartley</name>
+          <email>steven.hartley@gm.com</email>
+          <organization>General Motors</organization>
+          <organizationUrl>https://www.gm.com</organizationUrl>
+        </developer>
+    </developers>
+
     <scm>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
@@ -164,7 +181,7 @@
                 </executions>
             </plugin>
 
-            <plugin>
+<!--             <plugin>
                <groupId>org.sonatype.plugins</groupId>
                <artifactId>nexus-staging-maven-plugin</artifactId>
                <version>1.6.13</version>
@@ -176,7 +193,7 @@
                  <stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
                </configuration>
             </plugin>
-            
+             -->
         </plugins>
     </build>
 
@@ -329,6 +346,7 @@
         </pluginRepository>
 
     </pluginRepositories>
+    
     <profiles>
         <profile>
             <id>release</id>
@@ -376,6 +394,7 @@
 
         </profile>
     </profiles>
+
     <repositories>
         <repository>
         <id>oss.sonatype.org-snapshot</id>
@@ -388,4 +407,5 @@
         </snapshots>
         </repository>
     </repositories>
+    
 </project>
