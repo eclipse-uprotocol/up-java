@@ -41,8 +41,8 @@ jobs:
 
     - name: Stage to Nexus and Release to Maven central
       run: |
-        mvn -B release:clean release:prepare -P release
-        # mvn -B release:clean release:prepare -P release release:perform -DpushChanges=false
+        # mvn -B release:clean release:prepare -P release
+        mvn -B release:clean release:prepare -P release release:perform -DpushChanges=false
       env:
         OSSRH_USER: ${{ secrets.ORG_OSSRH_USERNAME }}
         OSSRH_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
