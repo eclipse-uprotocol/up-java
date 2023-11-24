@@ -18,7 +18,7 @@
     <artifactId>uprotocol-java</artifactId>
     <name>Java SDK for uProtocol</name>
     <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more</description>
-    <version>1.5.3-SNAPSHOT</version>
+    <version>1.5.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/eclipse-uprotocol/uprotocol-java/</url>    
 
