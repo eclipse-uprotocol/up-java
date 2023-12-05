@@ -24,6 +24,8 @@
 
 package org.eclipse.uprotocol.cloudevent.factory;
 
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
+import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
 
@@ -34,10 +36,9 @@ import com.google.protobuf.Message;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import org.eclipse.uprotocol.v1.UMessageType;
-import org.eclipse.uprotocol.v1.UUID;
-import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.*;
 
+import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -350,6 +351,77 @@ public interface UCloudEvent {
             default:
                 return UMessageType.UMESSAGE_TYPE_UNSPECIFIED;
         }
+    }
+    /**
+     * Get the UMessage from the cloud event
+     * @param event The CloudEvent containing the data.
+     * @return returns the UMessage
+     */
+    static UMessage toMessage(CloudEvent event) {
+        UUri source = LongUriSerializer.instance().deserialize(getSource(event));
+        UPayload payload = UPayload.newBuilder().setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setValue(getPayload(event).toByteString()).build();
+        UAttributes.Builder builder =
+                UAttributes.newBuilder().setId(LongUuidSerializer.instance().deserialize(event.getId()))
+                        .setType(getMessageType(event.getType())).setTtl(getCommunicationStatus(event))
+                        .setPriority(UPriority.valueOf(getPriority(event).toString()));
+        if (getSink(event).isPresent()) {
+            builder.setSink(LongUriSerializer.instance().deserialize(getSink(event).get()));
+        }
+        if (getTtl(event).isPresent()) {
+            builder.setTtl(getTtl(event).get());
+        }
+        if (getRequestId(event).isPresent()) {
+            builder.setReqid(LongUuidSerializer.instance().deserialize(getRequestId(event).get()));
+        }
+        if (getToken(event).isPresent()) {
+            builder.setToken(getToken(event).get());
+        }
+        Integer permission_level = extractIntegerValueFromExtension("permission_level", event).orElse(UCode.OK_VALUE);
+        builder.setPermissionLevel(permission_level);
+        UAttributes attributes=builder.build();
+
+        return UMessage.newBuilder().setAttributes(attributes).setPayload(payload).setSource(source).build();
+
+    }
+
+    /**
+     * Get the Cloudevent from the UMessage
+     * @param message The UMessage protobuf containing the data
+     * @return returns the cloud event
+     */
+    static CloudEvent fromMessage(UMessage message) {
+        UAttributes attributes = message.getAttributes();
+
+        UCloudEventAttributes.UCloudEventAttributesBuilder attributesBuilder=
+                new UCloudEventAttributes.UCloudEventAttributesBuilder();
+        attributesBuilder.withPriority(attributes.getPriority());
+        if(attributes.hasTtl())
+            attributesBuilder.withTtl(attributes.getTtl());
+        if(attributes.hasToken())
+            attributesBuilder.withToken(attributes.getToken());
+
+        CloudEventBuilder builder=
+                CloudEventFactory.buildBaseCloudEvent(LongUuidSerializer.instance().serialize( attributes.getId()),
+                        LongUriSerializer.instance().serialize(message.getSource()),
+                        message.getPayload().getValue().toByteArray(),"",attributesBuilder.build());
+        builder.withType(getEventType(attributes.getType()));
+
+        if(attributes.hasSink()){
+             builder.withExtension("sink",
+                     URI.create(LongUriSerializer.instance().serialize(attributes.getSink())));
+        }
+        if(attributes.hasPermissionLevel()){
+            builder.withExtension("permission_level",attributes.getPermissionLevel());
+        }
+        if(attributes.hasCommstatus()){
+            builder.withExtension("commstatus",attributes.getCommstatus());
+        }
+        if(attributes.hasReqid()){
+            builder.withExtension("reqid",LongUuidSerializer.instance().serialize(attributes.getReqid()));
+        }
+       return builder.build();
+
     }
 
 }
