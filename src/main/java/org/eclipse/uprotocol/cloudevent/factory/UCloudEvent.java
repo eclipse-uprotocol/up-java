@@ -381,7 +381,7 @@ public interface UCloudEvent {
 
         getToken(event).ifPresent(builder::setToken);
 
-        Optional<Integer> permission_level = extractIntegerValueFromExtension("permission_level", event);
+        Optional<Integer> permission_level = extractIntegerValueFromExtension("plevel", event);
         permission_level.ifPresent(builder::setPermissionLevel);
 
         UAttributes attributes = builder.build();
@@ -391,7 +391,9 @@ public interface UCloudEvent {
     }
 
     /**
-     * Get the Cloudevent from the UMessage
+     * Get the Cloudevent from the UMessage<br>
+     * <b>Note: For now, only the value format of UPayload is supported in the SDK.If the UPayload has a reference, it
+     * needs to be copied to CloudEvent.</b>
      * @param message The UMessage protobuf containing the data
      * @return returns the cloud event
      */
@@ -405,6 +407,7 @@ public interface UCloudEvent {
 
         cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(message.getSource())));
 
+        // IMPORTANT: Currently, ONLY the VALUE format is supported in the SDK!
         if (message.getPayload().hasValue())
             cloudEventBuilder.withData(message.getPayload().getValue().toByteArray());
 
@@ -427,6 +430,8 @@ public interface UCloudEvent {
         if(attributes.hasReqid())
             cloudEventBuilder.withExtension("reqid",LongUuidSerializer.instance().serialize(attributes.getReqid()));
 
+        if(attributes.hasPermissionLevel())
+            cloudEventBuilder.withExtension("plevel",attributes.getPermissionLevel());
        return cloudEventBuilder.build();
 
     }

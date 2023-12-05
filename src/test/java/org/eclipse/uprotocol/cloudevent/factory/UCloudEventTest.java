@@ -847,13 +847,13 @@ class UCloudEventTest {
                 CloudEventFactory.buildBaseCloudEvent(LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), buildSourceForTest(),
                 protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
-                .withExtension("commstatus", UCode.ABORTED_VALUE);
+                .withExtension("commstatus", UCode.ABORTED_VALUE).withExtension("plevel",2);
 
         CloudEvent cloudEvent = cloudEventBuilder.build();
         UMessage result = UCloudEvent.toMessage(cloudEvent);
         assertNotNull(result);
         assertEquals(10, UCloudEvent.getCommunicationStatus(cloudEvent));
-        assertEquals(10, result.getAttributes().getCommstatus());
+        assertEquals(2, result.getAttributes().getPermissionLevel());
 
         CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent,cloudEvent1);
