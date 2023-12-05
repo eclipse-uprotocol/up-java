@@ -24,7 +24,6 @@
 
 package org.eclipse.uprotocol.cloudevent.factory;
 
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
@@ -41,6 +40,7 @@ import org.eclipse.uprotocol.v1.*;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -358,28 +358,33 @@ public interface UCloudEvent {
      * @return returns the UMessage
      */
     static UMessage toMessage(CloudEvent event) {
+        Objects.requireNonNull(event);
         UUri source = LongUriSerializer.instance().deserialize(getSource(event));
+
         UPayload payload = UPayload.newBuilder().setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
                 .setValue(getPayload(event).toByteString()).build();
+
         UAttributes.Builder builder =
                 UAttributes.newBuilder().setId(LongUuidSerializer.instance().deserialize(event.getId()))
-                        .setType(getMessageType(event.getType())).setTtl(getCommunicationStatus(event))
-                        .setPriority(UPriority.valueOf(getPriority(event).toString()));
-        if (getSink(event).isPresent()) {
-            builder.setSink(LongUriSerializer.instance().deserialize(getSink(event).get()));
+                        .setType(getMessageType(event.getType()));
+
+        if (hasCommunicationStatusProblem(event)) {
+            builder.setCommstatus(getCommunicationStatus(event));
         }
-        if (getTtl(event).isPresent()) {
-            builder.setTtl(getTtl(event).get());
-        }
-        if (getRequestId(event).isPresent()) {
-            builder.setReqid(LongUuidSerializer.instance().deserialize(getRequestId(event).get()));
-        }
-        if (getToken(event).isPresent()) {
-            builder.setToken(getToken(event).get());
-        }
-        Integer permission_level = extractIntegerValueFromExtension("permission_level", event).orElse(UCode.OK_VALUE);
-        builder.setPermissionLevel(permission_level);
-        UAttributes attributes=builder.build();
+        getPriority(event).map(UPriority::valueOf).ifPresent(builder::setPriority);
+
+        getSink(event).map(LongUriSerializer.instance()::deserialize).ifPresent(builder::setSink);
+
+        getRequestId(event).map(LongUuidSerializer.instance()::deserialize).ifPresent(builder::setReqid);
+
+        getTtl(event).ifPresent(builder::setTtl);
+
+        getToken(event).ifPresent(builder::setToken);
+
+        Optional<Integer> permission_level = extractIntegerValueFromExtension("permission_level", event);
+        permission_level.ifPresent(builder::setPermissionLevel);
+
+        UAttributes attributes = builder.build();
 
         return UMessage.newBuilder().setAttributes(attributes).setPayload(payload).setSource(source).build();
 
@@ -393,35 +398,39 @@ public interface UCloudEvent {
     static CloudEvent fromMessage(UMessage message) {
         UAttributes attributes = message.getAttributes();
 
-        UCloudEventAttributes.UCloudEventAttributesBuilder attributesBuilder=
-                new UCloudEventAttributes.UCloudEventAttributesBuilder();
-        attributesBuilder.withPriority(attributes.getPriority());
-        if(attributes.hasTtl())
-            attributesBuilder.withTtl(attributes.getTtl());
-        if(attributes.hasToken())
-            attributesBuilder.withToken(attributes.getToken());
+        CloudEventBuilder cloudEventBuilder =
+                CloudEventBuilder.v1().withId(LongUuidSerializer.instance().serialize(attributes.getId()));
 
-        CloudEventBuilder builder=
-                CloudEventFactory.buildBaseCloudEvent(LongUuidSerializer.instance().serialize( attributes.getId()),
-                        LongUriSerializer.instance().serialize(message.getSource()),
-                        message.getPayload().getValue().toByteArray(),"",attributesBuilder.build());
-        builder.withType(getEventType(attributes.getType()));
+        cloudEventBuilder.withType(getEventType(attributes.getType()));
 
-        if(attributes.hasSink()){
-             builder.withExtension("sink",
+        cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(message.getSource())));
+
+        if (message.getPayload().hasValue())
+            cloudEventBuilder.withData(message.getPayload().getValue().toByteArray());
+
+        if (attributes.hasTtl())
+            cloudEventBuilder.withExtension("ttl",attributes.getTtl());
+
+        if (attributes.hasToken())
+            cloudEventBuilder.withExtension("token",attributes.getToken());
+
+        if(attributes.getPriorityValue()>0)
+            cloudEventBuilder.withExtension("priority",String.valueOf(attributes.getPriority()));
+
+        if(attributes.hasSink())
+            cloudEventBuilder.withExtension("sink",
                      URI.create(LongUriSerializer.instance().serialize(attributes.getSink())));
-        }
-        if(attributes.hasPermissionLevel()){
-            builder.withExtension("permission_level",attributes.getPermissionLevel());
-        }
-        if(attributes.hasCommstatus()){
-            builder.withExtension("commstatus",attributes.getCommstatus());
-        }
-        if(attributes.hasReqid()){
-            builder.withExtension("reqid",LongUuidSerializer.instance().serialize(attributes.getReqid()));
-        }
-       return builder.build();
+
+        if(attributes.hasCommstatus())
+            cloudEventBuilder.withExtension("commstatus",attributes.getCommstatus());
+
+        if(attributes.hasReqid())
+            cloudEventBuilder.withExtension("reqid",LongUuidSerializer.instance().serialize(attributes.getReqid()));
+
+       return cloudEventBuilder.build();
 
     }
+
+
 
 }

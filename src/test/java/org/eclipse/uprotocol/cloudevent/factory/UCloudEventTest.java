@@ -711,4 +711,166 @@ class UCloudEventTest {
         assertTrue(uCloudEventType.isBlank());
     }
 
+    @Test
+    public void test_to_message_with_valid_event() {
+        // additional attributes
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withPriority(UPriority.UPRIORITY_CS2)
+                .withTtl(3)
+                .build();
+        //cloudevent
+        final CloudEvent cloudEvent = CloudEventFactory.publish(buildSourceForTest(), buildProtoPayloadForTest(),
+                uCloudEventAttributes);
+        UMessage uMessage = UCloudEvent.toMessage(cloudEvent);
+
+        assertNotNull(uMessage);
+
+
+    }
+    @Test
+    public void test_from_message_with_valid_message() {
+        // additional attributes
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withPriority(UPriority.UPRIORITY_CS2)
+                .withTtl(3)
+                .build();
+        //cloudevent
+        final CloudEvent cloudEvent = CloudEventFactory.publish(buildSourceForTest(), buildProtoPayloadForTest(),
+                uCloudEventAttributes);
+        UMessage uMessage = UCloudEvent.toMessage(cloudEvent);
+
+        assertNotNull(uMessage);
+        CloudEvent cloudEvent1 = UCloudEvent.fromMessage(uMessage);
+
+        assertNotNull(cloudEvent1);
+        assertEquals(cloudEvent,cloudEvent1);
+    }
+
+    @Test
+    public void test_to_from_message_from_request_cloudevent() {
+        // additional attributes
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withPriority(UPriority.UPRIORITY_CS2)
+                .withToken("someOAuthToken")
+                .withTtl(3)
+                .build();
+        //cloudevent
+        final CloudEvent cloudEvent = CloudEventFactory.request(buildSourceForTest(),"//bo.cloud/petapp/1/rpc" +
+                        ".response", buildProtoPayloadForTest(),
+                uCloudEventAttributes);
+
+
+        UMessage result = UCloudEvent.toMessage(cloudEvent);
+        assertNotNull(result);
+        assertTrue(UCloudEvent.getTtl(cloudEvent).isPresent());
+        assertEquals(UCloudEvent.getTtl(cloudEvent).get(), result.getAttributes().getTtl());
+        assertTrue(UCloudEvent.getToken(cloudEvent).isPresent());
+        assertEquals(UCloudEvent.getToken(cloudEvent).get(), result.getAttributes().getToken());
+        assertTrue(UCloudEvent.getSink(cloudEvent).isPresent());
+        assertEquals(UCloudEvent.getSink(cloudEvent).get(),
+                LongUriSerializer.instance().serialize(result.getAttributes().getSink()));
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
+        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getSource()));
+        assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
+        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), String.valueOf(result.getAttributes().getPriority()));
+
+        final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
+        assertEquals(cloudEvent,cloudEvent1);
+
+    }
+
+    @Test
+    public void test_to_from_message_from_request_cloudevent_without_attributes() {
+        // additional attributes
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .build();
+        //cloudevent
+        final CloudEvent cloudEvent = CloudEventFactory.request(buildSourceForTest(),"//bo.cloud/petapp/1/rpc.response", buildProtoPayloadForTest(),
+                uCloudEventAttributes);
+
+        UMessage result = UCloudEvent.toMessage(cloudEvent);
+        assertNotNull(result);
+        assertFalse(result.getAttributes().hasTtl());
+        assertTrue(UCloudEvent.getSink(cloudEvent).isPresent());
+        assertEquals(UCloudEvent.getSink(cloudEvent).get(),
+                LongUriSerializer.instance().serialize(result.getAttributes().getSink()));
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
+        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getSource()));
+        assertEquals(result.getAttributes().getPriority().getNumber(),0);
+
+        final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
+        assertEquals(cloudEvent,cloudEvent1);
+
+    }
+
+    @Test
+    public void test_to_from_message_from_response_cloudevent() {
+        // additional attributes
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withPriority(UPriority.UPRIORITY_CS2)
+                .withTtl(3)
+                .build();
+        //cloudevent
+        final CloudEvent cloudEvent = CloudEventFactory.response(buildSourceForTest(),"//bo.cloud/petapp/1/rpc" +
+                        ".response", LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                buildProtoPayloadForTest(),
+                uCloudEventAttributes);
+
+        UMessage result = UCloudEvent.toMessage(cloudEvent);
+        assertNotNull(result);
+        assertTrue(UCloudEvent.getRequestId(cloudEvent).isPresent());
+        assertEquals(UCloudEvent.getRequestId(cloudEvent).get(),
+                LongUuidSerializer.instance().serialize(result.getAttributes().getReqid()));
+        assertTrue(UCloudEvent.getTtl(cloudEvent).isPresent());
+        assertEquals(UCloudEvent.getTtl(cloudEvent).get(), result.getAttributes().getTtl());
+        assertTrue(UCloudEvent.getSink(cloudEvent).isPresent());
+        assertEquals(UCloudEvent.getSink(cloudEvent).get(),
+                LongUriSerializer.instance().serialize(result.getAttributes().getSink()));
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
+        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getSource()));
+        assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
+        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), String.valueOf(result.getAttributes().getPriority()));
+
+        final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
+        assertEquals(cloudEvent,cloudEvent1);
+    }
+    @Test
+    public void test_umessage_has_platform_error_when_platform_error_exists() {
+        // additional attributes
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withPriority(UPriority.UPRIORITY_CS2)
+                .withTtl(3)
+                .build();
+
+        Any protoPayload= buildProtoPayloadForTest();
+        final CloudEventBuilder cloudEventBuilder =
+                CloudEventFactory.buildBaseCloudEvent(LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), buildSourceForTest(),
+                protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+                .withExtension("commstatus", UCode.ABORTED_VALUE);
+
+        CloudEvent cloudEvent = cloudEventBuilder.build();
+        UMessage result = UCloudEvent.toMessage(cloudEvent);
+        assertNotNull(result);
+        assertEquals(10, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(10, result.getAttributes().getCommstatus());
+
+        CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
+        assertEquals(cloudEvent,cloudEvent1);
+
+    }
+
+    @Test
+    public void testToMessageWithNullEvent() {
+        assertThrows(NullPointerException.class, () -> UCloudEvent.toMessage(null));
+    }
+
+    private String buildSourceForTest(){
+        UUri Uri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access"))
+                .setResource(UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door"))
+                .build();
+
+        return LongUriSerializer.instance().serialize(Uri);
+    }
+
 }
