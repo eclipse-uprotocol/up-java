@@ -361,7 +361,7 @@ public interface UCloudEvent {
         Objects.requireNonNull(event);
         UUri source = LongUriSerializer.instance().deserialize(getSource(event));
 
-        UPayload payload = UPayload.newBuilder().setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+        UPayload payload = UPayload.newBuilder().setFormat(getUPayloadFormatFromContentType(event.getDataContentType()))
                 .setValue(getPayload(event).toByteString()).build();
 
         UAttributes.Builder builder =
@@ -407,6 +407,10 @@ public interface UCloudEvent {
 
         cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(message.getSource())));
 
+        final String contentType = getContentTypeFromUPayloadFormat(message.getPayload().getFormat());
+        if(!contentType.isEmpty()){
+            cloudEventBuilder.withDataContentType(contentType);
+        }
         // IMPORTANT: Currently, ONLY the VALUE format is supported in the SDK!
         if (message.getPayload().hasValue())
             cloudEventBuilder.withData(message.getPayload().getValue().toByteArray());
@@ -436,6 +440,55 @@ public interface UCloudEvent {
 
     }
 
+    /**
+     * Retrieves the payload format enumeration based on the provided content type.
+     *
+     * @param contentType The content type string representing the format of the payload.
+     * @return The corresponding UPayloadFormat enumeration based on the content type.
+     */
+    static UPayloadFormat getUPayloadFormatFromContentType(String contentType){
+        if(contentType == null)
+            return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF;
+
+        switch (contentType){
+            case "application/json":
+                return UPayloadFormat.UPAYLOAD_FORMAT_JSON;
+            case "application/octet-stream":
+                return UPayloadFormat.UPAYLOAD_FORMAT_RAW;
+            case "text/plain":
+                return UPayloadFormat.UPAYLOAD_FORMAT_TEXT;
+            case "application/x-someip":
+                return UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP;
+            case "application/x-someip_tlv":
+                return UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV;
+            default:
+                return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF;
+
+        }
+    }
+
+    /**
+     * Retrieves the content type string based on the provided UPayloadFormat enumeration.
+     *
+     * @param format The UPayloadFormat enumeration representing the payload format.
+     * @return The corresponding content type string based on the payload format.
+     */
+    static String getContentTypeFromUPayloadFormat(UPayloadFormat format){
+        switch (format){
+            case UPAYLOAD_FORMAT_JSON:
+                return "application/json";
+            case UPAYLOAD_FORMAT_RAW:
+                return "application/octet-stream";
+            case UPAYLOAD_FORMAT_TEXT:
+                return "text/plain";
+            case UPAYLOAD_FORMAT_SOMEIP:
+                return "application/x-someip";
+            case UPAYLOAD_FORMAT_SOMEIP_TLV:
+                return "application/x-someip_tlv";
+            default:
+                return "";
+        }
+    }
 
 
 }

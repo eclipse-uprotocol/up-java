@@ -865,6 +865,80 @@ class UCloudEventTest {
         assertThrows(NullPointerException.class, () -> UCloudEvent.toMessage(null));
     }
 
+    @Test
+    public void test_to_from_message_from_cloudevent_with_all_payload_formats() {
+        // additional attributes
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withPriority(UPriority.UPRIORITY_CS2)
+                .withTtl(3)
+                .build();
+
+        Any protoPayload= buildProtoPayloadForTest();
+        final CloudEventBuilder cloudEventBuilder =
+                CloudEventFactory.buildBaseCloudEvent(LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), buildSourceForTest(),
+                        protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+
+        CloudEvent cloudEvent = cloudEventBuilder.build();
+
+        UMessage result = UCloudEvent.toMessage(cloudEvent);
+        assertNotNull(result);
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,result.getPayload().getFormat());
+
+        final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
+        assertEquals(cloudEvent,cloudEvent1);
+        assertNull(cloudEvent1.getDataContentType());
+
+        final CloudEvent cloudEvent2 = cloudEventBuilder.withDataContentType("").build();
+        result = UCloudEvent.toMessage(cloudEvent2);
+        assertNotNull(result);
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,result.getPayload().getFormat());
+        final CloudEvent cloudEvent3 = UCloudEvent.fromMessage(result);
+        assertNull(cloudEvent3.getDataContentType());
+
+        final CloudEvent cloudEvent4 = cloudEventBuilder.withDataContentType("application/json").build();
+        result = UCloudEvent.toMessage(cloudEvent4);
+        assertNotNull(result);
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_JSON,result.getPayload().getFormat());
+        final CloudEvent cloudEvent5 = UCloudEvent.fromMessage(result);
+        assertEquals(cloudEvent4,cloudEvent5);
+        assertEquals("application/json",cloudEvent5.getDataContentType());
+
+        final CloudEvent cloudEvent6 = cloudEventBuilder.withDataContentType("application/octet-stream").build();
+        result = UCloudEvent.toMessage(cloudEvent6);
+        assertNotNull(result);
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_RAW,result.getPayload().getFormat());
+        final CloudEvent cloudEvent7 = UCloudEvent.fromMessage(result);
+        assertEquals(cloudEvent6,cloudEvent7);
+        assertEquals("application/octet-stream",cloudEvent7.getDataContentType());
+
+        final CloudEvent cloudEvent8 = cloudEventBuilder.withDataContentType("text/plain").build();
+        result = UCloudEvent.toMessage(cloudEvent8);
+        assertNotNull(result);
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_TEXT,result.getPayload().getFormat());
+        final CloudEvent cloudEvent9 = UCloudEvent.fromMessage(result);
+        assertEquals(cloudEvent8,cloudEvent9);
+        assertEquals("text/plain",cloudEvent9.getDataContentType());
+
+        final CloudEvent cloudEvent10 = cloudEventBuilder.withDataContentType("application/x-someip").build();
+        result = UCloudEvent.toMessage(cloudEvent10);
+        assertNotNull(result);
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP,result.getPayload().getFormat());
+        final CloudEvent cloudEvent11 = UCloudEvent.fromMessage(result);
+        assertEquals(cloudEvent10,cloudEvent11);
+        assertEquals("application/x-someip",cloudEvent11.getDataContentType());
+
+        final CloudEvent cloudEvent12 = cloudEventBuilder.withDataContentType("application/x-someip_tlv").build();
+        result = UCloudEvent.toMessage(cloudEvent12);
+        assertNotNull(result);
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV,result.getPayload().getFormat());
+        final CloudEvent cloudEvent13 = UCloudEvent.fromMessage(result);
+        assertEquals(cloudEvent12,cloudEvent13);
+        assertEquals("application/x-someip_tlv",cloudEvent13.getDataContentType());
+
+
+    }
+
     private String buildSourceForTest(){
         UUri Uri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access"))
                 .setResource(UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door"))
