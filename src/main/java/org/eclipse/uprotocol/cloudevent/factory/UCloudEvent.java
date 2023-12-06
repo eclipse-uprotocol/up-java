@@ -24,6 +24,7 @@
 
 package org.eclipse.uprotocol.cloudevent.factory;
 
+import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
 
@@ -34,12 +35,12 @@ import com.google.protobuf.Message;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import org.eclipse.uprotocol.v1.UMessageType;
-import org.eclipse.uprotocol.v1.UUID;
-import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.*;
 
+import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -351,5 +352,143 @@ public interface UCloudEvent {
                 return UMessageType.UMESSAGE_TYPE_UNSPECIFIED;
         }
     }
+    /**
+     * Get the UMessage from the cloud event
+     * @param event The CloudEvent containing the data.
+     * @return returns the UMessage
+     */
+    static UMessage toMessage(CloudEvent event) {
+        Objects.requireNonNull(event);
+        UUri source = LongUriSerializer.instance().deserialize(getSource(event));
+
+        UPayload payload = UPayload.newBuilder().setFormat(getUPayloadFormatFromContentType(event.getDataContentType()))
+                .setValue(getPayload(event).toByteString()).build();
+
+        UAttributes.Builder builder =
+                UAttributes.newBuilder().setId(LongUuidSerializer.instance().deserialize(event.getId()))
+                        .setType(getMessageType(event.getType()));
+
+        if (hasCommunicationStatusProblem(event)) {
+            builder.setCommstatus(getCommunicationStatus(event));
+        }
+        getPriority(event).map(UPriority::valueOf).ifPresent(builder::setPriority);
+
+        getSink(event).map(LongUriSerializer.instance()::deserialize).ifPresent(builder::setSink);
+
+        getRequestId(event).map(LongUuidSerializer.instance()::deserialize).ifPresent(builder::setReqid);
+
+        getTtl(event).ifPresent(builder::setTtl);
+
+        getToken(event).ifPresent(builder::setToken);
+
+        Optional<Integer> permission_level = extractIntegerValueFromExtension("plevel", event);
+        permission_level.ifPresent(builder::setPermissionLevel);
+
+        UAttributes attributes = builder.build();
+
+        return UMessage.newBuilder().setAttributes(attributes).setPayload(payload).setSource(source).build();
+
+    }
+
+    /**
+     * Get the Cloudevent from the UMessage<br>
+     * <b>Note: For now, only the value format of UPayload is supported in the SDK.If the UPayload has a reference, it
+     * needs to be copied to CloudEvent.</b>
+     * @param message The UMessage protobuf containing the data
+     * @return returns the cloud event
+     */
+    static CloudEvent fromMessage(UMessage message) {
+        UAttributes attributes = message.getAttributes();
+
+        CloudEventBuilder cloudEventBuilder =
+                CloudEventBuilder.v1().withId(LongUuidSerializer.instance().serialize(attributes.getId()));
+
+        cloudEventBuilder.withType(getEventType(attributes.getType()));
+
+        cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(message.getSource())));
+
+        final String contentType = getContentTypeFromUPayloadFormat(message.getPayload().getFormat());
+        if(!contentType.isEmpty()){
+            cloudEventBuilder.withDataContentType(contentType);
+        }
+        // IMPORTANT: Currently, ONLY the VALUE format is supported in the SDK!
+        if (message.getPayload().hasValue())
+            cloudEventBuilder.withData(message.getPayload().getValue().toByteArray());
+
+        if (attributes.hasTtl())
+            cloudEventBuilder.withExtension("ttl",attributes.getTtl());
+
+        if (attributes.hasToken())
+            cloudEventBuilder.withExtension("token",attributes.getToken());
+
+        if(attributes.getPriorityValue()>0)
+            cloudEventBuilder.withExtension("priority",String.valueOf(attributes.getPriority()));
+
+        if(attributes.hasSink())
+            cloudEventBuilder.withExtension("sink",
+                     URI.create(LongUriSerializer.instance().serialize(attributes.getSink())));
+
+        if(attributes.hasCommstatus())
+            cloudEventBuilder.withExtension("commstatus",attributes.getCommstatus());
+
+        if(attributes.hasReqid())
+            cloudEventBuilder.withExtension("reqid",LongUuidSerializer.instance().serialize(attributes.getReqid()));
+
+        if(attributes.hasPermissionLevel())
+            cloudEventBuilder.withExtension("plevel",attributes.getPermissionLevel());
+       return cloudEventBuilder.build();
+
+    }
+
+    /**
+     * Retrieves the payload format enumeration based on the provided content type.
+     *
+     * @param contentType The content type string representing the format of the payload.
+     * @return The corresponding UPayloadFormat enumeration based on the content type.
+     */
+    static UPayloadFormat getUPayloadFormatFromContentType(String contentType){
+        if(contentType == null)
+            return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF;
+
+        switch (contentType){
+            case "application/json":
+                return UPayloadFormat.UPAYLOAD_FORMAT_JSON;
+            case "application/octet-stream":
+                return UPayloadFormat.UPAYLOAD_FORMAT_RAW;
+            case "text/plain":
+                return UPayloadFormat.UPAYLOAD_FORMAT_TEXT;
+            case "application/x-someip":
+                return UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP;
+            case "application/x-someip_tlv":
+                return UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV;
+            default:
+                return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF;
+
+        }
+    }
+
+    /**
+     * Retrieves the content type string based on the provided UPayloadFormat enumeration.
+     *
+     * @param format The UPayloadFormat enumeration representing the payload format.
+     * @return The corresponding content type string based on the payload format.
+     */
+    static String getContentTypeFromUPayloadFormat(UPayloadFormat format){
+        switch (format){
+            case UPAYLOAD_FORMAT_JSON:
+                return "application/json";
+            case UPAYLOAD_FORMAT_RAW:
+                return "application/octet-stream";
+            case UPAYLOAD_FORMAT_TEXT:
+                return "text/plain";
+            case UPAYLOAD_FORMAT_SOMEIP:
+                return "application/x-someip";
+            case UPAYLOAD_FORMAT_SOMEIP_TLV:
+                return "application/x-someip_tlv";
+            default:
+                return "";
+        }
+    }
+
 
 }
