@@ -71,7 +71,29 @@
         </extensions>
 
         <plugins>
-                 
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>clone-repository</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>git</executable>
+                            <arguments>
+                                <argument>clone</argument>
+                                <argument>https://github.com/eclipse-uprotocol/uprotocol-core-api.git</argument>
+                                <argument>${project.build.directory}/uprotocol-core-api</argument>
+
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -92,6 +114,25 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.1.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.6.1</version> <!-- Use the latest version -->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <protocArtifact>com.google.protobuf:protoc:3.17.3:exe:${os.detected.classifier}</protocArtifact>
+                    <protoSourceRoot>${project.build.directory}/uprotocol-core-api/src/main/proto</protoSourceRoot>
+                    <outputDirectory>${project.build.directory}/generated-sources/protobuf/java</outputDirectory>
+
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -319,14 +360,7 @@
             <artifactId>commons-validator</artifactId>
             <version>1.7</version>
         </dependency>
-        
-        <!-- uProtocol core API library -->
-        <dependency>
-            <groupId>org.eclipse.uprotocol</groupId>
-            <artifactId>uprotocol-core-api</artifactId>
-            <version>1.5.2</version>
-        </dependency>
-        
+
         <!-- JSON library for JUnit test cases -->
         <dependency>
             <groupId>org.json</groupId>
