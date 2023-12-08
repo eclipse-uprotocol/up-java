@@ -84,8 +84,11 @@
                         </goals>
                         <configuration>
                             <executable>git</executable>
+
                             <arguments>
                                 <argument>clone</argument>
+                                <argument>--branch</argument>
+                                <argument>uprotocol-core-api-1.5.3</argument>
                                 <argument>https://github.com/eclipse-uprotocol/uprotocol-core-api.git</argument>
                                 <argument>${project.build.directory}/uprotocol-core-api</argument>
 
