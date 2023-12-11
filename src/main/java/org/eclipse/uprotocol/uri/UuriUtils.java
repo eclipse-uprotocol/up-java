@@ -37,7 +37,7 @@ public interface UuriUtils {
      *
      * @param uAuthority The UAuthority object from which to extract the VIN.
      * @return An Optional containing the extracted VIN if available, or an empty Optional if the
-     * UAuthority is null, has no name, or the name does not contain a valid VIN.
+     * UAuthority is null, has no name.
      */
     static Optional<String> extractVinFromUAuthority(UAuthority uAuthority) {
         return Optional.ofNullable(uAuthority).filter(UAuthority::hasName).map(UAuthority::getName)
