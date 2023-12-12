@@ -23,6 +23,7 @@
  */
 
 package org.eclipse.uprotocol.uri;
+
 import org.eclipse.uprotocol.v1.UAuthority;
 
 import java.util.Optional;
@@ -41,8 +42,13 @@ public interface UuriUtils {
      */
     static Optional<String> extractVinFromUAuthority(UAuthority uAuthority) {
         return Optional.ofNullable(uAuthority).filter(UAuthority::hasName).map(UAuthority::getName)
-                .map(domain -> domain.split("[.]", 0)).filter(parts -> parts.length > 0).map(parts -> parts[0]);
-
+                .map(domain -> domain.split("[.]", 0)).filter(parts -> parts.length > 0).map(parts -> {
+                    if (parts[0].startsWith("vcu")) {
+                        return Optional.of(parts[1]);
+                    } else {
+                        return Optional.of(parts[0]);
+                    }
+                }).orElse(Optional.empty());
     }
 
 }

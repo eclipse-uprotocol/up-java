@@ -33,7 +33,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class UuriUtilsTest {
     @Test
     void testExtractVinFromUAuthorityWithValidUAuthority() {
-        UAuthority uAuthority = UAuthority.newBuilder().setName("1gk12d1t2n10339dc.veh.ultifi.gm.com").build();
+        UAuthority uAuthority = UAuthority.newBuilder().setName("1gk12d1t2n10339dc.veh").build();
+        Optional<String> result = UuriUtils.extractVinFromUAuthority(uAuthority);
+        assertTrue(result.isPresent());
+        assertEquals("1gk12d1t2n10339dc", result.get());
+    }
+
+    @Test
+    void testExtractVinFromUAuthorityWithValidUAuthority_Vcu_start() {
+        UAuthority uAuthority = UAuthority.newBuilder().setName("vcu.1gk12d1t2n10339dc").build();
         Optional<String> result = UuriUtils.extractVinFromUAuthority(uAuthority);
         assertTrue(result.isPresent());
         assertEquals("1gk12d1t2n10339dc", result.get());
