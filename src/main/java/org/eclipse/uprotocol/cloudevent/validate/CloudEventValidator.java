@@ -27,10 +27,7 @@ package org.eclipse.uprotocol.cloudevent.validate;
 
 import io.cloudevents.CloudEvent;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
-import org.eclipse.uprotocol.v1.UResource;
-import org.eclipse.uprotocol.v1.UUri;
-import org.eclipse.uprotocol.v1.UStatus;
-import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.*;
 import org.eclipse.uprotocol.validation.ValidationResult;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
