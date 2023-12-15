@@ -24,11 +24,7 @@
 
 package org.eclipse.uprotocol.transport;
 
-import org.eclipse.uprotocol.v1.UStatus;
-import org.eclipse.uprotocol.v1.UAttributes;
-import org.eclipse.uprotocol.v1.UEntity;
-import org.eclipse.uprotocol.v1.UUri;
-import org.eclipse.uprotocol.v1.UPayload;
+import org.eclipse.uprotocol.v1.*;
 
 /**
  * UTransport is the  uP-L1 interface that provides a common API for uE developers to send and receive messages.
@@ -40,13 +36,14 @@ import org.eclipse.uprotocol.v1.UPayload;
 public interface UTransport {
 
     /**
-     * API used to authenticate with the underlining transport layer that the uEntity passed
-     * matches the transport specific identity. MUST pass a resolved UUri.
-     * @param uEntity Resolved UEntity
-     * @return Returns OKSTATUS if authenticate was successful, FAILSTATUS if the calling uE 
-     * is not authenticated.
+     * Transmit UPayload to the topic using the attributes defined in UTransportAttributes.
+     * @param topic Resolved UUri topic to send the payload to.
+     * @param payload Actual payload.
+     * @param attributes Additional transport attributes.
+     * @return Returns OKSTATUS if the payload has been successfully sent (ACK'ed), otherwise it
+     * returns FAILSTATUS with the appropriate failure.
      */
-    UStatus authenticate (UEntity uEntity) ;
+    UStatus send(UUri topic, UPayload payload, UAttributes attributes);
 
 
     /**
@@ -57,7 +54,9 @@ public interface UTransport {
      * @return Returns OKSTATUS if the payload has been successfully sent (ACK'ed), otherwise it
      * returns FAILSTATUS with the appropriate failure.
      */
-    UStatus send(UUri topic, UPayload payload, UAttributes attributes);
+    default UStatus send(UMessage message) {
+        return send(message.getSource(), message.getPayload(), message.getAttributes());
+    }
 
     /**
      * Register listener to be called when UPayload is received for the specific topic.

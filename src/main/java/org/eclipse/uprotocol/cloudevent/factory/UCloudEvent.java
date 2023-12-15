@@ -390,6 +390,8 @@ public interface UCloudEvent {
 
     }
 
+    
+
     /**
      * Get the Cloudevent from the UMessage<br>
      * <b>Note: For now, only the value format of UPayload is supported in the SDK.If the UPayload has a reference, it
@@ -398,22 +400,38 @@ public interface UCloudEvent {
      * @return returns the cloud event
      */
     static CloudEvent fromMessage(UMessage message) {
-        UAttributes attributes = message.getAttributes();
+        return fromMessageParts(message.getSource(), message.getAttributes(), message.getPayload());
+    }
+
+
+    /**
+     * Get the Cloudevent from the UMessage Parts (UUri, UAttributes, and UPayload) <br>
+     * <b>Note: For now, only the value format of UPayload is supported in the SDK.If the UPayload has a reference, it
+     * needs to be copied to CloudEvent.</b>
+     * @param source The UUri source address for the message
+     * @param attributes The UMessage attributes
+     * @param payload The UMessage payload
+     * @return returns the cloud event
+     */
+    static CloudEvent fromMessageParts(UUri source, UAttributes attributes, UPayload payload) {
+        Objects.requireNonNullElse(source, UUri.getDefaultInstance());
+        Objects.requireNonNullElse(attributes, UAttributes.getDefaultInstance());
+        Objects.requireNonNullElse(payload, UPayload.getDefaultInstance());
 
         CloudEventBuilder cloudEventBuilder =
                 CloudEventBuilder.v1().withId(LongUuidSerializer.instance().serialize(attributes.getId()));
 
         cloudEventBuilder.withType(getEventType(attributes.getType()));
 
-        cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(message.getSource())));
+        cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(source)));
 
-        final String contentType = getContentTypeFromUPayloadFormat(message.getPayload().getFormat());
+        final String contentType = getContentTypeFromUPayloadFormat(payload.getFormat());
         if(!contentType.isEmpty()){
             cloudEventBuilder.withDataContentType(contentType);
         }
         // IMPORTANT: Currently, ONLY the VALUE format is supported in the SDK!
-        if (message.getPayload().hasValue())
-            cloudEventBuilder.withData(message.getPayload().getValue().toByteArray());
+        if (payload.hasValue())
+            cloudEventBuilder.withData(payload.getValue().toByteArray());
 
         if (attributes.hasTtl())
             cloudEventBuilder.withExtension("ttl",attributes.getTtl());
