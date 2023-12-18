@@ -741,9 +741,12 @@ class UCloudEventTest {
 
         assertNotNull(uMessage);
         CloudEvent cloudEvent1 = UCloudEvent.fromMessage(uMessage);
+        CloudEvent cloudEvent2 = UCloudEvent.fromMessageParts(uMessage.getSource(), uMessage.getAttributes(), uMessage.getPayload());
 
         assertNotNull(cloudEvent1);
+        assertNotNull(cloudEvent2);
         assertEquals(cloudEvent,cloudEvent1);
+        assertEquals(cloudEvent1,cloudEvent2);
     }
 
     @Test
@@ -775,8 +778,12 @@ class UCloudEventTest {
         assertEquals(UCloudEvent.getPriority(cloudEvent).get(), String.valueOf(result.getAttributes().getPriority()));
 
         final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
-        assertEquals(cloudEvent,cloudEvent1);
+        CloudEvent cloudEvent2 = UCloudEvent.fromMessageParts(result.getSource(), result.getAttributes(), result.getPayload());
 
+        assertNotNull(cloudEvent1);
+        assertNotNull(cloudEvent2);
+        assertEquals(cloudEvent,cloudEvent1);
+        assertEquals(cloudEvent1,cloudEvent2);
     }
 
     @Test
@@ -935,9 +942,9 @@ class UCloudEventTest {
         final CloudEvent cloudEvent13 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent12,cloudEvent13);
         assertEquals("application/x-someip_tlv",cloudEvent13.getDataContentType());
-
-
     }
+
+    
 
     private String buildSourceForTest(){
         UUri Uri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access"))

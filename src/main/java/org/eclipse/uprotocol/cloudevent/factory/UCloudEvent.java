@@ -414,9 +414,9 @@ public interface UCloudEvent {
      * @return returns the cloud event
      */
     static CloudEvent fromMessageParts(UUri source, UAttributes attributes, UPayload payload) {
-        Objects.requireNonNullElse(source, UUri.getDefaultInstance());
-        Objects.requireNonNullElse(attributes, UAttributes.getDefaultInstance());
-        Objects.requireNonNullElse(payload, UPayload.getDefaultInstance());
+        source = Objects.requireNonNullElse(source, UUri.getDefaultInstance());
+        attributes = Objects.requireNonNullElse(attributes, UAttributes.getDefaultInstance());
+        payload = Objects.requireNonNullElse(payload, UPayload.getDefaultInstance());
 
         CloudEventBuilder cloudEventBuilder =
                 CloudEventBuilder.v1().withId(LongUuidSerializer.instance().serialize(attributes.getId()));
