@@ -93,7 +93,9 @@ public abstract class UAttributesValidator {
     public boolean isExpired(UAttributes uAttributes) {
         final int ttl = uAttributes.getTtl();
         final Optional<Long> maybeTime = UuidUtils.getTime(uAttributes.getId());
-        if (!uAttributes.hasTtl() || maybeTime.isEmpty()) {
+        
+        // if the message does not have a ttl or the original time is not present or the ttl is less than 0
+        if (!uAttributes.hasTtl() || maybeTime.isEmpty() || ttl <= 0) {
             return false;
         }
 

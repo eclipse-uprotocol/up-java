@@ -403,6 +403,15 @@ class UAttributesValidatorTest {
     }
 
     @Test
+    @DisplayName("Validate a UAttributes for payload that is meant to be published not expired with ttl")
+    public void test_validate_uAttributes_for_publish_message_payload_with_negative_ttl() {
+        final UAttributes attributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).withTtl(-1).build();
+
+        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
+        assertFalse(validator.isExpired(attributes));
+    }
+
+    @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be published expired with ttl")
     public void test_validate_uAttributes_for_publish_message_payload_expired_with_ttl() throws InterruptedException {
         final UAttributes attributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).withTtl(1).build();
