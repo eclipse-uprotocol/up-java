@@ -35,6 +35,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -380,9 +381,7 @@ class UAttributesValidatorTest {
         final UAttributes attributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final ValidationResult status = validator.isExpired(attributes);
-        assertTrue(status.isSuccess());
-        assertEquals("", status.getMessage());
+        assertFalse(validator.isExpired(attributes));
     }
 
     @Test
@@ -391,9 +390,7 @@ class UAttributesValidatorTest {
         final UAttributes attributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).withTtl(0).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final ValidationResult status = validator.isExpired(attributes);
-        assertTrue(status.isSuccess());
-        assertEquals("", status.getMessage());
+        assertFalse(validator.isExpired(attributes));
     }
 
     @Test
@@ -402,9 +399,7 @@ class UAttributesValidatorTest {
         final UAttributes attributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).withTtl(10000).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final ValidationResult status = validator.isExpired(attributes);
-        assertTrue(status.isSuccess());
-        assertEquals("", status.getMessage());
+        assertFalse(validator.isExpired(attributes));
     }
 
     @Test
@@ -415,9 +410,7 @@ class UAttributesValidatorTest {
         Thread.sleep(800);
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final ValidationResult status = validator.isExpired(attributes);
-        assertTrue(status.isFailure());
-        assertEquals("Payload is expired", status.getMessage());
+        assertTrue(validator.isExpired(attributes));
     }
 
 

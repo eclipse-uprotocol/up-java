@@ -17,6 +17,7 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * 
  * SPDX-FileType: SOURCE
  * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
@@ -82,26 +83,22 @@ public abstract class UAttributesValidator {
     }
 
     /**
-     * Indication if the Payload with these UAttributes is expired.
+     * Check the time-to-live attribute to see if it has expired. <br>
+     * The message has expired when the current time is greater than the original UUID time
+     * plus the ttl attribute.
      *
      * @param uAttributes UAttributes with time to live value.
-     * @return Returns a {@link ValidationResult} that is success meaning not expired or failed with a validation
-     * message or expiration.
+     * @return Returns a true if the original time plus the ttl is less than the current time
      */
-    public ValidationResult isExpired(UAttributes uAttributes) {
+    public boolean isExpired(UAttributes uAttributes) {
         final int ttl = uAttributes.getTtl();
         final Optional<Long> maybeTime = UuidUtils.getTime(uAttributes.getId());
-//        if (maybeTime.isEmpty()) {
-//            return ValidationResult.failure("Invalid Time");
-//        }
-
-        if (ttl <= 0) {
-            return ValidationResult.success();
+        if (!uAttributes.hasTtl() || maybeTime.isEmpty()) {
+            return false;
         }
 
-        long delta = System.currentTimeMillis() - maybeTime.get();
-
-        return delta >= ttl ? ValidationResult.failure("Payload is expired") : ValidationResult.success();
+        // the original time plus the ttl is less than the current time, the message has expired 
+        return (maybeTime.get() + ttl) < System.currentTimeMillis();
     }
 
 
