@@ -5,24 +5,20 @@
 
 This library implements the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/languages.adoc[uProtocol Language Specific Library Requirements] for Java defined in https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications]. The library is organized into packages that are described in <<sdk-packages>> below. Each package contains a README.adoc file that describes the purpose of the package and how to use it.
 
-The module contains the factory methods, serializers, and validators for all data types defined in the specifications, and any data models that either haven't or couldn't be defined in uprotocol-core-api yet (ex. UPayload) This library fits into the big picture of the uProtocol SDK as seen in <<uprotocol-sdk>> below.
-
-.uProtocol SDK
-image:https://raw.githubusercontent.com/eclipse-uprotocol/uprotocol-spec/main/uprotocol_sdk.drawio.svg[#uprotocol-sdk,width=100%,align="center"]
-
+The module contains the factory methods, serializers, and validators for all data types defined in the specifications, and any data models that either haven't or couldn't be defined in uprotocol-core-api yet.
 
 == Getting Started
 
 === Importing the sdk
  
-To pull the SDK from maven central, add the following dependency to your pom.xml file:
+To pull the SDK from maven central, setting ${uprotocol.version} to the latest version of this library in your pom.xml file:
 [source]
 ----
 <!-- uProtocol Core -->
 <dependency>
     <groupId>org.eclipse.uprotocol</groupId>
     <artifactId>uprotocol-java</artifactId>
-    <version>1.5.0</version>
+    <version>${uprotocol.version}</version>
 </dependency>
 ----
 
@@ -67,6 +63,8 @@ The SDK is broken up into different packages that are described in <<sdk-package
 | link:src/main/java/org/eclipse/uprotocol/cloudevent/README.adoc[`*cloudevent*`] 
 | Common way to represent uProtocol messages using CloudEvent data model used by some transports (ex. MQTT, HTTP, etc…​)
 
+| link:src/main/java/org/eclipse/uprotocol/rpc/README.adoc[`*rpc*`] 
+| RPC client and server-side interfaces that are to be implemented by uLink libraries
+
 |===
 
-NOTE: Please visit the READMEs in <<sdk-packages>> for examples of how to use the different data types and their factories, validators, and serializers.
