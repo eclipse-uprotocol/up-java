@@ -650,10 +650,59 @@ class UAttributesValidatorTest {
         assertEquals(ValidationResult.success(), status);
     }
 
+    @Test
+    @DisplayName("test_valid_request_methoduri_in_sink")
+    public void test_valid_request_methoduri_in_sink(){
+        final UUri sink= LongUriSerializer.instance().deserialize("/test.service/1/rpc.method");
+        final UAttributes attributes =
+                UAttributesBuilder.request(UPriority.UPRIORITY_CS0,sink,3000).build();
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        assertEquals("UAttributesValidator.Request", validator.toString());
+        final ValidationResult status = validator.validate(attributes);
+        assertEquals(ValidationResult.success(), status);
+    }
+
+    @Test
+    @DisplayName("test_invalid_request_methoduri_in_sink")
+    public void test_invalid_request_methoduri_in_sink(){
+        final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/test.response");
+        final UAttributes attributes =
+                UAttributesBuilder.request(UPriority.UPRIORITY_CS0,sink,3000).build();
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        assertEquals("UAttributesValidator.Request", validator.toString());
+        final ValidationResult status = validator.validate(attributes);
+        assertEquals("Invalid RPC method uri. Uri should be the method to be called, or method from response.", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("test_valid_response_uri_in_sink")
+    public void test_valid_response_uri_in_sink(){
+        final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/rpc.response");
+        final UAttributes attributes =
+                UAttributesBuilder.response(UPriority.UPRIORITY_CS0,sink,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        assertEquals("UAttributesValidator.Response", validator.toString());
+        final ValidationResult status = validator.validate(attributes);
+        assertEquals(ValidationResult.success(), status);
+    }
+
+    @Test
+    @DisplayName("test_invalid_response_uri_in_sink")
+    public void test_invalid_response_uri_in_sink(){
+        final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/rpc.method");
+        final UAttributes attributes =
+                UAttributesBuilder.response(UPriority.UPRIORITY_CS0,sink,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        assertEquals("UAttributesValidator.Response", validator.toString());
+        final ValidationResult status = validator.validate(attributes);
+        assertEquals("Invalid RPC response type.", status.getMessage());
+    }
+
     private UUri buildSink() {
         return UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.someVin.veh.ultifi.gm.com"))
                 .setEntity(UEntity.newBuilder().setName("petapp.ultifi.gm.com").setVersionMajor(1))
                 .setResource(UResourceBuilder.forRpcResponse()).build();
     }
+
 
 }
