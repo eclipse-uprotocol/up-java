@@ -90,7 +90,7 @@ assertEquals(UCloudEvent.getTtl(cloudEvent).get(), result.getAttributes().getTtl
 assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
 assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getSource()));
 assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
-assertEquals(UCloudEvent.getPriority(cloudEvent).get(), String.valueOf(result.getAttributes().getPriority()));
+assertEquals(UCloudEvent.getPriority(cloudEvent).get(), result.getAttributes().getPriority().name());
 
 final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
 assertEquals(cloudEvent,cloudEvent1);

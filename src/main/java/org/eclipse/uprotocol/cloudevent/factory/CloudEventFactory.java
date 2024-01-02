@@ -186,7 +186,7 @@ public interface CloudEventFactory {
 
         attributes.ttl().ifPresent(ttl -> cloudEventBuilder.withExtension("ttl", ttl));
         attributes.priority().ifPresent(priority -> cloudEventBuilder.withExtension("priority",
-                String.valueOf(priority)));
+                priority.name()));
         attributes.hash().ifPresent(hash -> cloudEventBuilder.withExtension("hash", hash));
         attributes.token().ifPresent(token -> cloudEventBuilder.withExtension("token", token));
 
