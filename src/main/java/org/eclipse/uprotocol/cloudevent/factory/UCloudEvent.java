@@ -371,7 +371,7 @@ public interface UCloudEvent {
         if (hasCommunicationStatusProblem(event)) {
             builder.setCommstatus(getCommunicationStatus(event));
         }
-        getPriority(event).map(UPriority::valueOf).ifPresent(builder::setPriority);
+        getPriority(event).map(p -> p.startsWith("UPRIORITY_") ? p : "UPRIORITY_" + p).map(UPriority::valueOf).ifPresent(builder::setPriority);
 
         getSink(event).map(LongUriSerializer.instance()::deserialize).ifPresent(builder::setSink);
 
@@ -422,7 +422,7 @@ public interface UCloudEvent {
             cloudEventBuilder.withExtension("token",attributes.getToken());
 
         if(attributes.getPriorityValue()>0)
-            cloudEventBuilder.withExtension("priority",String.valueOf(attributes.getPriority()));
+            cloudEventBuilder.withExtension("priority",attributes.getPriority().name());
 
         if(attributes.hasSink())
             cloudEventBuilder.withExtension("sink",
