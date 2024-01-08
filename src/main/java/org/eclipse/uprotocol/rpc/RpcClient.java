@@ -27,7 +27,6 @@ package org.eclipse.uprotocol.rpc;
 import java.util.concurrent.CompletionStage;
 
 import org.eclipse.uprotocol.v1.*;
-import org.eclipse.uprotocol.transport.builder.UAttributesBuilder;
 
 /**
  * RpcClient is an interface used by code generators for uProtocol services defined in proto files such as
@@ -43,11 +42,11 @@ public interface RpcClient {
      * Client will set method to be the URI of the method they want to invoke, 
      * payload to the request message, and attributes with the various metadata for the 
      * method invocation.
-     * @param methodUri The method URI to be invoked (i.e. the name of the API we are calling).
+     * @param responseUri The response URI (so the request can be sent back to me).
      * @param requestPayload The request message to be sent to the server.
      * @param options RPC method invocation call options, see {@link CallOptions}
      * @return Returns the CompletionStage with the response message (payload) or exception with the failure
      * reason as {@link UStatus}.
      */
-    CompletionStage<UPayload> invokeMethod(UUri methodUri, UPayload requestPayload, CallOptions options);
+    CompletionStage<UPayload> invokeMethod(UUri responseUri, UPayload requestPayload, CallOptions options);
 }
