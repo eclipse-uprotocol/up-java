@@ -17,12 +17,12 @@ public interface URpcListener {
      * server must call {@link CompletableFuture#complete(Object)} to send response upon
      * completion of the request handling, for example: {@code responseFuture.complete(response)}.
      *
-     * @param method Method UUri of the request.
+     * @param responseUri The URI of the uE that the response is intended to be sent to
      * @param payload Request method payload
      * @param attributes Request method attributes
      * @param responseFuture A {@code CompletableFuture} used by a server to send a response upon completion.
      */
-    void onReceive(UUri method, UPayload payload, UAttributes attributes, CompletableFuture<UPayload> responseFuture);
+    void onReceive(UUri responseUri, UPayload payload, UAttributes attributes, CompletableFuture<UPayload> responseFuture);
 
     
     /**
