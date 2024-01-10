@@ -35,7 +35,7 @@
         <slf4j.version>2.6.18</slf4j.version>
         <cloudevents.version>2.4.2</cloudevents.version>
         <protobuf.version>3.21.10</protobuf.version>
-        <git.tag.name>uprotocol-core-api-1.5.3</git.tag.name>
+        <git.tag.name>mime_types</git.tag.name>
     </properties>
 
     <licenses>
@@ -147,13 +147,12 @@
                     <execution>
                         <goals>
                             <goal>compile</goal>
-                            <goal>test-compile</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
                     <protocArtifact>com.google.protobuf:protoc:3.17.3:exe:${os.detected.classifier}</protocArtifact>
-                    <protoSourceRoot>${project.build.directory}/uprotocol-core-api/src/main/proto</protoSourceRoot>
+                    <protoSourceRoot>${project.build.directory}/uprotocol-core-api/uprotocol</protoSourceRoot>
                     <outputDirectory>${project.build.directory}/generated-sources/protobuf/java</outputDirectory>
 
                 </configuration>

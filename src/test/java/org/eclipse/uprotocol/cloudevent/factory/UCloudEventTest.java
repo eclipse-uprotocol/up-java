@@ -890,7 +890,7 @@ class UCloudEventTest {
 
         UMessage result = UCloudEvent.toMessage(cloudEvent);
         assertNotNull(result);
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,result.getPayload().getFormat());
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,result.getPayload().getFormat());
 
         final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent,cloudEvent1);
@@ -899,7 +899,7 @@ class UCloudEventTest {
         final CloudEvent cloudEvent2 = cloudEventBuilder.withDataContentType("").build();
         result = UCloudEvent.toMessage(cloudEvent2);
         assertNotNull(result);
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,result.getPayload().getFormat());
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,result.getPayload().getFormat());
         final CloudEvent cloudEvent3 = UCloudEvent.fromMessage(result);
         assertNull(cloudEvent3.getDataContentType());
 

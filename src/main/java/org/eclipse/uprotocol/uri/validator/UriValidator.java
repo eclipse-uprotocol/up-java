@@ -90,8 +90,8 @@ public interface UriValidator {
      * @return Returns true if URI is of type RPC.
      */
     static boolean isRpcMethod(UUri uri) {
-        uri = Objects.requireNonNullElse(uri, UUri.getDefaultInstance());
-        return uri.getResource().getName().contains("rpc") && 
+        
+        return (uri!= null) && uri.getResource().getName().contains("rpc") && 
             (uri.getResource().hasInstance() && !uri.getResource().getInstance().trim().isEmpty() 
                 || (uri.getResource().hasId() && uri.getResource().getId() != 0));
     }
@@ -105,8 +105,8 @@ public interface UriValidator {
      * Meaning that this UUri can buree serialized to long or micro formats.
      */
     static boolean isResolved(UUri uri) {
-        uri = Objects.requireNonNullElse(uri, UUri.getDefaultInstance());
-        return !isEmpty(uri);
+        
+        return (uri != null) && !isEmpty(uri);
         // TODO: Finish this
     }
 
@@ -118,7 +118,10 @@ public interface UriValidator {
      * @return Returns true if URI is of type RPC response.
      */
     static boolean isRpcResponse(UUri uri) {
-        uri = Objects.requireNonNullElse(uri, UUri.getDefaultInstance());
+        if (uri == null) {
+            return false;
+        }
+
         final UResource resource = uri.getResource();
         return resource.getName().contains("rpc") && 
             resource.hasInstance() && resource.getInstance().contains("response") &&
