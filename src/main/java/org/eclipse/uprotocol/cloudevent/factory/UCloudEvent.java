@@ -466,7 +466,7 @@ public interface UCloudEvent {
      */
     static UPayloadFormat getUPayloadFormatFromContentType(String contentType){
         if(contentType == null)
-            return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF;
+            return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY;
 
         switch (contentType){
             case "application/json":
@@ -479,8 +479,10 @@ public interface UCloudEvent {
                 return UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP;
             case "application/x-someip_tlv":
                 return UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV;
-            default:
+            case "application/protobuf":
                 return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF;
+            default:
+                return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY;
 
         }
     }
@@ -503,6 +505,8 @@ public interface UCloudEvent {
                 return "application/x-someip";
             case UPAYLOAD_FORMAT_SOMEIP_TLV:
                 return "application/x-someip_tlv";
+            case UPAYLOAD_FORMAT_PROTOBUF:
+                return "application/protobuf";
             default:
                 return "";
         }

@@ -47,7 +47,7 @@ class RpcTest {
         @Override
         public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UPayload data = UPayload.newBuilder()
-                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(Any.pack(Int32Value.of(3)).toByteString())
                 .build();
             return CompletableFuture.completedFuture(data);
@@ -68,7 +68,7 @@ class RpcTest {
             UStatus status = UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage("boom").build();
             Any any = Any.pack(status);
             UPayload data = UPayload.newBuilder()
-                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(any.toByteString())
                 .build();
             return CompletableFuture.completedFuture(data);
@@ -81,7 +81,7 @@ class RpcTest {
             UStatus status = UStatus.newBuilder().setCode(UCode.OK).setMessage("all good").build();
             Any any = Any.pack(status);
             UPayload data = UPayload.newBuilder()
-                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(any.toByteString())
                 .build();
             return CompletableFuture.completedFuture(data);
@@ -113,7 +113,7 @@ class RpcTest {
         public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             Any any = Any.pack(Int32Value.of(42));
             UPayload data = UPayload.newBuilder()
-                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(any.toByteString())
                 .build();
             return CompletableFuture.completedFuture(data);
@@ -136,7 +136,7 @@ class RpcTest {
     private static UPayload buildUPayload() {
         Any any = Any.pack(buildCloudEvent());
         return UPayload.newBuilder()
-                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(any.toByteString())
                 .build();
     }
