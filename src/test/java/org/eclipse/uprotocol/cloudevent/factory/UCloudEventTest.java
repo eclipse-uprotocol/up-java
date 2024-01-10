@@ -775,7 +775,7 @@ class UCloudEventTest {
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
         assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getSource()));
         assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
-        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), String.valueOf(result.getAttributes().getPriority()));
+        assertEquals(UCloudEvent.getPriority(cloudEvent).get(),result.getAttributes().getPriority().name());
 
         final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
         CloudEvent cloudEvent2 = UCloudEvent.fromMessageParts(result.getSource(), result.getAttributes(), result.getPayload());
@@ -836,7 +836,7 @@ class UCloudEventTest {
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
         assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getSource()));
         assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
-        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), String.valueOf(result.getAttributes().getPriority()));
+        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), result.getAttributes().getPriority().name());
 
         final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent,cloudEvent1);
@@ -946,6 +946,30 @@ class UCloudEventTest {
 
     
 
+    @Test
+    public void test_to_from_message_from_UCP_cloudevent(){
+        // additional attributes
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withTtl(3)
+                .build();
+
+        Any protoPayload= buildProtoPayloadForTest();
+        final CloudEventBuilder cloudEventBuilder =
+                CloudEventFactory.buildBaseCloudEvent(LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), buildSourceForTest(),
+                        protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
+        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+        cloudEventBuilder.withExtension("priority","CS4");
+
+        CloudEvent cloudEvent = cloudEventBuilder.build();
+
+        UMessage result = UCloudEvent.toMessage(cloudEvent);
+        assertNotNull(result);
+        assertEquals(UPriority.UPRIORITY_CS4.name(),result.getAttributes().getPriority().name());
+        CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
+        assertTrue(UCloudEvent.getPriority(cloudEvent1).isPresent());
+        assertEquals(UPriority.UPRIORITY_CS4.name(),UCloudEvent.getPriority(cloudEvent1).get());
+
+    }
     private String buildSourceForTest(){
         UUri Uri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access"))
                 .setResource(UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door"))

@@ -269,7 +269,7 @@ public abstract class UAttributesValidator {
             if (!attributes.hasSink()) {
                 return ValidationResult.failure("Missing Sink");
             }
-            return UriValidator.validateRpcResponse(attributes.getSink());
+            return UriValidator.validateRpcMethod(attributes.getSink());
 
         }
 
@@ -327,13 +327,11 @@ public abstract class UAttributesValidator {
         @Override
         public ValidationResult validateSink(UAttributes attributes) {
             Objects.requireNonNull(attributes, "UAttributes cannot be null.");
-
-            ValidationResult result = UriValidator.validateRpcMethod(attributes.getSink());
-            if (result.isSuccess()) {
-                return result;
-            } else {
+            if (!attributes.hasSink()|| attributes.getSink() == UUri.getDefaultInstance()) {
                 return ValidationResult.failure("Missing Sink");
             }
+            ValidationResult result = UriValidator.validateRpcResponse(attributes.getSink());
+            return result;
 
         }
 
