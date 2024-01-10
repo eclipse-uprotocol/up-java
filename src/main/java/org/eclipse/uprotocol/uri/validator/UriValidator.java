@@ -90,8 +90,10 @@ public interface UriValidator {
      * @return Returns true if URI is of type RPC.
      */
     static boolean isRpcMethod(UUri uri) {
-        Objects.requireNonNull(uri, "Uri cannot be null.");
-        return !isEmpty(uri) && uri.getResource().getName().contains("rpc") && (uri.getResource().hasInstance() && !uri.getResource().getInstance().trim().isEmpty() || (uri.getResource().hasId() && uri.getResource().getId() != 0));
+        uri = Objects.requireNonNullElse(uri, UUri.getDefaultInstance());
+        return uri.getResource().getName().contains("rpc") && 
+            (uri.getResource().hasInstance() && !uri.getResource().getInstance().trim().isEmpty() 
+                || (uri.getResource().hasId() && uri.getResource().getId() != 0));
     }
 
     /**
@@ -103,7 +105,7 @@ public interface UriValidator {
      * Meaning that this UUri can buree serialized to long or micro formats.
      */
     static boolean isResolved(UUri uri) {
-        Objects.requireNonNull(uri, "Uri cannot be null.");
+        uri = Objects.requireNonNullElse(uri, UUri.getDefaultInstance());
         return !isEmpty(uri);
         // TODO: Finish this
     }
@@ -116,9 +118,11 @@ public interface UriValidator {
      * @return Returns true if URI is of type RPC response.
      */
     static boolean isRpcResponse(UUri uri) {
-        Objects.requireNonNull(uri, "Uri cannot be null.");
+        uri = Objects.requireNonNullElse(uri, UUri.getDefaultInstance());
         final UResource resource = uri.getResource();
-        return isRpcMethod(uri) && ((resource.hasInstance() && resource.getInstance().contains("response")) || (resource.hasId() && resource.getId() != 0));
+        return resource.getName().contains("rpc") && 
+            resource.hasInstance() && resource.getInstance().contains("response") &&
+            resource.hasId() && resource.getId() == 0;
     }
 
 
@@ -131,7 +135,8 @@ public interface UriValidator {
     static boolean isMicroForm(UUri uri) {
         Objects.requireNonNull(uri, "Uri cannot be null.");
 
-        return !isEmpty(uri) && uri.getEntity().hasId() && uri.getResource().hasId() && (!uri.hasAuthority() || uri.getAuthority().hasIp() || uri.getAuthority().hasId());
+        return !isEmpty(uri) && uri.getEntity().hasId() && 
+            uri.getResource().hasId() && (!uri.hasAuthority() || uri.getAuthority().hasIp() || uri.getAuthority().hasId());
     }
 
     /**
