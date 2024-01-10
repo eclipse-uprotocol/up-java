@@ -42,7 +42,7 @@ public interface RpcClient {
      * Client will set method to be the URI of the method they want to invoke, 
      * payload to the request message, and attributes with the various metadata for the 
      * method invocation.
-     * @param methodUri The method URI to be invoked (i.e. the name of the API we are calling).
+     * @param methodUri The method URI to be invoked, ex (long form): /example.hello_world/1/rpc.SayHello.
      * @param requestPayload The request message to be sent to the server.
      * @param options RPC method invocation call options, see {@link CallOptions}
      * @return Returns the CompletionStage with the response message (payload) or exception with the failure

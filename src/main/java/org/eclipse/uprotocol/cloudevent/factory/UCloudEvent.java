@@ -411,7 +411,7 @@ public interface UCloudEvent {
      * @param source The UUri source address for the message
      * @param attributes The UMessage attributes
      * @param payload The UMessage payload
-     * @return returns the cloud event
+     * @return returns the cloud event from message parts
      */
     static CloudEvent fromMessageParts(UUri source, UAttributes attributes, UPayload payload) {
         source = Objects.requireNonNullElse(source, UUri.getDefaultInstance());
