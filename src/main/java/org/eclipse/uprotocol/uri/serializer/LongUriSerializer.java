@@ -234,6 +234,10 @@ public class LongUriSerializer implements UriSerializer<String> {
         if (resourceMessage != null) {
             uResourceBuilder.setMessage(resourceMessage);
         }
+
+        if (resourceName.contains("rpc") && resourceInstance != null && resourceInstance.contains("response")) {
+            uResourceBuilder.setId(0);
+        }
         
         return uResourceBuilder.build();
     }
