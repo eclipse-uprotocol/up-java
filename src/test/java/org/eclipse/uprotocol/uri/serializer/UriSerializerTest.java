@@ -23,14 +23,17 @@
  */
 package org.eclipse.uprotocol.uri.serializer;
 
+import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UEntity;
 import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.core.usubscription.v3.Update;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.net.UnknownHostException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -92,8 +95,18 @@ public class UriSerializerTest {
         assertTrue(result.isPresent());
         // Assert that the result is not empty
         assertTrue(UriValidator.isEmpty(result.get()));
-
-
     }
 
+    @Test
+    @DisplayName("Test building uSubscription Update message  Notification topic without using generated stubs")
+    public void test_build_resolved_full_information() throws UnknownHostException {
+        UResource resource = UResourceBuilder.fromProto(Update.Resources.subscriptions);
+        
+        UUri uUri = UUri.newBuilder()
+            .setEntity(UEntity.newBuilder().setId(0))
+            .setResource(resource)
+            .build();
+        assertFalse(UriValidator.isEmpty(uUri));
+        assertTrue(UriValidator.isMicroForm(uUri));
+    }
 }
