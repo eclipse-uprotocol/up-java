@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import org.eclipse.uprotocol.v1.UResource;
 
+import com.google.protobuf.ProtocolMessageEnum;
+
 public interface UResourceBuilder {
 
     static final int MAX_RPC_ID = 1000;
@@ -69,6 +71,22 @@ public interface UResourceBuilder {
         Objects.requireNonNull(id, "id cannot be null");
         
         return (id < MAX_RPC_ID) ? forRpcRequest(id) : UResource.newBuilder().setId(id).build();
+    }
+
+
+    /**
+     * Build a UResource from a protobuf message. This method will determine if
+     * the message is a RPC or topic message based on the message type
+     * @param message The protobuf message.
+     * @return Returns a UResource for an RPC request.
+     */
+    static UResource fromProto(ProtocolMessageEnum instance) {
+        UResource resource = UResource.newBuilder()
+            .setName(instance.getDescriptorForType().getContainingType().getName())
+            .setInstance(instance.getValueDescriptor().getName())
+            .setId(instance.getNumber())
+            .build();
+            return resource;
     }
 
 }
