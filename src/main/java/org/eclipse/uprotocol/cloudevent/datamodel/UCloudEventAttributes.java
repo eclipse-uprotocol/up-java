@@ -34,7 +34,7 @@ import java.util.Optional;
  */
 public class UCloudEventAttributes {
 
-    private static final UCloudEventAttributes EMPTY = new UCloudEventAttributes(null, null, null, null);
+    private static final UCloudEventAttributes EMPTY = new UCloudEventAttributes(null, null, null, null, null);
 
     private final String hash;
     private final UPriority priority;

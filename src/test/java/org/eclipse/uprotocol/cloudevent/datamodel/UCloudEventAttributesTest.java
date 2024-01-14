@@ -48,7 +48,7 @@ class UCloudEventAttributesTest {
                 .withTtl(3)
                 .withToken("someOAuthToken")
                 .build();
-        String expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken'}";
+        String expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken', traceparent='null'}";
         assertEquals(expected, uCloudEventAttributes.toString());
 
     }
