@@ -4,6 +4,9 @@ import java.util.Objects;
 
 import org.eclipse.uprotocol.v1.UResource;
 
+import org.eclipse.uprotocol.UprotocolOptions;
+
+import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.ProtocolMessageEnum;
 
 public interface UResourceBuilder {
@@ -75,18 +78,23 @@ public interface UResourceBuilder {
 
 
     /**
-     * Build a UResource from a protobuf message. This method will determine if
+     * Build a UResource from a protobuf MessageEnum. This method will determine if
      * the message is a RPC or topic message based on the message type
      * @param message The protobuf message.
      * @return Returns a UResource for an RPC request.
      */
     static UResource fromProto(ProtocolMessageEnum instance) {
-        UResource resource = UResource.newBuilder()
-            .setName(instance.getDescriptorForType().getContainingType().getName())
-            .setInstance(instance.getValueDescriptor().getName())
-            .setId(instance.getNumber())
+        if (instance == null) {
+            return UResource.getDefaultInstance();
+        }
+
+        EnumDescriptor resourceDescriptor = instance.getDescriptorForType();
+        return UResource.newBuilder()
+            .setId(instance.getNumber() + resourceDescriptor.getOptions().<Integer>getExtension(UprotocolOptions.baseId))
+            .setName(instance.getValueDescriptor().getName())
+            /* We should not set instance but just use name */
+            .setMessage(resourceDescriptor.getContainingType().getName())
             .build();
-            return resource;
     }
 
 }
