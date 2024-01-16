@@ -942,7 +942,7 @@ class UCloudEventTest {
         final CloudEvent cloudEvent13 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent12,cloudEvent13);
         assertEquals("application/x-someip_tlv",cloudEvent13.getDataContentType());
-
+    }
     
 
     @Test
