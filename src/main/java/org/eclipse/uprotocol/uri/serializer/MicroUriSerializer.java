@@ -107,27 +107,21 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
         os.write(UP_VERSION);
 
         // Determine the uAuthority type to be written
-        switch (Uri.getAuthority().getRemoteCase()) {
-            case REMOTE_NOT_SET: 
-                type = AddressType.LOCAL;
-                break;
-            case IP:
-                final Integer length = Uri.getAuthority().getIp().size();
-                if (length == 4) {
-                    type = AddressType.IPv4;
-                } else if (length == 16) {
-                    type = AddressType.IPv6;
-                } else {
-                    return new byte[0];
-                }
-                break;
-
-            case ID:
-                type = AddressType.ID;
-                break;
-            
-            default:
+        if (Uri.getAuthority().hasIp()){
+            final Integer length = Uri.getAuthority().getIp().size();
+            if (length == 4) {
+                type = AddressType.IPv4;
+            } else if (length == 16) {
+                type = AddressType.IPv6;
+            } else {
                 return new byte[0];
+            }
+        }
+        else if (Uri.getAuthority().hasId()) {
+            type = AddressType.ID;
+        }
+        else {            
+            type = AddressType.LOCAL;
         }
 
         os.write(type.getValue());
@@ -156,15 +150,11 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
             }
                 
             try {
-                switch(Uri.getAuthority().getRemoteCase()) {
-                    case IP:
-                        os.write(Uri.getAuthority().getIp().toByteArray());
-                        break;
-                    case ID:
-                        os.write(Uri.getAuthority().getId().toByteArray());
-                        break;
-                    default:
-                        break;
+                if (Uri.getAuthority().hasIp()) {
+                    os.write(Uri.getAuthority().getIp().toByteArray());
+                }
+                else if (Uri.getAuthority().hasId()) {
+                    os.write(Uri.getAuthority().getId().toByteArray());
                 }
                 
             } catch (IOException e) {

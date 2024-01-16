@@ -33,6 +33,8 @@ import org.eclipse.uprotocol.core.usubscription.v3.Update;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.google.protobuf.ByteString;
+
 import java.net.UnknownHostException;
 import java.util.Optional;
 
@@ -43,8 +45,15 @@ public class UriSerializerTest {
     @Test
     @DisplayName("Test build resolve with valid long and micro uri")
     public void test_build_resolved_valid_long_micro_uri() {
-        UUri longUUri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("testauth").build()).setEntity(UEntity.newBuilder().setName("neelam")).setResource(UResource.newBuilder().setName("rpc").setInstance("response").build()).build();
-        UUri microUUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254)).setResource(UResource.newBuilder().setId(39999)).build();
+        UUri longUUri = UUri.newBuilder()
+                            .setAuthority(UAuthority.newBuilder().setName("testauth"))
+                            .setEntity(UEntity.newBuilder().setName("neelam"))
+                            .setResource(UResource.newBuilder().setName("rpc").setInstance("response"))
+                            .build();
+        UUri microUUri = UUri.newBuilder()
+                            .setAuthority(UAuthority.newBuilder().setId(ByteString.copyFromUtf8("abcdefg")))
+                            .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254))
+                            .setResource(UResource.newBuilder().setId(39999)).build();
 
         byte[] microuri = MicroUriSerializer.instance().serialize(microUUri);
         String longuri = LongUriSerializer.instance().serialize(longUUri);

@@ -629,4 +629,16 @@ class UriValidatorTest {
         return new JSONObject(jsonStringBuilder.toString());
     }
 
+    @Test
+    @DisplayName("Test is Remote is false for URI without UAuthority")
+    public void test_is_remote_is_false_for_uri_without_uauthority() {
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().build())
+                .setEntity(UEntity.newBuilder().setName("hartley").build())
+                .setResource(UResourceBuilder.forRpcResponse())
+                .build();
+        assertFalse(UriValidator.isRemote(UAuthority.getDefaultInstance()));
+        assertFalse(UriValidator.isRemote(uri.getAuthority()));
+    }
+
 }
