@@ -15,12 +15,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.eclipse.uprotocol</groupId>
-    <artifactId>uprotocol-java</artifactId>
-    <name>Java SDK for uProtocol</name>
+    <artifactId>up-java</artifactId>
+    <name>Java Library for uProtocol</name>
     <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more</description>
     <version>1.5.6-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <url>https://github.com/eclipse-uprotocol/uprotocol-java/</url>    
+    <url>https://github.com/eclipse-uprotocol/up-java/</url>    
 
     <properties>
         <java.version>11</java.version>
@@ -58,7 +58,7 @@
     <scm>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <url>https://github.com/eclipse-uprotocol/uprotocol-java.git</url>
+        <url>https://github.com/eclipse-uprotocol/up-java.git</url>
       <tag>HEAD</tag>
     </scm>
 
@@ -90,8 +90,8 @@
                                 <argument>clone</argument>
                                 <argument>--branch</argument>
                                 <argument>${git.tag.name}</argument>
-                                <argument>https://github.com/eclipse-uprotocol/uprotocol-core-api.git</argument>
-                                <argument>${project.build.directory}/uprotocol-core-api</argument>
+                                <argument>https://github.com/eclipse-uprotocol/up-core-api.git</argument>
+                                <argument>${project.build.directory}/up-core-api</argument>
                             </arguments>
                             <!-- Allow non-zero exit code (error) -->
                             <successCodes>
@@ -108,7 +108,7 @@
                         </goals>
                         <configuration>
                             <executable>git</executable>
-                            <workingDirectory>${project.build.directory}/uprotocol-core-api</workingDirectory>
+                            <workingDirectory>${project.build.directory}/up-core-api</workingDirectory>
                             <arguments>
                                 <argument>pull</argument>
                                 <argument>origin</argument>
@@ -152,7 +152,7 @@
                 </executions>
                 <configuration>
                     <protocArtifact>com.google.protobuf:protoc:3.17.3:exe:${os.detected.classifier}</protocArtifact>
-                    <protoSourceRoot>${project.build.directory}/uprotocol-core-api/uprotocol</protoSourceRoot>
+                    <protoSourceRoot>${project.build.directory}/up-core-api/uprotocol</protoSourceRoot>
                     <outputDirectory>${project.build.directory}/generated-sources/protobuf/java</outputDirectory>
 
                 </configuration>

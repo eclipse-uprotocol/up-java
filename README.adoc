@@ -5,26 +5,25 @@
 
 This library implements the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/languages.adoc[uProtocol Language Specific Library Requirements] for Java defined in https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications]. The library is organized into packages that are described in <<sdk-packages>> below. Each package contains a README.adoc file that describes the purpose of the package and how to use it.
 
-The module contains the factory methods, serializers, and validators for all data types defined in the specifications, and any data models that either haven't or couldn't be defined in uprotocol-core-api yet.
+The module contains the factory methods, serializers, and validators for all data types defined in the specifications, and any data models that either haven't or couldn't be defined in up-core-api yet.
 
 == Getting Started
 
-=== Importing the sdk
+=== Importing the Library
  
-To pull the SDK from maven central, setting ${uprotocol.version} to the latest version of this library in your pom.xml file:
+To pull the Library from maven central, setting ${uprotocol.version} to the latest version of this library in your pom.xml file:
 [source]
 ----
 <!-- uProtocol Core -->
 <dependency>
     <groupId>org.eclipse.uprotocol</groupId>
-    <artifactId>uprotocol-java</artifactId>
+    <artifactId>up-java</artifactId>
     <version>${uprotocol.version}</version>
 </dependency>
 ----
 
-=== Using The Sdk
+=== Using The Library
 
-The SDK is broken up into different packages that are described in <<sdk-packages>> below. Each package contains a README.adoc file that describes the purpose of the package and how to use it. Packages are organized into the following directories:
 
 .Package Folders
 [#pkg-folders,width=100%,cols="20%,80%",options="header"]
@@ -57,8 +56,8 @@ The SDK is broken up into different packages that are described in <<sdk-package
 | link:src/main/java/org/eclipse/uprotocol/uuid/README.adoc[`*uuid*`] 
 | Identifier used to uniquely identify (and timestamp) messages that are sent
 
-| link:src/main/java/org/eclipse/uprotocol/utransport/README.adoc[`*utransport*`] 
-| Interface and data model declaration used for bidirectional point-2-point communication between uEs. This interface is then implemented by https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/ulink.adoc[ulink] libraries for a given underlining transport (ex. Binder, MQTT, Zenoh, SOME/IP, DDS, HTTP, etc…​)
+| link:src/main/java/org/eclipse/uprotocol/transport/README.adoc[`*transport*`] 
+| Interface declaration used for bidirectional point-2-point communication between uEs. This interface is then implemented by https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/upclient.adoc[uPClient] libraries for a given underlining transport (ex. Binder, MQTT, Zenoh, SOME/IP, DDS, HTTP, etc…​)
 
 | link:src/main/java/org/eclipse/uprotocol/cloudevent/README.adoc[`*cloudevent*`] 
 | Common way to represent uProtocol messages using CloudEvent data model used by some transports (ex. MQTT, HTTP, etc…​)
