@@ -26,25 +26,27 @@ package org.eclipse.uprotocol.rpc;
 
 import java.util.concurrent.CompletionStage;
 
-import org.eclipse.uprotocol.v1.UPayload;
-import org.eclipse.uprotocol.v1.UAttributes;
-import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.v1.*;
 
 /**
  * RpcClient is an interface used by code generators for uProtocol services defined in proto files such as
  * the core uProtocol services found in https://github.com/eclipse-uprotocol/uprotocol-core-api. the interface 
- * provides a clean contract for all transports to implement to be able to support RPC on their platform. Each
- * platform MUST implement this interface. For more details please refer to
+ * provides a clean contract for mapping a RPC request to a response. For more details please refer to
  * https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l2/README.adoc[RpcClient Specifications]
  */
 public interface RpcClient {
 
     /**
-     * Support for RPC method invocation.
-     * @param topic topic of the method to be invoked (i.e. the name of the API we are calling).
-     * @param payload The request message to be sent to the server.
-     * @param attributes Metadata for the method invocation (i.e. priority, timeout, etc.)
-     * @return Returns the CompletionStage with the result or exception.
+     * API for clients to invoke a method (send an RPC request) and receive the response (the returned 
+     * {@link CompletionStage} {@link UPayload}. <br>
+     * Client will set method to be the URI of the method they want to invoke, 
+     * payload to the request message, and attributes with the various metadata for the 
+     * method invocation.
+     * @param methodUri The method URI to be invoked, ex (long form): /example.hello_world/1/rpc.SayHello.
+     * @param requestPayload The request message to be sent to the server.
+     * @param options RPC method invocation call options, see {@link CallOptions}
+     * @return Returns the CompletionStage with the response message (payload) or exception with the failure
+     * reason as {@link UStatus}.
      */
-    CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes);
+    CompletionStage<UPayload> invokeMethod(UUri methodUri, UPayload requestPayload, CallOptions options);
 }

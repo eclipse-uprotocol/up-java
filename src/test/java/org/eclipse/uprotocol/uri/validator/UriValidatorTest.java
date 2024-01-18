@@ -25,6 +25,7 @@
 package org.eclipse.uprotocol.uri.validator;
 
 
+import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UEntity;
@@ -42,6 +43,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UriValidatorTest {
@@ -563,12 +565,38 @@ class UriValidatorTest {
     @DisplayName("Test valid rpc response uri")
     public void test_valid_rpc_response_uri() throws IOException {
         UUri uuri =
-                UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley").build()).setResource(UResource.newBuilder().setName("rpc").setId(19999).build()).build();
+                UUri.newBuilder()
+                    .setEntity(UEntity.newBuilder().setName("hartley").build())
+                    .setResource(UResourceBuilder.forRpcResponse()).build();
         final ValidationResult status = UriValidator.validateRpcResponse(uuri);
         assertTrue(UriValidator.isRpcResponse(uuri));
         assertTrue(status.isSuccess());
-
     }
+
+    @Test
+    @DisplayName("Test invalid rpc response uri")
+    public void test_invalid_rpc_response_uri() throws IOException {
+        UUri uuri =
+                UUri.newBuilder()
+                    .setEntity(UEntity.newBuilder().setName("hartley").build())
+                    .setResource(UResource.newBuilder().setName("rpc").setId(19999).build()).build();
+        final ValidationResult status = UriValidator.validateRpcResponse(uuri);
+        assertFalse(UriValidator.isRpcResponse(uuri));
+        assertFalse(status.isSuccess());
+    }
+
+    @Test
+    @DisplayName("Test invalid rpc response uri")
+    public void test_another_invalid_rpc_response_uri() throws IOException {
+        UUri uuri =
+                UUri.newBuilder()
+                    .setEntity(UEntity.newBuilder().setName("hartley").build())
+                    .setResource(UResource.newBuilder().setName("hello").setId(19999).build()).build();
+        final ValidationResult status = UriValidator.validateRpcResponse(uuri);
+        assertFalse(UriValidator.isRpcResponse(uuri));
+        assertFalse(status.isSuccess());
+    }
+
 
     @Test
     @DisplayName("Test all invalid rpc response uris from uris.json")
@@ -599,6 +627,18 @@ class UriValidatorTest {
         reader.close();
         // Parse the JSON data into a JSONObject
         return new JSONObject(jsonStringBuilder.toString());
+    }
+
+    @Test
+    @DisplayName("Test is Remote is false for URI without UAuthority")
+    public void test_is_remote_is_false_for_uri_without_uauthority() {
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().build())
+                .setEntity(UEntity.newBuilder().setName("hartley").build())
+                .setResource(UResourceBuilder.forRpcResponse())
+                .build();
+        assertFalse(UriValidator.isRemote(UAuthority.getDefaultInstance()));
+        assertFalse(UriValidator.isRemote(uri.getAuthority()));
     }
 
 }

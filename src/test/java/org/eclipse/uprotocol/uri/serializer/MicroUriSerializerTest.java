@@ -74,7 +74,8 @@ public class MicroUriSerializerTest {
 
         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
         UUri uri2 = MicroUriSerializer.instance().deserialize(bytes);
-
+        assertTrue(UriValidator.isMicroForm(uri));
+        assertTrue(bytes.length > 0);
         assertEquals(uri, uri2);
     }
 

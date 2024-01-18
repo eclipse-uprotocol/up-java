@@ -29,7 +29,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import org.eclipse.uprotocol.transport.builder.UAttributesBuilder;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.v1.*;
 
@@ -37,7 +36,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
@@ -47,9 +45,9 @@ class RpcTest {
 
     RpcClient ReturnsNumber3 = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
+        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UPayload data = UPayload.newBuilder()
-                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(Any.pack(Int32Value.of(3)).toByteString())
                 .build();
             return CompletableFuture.completedFuture(data);
@@ -58,7 +56,7 @@ class RpcTest {
 
     RpcClient HappyPath = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
+        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UPayload data = buildUPayload();
             return CompletableFuture.completedFuture(data);
         }
@@ -66,11 +64,11 @@ class RpcTest {
 
     RpcClient WithUStatusCodeInsteadOfHappyPath = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
+        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UStatus status = UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage("boom").build();
             Any any = Any.pack(status);
             UPayload data = UPayload.newBuilder()
-                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(any.toByteString())
                 .build();
             return CompletableFuture.completedFuture(data);
@@ -79,11 +77,11 @@ class RpcTest {
 
     RpcClient WithUStatusCodeHappyPath = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
+        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UStatus status = UStatus.newBuilder().setCode(UCode.OK).setMessage("all good").build();
             Any any = Any.pack(status);
             UPayload data = UPayload.newBuilder()
-                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(any.toByteString())
                 .build();
             return CompletableFuture.completedFuture(data);
@@ -92,7 +90,7 @@ class RpcTest {
 
     RpcClient ThatBarfsCrapyPayload = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
+        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UPayload response = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_RAW)
                 .setValue(ByteString.copyFrom(new byte[]{0}))
@@ -104,7 +102,7 @@ class RpcTest {
 
     RpcClient ThatCompletesWithAnException = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
+        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             return CompletableFuture.failedFuture(new RuntimeException("Boom"));
         }
 
@@ -112,10 +110,10 @@ class RpcTest {
 
     RpcClient ThatReturnsTheWrongProto = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
+        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             Any any = Any.pack(Int32Value.of(42));
             UPayload data = UPayload.newBuilder()
-                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(any.toByteString())
                 .build();
             return CompletableFuture.completedFuture(data);
@@ -125,7 +123,7 @@ class RpcTest {
 
     RpcClient WithNullInPayload = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
+        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             return CompletableFuture.completedFuture(null);
         }
     };
@@ -138,7 +136,7 @@ class RpcTest {
     private static UPayload buildUPayload() {
         Any any = Any.pack(buildCloudEvent());
         return UPayload.newBuilder()
-                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(any.toByteString())
                 .build();
     }
@@ -147,9 +145,9 @@ class RpcTest {
         return LongUriSerializer.instance().deserialize("//vcu.vin/hartley/1/rpc.Raise");
     }
 
-    private static UAttributes buildUAttributes() {
-        return UAttributesBuilder.request(UPriority.UPRIORITY_CS4,
-            UUri.newBuilder().setEntity(UEntity.newBuilder().setName("hartley")).build(), 1000)
+    private static CallOptions buildCallOptions() {
+        return CallOptions.newBuilder()
+                .withTimeout(1000)
                 .build();
 
     }
@@ -204,7 +202,7 @@ class RpcTest {
     void test_compose_happy_path() {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<Int32Value>> rpcResponse = RpcMapper.mapResponseToResult(
-                        ReturnsNumber3.invokeMethod(buildTopic(), payload, buildUAttributes()), Int32Value.class)
+                        ReturnsNumber3.invokeMethod(buildTopic(), payload, buildCallOptions()), Int32Value.class)
                 .thenApply(ur -> ur.map(i -> Int32Value.of(i.getValue() + 5))).exceptionally(exception -> {
                     System.out.println("in exceptionally");
                     return RpcResult.failure("boom", exception);
@@ -221,7 +219,7 @@ class RpcTest {
     void test_compose_that_returns_status() throws ExecutionException, InterruptedException {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<Int32Value>> rpcResponse = RpcMapper.mapResponseToResult(
-                        WithUStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                        WithUStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildCallOptions()),
                         Int32Value.class).thenApply(ur -> ur.map(i -> Int32Value.of(i.getValue() + 5)))
                 .exceptionally(exception -> {
                     System.out.println("in exceptionally");
@@ -242,7 +240,7 @@ class RpcTest {
     void test_compose_with_failure() throws Exception {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<Int32Value>> rpcResponse = RpcMapper.mapResponseToResult(
-                        ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                        ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildCallOptions()),
                         Int32Value.class)
                 .thenApply(ur -> ur.map(i -> Int32Value.of(i.getValue() + 5)));
         assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
@@ -254,7 +252,7 @@ class RpcTest {
     void test_compose_with_failure_transform_Exception() throws Exception {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<Int32Value>> rpcResponse = RpcMapper.mapResponseToResult(
-                        ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                        ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildCallOptions()),
                         Int32Value.class)
                 .thenApply(ur -> ur.map(i -> Int32Value.of(i.getValue() + 5))).exceptionally(exception -> {
                     System.out.println("in exceptionally");
@@ -275,7 +273,7 @@ class RpcTest {
 
         final CompletionStage<RpcResult<io.cloudevents.v1.proto.CloudEvent>> rpcResponse =
                 RpcMapper.mapResponseToResult(
-                HappyPath.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                HappyPath.invokeMethod(buildTopic(), payload, buildCallOptions()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertFalse(rpcResponse.toCompletableFuture().isCompletedExceptionally());
@@ -291,7 +289,7 @@ class RpcTest {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<io.cloudevents.v1.proto.CloudEvent>> rpcResponse =
                 RpcMapper.mapResponseToResult(
-                WithUStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                WithUStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildCallOptions()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertFalse(rpcResponse.toCompletableFuture().isCompletedExceptionally());
@@ -308,7 +306,7 @@ class RpcTest {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<io.cloudevents.v1.proto.CloudEvent>> rpcResponse =
                 RpcMapper.mapResponseToResult(
-                ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildCallOptions()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
@@ -323,7 +321,7 @@ class RpcTest {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<io.cloudevents.v1.proto.CloudEvent>> rpcResponse =
                 RpcMapper.mapResponseToResult(
-                ThatReturnsTheWrongProto.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                ThatReturnsTheWrongProto.invokeMethod(buildTopic(), payload, buildCallOptions()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
@@ -336,7 +334,7 @@ class RpcTest {
     void test_success_invoke_method_happy_flow_using_mapResponse() {
         UPayload payload = buildUPayload();
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> rpcResponse = RpcMapper.mapResponse(
-                HappyPath.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                HappyPath.invokeMethod(buildTopic(), payload, buildCallOptions()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertFalse(rpcResponse.toCompletableFuture().isCompletedExceptionally());
@@ -349,7 +347,7 @@ class RpcTest {
     void test_fail_invoke_method_when_invoke_method_returns_a_status_using_mapResponse() {
         UPayload payload = buildUPayload();
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> rpcResponse = RpcMapper.mapResponse(
-                WithUStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                WithUStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(), payload, buildCallOptions()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
@@ -364,7 +362,7 @@ class RpcTest {
     void test_fail_invoke_method_when_invoke_method_threw_an_exception_using_mapResponse() {
         UPayload payload = buildUPayload();
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> rpcResponse = RpcMapper.mapResponse(
-                ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                ThatCompletesWithAnException.invokeMethod(buildTopic(), payload, buildCallOptions()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
@@ -376,7 +374,7 @@ class RpcTest {
     void test_fail_invoke_method_when_invoke_method_returns_a_bad_proto_using_mapResponse() {
         UPayload payload = buildUPayload();
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> rpcResponse = RpcMapper.mapResponse(
-                ThatReturnsTheWrongProto.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                ThatReturnsTheWrongProto.invokeMethod(buildTopic(), payload, buildCallOptions()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
@@ -390,7 +388,7 @@ class RpcTest {
     void test_success_invoke_method_happy_flow() {
         //Stub code
         UPayload data = buildUPayload();
-        final CompletionStage<UPayload> rpcResponse = HappyPath.invokeMethod(buildTopic(), data, buildUAttributes());
+        final CompletionStage<UPayload> rpcResponse = HappyPath.invokeMethod(buildTopic(), data, buildCallOptions());
 
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
                 (payload, exception) -> {
@@ -424,7 +422,7 @@ class RpcTest {
         //Stub code
         UPayload data = buildUPayload();
         final CompletionStage<UPayload> rpcResponse = WithUStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(),
-                data, buildUAttributes());
+                data, buildCallOptions());
 
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
                 (payload, exception) -> {
@@ -462,7 +460,7 @@ class RpcTest {
         //Stub code
         UPayload data = buildUPayload();
         final CompletionStage<UPayload> rpcResponse = ThatCompletesWithAnException.invokeMethod(buildTopic(), data,
-                buildUAttributes());
+                buildCallOptions());
 
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
                 (payload, exception) -> {
@@ -487,7 +485,7 @@ class RpcTest {
         //Stub code
         UPayload data = buildUPayload();
         final CompletionStage<UPayload> rpcResponse = ThatReturnsTheWrongProto.invokeMethod(buildTopic(), data,
-                buildUAttributes());
+                buildCallOptions());
 
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
                 (payload, exception) -> {
@@ -524,7 +522,7 @@ class RpcTest {
     void test_success_invoke_method_that_has_null_payload_mapResponse() {
         UPayload payload = buildUPayload();
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> rpcResponse = RpcMapper.mapResponse(
-                WithNullInPayload.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                WithNullInPayload.invokeMethod(buildTopic(), payload, buildCallOptions()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
@@ -542,7 +540,7 @@ class RpcTest {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<io.cloudevents.v1.proto.CloudEvent>> rpcResponse =
                 RpcMapper.mapResponseToResult(
-                WithNullInPayload.invokeMethod(buildTopic(), payload, buildUAttributes()),
+                WithNullInPayload.invokeMethod(buildTopic(), payload, buildCallOptions()),
                 io.cloudevents.v1.proto.CloudEvent.class);
 
         assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
@@ -557,7 +555,7 @@ class RpcTest {
     void test_success_invoke_method_happy_flow_that_returns_status_using_mapResponse() {
         UPayload payload = buildUPayload();
         final CompletionStage<UStatus> rpcResponse = RpcMapper.mapResponse(
-                WithUStatusCodeHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes()), UStatus.class);
+                WithUStatusCodeHappyPath.invokeMethod(buildTopic(), payload, buildCallOptions()), UStatus.class);
 
         assertFalse(rpcResponse.toCompletableFuture().isCompletedExceptionally());
         final CompletionStage<Void> test = rpcResponse.thenAccept(status -> {
@@ -573,7 +571,7 @@ class RpcTest {
     void test_success_invoke_method_happy_flow_that_returns_status_using_mapResponseToResultToRpcResponse() {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<UStatus>> rpcResponse = RpcMapper.mapResponseToResult(
-                WithUStatusCodeHappyPath.invokeMethod(buildTopic(), payload, buildUAttributes()), UStatus.class);
+                WithUStatusCodeHappyPath.invokeMethod(buildTopic(), payload, buildCallOptions()), UStatus.class);
 
         assertFalse(rpcResponse.toCompletableFuture().isCompletedExceptionally());
         final CompletionStage<Void> test = rpcResponse.thenAccept(RpcResult -> {
@@ -598,7 +596,7 @@ class RpcTest {
     void test_invalid_payload_that_is_not_type_any() {
         UPayload payload = buildUPayload();
         final CompletionStage<UStatus> rpcResponse = RpcMapper.mapResponse(
-                ThatBarfsCrapyPayload.invokeMethod(buildTopic(), payload, buildUAttributes()), UStatus.class);
+                ThatBarfsCrapyPayload.invokeMethod(buildTopic(), payload, buildCallOptions()), UStatus.class);
 
         assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
         Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, rpcResponse.toCompletableFuture()::get);
@@ -613,7 +611,7 @@ class RpcTest {
     void test_invalid_payload_that_is_not_type_any_map_to_result() throws Exception {
         UPayload payload = buildUPayload();
         final CompletionStage<RpcResult<UStatus>> rpcResponse = RpcMapper.mapResponseToResult(
-                ThatBarfsCrapyPayload.invokeMethod(buildTopic(), payload, buildUAttributes()), UStatus.class);
+                ThatBarfsCrapyPayload.invokeMethod(buildTopic(), payload, buildCallOptions()), UStatus.class);
 
         assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
         UStatus status = UStatus.newBuilder().setCode(UCode.UNKNOWN).setMessage("Protocol message contained an invalid tag (zero). [org.eclipse.uprotocol.v1.UStatus]").build();
@@ -625,7 +623,7 @@ class RpcTest {
 
         RpcClient client = new RpcClient() {
             @Override
-            public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, UAttributes attributes) {
+            public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
                 return CompletableFuture.completedFuture(UPayload.getDefaultInstance());
             }
         };
@@ -634,7 +632,7 @@ class RpcTest {
 
         UPayload payload = buildUPayload();
         final CompletionStage<UPayload> invokeMethodResponse = client.invokeMethod(buildTopic(), payload,
-                buildUAttributes());
+                buildCallOptions());
 
         CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse(invokeMethodResponse);
         assertFalse(stubReturnValue.toCompletableFuture().isCancelled());

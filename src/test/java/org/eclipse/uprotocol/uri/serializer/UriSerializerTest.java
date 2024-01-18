@@ -23,14 +23,19 @@
  */
 package org.eclipse.uprotocol.uri.serializer;
 
+import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UEntity;
 import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.core.usubscription.v3.Update;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.google.protobuf.ByteString;
+
+import java.net.UnknownHostException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,8 +45,15 @@ public class UriSerializerTest {
     @Test
     @DisplayName("Test build resolve with valid long and micro uri")
     public void test_build_resolved_valid_long_micro_uri() {
-        UUri longUUri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("testauth").build()).setEntity(UEntity.newBuilder().setName("neelam")).setResource(UResource.newBuilder().setName("rpc").setInstance("response").build()).build();
-        UUri microUUri = UUri.newBuilder().setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254)).setResource(UResource.newBuilder().setId(39999)).build();
+        UUri longUUri = UUri.newBuilder()
+                            .setAuthority(UAuthority.newBuilder().setName("testauth"))
+                            .setEntity(UEntity.newBuilder().setName("neelam"))
+                            .setResource(UResource.newBuilder().setName("rpc").setInstance("response"))
+                            .build();
+        UUri microUUri = UUri.newBuilder()
+                            .setAuthority(UAuthority.newBuilder().setId(ByteString.copyFromUtf8("abcdefg")))
+                            .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254))
+                            .setResource(UResource.newBuilder().setId(39999)).build();
 
         byte[] microuri = MicroUriSerializer.instance().serialize(microUUri);
         String longuri = LongUriSerializer.instance().serialize(longUUri);
@@ -92,8 +104,18 @@ public class UriSerializerTest {
         assertTrue(result.isPresent());
         // Assert that the result is not empty
         assertTrue(UriValidator.isEmpty(result.get()));
-
-
     }
 
+    @Test
+    @DisplayName("Test building uSubscription Update message  Notification topic without using generated stubs")
+    public void test_build_resolved_full_information() throws UnknownHostException {
+        UResource resource = UResourceBuilder.fromProto(Update.Resources.subscriptions);
+        
+        UUri uUri = UUri.newBuilder()
+            .setEntity(UEntity.newBuilder().setId(0))
+            .setResource(resource)
+            .build();
+        assertFalse(UriValidator.isEmpty(uUri));
+        assertTrue(UriValidator.isMicroForm(uUri));
+    }
 }
