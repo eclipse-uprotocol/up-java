@@ -27,7 +27,6 @@ package org.eclipse.uprotocol.transport.builder;
 
 import java.util.Optional;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.eclipse.uprotocol.v1.*;
 
 import com.google.protobuf.Any;
