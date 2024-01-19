@@ -24,6 +24,7 @@
 
 package org.eclipse.uprotocol.cloudevent.factory;
 
+import org.eclipse.uprotocol.UprotocolOptions;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
@@ -31,6 +32,7 @@ import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.Descriptors.EnumValueDescriptor;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
@@ -467,24 +469,14 @@ public interface UCloudEvent {
     static UPayloadFormat getUPayloadFormatFromContentType(String contentType){
         if(contentType == null)
             return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY;
-
-        switch (contentType){
-            case "application/json":
-                return UPayloadFormat.UPAYLOAD_FORMAT_JSON;
-            case "application/octet-stream":
-                return UPayloadFormat.UPAYLOAD_FORMAT_RAW;
-            case "text/plain":
-                return UPayloadFormat.UPAYLOAD_FORMAT_TEXT;
-            case "application/x-someip":
-                return UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP;
-            case "application/x-someip_tlv":
-                return UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV;
-            case "application/protobuf":
-                return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF;
-            default:
-                return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY;
-
+        
+        for (EnumValueDescriptor v : UPayloadFormat.getDescriptor().getValues()) {
+            if (v.getOptions().hasExtension(UprotocolOptions.mimeType) &&
+                    v.getOptions().getExtension(UprotocolOptions.mimeType).equals(contentType)) {
+                return UPayloadFormat.forNumber(v.getNumber());
+            }
         }
+        return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY;
     }
 
     /**
@@ -493,23 +485,12 @@ public interface UCloudEvent {
      * @param format The UPayloadFormat enumeration representing the payload format.
      * @return The corresponding content type string based on the payload format.
      */
-    static String getContentTypeFromUPayloadFormat(UPayloadFormat format){
-        switch (format){
-            case UPAYLOAD_FORMAT_JSON:
-                return "application/json";
-            case UPAYLOAD_FORMAT_RAW:
-                return "application/octet-stream";
-            case UPAYLOAD_FORMAT_TEXT:
-                return "text/plain";
-            case UPAYLOAD_FORMAT_SOMEIP:
-                return "application/x-someip";
-            case UPAYLOAD_FORMAT_SOMEIP_TLV:
-                return "application/x-someip_tlv";
-            case UPAYLOAD_FORMAT_PROTOBUF:
-                return "application/protobuf";
-            default:
-                return "";
+    static String getContentTypeFromUPayloadFormat(UPayloadFormat format) {
+        // Since the default value is UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY, we return an empty string.
+        if (format == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY) {
+            return "";
         }
+        return format.getValueDescriptor().getOptions().<String>getExtension(UprotocolOptions.mimeType);
     }
 
 
