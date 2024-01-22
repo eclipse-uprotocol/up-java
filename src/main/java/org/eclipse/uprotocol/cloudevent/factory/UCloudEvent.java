@@ -461,26 +461,28 @@ public interface UCloudEvent {
     }
 
     /**
-     * Retrieves the payload format enumeration based on the provided content type.
+     * Retrieves the payload format enumeration based on the provided string representation of the data content type <br>
+     * This method uses the uProtocol mimeType custom options declared in upayload.proto.
      *
      * @param contentType The content type string representing the format of the payload.
      * @return The corresponding UPayloadFormat enumeration based on the content type.
      */
     static UPayloadFormat getUPayloadFormatFromContentType(String contentType){
-        if(contentType == null)
+        if(contentType == null) {
             return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY;
-        
-        for (EnumValueDescriptor v : UPayloadFormat.getDescriptor().getValues()) {
-            if (v.getOptions().hasExtension(UprotocolOptions.mimeType) &&
-                    v.getOptions().getExtension(UprotocolOptions.mimeType).equals(contentType)) {
-                return UPayloadFormat.forNumber(v.getNumber());
-            }
         }
-        return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY;
+
+        return UPayloadFormat.getDescriptor().getValues().stream()
+            .filter(v -> v.getOptions().hasExtension(UprotocolOptions.mimeType) &&
+                v.getOptions().getExtension(UprotocolOptions.mimeType).equals(contentType))
+            .map(v -> UPayloadFormat.forNumber(v.getNumber()))
+            .findFirst()
+            .orElse(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY);
     }
 
     /**
-     * Retrieves the content type string based on the provided UPayloadFormat enumeration.
+     * Retrieves the string representation of the data content type based on the provided UPayloadFormat. <BR>
+     * This method uses the uProtocol mimeType custom options declared in upayload.proto.
      *
      * @param format The UPayloadFormat enumeration representing the payload format.
      * @return The corresponding content type string based on the payload format.
@@ -492,6 +494,5 @@ public interface UCloudEvent {
         }
         return format.getValueDescriptor().getOptions().<String>getExtension(UprotocolOptions.mimeType);
     }
-
 
 }
