@@ -45,64 +45,64 @@ class RpcTest {
 
     RpcClient ReturnsNumber3 = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
+        public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UPayload data = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(Any.pack(Int32Value.of(3)).toByteString())
                 .build();
-            return CompletableFuture.completedFuture(data);
+            return CompletableFuture.completedFuture(UMessage.newBuilder().setPayload(data).build());
         }
     };
 
     RpcClient HappyPath = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
+        public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UPayload data = buildUPayload();
-            return CompletableFuture.completedFuture(data);
+            return CompletableFuture.completedFuture(UMessage.newBuilder().setPayload(data).build());
         }
     };
 
     RpcClient WithUStatusCodeInsteadOfHappyPath = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
+        public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UStatus status = UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage("boom").build();
             Any any = Any.pack(status);
             UPayload data = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(any.toByteString())
                 .build();
-            return CompletableFuture.completedFuture(data);
+            return CompletableFuture.completedFuture(UMessage.newBuilder().setPayload(data).build());
         }
     };
 
     RpcClient WithUStatusCodeHappyPath = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
+        public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UStatus status = UStatus.newBuilder().setCode(UCode.OK).setMessage("all good").build();
             Any any = Any.pack(status);
             UPayload data = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(any.toByteString())
                 .build();
-            return CompletableFuture.completedFuture(data);
+            return CompletableFuture.completedFuture(UMessage.newBuilder().setPayload(data).build());
         }
     };
 
     RpcClient ThatBarfsCrapyPayload = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
+        public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UPayload response = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_RAW)
                 .setValue(ByteString.copyFrom(new byte[]{0}))
                 .build();
-            return CompletableFuture.completedFuture(response);
+            return CompletableFuture.completedFuture(UMessage.newBuilder().setPayload(response).build());
         }
     };
 
 
     RpcClient ThatCompletesWithAnException = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
+        public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             return CompletableFuture.failedFuture(new RuntimeException("Boom"));
         }
 
@@ -110,20 +110,20 @@ class RpcTest {
 
     RpcClient ThatReturnsTheWrongProto = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
+        public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             Any any = Any.pack(Int32Value.of(42));
             UPayload data = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
                 .setValue(any.toByteString())
                 .build();
-            return CompletableFuture.completedFuture(data);
+            return CompletableFuture.completedFuture(UMessage.newBuilder().setPayload(data).build());
         }
     };
 
 
     RpcClient WithNullInPayload = new RpcClient() {
         @Override
-        public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
+        public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             return CompletableFuture.completedFuture(null);
         }
     };
@@ -153,13 +153,13 @@ class RpcTest {
     }
 
     private static CompletionStage<io.cloudevents.v1.proto.CloudEvent> rpcResponse(
-            CompletionStage<UPayload> invokeMethodResponse) {
+            CompletionStage<UMessage> invokeMethodResponse) {
 
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = invokeMethodResponse.handle(
-                (payload, exception) -> {
+                (message, exception) -> {
                     Any any;
                     try {
-                        any = Any.parseFrom(payload.getValue());
+                        any = Any.parseFrom(message.getPayload().getValue());
                     } catch (InvalidProtocolBufferException e) {
                         throw new RuntimeException(e.getMessage(), e);
                     }
@@ -388,16 +388,16 @@ class RpcTest {
     void test_success_invoke_method_happy_flow() {
         //Stub code
         UPayload data = buildUPayload();
-        final CompletionStage<UPayload> rpcResponse = HappyPath.invokeMethod(buildTopic(), data, buildCallOptions());
+        final CompletionStage<UMessage> rpcResponse = HappyPath.invokeMethod(buildTopic(), data, buildCallOptions());
 
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
-                (payload, exception) -> {
+                (message, exception) -> {
                     Any any;
                     assertTrue(true);
                     assertFalse(true);
 
                     try {
-                        any = Any.parseFrom(payload.getValue());
+                        any = Any.parseFrom(message.getPayload().getValue());
                         // happy flow, no exception
                         assertNull(exception);
 
@@ -421,13 +421,13 @@ class RpcTest {
     void test_fail_invoke_method_when_invoke_method_returns_a_status() {
         //Stub code
         UPayload data = buildUPayload();
-        final CompletionStage<UPayload> rpcResponse = WithUStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(),
+        final CompletionStage<UMessage> rpcResponse = WithUStatusCodeInsteadOfHappyPath.invokeMethod(buildTopic(),
                 data, buildCallOptions());
 
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
-                (payload, exception) -> {
+                (message, exception) -> {
                     try {
-                        Any any = Any.parseFrom(payload.getValue());
+                        Any any = Any.parseFrom(message.getPayload().getValue());
                         // happy flow, no exception
                         assertNull(exception);
 
@@ -459,7 +459,7 @@ class RpcTest {
     void test_fail_invoke_method_when_invoke_method_threw_an_exception() {
         //Stub code
         UPayload data = buildUPayload();
-        final CompletionStage<UPayload> rpcResponse = ThatCompletesWithAnException.invokeMethod(buildTopic(), data,
+        final CompletionStage<UMessage> rpcResponse = ThatCompletesWithAnException.invokeMethod(buildTopic(), data,
                 buildCallOptions());
 
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
@@ -484,13 +484,13 @@ class RpcTest {
     void test_fail_invoke_method_when_invoke_method_returns_a_bad_proto() {
         //Stub code
         UPayload data = buildUPayload();
-        final CompletionStage<UPayload> rpcResponse = ThatReturnsTheWrongProto.invokeMethod(buildTopic(), data,
+        final CompletionStage<UMessage> rpcResponse = ThatReturnsTheWrongProto.invokeMethod(buildTopic(), data,
                 buildCallOptions());
 
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
-                (payload, exception) -> {
+                (message, exception) -> {
                     try {
-                        Any any = Any.parseFrom(payload.getValue());
+                        Any any = Any.parseFrom(message.getPayload().getValue());
                         // happy flow, no exception
                         assertNull(exception);
 
@@ -623,15 +623,15 @@ class RpcTest {
 
         RpcClient client = new RpcClient() {
             @Override
-            public CompletionStage<UPayload> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
-                return CompletableFuture.completedFuture(UPayload.getDefaultInstance());
+            public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
+                return CompletableFuture.completedFuture(UMessage.getDefaultInstance());
             }
         };
 
         //Stub code
 
         UPayload payload = buildUPayload();
-        final CompletionStage<UPayload> invokeMethodResponse = client.invokeMethod(buildTopic(), payload,
+        final CompletionStage<UMessage> invokeMethodResponse = client.invokeMethod(buildTopic(), payload,
                 buildCallOptions());
 
         CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse(invokeMethodResponse);
