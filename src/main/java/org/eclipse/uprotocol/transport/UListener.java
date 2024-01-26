@@ -23,7 +23,9 @@ public interface UListener {
      * @return Returns an Ack every time a message is received and processed.
      */
     default void onReceive(UMessage message) {
-        onReceive(message.getSource(), message.getPayload(), message.getAttributes());
+        if (message != null) {
+            onReceive(message.getSource(), message.getPayload(), message.getAttributes());
+        }
     }
 
 }
