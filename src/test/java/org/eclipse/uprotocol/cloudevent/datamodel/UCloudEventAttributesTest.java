@@ -40,7 +40,7 @@ class UCloudEventAttributesTest {
     }
 
     @Test
-    @DisplayName("Make sure the toString works")
+    @DisplayName("Make sure the default toString works")
     public void testToString() {
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
@@ -48,9 +48,22 @@ class UCloudEventAttributesTest {
                 .withTtl(3)
                 .withToken("someOAuthToken")
                 .build();
-        String expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken', traceparent='null'}";
+        String expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken'}";
         assertEquals(expected, uCloudEventAttributes.toString());
+    }
 
+    @Test
+    @DisplayName("Make sure the toString works when all properties are filled")
+    public void testToStringComplete() {
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withHash("somehash")
+                .withPriority(UPriority.UPRIORITY_CS1)
+                .withTtl(3)
+                .withToken("someOAuthToken")
+                .withTraceparent("darthvader")
+                .build();
+        String expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken', traceparent='darthvader'}";
+        assertEquals(expected, uCloudEventAttributes.toString());
     }
 
     @Test

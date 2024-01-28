@@ -50,6 +50,19 @@ public class UCloudEventAttributes {
      * @param ttl      How long this event should live for after it was generated (in milliseconds).
      *                 Events without this attribute (or value is 0) MUST NOT timeout.
      * @param token    Oauth2 access token to perform the access request defined in the request message.
+     */
+    private UCloudEventAttributes(String hash, UPriority priority, Integer ttl, String token) {
+        this(hash, priority, ttl, token, null);
+    }
+
+    /**
+     * Construct the properties object.
+     *
+     * @param hash     An HMAC generated on the data portion of the CloudEvent message using the device key.
+     * @param priority uProtocol Prioritization classifications.
+     * @param ttl      How long this event should live for after it was generated (in milliseconds).
+     *                 Events without this attribute (or value is 0) MUST NOT timeout.
+     * @param token    Oauth2 access token to perform the access request defined in the request message.
      * @param traceparent    Optional identifier used to correlate observability across related events
      */
     private UCloudEventAttributes(String hash, UPriority priority, Integer ttl, String token, String traceparent) {
@@ -216,12 +229,16 @@ public class UCloudEventAttributes {
 
     @Override
     public String toString() {
+        String traceParentString = "";
+        if (traceparent != null) {
+            traceParentString = ", traceparent='" + traceparent + '\'';
+        }
         return "UCloudEventAttributes{" +
                 "hash='" + hash + '\'' +
                 ", priority=" + priority +
                 ", ttl=" + ttl +
                 ", token='" + token + '\'' +
-                ", traceparent='" + traceparent + '\'' +
+                traceParentString +
                 '}';
     }
 }
