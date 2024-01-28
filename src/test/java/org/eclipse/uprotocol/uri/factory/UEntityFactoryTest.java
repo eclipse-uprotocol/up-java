@@ -23,7 +23,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-package org.eclipse.uprotocol.uri.builder;
+package org.eclipse.uprotocol.uri.factory;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,13 +36,12 @@ import org.eclipse.uprotocol.core.utwin.v1.UTwinProto;
 import org.eclipse.uprotocol.core.udiscovery.v3.UDiscoveryProto;
 import org.eclipse.uprotocol.v1.UEntity;
 
-public class UEntityBuilderTest {
+public class UEntityFactoryTest {
     @Test
     @DisplayName("Test build valid usubscription UEntity")
     public void test_build_valid_usubscription_uentity() {
         ServiceDescriptor descriptor = USubscriptionProto.getDescriptor().getServices().get(0);
-
-        UEntity entity = UEntityBuilder.fromProto(descriptor);
+        UEntity entity = UEntityFactory.fromProto(descriptor);
 
         assertEquals(entity.getName(), "core.usubscription");
         assertEquals(entity.getId(), 0);
@@ -55,7 +54,7 @@ public class UEntityBuilderTest {
     public void test_build_valid_udiscovery_uentity() {
         ServiceDescriptor descriptor = UDiscoveryProto.getDescriptor().getServices().get(0);
 
-        UEntity entity = UEntityBuilder.fromProto(descriptor);
+        UEntity entity = UEntityFactory.fromProto(descriptor);
 
         assertEquals(entity.getName(), "core.udiscovery");
         assertEquals(entity.getId(), 1);
@@ -68,7 +67,7 @@ public class UEntityBuilderTest {
     public void test_build_valid_utwin_uentity() {
         ServiceDescriptor descriptor = UTwinProto.getDescriptor().getServices().get(0);
 
-        UEntity entity = UEntityBuilder.fromProto(descriptor);
+        UEntity entity = UEntityFactory.fromProto(descriptor);
 
         assertEquals(entity.getName(), "core.utwin");
         assertEquals(entity.getId(), 26);
@@ -81,7 +80,7 @@ public class UEntityBuilderTest {
     public void test_build_empty_descriptor() {
         ServiceDescriptor descriptor = null;
 
-        UEntity entity = UEntityBuilder.fromProto(descriptor);
+        UEntity entity = UEntityFactory.fromProto(descriptor);
 
         assertEquals(entity.getName(), "");
         assertEquals(entity.getId(), 0);

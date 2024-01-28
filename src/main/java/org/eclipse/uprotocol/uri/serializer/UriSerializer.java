@@ -75,7 +75,7 @@ public interface UriSerializer<T> {
                 .setName(longUUri.getAuthority().getName());
  
         
-        final UEntity.Builder uEntityBuilder = UEntity.newBuilder(microUUri.getEntity())
+        final UEntity.Builder UEntityFactory = UEntity.newBuilder(microUUri.getEntity())
             .setName(longUUri.getEntity().getName());
             
 
@@ -84,7 +84,7 @@ public interface UriSerializer<T> {
             
         UUri uUri = UUri.newBuilder()
             .setAuthority(uAuthorityBuilder)
-            .setEntity(uEntityBuilder)
+            .setEntity(UEntityFactory)
             .setResource(uResourceBuilder)
             .build();
         return UriValidator.isResolved(uUri) ? Optional.of(uUri) : Optional.empty();

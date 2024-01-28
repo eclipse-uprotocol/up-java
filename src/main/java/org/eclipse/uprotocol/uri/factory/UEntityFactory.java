@@ -23,7 +23,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
- package org.eclipse.uprotocol.uri.builder;
+ package org.eclipse.uprotocol.uri.factory;
 
 import org.eclipse.uprotocol.UprotocolOptions;
 import org.eclipse.uprotocol.v1.UEntity;
@@ -32,9 +32,9 @@ import com.google.protobuf.DescriptorProtos.ServiceOptions;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
 
 /**
- * Builder interface for UEntity to help to build UEntity from common use cases
+ * Create UEntity to/from proto information
  */
-public interface UEntityBuilder {
+public interface UEntityFactory {
     /**
      * Builds a UEntity for an protobuf generated code Service Descriptor.
      * @param descriptor The protobuf generated code Service Descriptor.
