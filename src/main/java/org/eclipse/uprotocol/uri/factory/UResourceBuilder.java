@@ -22,7 +22,7 @@
  * SPDX-FileCopyrightText: 2024 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.uprotocol.uri.builder;
+package org.eclipse.uprotocol.uri.factory;
 
 import java.util.Objects;
 

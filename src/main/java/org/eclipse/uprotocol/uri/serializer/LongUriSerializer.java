@@ -195,13 +195,13 @@ public class LongUriSerializer implements UriSerializer<String> {
             return UUri.getDefaultInstance();
         }
 
-        UEntity.Builder uEntityBuilder = UEntity.newBuilder().setName(useName);
+        UEntity.Builder UEntityFactory = UEntity.newBuilder().setName(useName);
 
         if (useVersionInt != null) {
-            uEntityBuilder.setVersionMajor(useVersionInt);
+            UEntityFactory.setVersionMajor(useVersionInt);
         }
             
-        UUri.Builder uriBuilder = UUri.newBuilder().setEntity(uEntityBuilder);
+        UUri.Builder uriBuilder = UUri.newBuilder().setEntity(UEntityFactory);
         if (uAuthority != null) {
             uriBuilder.setAuthority(uAuthority);
         }

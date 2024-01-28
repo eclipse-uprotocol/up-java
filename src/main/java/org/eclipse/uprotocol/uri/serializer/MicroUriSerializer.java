@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
-import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
+import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.v1.UAuthority;

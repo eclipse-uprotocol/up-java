@@ -26,7 +26,7 @@ package org.eclipse.uprotocol.transport.validator;
 
 import org.eclipse.uprotocol.transport.builder.UAttributesBuilder;
 import org.eclipse.uprotocol.transport.validate.UAttributesValidator;
-import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
+import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 import org.eclipse.uprotocol.v1.*;
