@@ -31,9 +31,7 @@ import com.google.protobuf.Message;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
-import org.eclipse.uprotocol.v1.UPayload;
-import org.eclipse.uprotocol.v1.UCode;
-import org.eclipse.uprotocol.v1.UStatus;
+import org.eclipse.uprotocol.v1.*;
 
 /**
  * RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with 
@@ -43,24 +41,24 @@ import org.eclipse.uprotocol.v1.UStatus;
 public interface RpcMapper {
 
     /**
-     * Map a response of CompletionStage&lt;UPayload&gt; from Link into a CompletionStage containing the declared expected return type of the RPC method or an exception.
+     * Map a response of CompletionStage&lt;UMessage&gt; from Link into a CompletionStage containing the declared expected return type of the RPC method or an exception.
      * @param responseFuture CompletionStage&lt;UPayload&gt; response from uTransport.
      * @param expectedClazz The class name of the declared expected return type of the RPC method.
      * @return Returns a CompletionStage containing the declared expected return type of the RPC method or an exception.
      * @param <T> The declared expected return type of the RPC method.
      */
-    static <T extends Message> CompletionStage<T> mapResponse(CompletionStage<UPayload> responseFuture, Class<T> expectedClazz) {
-        return responseFuture.handle((payload, exception) -> {
+    static <T extends Message> CompletionStage<T> mapResponse(CompletionStage<UMessage> responseFuture, Class<T> expectedClazz) {
+        return responseFuture.handle((message, exception) -> {
             // Unexpected exception
             if (exception != null) {
                 throw new CompletionException(exception.getMessage(), exception);
             }
-            if (payload == null) {
+            if (message == null || !message.hasPayload()) {
                 throw new RuntimeException("Server returned a null payload. Expected " + expectedClazz.getName());
             }
             Any any;
             try {
-                any = Any.parseFrom(payload.getValue());
+                any = Any.parseFrom(message.getPayload().getValue());
             
                 // Expected type
                 if (any.is(expectedClazz)) {
@@ -82,22 +80,22 @@ public interface RpcMapper {
      * @param <T> The declared expected return type of the RPC method.
      */
     static <T extends Message> CompletionStage<RpcResult<T>> mapResponseToResult(
-            CompletionStage<UPayload> responseFuture,
+            CompletionStage<UMessage> responseFuture,
             Class<T> expectedClazz) {
-        return responseFuture.handle((payload, exception) -> {
+        return responseFuture.handle((message, exception) -> {
             // Unexpected exception
             if (exception != null) {
                 return RpcResult.failure(exception.getMessage(), exception);
             }
 
-            if (payload == null) {
+            if (message == null || !message.hasPayload()) {
                  exception = new RuntimeException("Server returned a null payload. Expected " + expectedClazz.getName());
                  return RpcResult.failure(exception.getMessage(), exception);
             }
 
             Any any;
             try {
-                any = Any.parseFrom(payload.getValue());
+                any = Any.parseFrom(message.getPayload().getValue());
                 
                 // Expected type
                 if (any.is(expectedClazz)) {

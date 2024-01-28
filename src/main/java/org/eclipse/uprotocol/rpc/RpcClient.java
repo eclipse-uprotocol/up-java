@@ -45,8 +45,8 @@ public interface RpcClient {
      * @param methodUri The method URI to be invoked, ex (long form): /example.hello_world/1/rpc.SayHello.
      * @param requestPayload The request message to be sent to the server.
      * @param options RPC method invocation call options, see {@link CallOptions}
-     * @return Returns the CompletionStage with the response message (payload) or exception with the failure
+     * @return Returns the CompletionStage with the response message or exception with the failure
      * reason as {@link UStatus}.
      */
-    CompletionStage<UPayload> invokeMethod(UUri methodUri, UPayload requestPayload, CallOptions options);
+    CompletionStage<UMessage> invokeMethod(UUri methodUri, UPayload requestPayload, CallOptions options);
 }
