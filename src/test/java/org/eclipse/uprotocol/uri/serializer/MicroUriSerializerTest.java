@@ -24,7 +24,8 @@
 package org.eclipse.uprotocol.uri.serializer;
 
 import com.google.protobuf.ByteString;
-import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
+
+import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UEntity;
@@ -74,7 +75,8 @@ public class MicroUriSerializerTest {
 
         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
         UUri uri2 = MicroUriSerializer.instance().deserialize(bytes);
-
+        assertTrue(UriValidator.isMicroForm(uri));
+        assertTrue(bytes.length > 0);
         assertEquals(uri, uri2);
     }
 

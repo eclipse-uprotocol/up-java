@@ -15,12 +15,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.eclipse.uprotocol</groupId>
-    <artifactId>uprotocol-java</artifactId>
-    <name>Java SDK for uProtocol</name>
+    <artifactId>up-java</artifactId>
+    <name>Java Library for uProtocol</name>
     <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more</description>
-    <version>1.5.6-SNAPSHOT</version>
+    <version>1.5.8-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <url>https://github.com/eclipse-uprotocol/uprotocol-java/</url>    
+    <url>https://github.com/eclipse-uprotocol/up-java/</url>    
 
     <properties>
         <java.version>11</java.version>
@@ -35,7 +35,7 @@
         <slf4j.version>2.6.18</slf4j.version>
         <cloudevents.version>2.4.2</cloudevents.version>
         <protobuf.version>3.21.10</protobuf.version>
-        <git.tag.name>uprotocol-core-api-1.5.3</git.tag.name>
+        <git.tag.name>uprotocol-core-api-1.5.5</git.tag.name>
     </properties>
 
     <licenses>
@@ -58,7 +58,7 @@
     <scm>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <url>https://github.com/eclipse-uprotocol/uprotocol-java.git</url>
+        <url>https://github.com/eclipse-uprotocol/up-java.git</url>
       <tag>HEAD</tag>
     </scm>
 
@@ -90,8 +90,8 @@
                                 <argument>clone</argument>
                                 <argument>--branch</argument>
                                 <argument>${git.tag.name}</argument>
-                                <argument>https://github.com/eclipse-uprotocol/uprotocol-core-api.git</argument>
-                                <argument>${project.build.directory}/uprotocol-core-api</argument>
+                                <argument>https://github.com/eclipse-uprotocol/up-core-api.git</argument>
+                                <argument>${project.build.directory}/up-core-api</argument>
                             </arguments>
                             <!-- Allow non-zero exit code (error) -->
                             <successCodes>
@@ -108,7 +108,7 @@
                         </goals>
                         <configuration>
                             <executable>git</executable>
-                            <workingDirectory>${project.build.directory}/uprotocol-core-api</workingDirectory>
+                            <workingDirectory>${project.build.directory}/up-core-api</workingDirectory>
                             <arguments>
                                 <argument>pull</argument>
                                 <argument>origin</argument>
@@ -147,13 +147,12 @@
                     <execution>
                         <goals>
                             <goal>compile</goal>
-                            <goal>test-compile</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
                     <protocArtifact>com.google.protobuf:protoc:3.17.3:exe:${os.detected.classifier}</protocArtifact>
-                    <protoSourceRoot>${project.build.directory}/uprotocol-core-api/src/main/proto</protoSourceRoot>
+                    <protoSourceRoot>${project.build.directory}/up-core-api/uprotocol</protoSourceRoot>
                     <outputDirectory>${project.build.directory}/generated-sources/protobuf/java</outputDirectory>
 
                 </configuration>
@@ -237,6 +236,7 @@
                 <executions>
                     <execution>
                         <id>license-check</id>
+                        <phase>deploy</phase>
                         <goals>
                             <goal>license-check</goal>
                         </goals>
@@ -389,7 +389,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20230227</version> <!-- Use the latest version -->
+            <version>20231013</version> <!-- Use the latest version -->
             <scope>test</scope>
         </dependency>
     </dependencies>

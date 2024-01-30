@@ -90,8 +90,10 @@ public interface UriValidator {
      * @return Returns true if URI is of type RPC.
      */
     static boolean isRpcMethod(UUri uri) {
-        Objects.requireNonNull(uri, "Uri cannot be null.");
-        return !isEmpty(uri) && uri.getResource().getName().contains("rpc") && (uri.getResource().hasInstance() && !uri.getResource().getInstance().trim().isEmpty() || (uri.getResource().hasId() && uri.getResource().getId() != 0));
+        
+        return (uri!= null) && uri.getResource().getName().contains("rpc") && 
+            (uri.getResource().hasInstance() && !uri.getResource().getInstance().trim().isEmpty() 
+                || (uri.getResource().hasId() && uri.getResource().getId() != 0));
     }
 
     /**
@@ -103,9 +105,7 @@ public interface UriValidator {
      * Meaning that this UUri can buree serialized to long or micro formats.
      */
     static boolean isResolved(UUri uri) {
-        Objects.requireNonNull(uri, "Uri cannot be null.");
-        return !isEmpty(uri);
-        // TODO: Finish this
+        return (uri != null) && !isEmpty(uri) && isLongForm(uri) && isMicroForm(uri);
     }
 
 
@@ -116,9 +116,14 @@ public interface UriValidator {
      * @return Returns true if URI is of type RPC response.
      */
     static boolean isRpcResponse(UUri uri) {
-        Objects.requireNonNull(uri, "Uri cannot be null.");
+        if (uri == null) {
+            return false;
+        }
+
         final UResource resource = uri.getResource();
-        return isRpcMethod(uri) && ((resource.hasInstance() && resource.getInstance().contains("response")) || (resource.hasId() && resource.getId() != 0));
+        return resource.getName().contains("rpc") && 
+            resource.hasInstance() && resource.getInstance().contains("response") &&
+            resource.hasId() && resource.getId() == 0;
     }
 
 
@@ -129,9 +134,19 @@ public interface UriValidator {
      * @return Returns true if URI contains numbers so that it can be serialized into micro format.
      */
     static boolean isMicroForm(UUri uri) {
-        Objects.requireNonNull(uri, "Uri cannot be null.");
+        return (uri !=null) && !isEmpty(uri) && uri.getEntity().hasId() && 
+            uri.getResource().hasId() && isMicroForm(uri.getAuthority());
+    }
 
-        return !isEmpty(uri) && uri.getEntity().hasId() && uri.getResource().hasId() && (!uri.hasAuthority() || uri.getAuthority().hasIp() || uri.getAuthority().hasId());
+    /**
+     * check if UAuthority can be represented in micro format. Micro UAuthorities are local or ones 
+     * that contain IP address or IDs.
+     *
+     * @param authority {@link UAuthority} to check
+     * @return Returns true if UAuthority can be represented in micro format
+     */
+    static boolean isMicroForm(UAuthority authority) {
+        return isLocal(authority) || (authority.hasIp() || authority.hasId());
     }
 
     /**
@@ -141,13 +156,41 @@ public interface UriValidator {
      * @return Returns true if URI contains names so that it can be serialized into long format.
      */
     static boolean isLongForm(UUri uri) {
-        Objects.requireNonNull(uri, "Uri cannot be null.");
-        return !isEmpty(uri) && !(uri.hasAuthority() && !uri.getAuthority().hasName()) && !uri.getEntity().getName().isBlank() && !uri.getResource().getName().isBlank();
+        return (uri != null) && 
+            !isEmpty(uri) && 
+            isLongForm(uri.getAuthority()) && 
+            !uri.getEntity().getName().isBlank() && !uri.getResource().getName().isBlank();
+    }
+
+    /**
+     * Returns true if UAuthority contains names so that it can be serialized into long format.
+     *
+     * @param authority {@link UAuthority} to check
+     * @return Returns true if URI contains names so that it can be serialized into long format.
+     */
+    static boolean isLongForm(UAuthority authority) {
+        return (authority != null) && authority.hasName() && !authority.getName().isBlank();
     }
 
 
+    /**
+     * Returns true if UAuthority is local meaning there is no name/ip/id set.
+     * 
+     * @param authority {@link UAuthority} to check if it is local or not
+     * @return Returns true if UAuthority is local meaning the Authority is not populated with name, ip and id
+     */
+    static boolean isLocal(UAuthority authority) {
+        return (authority == null) || authority.equals(UAuthority.getDefaultInstance());
+    }
+
+    /**
+     * Returns true if UAuthority is remote meaning the name and/or ip/id is populated.
+     * @param authority {@link UAuthority} to check if it is remote or not
+     * @return Returns true if UAuthority is remote meaning the name and/or ip/id is populated.
+     */
     static boolean isRemote(UAuthority authority) {
-        Objects.requireNonNull(authority, "Uri cannot be null.");
-        return authority.getRemoteCase() != UAuthority.RemoteCase.REMOTE_NOT_SET;
+        return (authority != null) && 
+            !authority.equals(UAuthority.getDefaultInstance()) &&
+            (isLongForm(authority) || isMicroForm(authority));
     }
 }

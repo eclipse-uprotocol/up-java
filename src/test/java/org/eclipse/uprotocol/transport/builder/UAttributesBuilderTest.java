@@ -24,7 +24,7 @@
 
 package org.eclipse.uprotocol.transport.builder;
 
-import org.eclipse.uprotocol.uri.builder.UResourceBuilder;
+import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.v1.*;
 import org.junit.jupiter.api.Test;
 

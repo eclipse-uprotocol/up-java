@@ -1,9 +1,6 @@
 package org.eclipse.uprotocol.transport;
 
-import org.eclipse.uprotocol.v1.UStatus;
-import org.eclipse.uprotocol.v1.UAttributes;
-import org.eclipse.uprotocol.v1.UUri;
-import org.eclipse.uprotocol.v1.UPayload;
+import org.eclipse.uprotocol.v1.*;
 
 /**
  * For any implementation that defines some kind of callback or function that will be called to handle incoming messages.
@@ -17,6 +14,18 @@ public interface UListener {
      * @param attributes Transportation attributes
      * @return Returns an Ack every time a message is received and processed.
      */
-    UStatus onReceive(UUri topic, UPayload payload, UAttributes attributes);
+    void onReceive(UUri topic, UPayload payload, UAttributes attributes);
+
+    
+    /**
+     * Method called to handle/process events.
+     * @param message Message received.
+     * @return Returns an Ack every time a message is received and processed.
+     */
+    default void onReceive(UMessage message) {
+        if (message != null) {
+            onReceive(message.getSource(), message.getPayload(), message.getAttributes());
+        }
+    }
 
 }

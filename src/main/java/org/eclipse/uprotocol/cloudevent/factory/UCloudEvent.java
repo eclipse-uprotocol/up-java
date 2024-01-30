@@ -24,6 +24,7 @@
 
 package org.eclipse.uprotocol.cloudevent.factory;
 
+import org.eclipse.uprotocol.UprotocolOptions;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
@@ -31,6 +32,7 @@ import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.Descriptors.EnumValueDescriptor;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
@@ -390,6 +392,8 @@ public interface UCloudEvent {
 
     }
 
+    
+
     /**
      * Get the Cloudevent from the UMessage<br>
      * <b>Note: For now, only the value format of UPayload is supported in the SDK.If the UPayload has a reference, it
@@ -398,22 +402,38 @@ public interface UCloudEvent {
      * @return returns the cloud event
      */
     static CloudEvent fromMessage(UMessage message) {
-        UAttributes attributes = message.getAttributes();
+        return fromMessageParts(message.getSource(), message.getAttributes(), message.getPayload());
+    }
+
+
+    /**
+     * Get the Cloudevent from the UMessage Parts (UUri, UAttributes, and UPayload) <br>
+     * <b>Note: For now, only the value format of UPayload is supported in the SDK.If the UPayload has a reference, it
+     * needs to be copied to CloudEvent.</b>
+     * @param source The UUri source address for the message
+     * @param attributes The UMessage attributes
+     * @param payload The UMessage payload
+     * @return returns the cloud event from message parts
+     */
+    static CloudEvent fromMessageParts(UUri source, UAttributes attributes, UPayload payload) {
+        source = Objects.requireNonNullElse(source, UUri.getDefaultInstance());
+        attributes = Objects.requireNonNullElse(attributes, UAttributes.getDefaultInstance());
+        payload = Objects.requireNonNullElse(payload, UPayload.getDefaultInstance());
 
         CloudEventBuilder cloudEventBuilder =
                 CloudEventBuilder.v1().withId(LongUuidSerializer.instance().serialize(attributes.getId()));
 
         cloudEventBuilder.withType(getEventType(attributes.getType()));
 
-        cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(message.getSource())));
+        cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(source)));
 
-        final String contentType = getContentTypeFromUPayloadFormat(message.getPayload().getFormat());
+        final String contentType = getContentTypeFromUPayloadFormat(payload.getFormat());
         if(!contentType.isEmpty()){
             cloudEventBuilder.withDataContentType(contentType);
         }
         // IMPORTANT: Currently, ONLY the VALUE format is supported in the SDK!
-        if (message.getPayload().hasValue())
-            cloudEventBuilder.withData(message.getPayload().getValue().toByteArray());
+        if (payload.hasValue())
+            cloudEventBuilder.withData(payload.getValue().toByteArray());
 
         if (attributes.hasTtl())
             cloudEventBuilder.withExtension("ttl",attributes.getTtl());
@@ -441,54 +461,38 @@ public interface UCloudEvent {
     }
 
     /**
-     * Retrieves the payload format enumeration based on the provided content type.
+     * Retrieves the payload format enumeration based on the provided string representation of the data content type <br>
+     * This method uses the uProtocol mimeType custom options declared in upayload.proto.
      *
      * @param contentType The content type string representing the format of the payload.
      * @return The corresponding UPayloadFormat enumeration based on the content type.
      */
     static UPayloadFormat getUPayloadFormatFromContentType(String contentType){
-        if(contentType == null)
-            return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF;
-
-        switch (contentType){
-            case "application/json":
-                return UPayloadFormat.UPAYLOAD_FORMAT_JSON;
-            case "application/octet-stream":
-                return UPayloadFormat.UPAYLOAD_FORMAT_RAW;
-            case "text/plain":
-                return UPayloadFormat.UPAYLOAD_FORMAT_TEXT;
-            case "application/x-someip":
-                return UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP;
-            case "application/x-someip_tlv":
-                return UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV;
-            default:
-                return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF;
-
+        if(contentType == null) {
+            return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY;
         }
+
+        return UPayloadFormat.getDescriptor().getValues().stream()
+            .filter(v -> v.getOptions().hasExtension(UprotocolOptions.mimeType) &&
+                v.getOptions().getExtension(UprotocolOptions.mimeType).equals(contentType))
+            .map(v -> UPayloadFormat.forNumber(v.getNumber()))
+            .findFirst()
+            .orElse(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY);
     }
 
     /**
-     * Retrieves the content type string based on the provided UPayloadFormat enumeration.
+     * Retrieves the string representation of the data content type based on the provided UPayloadFormat. <BR>
+     * This method uses the uProtocol mimeType custom options declared in upayload.proto.
      *
      * @param format The UPayloadFormat enumeration representing the payload format.
      * @return The corresponding content type string based on the payload format.
      */
-    static String getContentTypeFromUPayloadFormat(UPayloadFormat format){
-        switch (format){
-            case UPAYLOAD_FORMAT_JSON:
-                return "application/json";
-            case UPAYLOAD_FORMAT_RAW:
-                return "application/octet-stream";
-            case UPAYLOAD_FORMAT_TEXT:
-                return "text/plain";
-            case UPAYLOAD_FORMAT_SOMEIP:
-                return "application/x-someip";
-            case UPAYLOAD_FORMAT_SOMEIP_TLV:
-                return "application/x-someip_tlv";
-            default:
-                return "";
+    static String getContentTypeFromUPayloadFormat(UPayloadFormat format) {
+        // Since the default value is UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY, we return an empty string.
+        if (format == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY) {
+            return "";
         }
+        return format.getValueDescriptor().getOptions().<String>getExtension(UprotocolOptions.mimeType);
     }
-
 
 }
