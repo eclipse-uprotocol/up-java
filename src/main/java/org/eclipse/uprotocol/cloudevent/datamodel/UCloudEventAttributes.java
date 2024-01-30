@@ -34,7 +34,7 @@ import java.util.Optional;
  */
 public class UCloudEventAttributes {
 
-    private static final UCloudEventAttributes EMPTY = new UCloudEventAttributes(null, null, null, null, null);
+    private static final UCloudEventAttributes EMPTY = new UCloudEventAttributes(null, null, null, null);
 
     private final String hash;
     private final UPriority priority;
@@ -52,25 +52,11 @@ public class UCloudEventAttributes {
      * @param token    Oauth2 access token to perform the access request defined in the request message.
      */
     private UCloudEventAttributes(String hash, UPriority priority, Integer ttl, String token) {
-        this(hash, priority, ttl, token, null);
-    }
-
-    /**
-     * Construct the properties object.
-     *
-     * @param hash     An HMAC generated on the data portion of the CloudEvent message using the device key.
-     * @param priority uProtocol Prioritization classifications.
-     * @param ttl      How long this event should live for after it was generated (in milliseconds).
-     *                 Events without this attribute (or value is 0) MUST NOT timeout.
-     * @param token    Oauth2 access token to perform the access request defined in the request message.
-     * @param traceparent    Optional identifier used to correlate observability across related events
-     */
-    private UCloudEventAttributes(String hash, UPriority priority, Integer ttl, String token, String traceparent) {
         this.hash = hash;
         this.priority = priority;
         this.ttl = ttl;
         this.token = token;
-        this.traceparent = traceparent;
+        this.traceparent = null;
     }
 
     private UCloudEventAttributes(UCloudEventAttributesBuilder builder) {
