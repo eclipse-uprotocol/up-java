@@ -25,7 +25,7 @@
 package org.eclipse.uprotocol.cloudevent.validate;
 
 
-import io.cloudevents.CloudEvent;
+import io.cloudevents.v1.proto.CloudEvent;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
 import org.eclipse.uprotocol.v1.*;
 import org.eclipse.uprotocol.validation.ValidationResult;

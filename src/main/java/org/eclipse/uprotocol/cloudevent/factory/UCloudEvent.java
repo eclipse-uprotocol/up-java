@@ -34,9 +34,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 
-import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
-import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.v1.proto.CloudEvent;
+import io.cloudevents.v1.proto.CloudEvent.CloudEventAttributeValue;
+
 import org.eclipse.uprotocol.v1.*;
 
 import java.net.URI;
@@ -58,7 +59,7 @@ public interface UCloudEvent {
      * @return Returns the String value of a CloudEvent source attribute.
      */
     static String getSource(CloudEvent cloudEvent) {
-        return cloudEvent.getSource().toString();
+        return cloudEvent.getSource();
     }
 
     /**
@@ -159,9 +160,9 @@ public interface UCloudEvent {
         if(communicationStatus == null) {
             return cloudEvent;
         }
-        CloudEventBuilder builder = CloudEventBuilder.v1(cloudEvent);
-        builder.withExtension("commstatus", communicationStatus);
-        return builder.build();
+        return CloudEvent.newBuilder(cloudEvent)
+        .putAttributes("commstatus", CloudEventAttributeValue.newBuilder().setCeInteger(communicationStatus).build())
+        .build();
     }
 
     /**
@@ -176,30 +177,7 @@ public interface UCloudEvent {
         return UuidUtils.getTime(uuid);
     }
 
-    /**
-     * Calculate if a CloudEvent configured with a creation time and a ttl attribute is expired.<br>
-     * The ttl attribute is a configuration of how long this event should live for after it was generated (in milliseconds)
-     * @param cloudEvent The CloudEvent to inspect for being expired.
-     * @return Returns true if the CloudEvent was configured with a ttl &gt; 0 and a creation time to compare for expiration.
-     */
-    static boolean isExpiredByCloudEventCreationDate(CloudEvent cloudEvent) {
-        final Optional<Integer> maybeTtl = getTtl(cloudEvent);
-        if (maybeTtl.isEmpty()) {
-            return false;
-        }
-        int ttl = maybeTtl.get();
-        if (ttl <= 0) {
-            return false;
-        }
-        final OffsetDateTime cloudEventCreationTime = cloudEvent.getTime();
-        if (cloudEventCreationTime == null){
-            return false;
-        }
-        final OffsetDateTime now = OffsetDateTime.now();
-        final OffsetDateTime creationTimePlusTtl = cloudEventCreationTime.plus(ttl, ChronoUnit.MILLIS);
-
-        return now.isAfter(creationTimePlusTtl);
-    }
+    
 
     /**
      * Calculate if a CloudEvent configured with UUIDv8 id and a ttl attribute is expired.<br>
@@ -247,15 +225,11 @@ public interface UCloudEvent {
      * @return Extracts the payload from a CloudEvent as a Protobuf Any object.
      */
     static Any getPayload(CloudEvent cloudEvent) {
-        final CloudEventData data = cloudEvent.getData();
+        final Any data = cloudEvent.getProtoData();
         if (data == null) {
             return Any.getDefaultInstance();
         }
-        try {
-            return Any.parseFrom(data.toBytes());
-        } catch (InvalidProtocolBufferException e) {
-            return Any.getDefaultInstance();
-        }
+        return data;
     }
 
     /**
@@ -298,10 +272,9 @@ public interface UCloudEvent {
      *      or an Optional.empty() is the value does not exist.
      */
     private static Optional<String> extractStringValueFromExtension(String extensionName, CloudEvent cloudEvent) {
-        final Set<String> extensionNames = cloudEvent.getExtensionNames();
-        if (extensionNames.contains(extensionName)) {
-            Object extension = cloudEvent.getExtension(extensionName);
-            return extension == null ? Optional.empty() : Optional.of(String.valueOf(extension));
+        
+        if (cloudEvent.containsAttributes(extensionName)) {
+            return Optional.of(cloudEvent.getAttributesMap().get(extensionName).getCeString());
         }
         return Optional.empty();
     }
@@ -314,8 +287,10 @@ public interface UCloudEvent {
      *      or an Optional.empty() is the value does not exist.
      */
     private static Optional<Integer> extractIntegerValueFromExtension(String extensionName, CloudEvent cloudEvent) {
-        return extractStringValueFromExtension(extensionName, cloudEvent)
-                .map(Integer::valueOf);
+        if (cloudEvent.containsAttributes(extensionName)) {
+            return Optional.of(cloudEvent.getAttributesMap().get(extensionName).getCeInteger());
+        }
+        return Optional.empty();
     }
 
 
@@ -324,17 +299,8 @@ public interface UCloudEvent {
      * @param type The UMessageType
      * @return returns the string representation of the UMessageType
      */
-    static String getEventType(UMessageType type){
-        switch (type){
-            case UMESSAGE_TYPE_PUBLISH:
-                return "pub.v1";
-            case UMESSAGE_TYPE_REQUEST:
-                return "req.v1";
-            case UMESSAGE_TYPE_RESPONSE:
-                return "res.v1";
-            default:
-                return "";
-        }
+    static String getEventType(UMessageType type) {
+        return type.getValueDescriptor().getOptions().<String>getExtension(UprotocolOptions.ceName);
     }
 
     /**
@@ -343,17 +309,13 @@ public interface UCloudEvent {
      * @return returns the UMessageType
      */
     static UMessageType getMessageType(String ce_type){
-        switch (ce_type){
-            case "pub.v1":
-                return UMessageType.UMESSAGE_TYPE_PUBLISH;
-            case "req.v1":
-                return UMessageType.UMESSAGE_TYPE_REQUEST;
-            case "res.v1":
-                return UMessageType.UMESSAGE_TYPE_RESPONSE;
-            default:
-                return UMessageType.UMESSAGE_TYPE_UNSPECIFIED;
-        }
+        return UMessageType.getDescriptor().getValues().stream()
+                .filter(v -> v.getName().equals(ce_type))
+                .map(v -> UMessageType.forNumber(v.getNumber()))
+                .findFirst()
+                .orElse(UMessageType.UNRECOGNIZED);
     }
+
     /**
      * Get the UMessage from the cloud event
      * @param event The CloudEvent containing the data.
@@ -363,7 +325,7 @@ public interface UCloudEvent {
         Objects.requireNonNull(event);
         UUri source = LongUriSerializer.instance().deserialize(getSource(event));
 
-        UPayload payload = UPayload.newBuilder().setFormat(getUPayloadFormatFromContentType(event.getDataContentType()))
+        UPayload payload = UPayload.newBuilder().setFormat(getUPayloadFormatFromContentType(event.getAttributesMap().get("datacontenttype").getCeString()))
                 .setValue(getPayload(event).toByteString()).build();
 
         UAttributes.Builder builder =
@@ -420,42 +382,78 @@ public interface UCloudEvent {
         attributes = Objects.requireNonNullElse(attributes, UAttributes.getDefaultInstance());
         payload = Objects.requireNonNullElse(payload, UPayload.getDefaultInstance());
 
-        CloudEventBuilder cloudEventBuilder =
-                CloudEventBuilder.v1().withId(LongUuidSerializer.instance().serialize(attributes.getId()));
-
-        cloudEventBuilder.withType(getEventType(attributes.getType()));
-
-        cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(source)));
+        CloudEvent.Builder cloudEventBuilder = CloudEvent.newBuilder()
+                .setId(LongUuidSerializer.instance().serialize(attributes.getId()))
+                .setType(getEventType(attributes.getType()))
+                .setSource(LongUriSerializer.instance().serialize(source));
 
         final String contentType = getContentTypeFromUPayloadFormat(payload.getFormat());
-        if(!contentType.isEmpty()){
-            cloudEventBuilder.withDataContentType(contentType);
+        
+        // populate Binary data for all other types than UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY
+        if(!contentType.isEmpty()) {
+            cloudEventBuilder.putAttributes("datacontentype", CloudEventAttributeValue.newBuilder().setCeString(contentType).build());
+            if (payload.hasValue())
+                cloudEventBuilder.setBinaryData(payload.getValue());
+        } else {
+            if (payload.hasValue()) {
+                try {
+                    Any any = Any.parseFrom(payload.getValue());
+                    cloudEventBuilder.setProtoData(any);
+                } catch (InvalidProtocolBufferException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
-        // IMPORTANT: Currently, ONLY the VALUE format is supported in the SDK!
-        if (payload.hasValue())
-            cloudEventBuilder.withData(payload.getValue().toByteArray());
 
-        if (attributes.hasTtl())
-            cloudEventBuilder.withExtension("ttl",attributes.getTtl());
 
-        if (attributes.hasToken())
-            cloudEventBuilder.withExtension("token",attributes.getToken());
+        if (attributes.hasTtl()) {
+            cloudEventBuilder.putAttributes("ttl", 
+                CloudEventAttributeValue.newBuilder()
+                    .setCeInteger(attributes.getTtl())
+                    .build());
+        }
 
-        if(attributes.getPriorityValue()>0)
-            cloudEventBuilder.withExtension("priority",attributes.getPriority().name());
+        if (attributes.hasToken()) {
+            cloudEventBuilder.putAttributes("token", 
+                CloudEventAttributeValue.newBuilder()
+                    .setCeString(attributes.getToken())
+                    .build());
+        }
 
-        if(attributes.hasSink())
-            cloudEventBuilder.withExtension("sink",
-                     URI.create(LongUriSerializer.instance().serialize(attributes.getSink())));
+        if(attributes.getPriorityValue() > 0) {
+            cloudEventBuilder.putAttributes("priority", 
+                CloudEventAttributeValue.newBuilder()
+                    .setCeString(attributes.getPriority().getValueDescriptor().getOptions().<String>getExtension(UprotocolOptions.ceName))
+                    .build());
+        }
 
-        if(attributes.hasCommstatus())
-            cloudEventBuilder.withExtension("commstatus",attributes.getCommstatus());
+        if(attributes.hasSink()) {
+            cloudEventBuilder.putAttributes("sink", 
+                CloudEventAttributeValue.newBuilder()
+                    .setCeString(LongUriSerializer.instance().serialize(attributes.getSink()))
+                    .build());
+        }
 
-        if(attributes.hasReqid())
-            cloudEventBuilder.withExtension("reqid",LongUuidSerializer.instance().serialize(attributes.getReqid()));
+        if(attributes.hasCommstatus()) {
+            cloudEventBuilder.putAttributes("commstatus", 
+                CloudEventAttributeValue.newBuilder()
+                    .setCeInteger(attributes.getCommstatus())
+                    .build());
+        }
 
-        if(attributes.hasPermissionLevel())
-            cloudEventBuilder.withExtension("plevel",attributes.getPermissionLevel());
+        if(attributes.hasReqid()) {
+            cloudEventBuilder.putAttributes("reqid", 
+                CloudEventAttributeValue.newBuilder()
+                    .setCeString(LongUuidSerializer.instance().serialize(attributes.getReqid()))
+                    .build());
+        }
+
+        if(attributes.hasPermissionLevel()) {
+            cloudEventBuilder.putAttributes("plevel", 
+            CloudEventAttributeValue.newBuilder()
+                .setCeInteger(attributes.getPermissionLevel())
+                .build());
+        }
        return cloudEventBuilder.build();
 
     }
