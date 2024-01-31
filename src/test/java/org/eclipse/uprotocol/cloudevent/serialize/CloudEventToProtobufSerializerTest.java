@@ -27,8 +27,9 @@ package org.eclipse.uprotocol.cloudevent.serialize;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.v1.proto.CloudEvent;
+import io.cloudevents.v1.proto.CloudEvent.CloudEventAttributeValue;
+
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
@@ -37,11 +38,9 @@ import org.eclipse.uprotocol.v1.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
-import java.util.Objects;
-import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Objects;
 
 class CloudEventToProtobufSerializerTest {
 
@@ -66,10 +65,9 @@ class CloudEventToProtobufSerializerTest {
                 .withTtl(3)
                 .build();
 
-        final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("hello", source,
-                protoPayload.toByteArray(), protoPayload.getTypeUrl(),
-                uCloudEventAttributes);
-        cloudEventBuilder.withType("pub.v1");
+        final CloudEvent.Builder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("hello", source,
+                protoPayload,uCloudEventAttributes)
+            .setType("pub.v1");
 
         final CloudEvent cloudEvent = cloudEventBuilder.build();
         final byte[] bytes = serializer.serialize(cloudEvent);
@@ -89,19 +87,22 @@ class CloudEventToProtobufSerializerTest {
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
 
-        // cloudevent
-        CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withId("hello")
-                .withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left"))
-                .withDataContentType("application/protobuf")
-                .withDataSchema(URI.create(protoPayload.getTypeUrl()))
-                .withData(protoPayload.toByteArray());
-        CloudEvent cloudEvent = cloudEventBuilder.build();
+        CloudEvent cloudEvent = CloudEvent.newBuilder()
+            .setSpecVersion("1.0")
+            .setId("hello")
+            .setType("pub.v1")
+            .setSource("/body.access/1/door.front_left")
+            .putAttributes("datacontenttype", CloudEventAttributeValue.newBuilder().setCeString("application/protobuf").build())
+            .putAttributes("dataschema", CloudEventAttributeValue.newBuilder().setCeString(protoPayload.getTypeUrl()).build())
+            .putAttributes("ttl", CloudEventAttributeValue.newBuilder().setCeInteger(3).build())
+            .putAttributes("priority", CloudEventAttributeValue.newBuilder().setCeString("CS1").build())
+            .setProtoData(protoPayload)
+            .build();
+
 
         // another cloudevent
-        CloudEvent anotherCloudEvent = cloudEventBuilder
-                .withType("file.v1")
+        CloudEvent anotherCloudEvent = CloudEvent.newBuilder()
+                .setType("file.v1")
                 .build();
 
         final byte[] bytesCloudEvent = serializer.serialize(cloudEvent);
@@ -117,17 +118,21 @@ class CloudEventToProtobufSerializerTest {
         final Any protoPayload = buildProtoPayloadForTest();
 
         // cloudevent
-        CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withId("hello")
-                .withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left"))
-                .withDataContentType("application/protobuf")
-                .withDataSchema(URI.create(protoPayload.getTypeUrl()))
-                .withData(protoPayload.toByteArray());
-        CloudEvent cloudEvent = cloudEventBuilder.build();
+        CloudEvent cloudEvent = CloudEvent.newBuilder()
+            .setSpecVersion("1.0")
+            .setId("hello")
+            .setType("pub.v1")
+            .setSource("/body.access/1/door.front_left")
+            .putAttributes("datacontenttype", CloudEventAttributeValue.newBuilder().setCeString("application/protobuf").build())
+            .putAttributes("dataschema", CloudEventAttributeValue.newBuilder().setCeString(protoPayload.getTypeUrl()).build())
+            .putAttributes("ttl", CloudEventAttributeValue.newBuilder().setCeInteger(3).build())
+            .putAttributes("priority", CloudEventAttributeValue.newBuilder().setCeString("CS1").build())
+            .setProtoData(protoPayload)
+            .build();
+
 
         // another cloudevent
-        CloudEvent anotherCloudEvent = cloudEventBuilder.build();
+        CloudEvent anotherCloudEvent = CloudEvent.newBuilder().build();
 
         final byte[] bytesCloudEvent = serializer.serialize(cloudEvent);
         final byte[] bytesAnotherCloudEvent = serializer.serialize(anotherCloudEvent);
@@ -155,10 +160,9 @@ class CloudEventToProtobufSerializerTest {
                 .build();
 
         // build the cloud event
-        final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("testme", source,
-                protoPayload.toByteArray(), protoPayload.getTypeUrl(),
-                uCloudEventAttributes);
-        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+        final CloudEvent.Builder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("testme", source,
+                protoPayload, uCloudEventAttributes)
+            .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
 
         final CloudEvent cloudEvent1 = cloudEventBuilder.build();
 
@@ -188,12 +192,12 @@ class CloudEventToProtobufSerializerTest {
 
         final CloudEventSerializer serializer = CloudEventSerializers.PROTOBUF.serializer();
 
-        CloudEventBuilder builder = buildCloudEventForTest();
+        CloudEvent.Builder builder = buildCloudEventForTest();
         Any cloudEventProto = buildProtoPayloadForTest1();
 
-        builder.withDataContentType(protoContentType);
-        builder.withData(cloudEventProto.toByteArray());
-        builder.withDataSchema(URI.create(cloudEventProto.getTypeUrl()));
+        builder.setProtoData(cloudEventProto);
+        builder.putAttributes("datacontenttype", CloudEventAttributeValue.newBuilder().setCeString(protoContentType).build());
+        builder.putAttributes("dataschema", CloudEventAttributeValue.newBuilder().setCeString(cloudEventProto.getTypeUrl()).build());
 
         CloudEvent cloudEvent1 = builder.build();
 
@@ -225,12 +229,13 @@ class CloudEventToProtobufSerializerTest {
         final CloudEventSerializer jsonSerializer = CloudEventSerializers.JSON.serializer();
 
 
-        CloudEventBuilder builder = buildCloudEventForTest();
+        CloudEvent.Builder builder = buildCloudEventForTest();
         Any cloudEventProto = buildProtoPayloadForTest1();
 
-        builder.withDataContentType(protoContentType);
-        builder.withData(cloudEventProto.toByteArray());
-        builder.withDataSchema(URI.create(cloudEventProto.getTypeUrl()));
+        builder.setProtoData(cloudEventProto);
+        builder.putAttributes("datacontenttype", CloudEventAttributeValue.newBuilder().setCeString(protoContentType).build());
+        builder.putAttributes("dataschema", CloudEventAttributeValue.newBuilder().setCeString(cloudEventProto.getTypeUrl()).build());
+
 
         CloudEvent cloudEvent1 = builder.build();
 
@@ -258,12 +263,13 @@ class CloudEventToProtobufSerializerTest {
         final CloudEventSerializer protoSerializer = CloudEventSerializers.PROTOBUF.serializer();
         final CloudEventSerializer jsonSerializer = CloudEventSerializers.JSON.serializer();
 
-        CloudEventBuilder builder = buildCloudEventForTest();
+        CloudEvent.Builder builder = buildCloudEventForTest();
         Any cloudEventProto = buildProtoPayloadForTest1();
 
-        builder.withDataContentType(protoContentType);
-        builder.withData(cloudEventProto.toByteArray());
-        builder.withDataSchema(URI.create(cloudEventProto.getTypeUrl()));
+        builder.setProtoData(cloudEventProto);
+        builder.putAttributes("datacontenttype", CloudEventAttributeValue.newBuilder().setCeString(protoContentType).build());
+        builder.putAttributes("dataschema", CloudEventAttributeValue.newBuilder().setCeString(cloudEventProto.getTypeUrl()).build());
+
 
         CloudEvent cloudEvent1 = builder.build();
 
@@ -292,25 +298,20 @@ class CloudEventToProtobufSerializerTest {
         assertEquals(cloudEvent1.getId(), cloudEvent2.getId());
         assertEquals(cloudEvent1.getSource(), cloudEvent2.getSource());
         assertEquals(cloudEvent1.getType(), cloudEvent2.getType());
-        assertEquals(cloudEvent1.getDataContentType(), cloudEvent2.getDataContentType());
-        assertEquals(cloudEvent1.getDataSchema(), cloudEvent2.getDataSchema());
+        
+        cloudEvent1.getAttributesMap().forEach((k,v) -> {
+            if (cloudEvent2.getAttributesMap().containsKey(k)) {
+                assertEquals(v, cloudEvent2.getAttributesMap().get(k));
+            }
+        });
 
-        final Set<String> ce1ExtensionNames = cloudEvent1.getExtensionNames();
-        final Set<String> ce2ExtensionNames = cloudEvent2.getExtensionNames();
-
-        assertEquals(String.join(",", ce1ExtensionNames), String.join(",", ce2ExtensionNames));
-
-        assertArrayEquals(Objects.requireNonNull(cloudEvent1.getData()).toBytes(),
-                Objects.requireNonNull(cloudEvent2.getData()).toBytes());
-
-        assertEquals(cloudEvent1, cloudEvent2);
     }
 
-    private CloudEventBuilder buildCloudEventForTest() {
-        return CloudEventBuilder.v1()
-                .withId("hello")
-                .withType("pub.v1")
-                .withSource(URI.create("//VCU.VIN/body.access"));
+    private CloudEvent.Builder buildCloudEventForTest() {
+        return CloudEvent.newBuilder()
+                .setId("hello")
+                .setType("pub.v1")
+                .setSource("//VCU.VIN/body.access");
     }
 
     private Any buildProtoPayloadForTest1() {

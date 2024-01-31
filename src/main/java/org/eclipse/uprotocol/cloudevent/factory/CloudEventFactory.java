@@ -176,6 +176,7 @@ public interface CloudEventFactory {
                                                  Any protoPayload,
                                                  UCloudEventAttributes attributes) {
         final CloudEvent.Builder cloudEventBuilder = CloudEvent.newBuilder()
+                .setSpecVersion("1.0")
                 .setId(id)
                 .setSource(source)
                 .setProtoData(protoPayload);
@@ -189,7 +190,7 @@ public interface CloudEventFactory {
         attributes.hash().ifPresent(hash -> cloudEventBuilder.putAttributes("hash", 
                 CloudEventAttributeValue.newBuilder().setCeString(hash).build()));
         
-        attributes.hash().ifPresent(token -> cloudEventBuilder.putAttributes("token", 
+        attributes.token().ifPresent(token -> cloudEventBuilder.putAttributes("token", 
                 CloudEventAttributeValue.newBuilder().setCeString(token).build()));
         
         return cloudEventBuilder;

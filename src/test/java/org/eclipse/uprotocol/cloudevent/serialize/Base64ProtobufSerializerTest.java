@@ -24,8 +24,7 @@
 
 package org.eclipse.uprotocol.cloudevent.serialize;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.v1.proto.CloudEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -40,10 +39,10 @@ class Base64ProtobufSerializerTest {
     public void test_deserialize_bytes_to_string() {
 
         // build the payload as just another cloud event packed into an Any
-        CloudEvent datapayload = CloudEventBuilder.v1()
-                .withId("hello")
-                .withType("example.vertx")
-                .withSource(URI.create("http://localhost"))
+        CloudEvent datapayload = CloudEvent.newBuilder()
+                .setId("hello")
+                .setType("example.vertx")
+                .setSource("http://localhost")
                 .build();
 
         final byte[] bytes = CloudEventSerializers.PROTOBUF.serializer().serialize(datapayload);
@@ -75,10 +74,10 @@ class Base64ProtobufSerializerTest {
         String base64String = "CgVoZWxsbxIQaHR0cDovL2xvY2FsaG9zdBoDMS4wIg1leGFtcGxlLnZlcnR4";
         final byte[] bytes = Base64ProtobufSerializer.serialize(base64String);
 
-        CloudEvent datapayload = CloudEventBuilder.v1()
-                .withId("hello")
-                .withType("example.vertx")
-                .withSource(URI.create("http://localhost"))
+        CloudEvent datapayload = CloudEvent.newBuilder()
+                .setId("hello")
+                .setType("example.vertx")
+                .setSource("http://localhost")
                 .build();
 
         final byte[] ceBytes = CloudEventSerializers.PROTOBUF.serializer().serialize(datapayload);

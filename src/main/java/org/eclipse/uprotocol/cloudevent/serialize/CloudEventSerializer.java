@@ -24,7 +24,7 @@
 
 package org.eclipse.uprotocol.cloudevent.serialize;
 
-import io.cloudevents.CloudEvent;
+import io.cloudevents.v1.proto.CloudEvent;;
 
 public interface CloudEventSerializer {
 

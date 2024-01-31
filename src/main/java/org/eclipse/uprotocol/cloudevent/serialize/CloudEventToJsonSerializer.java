@@ -24,8 +24,12 @@
 
 package org.eclipse.uprotocol.cloudevent.serialize;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.jackson.JsonFormat;
+import io.cloudevents.v1.proto.CloudEvent;
+import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.util.JsonFormat.Parser;
+import com.google.protobuf.util.JsonFormat.Printer;
+
+import java.util.Arrays;
 
 /**
  * CloudEventSerializer to serialize and deserialize CloudEvents to JSON format.
@@ -33,15 +37,29 @@ import io.cloudevents.jackson.JsonFormat;
 public class CloudEventToJsonSerializer implements CloudEventSerializer {
 
     // Force database64 encoding as we know the data will be in a protobuf format
-    private static final JsonFormat serializer = new JsonFormat(true, false);
+    private static final Printer printer = JsonFormat.printer().usingTypeRegistry(JsonFormat.TypeRegistry.newBuilder().add(CloudEvent.getDescriptor()).build()).preservingProtoFieldNames().omittingInsignificantWhitespace();
+    private static final Parser parser = JsonFormat.parser().usingTypeRegistry(JsonFormat.TypeRegistry.newBuilder().add(CloudEvent.getDescriptor()).build());
 
     public byte[] serialize(CloudEvent cloudEvent) {
-        return serializer.serialize(cloudEvent);
+        byte[] bytes;
+        try {
+            bytes = printer.print(cloudEvent).getBytes();
+        } catch (Exception e) {
+            bytes = new byte[0];
+            // log an error
+        }
+        return bytes;
     }
 
     @Override
     public CloudEvent deserialize(byte[] bytes) {
-        return serializer.deserialize(bytes);
+        CloudEvent.Builder builder = CloudEvent.newBuilder();
+        try {
+            parser.merge(Arrays.toString(bytes), builder);
+        } catch (Exception e) {
+            // log an error
+        }
+        return builder.build();
     }
 
 }

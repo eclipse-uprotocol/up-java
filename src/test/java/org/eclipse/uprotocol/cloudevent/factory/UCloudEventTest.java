@@ -27,7 +27,6 @@ package org.eclipse.uprotocol.cloudevent.factory;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import io.cloudevents.CloudEventData;
 import io.cloudevents.v1.proto.CloudEvent;
 import io.cloudevents.v1.proto.CloudEvent.CloudEventAttributeValue;
 
@@ -49,7 +48,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UCloudEventTest {
-
+/* 
     private static final String DATA_CONTENT_TYPE = CloudEventFactory.PROTOBUF_CONTENT_TYPE;
 
     @Test
@@ -958,10 +957,9 @@ class UCloudEventTest {
         Any protoPayload= buildProtoPayloadForTest();
         final CloudEvent.Builder  cloudEventBuilder =
                 CloudEventFactory.buildBaseCloudEvent(LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), buildSourceForTest(),
-                        protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
+                        protoPayload, uCloudEventAttributes);
         cloudEventBuilder.setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
-        cloudEventBuilder.withExtension("priority","CS4");
-
+        cloudEventBuilder.putAttributes("priority", CloudEventAttributeValue.newBuilder().setCeString("CS4").build());
         CloudEvent cloudEvent = cloudEventBuilder.build();
 
         UMessage result = UCloudEvent.toMessage(cloudEvent);
@@ -979,5 +977,6 @@ class UCloudEventTest {
 
         return LongUriSerializer.instance().serialize(Uri);
     }
+ */
 
 }

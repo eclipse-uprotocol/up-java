@@ -24,23 +24,28 @@
 
 package org.eclipse.uprotocol.cloudevent.serialize;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.protobuf.ProtobufFormat;
+import io.cloudevents.v1.proto.CloudEvent;
+
 
 /**
  * CloudEventSerializer to serialize and deserialize CloudEvents to protobuf format.
  */
 public class CloudEventToProtobufSerializer implements CloudEventSerializer {
 
-    private static final ProtobufFormat serializer = new ProtobufFormat();
 
     public byte[] serialize(CloudEvent cloudEvent) {
-        return serializer.serialize(cloudEvent);
+        return cloudEvent.toByteArray();
     }
 
     @Override
     public CloudEvent deserialize(byte[] bytes) {
-        return serializer.deserialize(bytes);
+        CloudEvent event;
+        try {
+            event = CloudEvent.parseFrom(bytes);
+        } catch (Exception e) {
+            event = CloudEvent.getDefaultInstance();
+        }
+        return event;
     }
 
 }

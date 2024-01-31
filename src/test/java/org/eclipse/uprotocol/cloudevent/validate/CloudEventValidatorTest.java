@@ -26,8 +26,9 @@ package org.eclipse.uprotocol.cloudevent.validate;
 
 import com.google.protobuf.Any;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.v1.proto.CloudEvent;
+import io.cloudevents.v1.proto.CloudEvent.CloudEventAttributeValue;
+
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
@@ -39,7 +40,6 @@ import org.eclipse.uprotocol.validation.ValidationResult;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
 import java.time.Instant;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -48,7 +48,7 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test get a publish cloud event validator")
     void test_get_a_publish_cloud_event_validator() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType("pub.v1");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType("pub.v1");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
         final UStatus status = validator.validateType(cloudEvent).toStatus();
@@ -59,8 +59,8 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test get a notification cloud event validator")
     void test_get_a_notification_cloud_event_validator() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("sink", "//bo.cloud/petapp")
-                .withType("pub.v1");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//bo.cloud/petapp").build())
+                .setType("pub.v1");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final UStatus status = validator.validateType(cloudEvent).toStatus();
@@ -71,7 +71,7 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test publish cloud event type")
     void test_publish_cloud_event_type() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType("res.v1");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType("res.v1");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final UStatus status = validator.validateType(cloudEvent).toStatus();
@@ -83,7 +83,7 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test notification cloud event type")
     void test_notification_cloud_event_type() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType("res.v1");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType("res.v1");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final UStatus status = validator.validateType(cloudEvent).toStatus();
@@ -96,7 +96,7 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test get a request cloud event validator")
     void test_get_a_request_cloud_event_validator() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType("req.v1");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType("req.v1");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
         final UStatus status = validator.validateType(cloudEvent).toStatus();
@@ -107,7 +107,7 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test request cloud event type")
     void test_request_cloud_event_type() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType("pub.v1");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType("pub.v1");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final UStatus status = validator.validateType(cloudEvent).toStatus();
@@ -119,7 +119,7 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test get a response cloud event validator")
     void test_get_a_response_cloud_event_validator() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType("res.v1");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType("res.v1");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
         final UStatus status = validator.validateType(cloudEvent).toStatus();
@@ -130,7 +130,7 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test response cloud event type")
     void test_response_cloud_event_type() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType("pub.v1");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType("pub.v1");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final UStatus status = validator.validateType(cloudEvent).toStatus();
@@ -142,7 +142,7 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test get a publish cloud event validator when cloud event type is unknown")
     void test_get_a_publish_cloud_event_validator_when_cloud_event_type_is_unknown() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType("lala.v1");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType("lala.v1");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
         assertEquals("CloudEventValidator.Publish", validator.toString());
@@ -154,8 +154,8 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
-                .withId(str_uuid);
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+                .setId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         final UStatus status = CloudEventValidator.validateVersion(cloudEvent).toStatus();
 
@@ -166,9 +166,14 @@ class CloudEventValidatorTest {
     @DisplayName("Test validate version when not valid")
     void validate_cloud_event_version_when_not_valid() {
         final Any payloadForTest = buildProtoPayloadForTest();
-        final CloudEventBuilder builder = CloudEventBuilder.v03().withId("id").withType("pub.v1")
-                .withSource(URI.create("/body.access")).withDataContentType("application/protobuf")
-                .withDataSchema(URI.create(payloadForTest.getTypeUrl())).withData(payloadForTest.toByteArray());
+        final CloudEvent.Builder builder = CloudEvent.newBuilder()
+                .setSpecVersion("0.3")
+                .setId("id")
+                .setType("pub.v1")
+                .setSource("/body.access")
+                .putAttributes("datacontenttype", CloudEventAttributeValue.newBuilder().setCeString("application/protobuf").build())
+                .putAttributes("dataschema", CloudEventAttributeValue.newBuilder().setCeString(payloadForTest.getTypeUrl()).build())
+                .setProtoData(payloadForTest);
 
         CloudEvent cloudEvent = builder.build();
         final UStatus status = CloudEventValidator.validateVersion(cloudEvent).toStatus();
@@ -182,8 +187,8 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
-                .withId(str_uuid);
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+                .setId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         final UStatus status = CloudEventValidator.validateId(cloudEvent).toStatus();
 
@@ -198,8 +203,8 @@ class CloudEventValidatorTest {
                 .setLsb(uuid_java.getLeastSignificantBits()).build();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
-                .withId(str_uuid);
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+                .setId(str_uuid);
         CloudEvent cloudEvent = builder.build();
         final UStatus status = CloudEventValidator.validateId(cloudEvent).toStatus();
         assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
@@ -210,8 +215,8 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test validate cloudevent id when not valid")
     void validate_cloud_event_id_when_not_valid() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
-                .withId("testme");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+                .setId("testme");
         CloudEvent cloudEvent = builder.build();
         final UStatus status = CloudEventValidator.validateId(cloudEvent).toStatus();
         assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
@@ -224,8 +229,8 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("/body.access/1/door.front_left#Door").setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -238,9 +243,9 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
-                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("//VCU.myvin/body.access/1/door.front_left#Door")
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -253,9 +258,9 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
-                .withExtension("sink", "//bo.cloud/petapp").withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("//VCU.myvin/body.access/1/door.front_left#Door")
+                .putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//bo.cloud/petapp").build()).setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -268,9 +273,10 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("//VCU.myvin/body.access/1/door.front_left#Door"))
-                .withExtension("sink", "//bo.cloud").withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("//VCU.myvin/body.access/1/door.front_left#Door")
+                .putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//bo.cloud").build())
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final ValidationResult status = validator.validate(cloudEvent);
@@ -284,8 +290,8 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("/")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("/").setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -295,8 +301,8 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Publish type CloudEvent is not valid when source is invalid and id invalid")
     void test_publish_type_cloudevent_is_not_valid_when_source_is_missing_authority() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId("testme")
-                .withSource(URI.create("/body.access")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId("testme")
+                .setSource("/body.access").setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -309,8 +315,8 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test Publish type CloudEvent is not valid when source is invalid missing message information")
     void test_publish_type_cloudevent_is_not_valid_when_source_is_missing_message_info() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId("testme")
-                .withSource(URI.create("/body.access/1/door.front_left")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId("testme")
+                .setSource("/body.access/1/door.front_left").setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -326,9 +332,9 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
-                .withExtension("sink", "//bo.cloud/petapp");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("/body.access/1/door.front_left#Door").setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+                .putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//bo.cloud/petapp").build());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -341,8 +347,8 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("/body.access/1/door.front_left#Door").setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -355,9 +361,10 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
-                .withExtension("sink", "//bo.cloud");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("/body.access/1/door.front_left#Door")
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+                .putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//bo.cloud").build());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -372,9 +379,10 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("//bo.cloud/petapp//rpc.response")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST))
-                .withExtension("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("//bo.cloud/petapp//rpc.response")
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST))
+                .putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//VCU.myvin/body.access/1/rpc.UpdateDoor").build());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -387,10 +395,10 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("//bo.cloud/petapp//dog"))
-                .withExtension("sink", "//VCU.myvin/body.access/1/rpc.UpdateDoor")
-                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("//bo.cloud/petapp//dog")
+                .putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//VCU.myvin/body.access/1/rpc.UpdateDoor").build())
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -406,8 +414,8 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("//bo.cloud/petapp//rpc.response")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("//bo.cloud/petapp//rpc.response").setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -422,9 +430,11 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("//bo.cloud/petapp//rpc.response")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST))
-                .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("//bo.cloud/petapp//rpc.response")
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST))
+                .putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//VCU.myvin/body.access/1/rpc.UpdateDoor").build());
+
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -440,9 +450,10 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("//VCU.myvin/body.access/1/rpc.UpdateDoor"))
-                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE)).withExtension("sink", "//bo.cloud/petapp//rpc.response");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("//VCU.myvin/body.access/1/rpc.UpdateDoor")
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
+                .putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//bo.cloud/petapp//rpc.response").build());
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -455,9 +466,10 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("//VCU.myvin/body.access/1/UpdateDoor"))
-                .withExtension("sink", "//bo.cloud/petapp//rpc.response").withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("//VCU.myvin/body.access/1/UpdateDoor")
+                .putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//bo.cloud/petapp//rpc.response").build())
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -473,9 +485,9 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("//VCU.myvin/body.access/1/UpdateDoor"))
-                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE));
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("//VCU.myvin/body.access/1/UpdateDoor")
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -492,9 +504,10 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE)).withSource(URI.create("//VCU.myvin"))
-                .withExtension("sink", "//bo.cloud");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE)).setSource("//VCU.myvin")
+                .putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//bo.cloud").build());
+
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -511,21 +524,23 @@ class CloudEventValidatorTest {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("//bo.cloud/petapp/1/dog")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
-                .withExtension("sink", "//VCU.myvin/body.access/1/UpdateDoor");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setId(str_uuid)
+                .setSource("//bo.cloud/petapp/1/dog")
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
+                .putAttributes("sink", CloudEventAttributeValue.newBuilder().setCeString("//VCU.myvin/body.access/1/rpc.UpdateDoor").build());
+                
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final ValidationResult result = validator.validate(cloudEvent);
         assertEquals(
                 "Invalid RPC Response CloudEvent source [//bo.cloud/petapp/1/dog]. Invalid RPC method uri. UriPart " +
                         "should be the method to be called, or method from response.," + "Invalid RPC Response " +
-                        "CloudEvent sink [//VCU.myvin/body.access/1/UpdateDoor]. " + "Invalid RPC uri application " +
+                        "CloudEvent sink [//VCU.myvin/body.access/1/rpc.UpdateDoor]. " + "Invalid RPC uri application " +
                         "response topic. UriPart is missing rpc.response.",
                 result.getMessage());
     }
 
-    private CloudEventBuilder buildBaseCloudEventBuilderForTest() {
+    private CloudEvent.Builder buildBaseCloudEventBuilderForTest() {
         // source
         String source = buildLongUriForTest();
 
@@ -540,9 +555,9 @@ class CloudEventValidatorTest {
                 .build();
 
         // build the cloud event
-        final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("testme", source,
-                protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
-        cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+        final CloudEvent.Builder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("testme", source,
+                protoPayload, uCloudEventAttributes);
+        cloudEventBuilder.setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
 
         return cloudEventBuilder;
     }
@@ -571,8 +586,8 @@ class CloudEventValidatorTest {
                 .build();
 
         // build the cloud event
-        final CloudEvent cloudEvent = CloudEventFactory.buildBaseCloudEvent(id, source, protoPayload.toByteArray(),
-                protoPayload.getTypeUrl(), attributes).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH)).build();
+        final CloudEvent cloudEvent = CloudEventFactory.buildBaseCloudEvent(id, source, protoPayload, attributes)
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH)).build();
 
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -597,8 +612,8 @@ class CloudEventValidatorTest {
                 .build();
 
         // build the cloud event
-        final CloudEvent cloudEvent = CloudEventFactory.buildBaseCloudEvent(id, source, protoPayload.toByteArray(),
-                protoPayload.getTypeUrl(), attributes).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH)).build();
+        final CloudEvent cloudEvent = CloudEventFactory.buildBaseCloudEvent(id, source, protoPayload, attributes)
+                .setType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH)).build();
 
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -620,7 +635,7 @@ class CloudEventValidatorTest {
     @Test
     @DisplayName("Test empty event type validator")
     void test_empty_event_type_validator() {
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType("");
+        CloudEvent.Builder builder = buildBaseCloudEventBuilderForTest().setType("");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
         final UStatus status = validator.validateType(cloudEvent).toStatus();
