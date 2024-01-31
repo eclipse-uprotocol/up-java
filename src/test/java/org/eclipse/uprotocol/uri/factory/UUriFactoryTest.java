@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.eclipse.uprotocol.core.usubscription.v3.USubscriptionProto;
 import org.eclipse.uprotocol.core.usubscription.v3.Update;
 import org.eclipse.uprotocol.core.usubscription.v3.Update.Resources;
-import org.eclipse.uprotocol.v1.UEntity;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,6 @@ public class UUriFactoryTest {
     public void test_build_valid_usubscription_uentity() {
         ServiceDescriptor descriptor = USubscriptionProto.getDescriptor().getServices().get(0);
         UUri uri = UUriFactory.fromProto(descriptor, 1000);
-        final String name = Resources.getDescriptor().getName();
 
         assertEquals(uri.getEntity().getName(), "core.usubscription");
         assertEquals(uri.getEntity().getId(), 0);
