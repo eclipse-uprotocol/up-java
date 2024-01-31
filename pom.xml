@@ -35,7 +35,7 @@
         <slf4j.version>2.6.18</slf4j.version>
         <cloudevents.version>2.4.2</cloudevents.version>
         <protobuf.version>3.21.10</protobuf.version>
-        <git.tag.name>uprotocol-core-api-1.5.5</git.tag.name>
+        <git.tag.name>uservice-topics</git.tag.name>
     </properties>
 
     <licenses>
