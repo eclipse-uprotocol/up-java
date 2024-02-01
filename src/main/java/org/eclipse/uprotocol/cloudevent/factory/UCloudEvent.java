@@ -123,6 +123,16 @@ public interface UCloudEvent {
     }
 
     /**
+     * Extract the string value of the trafceparent attribute from a cloud event. The traceparent attribute is optional.
+     * @param cloudEvent CloudEvent with traceparent to be extracted.
+     * @return Returns an Optional String value of a CloudEvent traceparent if it exists,
+     *      otherwise an Optional.empty() is returned.
+     */
+    static Optional<String> getTraceparent(CloudEvent cloudEvent) {
+        return extractStringValueFromExtension("traceparent", cloudEvent);
+    }
+    
+    /**
      * Extract the integer value of the communication status attribute from a cloud event. The communication status attribute is optional.
      * If there was a platform communication error that occurred while delivering this cloudEvent, it will be indicated in this attribute.
      * If the attribute does not exist, it is assumed that everything was UCode.OK_VALUE. <br>
@@ -382,6 +392,8 @@ public interface UCloudEvent {
         getTtl(event).ifPresent(builder::setTtl);
 
         getToken(event).ifPresent(builder::setToken);
+
+        getTraceparent(event).ifPresent(builder::setTraceparent);        
 
         Optional<Integer> permission_level = extractIntegerValueFromExtension("plevel", event);
         permission_level.ifPresent(builder::setPermissionLevel);
