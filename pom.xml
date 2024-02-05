@@ -35,7 +35,8 @@
         <slf4j.version>2.6.18</slf4j.version>
         <cloudevents.version>2.4.2</cloudevents.version>
         <protobuf.version>3.21.10</protobuf.version>
-        <git.tag.name>uprotocol-core-api-1.5.5</git.tag.name>
+        <git.up.repo.url>https://github.com/eclipse-uprotocol/up-core-api.git</git.up.repo.url>
+        <git.up.tag.name>uprotocol-core-api-1.5.5</git.up.tag.name>
     </properties>
 
     <licenses>
@@ -89,8 +90,8 @@
                             <arguments>
                                 <argument>clone</argument>
                                 <argument>--branch</argument>
-                                <argument>${git.tag.name}</argument>
-                                <argument>https://github.com/eclipse-uprotocol/up-core-api.git</argument>
+                                <argument>${git.up.tag.name}</argument>
+                                <argument>${git.up.repo.url}</argument>
                                 <argument>${project.build.directory}/up-core-api</argument>
                             </arguments>
                             <!-- Allow non-zero exit code (error) -->
@@ -112,7 +113,7 @@
                             <arguments>
                                 <argument>pull</argument>
                                 <argument>origin</argument>
-                                <argument>${git.tag.name}</argument>
+                                <argument>${git.up.tag.name}</argument>
                             </arguments>
                         </configuration>
                     </execution>

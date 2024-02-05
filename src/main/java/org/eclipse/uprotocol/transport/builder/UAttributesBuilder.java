@@ -44,6 +44,7 @@ public class UAttributesBuilder {
     private Integer plevel;
     private Integer commstatus;
     private UUID reqid;
+    private String traceparent;
 
 
     /**
@@ -191,6 +192,16 @@ public class UAttributesBuilder {
         return this;
     }
 
+    /**
+     * Add the traceprent.
+     *
+     * @param traceparent the trace parent.
+     * @return Returns the UAttributesBuilder with the configured traceparent.
+     */
+    public UAttributesBuilder withTraceparent(String traceparent) {
+        this.traceparent = traceparent;
+        return this;
+    }
     
     /**
      * Construct the UAttributes from the builder.
@@ -218,6 +229,9 @@ public class UAttributesBuilder {
         }
         if(token!=null){
             attributesBuilder.setToken(token);
+        }
+        if (traceparent!=null) {
+            attributesBuilder.setTraceparent(traceparent);
         }
         return attributesBuilder.build();
     }
