@@ -8,24 +8,9 @@ import org.eclipse.uprotocol.v1.*;
 public interface UListener {
 
     /**
-     * Method called to handle/process events.
-     * @param topic Topic the underlying source of the message.
-     * @param payload Payload of the message.
-     * @param attributes Transportation attributes
-     * @return Returns an Ack every time a message is received and processed.
-     */
-    void onReceive(UUri topic, UPayload payload, UAttributes attributes);
-
-    
-    /**
-     * Method called to handle/process events.
+     * Method called to handle/process messages.
      * @param message Message received.
      * @return Returns an Ack every time a message is received and processed.
      */
-    default void onReceive(UMessage message) {
-        if (message != null) {
-            onReceive(message.getSource(), message.getPayload(), message.getAttributes());
-        }
-    }
-
+    void onReceive(UMessage message);
 }
