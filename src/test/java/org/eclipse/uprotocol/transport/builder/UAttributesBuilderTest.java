@@ -46,7 +46,7 @@ public class UAttributesBuilderTest {
     @Test
     public void testNotification() {
         UUri sink = buildSink();
-        UAttributesBuilder builder = UAttributesBuilder.notification(buildSource(), UPriority.UPRIORITY_CS1, sink);
+        UAttributesBuilder builder = UAttributesBuilder.notification(buildSource(), sink, UPriority.UPRIORITY_CS1);
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
@@ -59,7 +59,7 @@ public class UAttributesBuilderTest {
     public void testRequest() {
         UUri sink = buildSink();
         Integer ttl = 1000;
-        UAttributesBuilder builder = UAttributesBuilder.request(buildSource(), UPriority.UPRIORITY_CS4, sink, ttl);
+        UAttributesBuilder builder = UAttributesBuilder.request(buildSource(), sink, UPriority.UPRIORITY_CS4, ttl);
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
@@ -73,7 +73,7 @@ public class UAttributesBuilderTest {
     public void testResponse() {
         UUri sink = buildSink();
         UUID reqId = getUUID();
-        UAttributesBuilder builder = UAttributesBuilder.response(buildSource(), UPriority.UPRIORITY_CS6, sink, reqId);
+        UAttributesBuilder builder = UAttributesBuilder.response(buildSource(), sink, UPriority.UPRIORITY_CS6, reqId);
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);

@@ -64,11 +64,11 @@ public class UAttributesBuilder {
     /**
      * Construct a UAttributesBuilder for a notification message.
      * @param source   Source address of the message.
-     * @param priority The priority of the message.
      * @param sink The destination URI.
+     * @param priority The priority of the message.
      * @return Returns the UAttributesBuilder with the configured priority and sink.
      */
-    public static UAttributesBuilder notification(UUri source, UPriority priority, UUri sink) {
+    public static UAttributesBuilder notification(UUri source, UUri sink, UPriority priority) {
         Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(priority, "UPriority cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
@@ -81,12 +81,12 @@ public class UAttributesBuilder {
     /**
      * Construct a UAttributesBuilder for a request message.
      * @param source   Source address of the message.
-     * @param priority The priority of the message.
      * @param sink The destination URI.
+     * @param priority The priority of the message.
      * @param ttl The time to live in milliseconds.
      * @return Returns the UAttributesBuilder with the configured priority, sink and ttl.
      */
-    public static UAttributesBuilder request(UUri source, UPriority priority, UUri sink, Integer ttl) {
+    public static UAttributesBuilder request(UUri source, UUri sink, UPriority priority, Integer ttl) {
         Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(priority, "UPriority cannot be null.");
         Objects.requireNonNull(ttl, "ttl cannot be null.");
@@ -100,12 +100,12 @@ public class UAttributesBuilder {
     /**
      * Construct a UAttributesBuilder for a response message.
      * @param source   Source address of the message.
-     * @param priority The priority of the message.
      * @param sink The destination URI.
+     * @param priority The priority of the message.
      * @param reqid The original request UUID used to correlate the response to the request.
      * @return Returns the UAttributesBuilder with the configured priority, sink and reqid.
      */
-    public static UAttributesBuilder response(UUri source, UPriority priority, UUri sink, UUID reqid) {
+    public static UAttributesBuilder response(UUri source, UUri sink, UPriority priority, UUID reqid) {
         Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(priority, "UPriority cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
