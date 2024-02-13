@@ -36,27 +36,11 @@ import org.eclipse.uprotocol.v1.*;
 public interface UTransport {
 
     /**
-     * Send a message (in parts) over the transport.
-     * @param source The source address for the message, (ex. publish topic, the return address 
-     * for rpc-request, or the rpc method for rpc response
-     * @param payload Actual message payload.
-     * @param attributes uProtocol header attributes.
-     * @return Returns {@link UStatus} with {@link UCode} set to the status code (successful or failure).
-     */
-    UStatus send(UUri source, UPayload payload, UAttributes attributes);
-
-
-    /**
      * Send a message over the transport.
      * @param message the {@link UMessage} to be sent.
      * @return Returns {@link UStatus} with {@link UCode} set to the status code (successful or failure).
      */
-    default UStatus send(UMessage message) {
-        if (message == null)  {
-            return UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).build();
-        }
-        return send(message.getSource(), message.getPayload(), message.getAttributes());
-    }
+    UStatus send(UMessage message);
 
     /**
      * Register {@code UListener} for {@code UUri} topic to be called when a message is received.

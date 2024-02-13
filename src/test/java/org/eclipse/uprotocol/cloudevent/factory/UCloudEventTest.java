@@ -741,12 +741,9 @@ class UCloudEventTest {
 
         assertNotNull(uMessage);
         CloudEvent cloudEvent1 = UCloudEvent.fromMessage(uMessage);
-        CloudEvent cloudEvent2 = UCloudEvent.fromMessageParts(uMessage.getSource(), uMessage.getAttributes(), uMessage.getPayload());
 
         assertNotNull(cloudEvent1);
-        assertNotNull(cloudEvent2);
         assertEquals(cloudEvent,cloudEvent1);
-        assertEquals(cloudEvent1,cloudEvent2);
     }
 
     @Test
@@ -773,17 +770,13 @@ class UCloudEventTest {
         assertEquals(UCloudEvent.getSink(cloudEvent).get(),
                 LongUriSerializer.instance().serialize(result.getAttributes().getSink()));
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
-        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getSource()));
+        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getAttributes().getSource()));
         assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getPriority(cloudEvent).get(),result.getAttributes().getPriority().name());
 
         final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
-        CloudEvent cloudEvent2 = UCloudEvent.fromMessageParts(result.getSource(), result.getAttributes(), result.getPayload());
-
         assertNotNull(cloudEvent1);
-        assertNotNull(cloudEvent2);
         assertEquals(cloudEvent,cloudEvent1);
-        assertEquals(cloudEvent1,cloudEvent2);
     }
 
     @Test
@@ -802,7 +795,7 @@ class UCloudEventTest {
         assertEquals(UCloudEvent.getSink(cloudEvent).get(),
                 LongUriSerializer.instance().serialize(result.getAttributes().getSink()));
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
-        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getSource()));
+        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getAttributes().getSource()));
         assertEquals(result.getAttributes().getPriority().getNumber(),0);
 
         final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
@@ -834,7 +827,7 @@ class UCloudEventTest {
         assertEquals(UCloudEvent.getSink(cloudEvent).get(),
                 LongUriSerializer.instance().serialize(result.getAttributes().getSink()));
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
-        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getSource()));
+        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getAttributes().getSource()));
         assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getPriority(cloudEvent).get(), result.getAttributes().getPriority().name());
 

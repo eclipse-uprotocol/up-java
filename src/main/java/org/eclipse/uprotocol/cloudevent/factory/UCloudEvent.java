@@ -371,14 +371,15 @@ public interface UCloudEvent {
      */
     static UMessage toMessage(CloudEvent event) {
         Objects.requireNonNull(event);
-        UUri source = LongUriSerializer.instance().deserialize(getSource(event));
 
         UPayload payload = UPayload.newBuilder().setFormat(getUPayloadFormatFromContentType(event.getDataContentType()))
                 .setValue(getPayload(event).toByteString()).build();
 
         UAttributes.Builder builder =
-                UAttributes.newBuilder().setId(LongUuidSerializer.instance().deserialize(event.getId()))
-                        .setType(getMessageType(event.getType()));
+                UAttributes.newBuilder()
+                    .setSource(LongUriSerializer.instance().deserialize(getSource(event)))
+                    .setId(LongUuidSerializer.instance().deserialize(event.getId()))
+                    .setType(getMessageType(event.getType()));
 
         if (hasCommunicationStatusProblem(event)) {
             builder.setCommstatus(getCommunicationStatus(event));
@@ -400,7 +401,7 @@ public interface UCloudEvent {
 
         UAttributes attributes = builder.build();
 
-        return UMessage.newBuilder().setAttributes(attributes).setPayload(payload).setSource(source).build();
+        return UMessage.newBuilder().setAttributes(attributes).setPayload(payload).build();
 
     }
 
@@ -414,30 +415,19 @@ public interface UCloudEvent {
      * @return returns the cloud event
      */
     static CloudEvent fromMessage(UMessage message) {
-        return fromMessageParts(message.getSource(), message.getAttributes(), message.getPayload());
-    }
+        if (message == null) {
+            return CloudEventBuilder.v1().build();
+        }
 
-
-    /**
-     * Get the Cloudevent from the UMessage Parts (UUri, UAttributes, and UPayload) <br>
-     * <b>Note: For now, only the value format of UPayload is supported in the SDK.If the UPayload has a reference, it
-     * needs to be copied to CloudEvent.</b>
-     * @param source The UUri source address for the message
-     * @param attributes The UMessage attributes
-     * @param payload The UMessage payload
-     * @return returns the cloud event from message parts
-     */
-    static CloudEvent fromMessageParts(UUri source, UAttributes attributes, UPayload payload) {
-        source = Objects.requireNonNullElse(source, UUri.getDefaultInstance());
-        attributes = Objects.requireNonNullElse(attributes, UAttributes.getDefaultInstance());
-        payload = Objects.requireNonNullElse(payload, UPayload.getDefaultInstance());
+        UAttributes attributes = Objects.requireNonNullElse(message.getAttributes(), UAttributes.getDefaultInstance());
+        UPayload payload = Objects.requireNonNullElse(message.getPayload(), UPayload.getDefaultInstance());
 
         CloudEventBuilder cloudEventBuilder =
                 CloudEventBuilder.v1().withId(LongUuidSerializer.instance().serialize(attributes.getId()));
 
         cloudEventBuilder.withType(getEventType(attributes.getType()));
 
-        cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(source)));
+        cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(attributes.getSource())));
 
         final String contentType = getContentTypeFromUPayloadFormat(payload.getFormat());
         if(!contentType.isEmpty()){

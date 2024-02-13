@@ -35,6 +35,7 @@ import java.util.Objects;
  */
 public class UAttributesBuilder {
 
+    private final UUri source;
     private final UUID id;
     private final UMessageType type;
     private final UPriority priority;
@@ -49,61 +50,69 @@ public class UAttributesBuilder {
 
     /**
      * Construct a UAttributesBuilder for a publish message.
+     * @param source   Source address of the message.
      * @param priority The priority of the message.
      * @return Returns the UAttributesBuilder with the configured priority.
      */
-    public static UAttributesBuilder publish(UPriority priority) {
+    public static UAttributesBuilder publish(UUri source, UPriority priority) {
+        Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(priority, "UPriority cannot be null.");
-        return new UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(), 
+        return new UAttributesBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(), 
         UMessageType.UMESSAGE_TYPE_PUBLISH, priority);
     }
 
 
     /**
      * Construct a UAttributesBuilder for a notification message.
-     * @param priority The priority of the message.
+     * @param source   Source address of the message.
      * @param sink The destination URI.
+     * @param priority The priority of the message.
      * @return Returns the UAttributesBuilder with the configured priority and sink.
      */
-    public static UAttributesBuilder notification(UPriority priority, UUri sink) {
+    public static UAttributesBuilder notification(UUri source, UUri sink, UPriority priority) {
+        Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(priority, "UPriority cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
 
-        return new UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(), 
+        return new UAttributesBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(), 
         UMessageType.UMESSAGE_TYPE_PUBLISH, priority).withSink(sink);
     }
     
 
     /**
      * Construct a UAttributesBuilder for a request message.
-     * @param priority The priority of the message.
+     * @param source   Source address of the message.
      * @param sink The destination URI.
+     * @param priority The priority of the message.
      * @param ttl The time to live in milliseconds.
      * @return Returns the UAttributesBuilder with the configured priority, sink and ttl.
      */
-    public static UAttributesBuilder request(UPriority priority, UUri sink, Integer ttl) {
+    public static UAttributesBuilder request(UUri source, UUri sink, UPriority priority, Integer ttl) {
+        Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(priority, "UPriority cannot be null.");
         Objects.requireNonNull(ttl, "ttl cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
         
-        return new UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(), 
+        return new UAttributesBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(), 
         UMessageType.UMESSAGE_TYPE_REQUEST, priority).withTtl(ttl).withSink(sink);
     }
 
 
     /**
      * Construct a UAttributesBuilder for a response message.
-     * @param priority The priority of the message.
+     * @param source   Source address of the message.
      * @param sink The destination URI.
+     * @param priority The priority of the message.
      * @param reqid The original request UUID used to correlate the response to the request.
      * @return Returns the UAttributesBuilder with the configured priority, sink and reqid.
      */
-    public static UAttributesBuilder response(UPriority priority, UUri sink, UUID reqid) {
+    public static UAttributesBuilder response(UUri source, UUri sink, UPriority priority, UUID reqid) {
+        Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(priority, "UPriority cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
         Objects.requireNonNull(reqid, "reqid cannot be null.");
         
-        return new UAttributesBuilder(UuidFactory.Factories.UPROTOCOL.factory().create(), 
+        return new UAttributesBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(), 
         UMessageType.UMESSAGE_TYPE_RESPONSE, priority).withSink(sink).withReqId(reqid);
     }
 
@@ -111,11 +120,13 @@ public class UAttributesBuilder {
     /**
      * Construct the UAttributesBuilder with the configurations that are required for every payload transport.
      *
+     * @param source   Source address of the message.
      * @param id       Unique identifier for the message.
      * @param type     Message type such as Publish a state change, RPC request or RPC response.
      * @param priority uProtocol Prioritization classifications.
      */
-    private UAttributesBuilder(UUID id, UMessageType type, UPriority priority) {
+    private UAttributesBuilder(UUri source, UUID id, UMessageType type, UPriority priority) {
+        this.source = source;
         this.id = id;
         this.type = type;
         this.priority = priority;
@@ -209,7 +220,11 @@ public class UAttributesBuilder {
      * @return Returns a constructed
      */
     public UAttributes build() {
-        UAttributes.Builder attributesBuilder = UAttributes.newBuilder().setId(id).setType(type).setPriority(priority);
+        UAttributes.Builder attributesBuilder = UAttributes.newBuilder()
+                .setSource(source)
+                .setId(id)
+                .setType(type)
+                .setPriority(priority);
 
         if(sink!=null){
             attributesBuilder.setSink(sink);

@@ -45,10 +45,7 @@ public class UTransportTest {
     public void test_happy_send_message_parts() {
         UTransport transport = new HappyUTransport();
 
-        UStatus status = transport.send(
-                UUri.getDefaultInstance(), 
-                UPayload.getDefaultInstance(),
-                UAttributes.getDefaultInstance());
+        UStatus status = transport.send(UMessage.getDefaultInstance());
 
         assertEquals(status.getCode(), UCode.OK);
     }
@@ -91,10 +88,7 @@ public class UTransportTest {
     public void test_unhappy_send_message_parts() {
         UTransport transport = new SadUTransport();
 
-        UStatus status = transport.send(
-                UUri.getDefaultInstance(), 
-                UPayload.getDefaultInstance(),
-                UAttributes.getDefaultInstance());
+        UStatus status = transport.send(UMessage.getDefaultInstance());
 
         assertEquals(status.getCode(), UCode.INTERNAL);
     }
@@ -125,13 +119,13 @@ public class UTransportTest {
 
     final class MyListener implements UListener {
         @Override
-        public void onReceive(UUri topic, UPayload payload, UAttributes attributes) {}
+        public void onReceive(UMessage message) {}
     }
 
     private class HappyUTransport implements UTransport {
         @Override
-        public UStatus send(UUri source, UPayload payload, UAttributes attributes) {
-            return UStatus.newBuilder().setCode(UCode.OK).build();
+        public UStatus send(UMessage message) {
+            return UStatus.newBuilder().setCode((message == null) ? UCode.INVALID_ARGUMENT : UCode.OK).build();
         }
 
 
@@ -149,7 +143,7 @@ public class UTransportTest {
 
     private class SadUTransport implements UTransport {
         @Override
-        public UStatus send(UUri source, UPayload payload, UAttributes attributes) {
+        public UStatus send(UMessage message) {
             return UStatus.newBuilder().setCode(UCode.INTERNAL).build();
         }
 
