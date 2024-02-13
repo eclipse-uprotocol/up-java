@@ -35,7 +35,7 @@ public class UAttributesBuilderTest {
 
     @Test
     public void testPublish() {
-        UAttributesBuilder builder = UAttributesBuilder.publish(UPriority.UPRIORITY_CS1);
+        UAttributesBuilder builder = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS1);
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
@@ -46,7 +46,7 @@ public class UAttributesBuilderTest {
     @Test
     public void testNotification() {
         UUri sink = buildSink();
-        UAttributesBuilder builder = UAttributesBuilder.notification(UPriority.UPRIORITY_CS1, sink);
+        UAttributesBuilder builder = UAttributesBuilder.notification(buildSource(), sink, UPriority.UPRIORITY_CS1);
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
@@ -59,7 +59,7 @@ public class UAttributesBuilderTest {
     public void testRequest() {
         UUri sink = buildSink();
         Integer ttl = 1000;
-        UAttributesBuilder builder = UAttributesBuilder.request(UPriority.UPRIORITY_CS4, sink, ttl);
+        UAttributesBuilder builder = UAttributesBuilder.request(buildSource(), sink, UPriority.UPRIORITY_CS4, ttl);
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
@@ -73,7 +73,7 @@ public class UAttributesBuilderTest {
     public void testResponse() {
         UUri sink = buildSink();
         UUID reqId = getUUID();
-        UAttributesBuilder builder = UAttributesBuilder.response(UPriority.UPRIORITY_CS6, sink, reqId);
+        UAttributesBuilder builder = UAttributesBuilder.response(buildSource(), sink, UPriority.UPRIORITY_CS6, reqId);
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
@@ -86,7 +86,7 @@ public class UAttributesBuilderTest {
     @Test
     public void testBuild() {
         final UUID reqId = getUUID();
-        UAttributesBuilder builder = UAttributesBuilder.publish(UPriority.UPRIORITY_CS1).withTtl(1000).withToken("test_token")
+        UAttributesBuilder builder = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS1).withTtl(1000).withToken("test_token")
                 .withSink(buildSink()).withPermissionLevel(2).withCommStatus(1).withReqId(reqId);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
@@ -110,5 +110,11 @@ public class UAttributesBuilderTest {
         java.util.UUID uuid_java = java.util.UUID.randomUUID();
         return UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits()).setLsb(uuid_java.getLeastSignificantBits())
                 .build();
+    }
+
+    private UUri buildSource() {
+        return UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setName("hartley_app").setVersionMajor(1))
+                .setResource(UResourceBuilder.forRpcResponse()).build();
     }
 }
