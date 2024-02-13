@@ -89,8 +89,8 @@
                             <arguments>
                                 <argument>clone</argument>
                                 <argument>--branch</argument>
-                                <argument>${git.up.tag.name}</argument>
-                                <argument>${git.up.repo.url}</argument>
+                                <argument>${git.tag.name}</argument>
+                                <argument>https://github.com/eclipse-uprotocol/up-core-api.git</argument>
                                 <argument>${project.build.directory}/up-core-api</argument>
                             </arguments>
                             <!-- Allow non-zero exit code (error) -->
@@ -112,7 +112,7 @@
                             <arguments>
                                 <argument>pull</argument>
                                 <argument>origin</argument>
-                                <argument>${git.up.tag.name}</argument>
+                                <argument>${git.tag.name}</argument>
                             </arguments>
                         </configuration>
                     </execution>
