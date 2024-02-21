@@ -32,6 +32,8 @@ import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.DescriptorProtos.EnumValueOptions;
+import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 
 import io.cloudevents.CloudEvent;
@@ -334,17 +336,8 @@ public interface UCloudEvent {
      * @param type The UMessageType
      * @return returns the string representation of the UMessageType
      */
-    static String getEventType(UMessageType type){
-        switch (type){
-            case UMESSAGE_TYPE_PUBLISH:
-                return "pub.v1";
-            case UMESSAGE_TYPE_REQUEST:
-                return "req.v1";
-            case UMESSAGE_TYPE_RESPONSE:
-                return "res.v1";
-            default:
-                return "";
-        }
+    static String getEventType(UMessageType type) {
+        return getCeName(type.getValueDescriptor());
     }
 
     /**
@@ -353,17 +346,14 @@ public interface UCloudEvent {
      * @return returns the UMessageType
      */
     static UMessageType getMessageType(String ce_type){
-        switch (ce_type){
-            case "pub.v1":
-                return UMessageType.UMESSAGE_TYPE_PUBLISH;
-            case "req.v1":
-                return UMessageType.UMESSAGE_TYPE_REQUEST;
-            case "res.v1":
-                return UMessageType.UMESSAGE_TYPE_RESPONSE;
-            default:
-                return UMessageType.UMESSAGE_TYPE_UNSPECIFIED;
-        }
+        return UMessageType.getDescriptor().getValues().stream()
+            .filter(v -> v.getOptions().hasExtension(UprotocolOptions.ceName) &&
+                v.getOptions().getExtension(UprotocolOptions.ceName).equals(ce_type))
+            .map(v -> UMessageType.forNumber(v.getNumber()))
+            .findFirst()
+            .orElse(UMessageType.UNRECOGNIZED);
     }
+
     /**
      * Get the UMessage from the cloud event
      * @param event The CloudEvent containing the data.
@@ -384,7 +374,13 @@ public interface UCloudEvent {
         if (hasCommunicationStatusProblem(event)) {
             builder.setCommstatus(getCommunicationStatus(event));
         }
-        getPriority(event).map(p -> p.startsWith("UPRIORITY_") ? p : "UPRIORITY_" + p).map(UPriority::valueOf).ifPresent(builder::setPriority);
+        getPriority(event).map(p -> UPriority.getDescriptor().getValues().stream()
+                .filter(v -> v.getOptions().hasExtension(UprotocolOptions.ceName) &&
+                v.getOptions().getExtension(UprotocolOptions.ceName).equals(p))
+                .map(v -> UPriority.forNumber(v.getNumber()))
+                .findFirst()
+                .orElse(UPriority.UNRECOGNIZED)
+                ).ifPresent(builder::setPriority);
 
         getSink(event).map(LongUriSerializer.instance()::deserialize).ifPresent(builder::setSink);
 
@@ -495,6 +491,17 @@ public interface UCloudEvent {
             return "";
         }
         return format.getValueDescriptor().getOptions().<String>getExtension(UprotocolOptions.mimeType);
+    }
+
+
+    /**
+     * Retrieves the string representation of the data content type based on the provided Enum value descriptor. <BR>
+     *
+     * @param descriptor The EnumDescriptor enumeration representing the payload format.
+     * @return The corresponding string name for the value.
+     */
+    static String getCeName(EnumValueDescriptor descriptor) {
+        return descriptor.getOptions().<String>getExtension(UprotocolOptions.ceName);
     }
 
 }

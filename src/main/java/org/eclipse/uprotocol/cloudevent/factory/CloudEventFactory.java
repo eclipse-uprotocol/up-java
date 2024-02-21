@@ -38,6 +38,7 @@ import org.eclipse.uprotocol.v1.UUri;
 
 import java.net.URI;
 
+
 /**
  * A factory is a part of the software has methods to generate concrete objects, usually of the same type or interface.<br>
  * CloudEvents is a specification for describing events in a common way. We will use CloudEvents
@@ -171,6 +172,7 @@ public interface CloudEventFactory {
      * @return Returns a CloudEventBuilder that can be additionally configured and then by calling .build() construct a CloudEvent
      * ready to be serialized and sent to the transport layer.
      */
+    @SuppressWarnings("null")
     static CloudEventBuilder buildBaseCloudEvent(String id, String source,
                                                  byte[] protoPayloadBytes,
                                                  String protoPayloadSchema,
@@ -186,7 +188,7 @@ public interface CloudEventFactory {
 
         attributes.ttl().ifPresent(ttl -> cloudEventBuilder.withExtension("ttl", ttl));
         attributes.priority().ifPresent(priority -> cloudEventBuilder.withExtension("priority",
-                priority.name()));
+                UCloudEvent.getCeName(priority.getValueDescriptor())));
         attributes.hash().ifPresent(hash -> cloudEventBuilder.withExtension("hash", hash));
         attributes.token().ifPresent(token -> cloudEventBuilder.withExtension("token", token));
 
