@@ -77,7 +77,7 @@ public abstract class UAttributesValidator {
     public ValidationResult validate(UAttributes attributes) {
         final String errorMessage = Stream.of(validateType(attributes),
                          validateTtl(attributes), validateSink(attributes),
-                        validateCommStatus(attributes), validatePermissionLevel(attributes), validateReqId(attributes))
+                         validatePermissionLevel(attributes), validateReqId(attributes))
                 .filter(ValidationResult::isFailure).map(ValidationResult::getMessage).collect(Collectors.joining(","));
         return errorMessage.isBlank() ? ValidationResult.success() : ValidationResult.failure(errorMessage);
     }
@@ -151,31 +151,7 @@ public abstract class UAttributesValidator {
         }
     }
 
-    /**
-     * Validate the commStatus for the default case. If the UAttributes does not contain a comm status then the
-     * ValidationResult is ok.
-     *
-     * @param attributes UAttributes object containing the comm status to validate.
-     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
-     */
-    public ValidationResult validateCommStatus(UAttributes attributes) {
-        {
-            if (attributes.hasCommstatus()) {
-
-                Optional<UCode> enumValue = Optional.ofNullable(UCode.forNumber(attributes.getCommstatus()));
-                if (enumValue.isPresent()) {
-                    return ValidationResult.success();
-
-                } else {
-                    return ValidationResult.failure("Invalid Communication Status Code");
-                }
-
-            }
-
-            return ValidationResult.success();
-        }
-    }
-
+    
     /**
      * Validate the correlationId for the default case. If the UAttributes does not contain a request id then the
      * ValidationResult is ok.

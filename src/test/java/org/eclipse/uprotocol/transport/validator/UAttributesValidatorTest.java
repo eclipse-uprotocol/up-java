@@ -75,7 +75,7 @@ class UAttributesValidatorTest {
     @DisplayName("Validate a UAttributes for payload that is meant to be published with all values")
     public void test_validate_uAttributes_for_publish_message_payload_all_values() {
         final UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS0).withTtl(1000).withSink(buildSink())
-                .withPermissionLevel(2).withCommStatus(3).withReqId(UuidFactory.Factories.UPROTOCOL.factory().create())
+                .withPermissionLevel(2).withCommStatus(UCode.INVALID_ARGUMENT).withReqId(UuidFactory.Factories.UPROTOCOL.factory().create())
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
@@ -130,17 +130,7 @@ class UAttributesValidatorTest {
         assertEquals("Invalid Permission Level", status.getMessage());
     }
 
-    @Test
-    @DisplayName("Validate a UAttributes for payload that is meant to be published with invalid communication status")
-    public void test_validate_uAttributes_for_publish_message_payload_invalid_communication_status() {
-        final UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS0).withCommStatus(-42).build();
-
-        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final ValidationResult status = validator.validate(attributes);
-        assertTrue(status.isFailure());
-        assertEquals("Invalid Communication Status Code", status.getMessage());
-    }
-
+    
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be published with invalid request id")
     public void test_validate_uAttributes_for_publish_message_payload_invalid_request_id() {
@@ -173,7 +163,7 @@ class UAttributesValidatorTest {
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with all values")
     public void test_validate_uAttributes_for_rpc_request_message_payload_all_values() {
         final UAttributes attributes = UAttributesBuilder.request(buildSource(), buildSink(), UPriority.UPRIORITY_CS4, 1000)
-                .withPermissionLevel(2).withCommStatus(3).withReqId(UuidFactory.Factories.UPROTOCOL.factory().create())
+                .withPermissionLevel(2).withCommStatus(UCode.INVALID_ARGUMENT).withReqId(UuidFactory.Factories.UPROTOCOL.factory().create())
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
@@ -232,18 +222,7 @@ class UAttributesValidatorTest {
         assertEquals("Invalid Permission Level", status.getMessage());
     }
 
-    @Test
-    @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid communication " + "status")
-    public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_communication_status() {
-        final UAttributes attributes = UAttributesBuilder.request(buildSource(), buildSink(), UPriority.UPRIORITY_CS4, 1000).withCommStatus(-42)
-                .build();
-
-        final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final ValidationResult status = validator.validate(attributes);
-        assertTrue(status.isFailure());
-        assertEquals("Invalid Communication Status Code", status.getMessage());
-    }
-
+   
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid request id")
     public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_request_id() {
@@ -277,7 +256,7 @@ class UAttributesValidatorTest {
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with all values")
     public void test_validate_uAttributes_for_rpc_response_message_payload_all_values() {
         final UAttributes attributes = UAttributesBuilder.response(buildSource(), buildSink(), UPriority.UPRIORITY_CS4,
-                UuidFactory.Factories.UPROTOCOL.factory().create()).withPermissionLevel(2).withCommStatus(3).build();
+                UuidFactory.Factories.UPROTOCOL.factory().create()).withPermissionLevel(2).withCommStatus(UCode.INVALID_ARGUMENT).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
         final ValidationResult status = validator.validate(attributes);
@@ -335,17 +314,6 @@ class UAttributesValidatorTest {
         assertEquals("Invalid Permission Level", status.getMessage());
     }
 
-    @Test
-    @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with invalid communication " + "status")
-    public void test_validate_uAttributes_for_rpc_response_message_payload_invalid_communication_status() {
-        final UAttributes attributes = UAttributesBuilder.response(buildSource(), buildSink(), UPriority.UPRIORITY_CS4,
-                UuidFactory.Factories.UPROTOCOL.factory().create()).withCommStatus(-42).build();
-
-        final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final ValidationResult status = validator.validate(attributes);
-        assertTrue(status.isFailure());
-        assertEquals("Invalid Communication Status Code", status.getMessage());
-    }
 
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with missing request id")
@@ -533,30 +501,6 @@ class UAttributesValidatorTest {
         final ValidationResult status = validator.validatePermissionLevel(attributes);
         assertTrue(status.isFailure());
         assertEquals("Invalid Permission Level", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("test validating invalid commstatus attribute")
-    public void test_validating_invalid_commstatus_attribute() {
-
-        final UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS0).withCommStatus(100).build();
-
-        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final ValidationResult status = validator.validateCommStatus(attributes);
-        assertTrue(status.isFailure());
-        assertEquals("Invalid Communication Status Code", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("test validating valid commstatus attribute")
-    public void test_validating_valid_commstatus_attribute() {
-
-        final UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS0).withCommStatus(UCode.ABORTED_VALUE)
-                .build();
-
-        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final ValidationResult status = validator.validateCommStatus(attributes);
-        assertEquals(ValidationResult.success(), status);
     }
 
 

@@ -24,100 +24,85 @@
 
 package org.eclipse.uprotocol.rpc;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import org.eclipse.uprotocol.v1.CallOptions;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CallOptionsTest {
 
     @Test
-    @DisplayName("Make sure the equals and hash code works")
-    public void testHashCodeEquals() {
-        EqualsVerifier.forClass(CallOptions.class).usingGetClass().verify();
-    }
-
-    @Test
     @DisplayName("Make sure the toString works")
     public void testToString() {
         final CallOptions callOptions = CallOptions.newBuilder()
-                .withTimeout(30)
-                .withToken("someToken")
+                .setTtl(30)
+                .setToken("someToken")
                 .build();
-        String expected = "CallOptions{mTimeout=30, mToken='someToken'}";
-        assertEquals(expected, callOptions.toString());
+        assertEquals(30, callOptions.getTtl());
+        assertEquals("someToken", callOptions.getToken());
     }
 
-    @Test
-    @DisplayName("Test using the DEFAULT CallOptions")
-    public void testCreatingCallOptionsDEFAULT() {
-        CallOptions callOptions = CallOptions.DEFAULT;
-        assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout());
-        assertTrue(callOptions.token().isEmpty());
-    }
-
+   
     @Test
     @DisplayName("Test creating CallOptions with only a token")
     public void testCreatingCallOptionsWithAToken() {
         final CallOptions callOptions = CallOptions.newBuilder()
-                .withToken("someToken")
+                .setToken("someToken")
                 .build();
-        assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout());
-        assertTrue(callOptions.token().isPresent());
-        String token = callOptions.token().get();
+
+        assertTrue(callOptions.hasToken());
+        String token = callOptions.getToken();
         assertEquals("someToken", token);
     }
 
     @Test
-    @DisplayName("Test creating CallOptions with a null token")
-    public void testCreatingCallOptionsWithANullToken() {
+    @DisplayName("Test creating CallOptions without token")
+    public void testCreatingCallOptionsWithoutToken() {
         final CallOptions callOptions = CallOptions.newBuilder()
-                .withToken(null)
                 .build();
-        assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout());
-        assertTrue(callOptions.token().isEmpty());
+        assertFalse(callOptions.hasToken());
     }
 
     @Test
     @DisplayName("Test creating CallOptions with only an empty string token")
     public void testCreatingCallOptionsWithAnEmptyStringToken() {
         final CallOptions callOptions = CallOptions.newBuilder()
-                .withToken("")
+                .setToken("")
                 .build();
-        assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout());
-        assertTrue(callOptions.token().isEmpty());
+            assertTrue(callOptions.getToken().isEmpty());
     }
 
     @Test
     @DisplayName("Test creating CallOptions with only a token with only spaces")
     public void testCreatingCallOptionsWithATokenWithOnlySpaces() {
         final CallOptions callOptions = CallOptions.newBuilder()
-                .withToken("   ")
+                .setToken("   ")
                 .build();
-        assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout());
-        assertTrue(callOptions.token().isEmpty());
+        assertTrue(callOptions.getToken().isBlank());
     }
 
     @Test
     @DisplayName("Test creating CallOptions with only a timeout")
     public void testCreatingCallOptionsWithATimeout() {
         final CallOptions callOptions = CallOptions.newBuilder()
-                .withTimeout(30)
+                .setTtl(30)
                 .build();
-        assertEquals(30, callOptions.timeout());
-        assertTrue(callOptions.token().isEmpty());
+        assertEquals(30, callOptions.getTtl());
+        assertTrue(callOptions.getToken().isEmpty());
     }
 
     @Test
-    @DisplayName("Test creating CallOptions with a negative value timeout, expect the default timeout")
+    @DisplayName("Test creating empty CallOptions ")
     public void testCreatingCallOptionsWithANegativeTimeout() {
         final CallOptions callOptions = CallOptions.newBuilder()
-                .withTimeout(-3)
                 .build();
-        assertEquals(CallOptions.TIMEOUT_DEFAULT, callOptions.timeout());
-        assertTrue(callOptions.token().isEmpty());
+        
+         assertFalse(callOptions.hasToken());
+         assertFalse(callOptions.hasTtl());
     }
 
 }

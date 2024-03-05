@@ -88,7 +88,7 @@ public class UAttributesBuilderTest {
         final UUID reqId = getUUID();
 
         UAttributesBuilder builder = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS1).withTtl(1000).withToken("test_token")
-                .withSink(buildSink()).withPermissionLevel(2).withCommStatus(1).withReqId(reqId).withTraceparent("myParents");
+                .withSink(buildSink()).withPermissionLevel(2).withCommStatus(UCode.CANCELLED).withReqId(reqId).withTraceparent("myParents");
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
         assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.getType());
@@ -97,7 +97,7 @@ public class UAttributesBuilderTest {
         assertEquals("test_token", attributes.getToken());
         assertEquals(buildSink(), attributes.getSink());
         assertEquals(2, attributes.getPermissionLevel());
-        assertEquals(1, attributes.getCommstatus());
+        assertEquals(UCode.CANCELLED, attributes.getCommstatus());
         assertEquals(reqId, attributes.getReqid());
         assertEquals("myParents", attributes.getTraceparent());
     }

@@ -213,7 +213,7 @@ class UCloudEventTest {
         CloudEvent cloudEvent = builder.build();
 
         assertTrue(UCloudEvent.hasCommunicationStatusProblem(cloudEvent));
-        assertEquals(10, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.ABORTED, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -225,7 +225,7 @@ class UCloudEventTest {
         CloudEvent cloudEvent = builder.build();
 
         assertFalse(UCloudEvent.hasCommunicationStatusProblem(cloudEvent));
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -237,7 +237,7 @@ class UCloudEventTest {
         CloudEvent cloudEvent = builder.build();
 
         assertFalse(UCloudEvent.hasCommunicationStatusProblem(cloudEvent));
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -249,8 +249,7 @@ class UCloudEventTest {
 
         CloudEvent cloudEvent = builder.build();
 
-        final Integer communicationStatus = UCloudEvent.getCommunicationStatus(cloudEvent);
-        assertEquals(3, communicationStatus);
+        assertEquals(UCode.INVALID_ARGUMENT, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -260,8 +259,7 @@ class UCloudEventTest {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest();
         CloudEvent cloudEvent = builder.build();
 
-        final Integer communicationStatus = UCloudEvent.getCommunicationStatus(cloudEvent);
-        assertEquals(UCode.OK_VALUE, communicationStatus);
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -270,12 +268,12 @@ class UCloudEventTest {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest();
         CloudEvent cloudEvent = builder.build();
 
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
 
         CloudEvent cloudEvent1 = UCloudEvent.addCommunicationStatus(cloudEvent, UCode.DEADLINE_EXCEEDED_VALUE);
 
-        assertEquals(4, UCloudEvent.getCommunicationStatus(cloudEvent1));
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.DEADLINE_EXCEEDED, UCloudEvent.getCommunicationStatus(cloudEvent1));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -284,11 +282,11 @@ class UCloudEventTest {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest();
         CloudEvent cloudEvent = builder.build();
 
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
 
         CloudEvent cloudEvent1 = UCloudEvent.addCommunicationStatus(cloudEvent, null);
 
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
 
         assertEquals(cloudEvent, cloudEvent1);
     }
@@ -852,7 +850,7 @@ class UCloudEventTest {
         CloudEvent cloudEvent = cloudEventBuilder.build();
         UMessage result = UCloudEvent.toMessage(cloudEvent);
         assertNotNull(result);
-        assertEquals(10, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.ABORTED, UCloudEvent.getCommunicationStatus(cloudEvent));
         assertEquals(2, result.getAttributes().getPermissionLevel());
 
         CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);

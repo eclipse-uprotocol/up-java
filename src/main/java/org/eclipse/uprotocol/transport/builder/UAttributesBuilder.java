@@ -43,7 +43,7 @@ public class UAttributesBuilder {
     private String token;
     private UUri sink;
     private Integer plevel;
-    private Integer commstatus;
+    private UCode commstatus;
     private UUID reqid;
     private String traceparent;
 
@@ -186,7 +186,7 @@ public class UAttributesBuilder {
      * @param commstatus the communication status of the message.
      * @return Returns the UAttributesBuilder with the configured commstatus.
      */
-    public UAttributesBuilder withCommStatus(Integer commstatus) {
+    public UAttributesBuilder withCommStatus(UCode commstatus) {
         this.commstatus = commstatus;
         return this;
     }

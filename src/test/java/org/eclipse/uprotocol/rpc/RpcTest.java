@@ -147,7 +147,7 @@ class RpcTest {
 
     private static CallOptions buildCallOptions() {
         return CallOptions.newBuilder()
-                .withTimeout(1000)
+                .setTtl(1000)
                 .build();
 
     }
