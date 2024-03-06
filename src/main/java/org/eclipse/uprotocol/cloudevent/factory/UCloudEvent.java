@@ -341,6 +341,29 @@ public interface UCloudEvent {
     }
 
     /**
+     * Get the string representation of the UPriority
+     * @param priority
+     * @return returns the string representation of the UPriority
+     */
+    static String getCePriority(UPriority priority) {
+        return getCeName(priority.getValueDescriptor());
+    }
+
+    /**
+     * Get the UPriority from the string name
+     * @param priority
+     * @return returns the UPriority
+     */
+    static UPriority getUPriority(String ce_priority) {
+        return UPriority.getDescriptor().getValues().stream()
+            .filter(v -> v.getOptions().hasExtension(UprotocolOptions.ceName) &&
+                v.getOptions().getExtension(UprotocolOptions.ceName).equals(ce_priority))
+            .map(v -> UPriority.forNumber(v.getNumber()))
+            .findFirst()
+            .orElse(UPriority.UNRECOGNIZED);
+    }
+
+    /**
      * Get the UMessageType from the string representation
      * @param ce_type The string representation of the UMessageType
      * @return returns the UMessageType
@@ -440,7 +463,7 @@ public interface UCloudEvent {
             cloudEventBuilder.withExtension("token",attributes.getToken());
 
         if(attributes.getPriorityValue()>0)
-            cloudEventBuilder.withExtension("priority",attributes.getPriority().name());
+            cloudEventBuilder.withExtension("priority", UCloudEvent.getCePriority(attributes.getPriority()));
 
         if(attributes.hasSink())
             cloudEventBuilder.withExtension("sink",
