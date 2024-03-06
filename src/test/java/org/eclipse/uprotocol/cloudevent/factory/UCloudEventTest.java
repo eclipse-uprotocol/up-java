@@ -159,6 +159,9 @@ class UCloudEventTest {
 
         final Optional<String> priority = UCloudEvent.getPriority(cloudEvent);
         assertTrue(priority.isEmpty());
+
+        UMessage message = UCloudEvent.toMessage(cloudEvent);
+        assertEquals(message.getAttributes().getPriority(), UPriority.UPRIORITY_UNSPECIFIED);
     }
 
     @Test

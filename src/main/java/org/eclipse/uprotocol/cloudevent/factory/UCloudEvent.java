@@ -402,7 +402,7 @@ public interface UCloudEvent {
                 v.getOptions().getExtension(UprotocolOptions.ceName).equals(p))
                 .map(v -> UPriority.forNumber(v.getNumber()))
                 .findFirst()
-                .orElse(UPriority.UNRECOGNIZED)
+                .orElse(UPriority.UPRIORITY_UNSPECIFIED)
                 ).ifPresent(builder::setPriority);
 
         getSink(event).map(LongUriSerializer.instance()::deserialize).ifPresent(builder::setSink);
