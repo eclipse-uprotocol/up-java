@@ -657,7 +657,7 @@ class UAttributesValidatorTest {
     public void test_valid_request_methoduri_in_sink(){
         final UUri sink= LongUriSerializer.instance().deserialize("/test.service/1/rpc.method");
         final UAttributes attributes =
-                UAttributesBuilder.request(buildSource(), sink, UPriority.UPRIORITY_CS0,3000).build();
+                UAttributesBuilder.request(buildSource(), sink, UPriority.UPRIORITY_CS4,3000).build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         assertEquals("UAttributesValidator.Request", validator.toString());
         final ValidationResult status = validator.validate(attributes);
@@ -669,7 +669,7 @@ class UAttributesValidatorTest {
     public void test_invalid_request_methoduri_in_sink(){
         final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/test.response");
         final UAttributes attributes =
-                UAttributesBuilder.request(buildSource(), sink,UPriority.UPRIORITY_CS0,3000).build();
+                UAttributesBuilder.request(buildSource(), sink,UPriority.UPRIORITY_CS4,3000).build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         assertEquals("UAttributesValidator.Request", validator.toString());
         final ValidationResult status = validator.validate(attributes);
@@ -681,7 +681,7 @@ class UAttributesValidatorTest {
     public void test_valid_response_uri_in_sink(){
         final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/rpc.response");
         final UAttributes attributes =
-                UAttributesBuilder.response(buildSource(), sink,UPriority.UPRIORITY_CS0,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
+                UAttributesBuilder.response(buildSource(), sink,UPriority.UPRIORITY_CS4,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         assertEquals("UAttributesValidator.Response", validator.toString());
         final ValidationResult status = validator.validate(attributes);
@@ -693,11 +693,46 @@ class UAttributesValidatorTest {
     public void test_invalid_response_uri_in_sink(){
         final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/rpc.method");
         final UAttributes attributes =
-                UAttributesBuilder.response(buildSource(), sink,UPriority.UPRIORITY_CS0,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
+                UAttributesBuilder.response(buildSource(), sink,UPriority.UPRIORITY_CS4,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         assertEquals("UAttributesValidator.Response", validator.toString());
         final ValidationResult status = validator.validate(attributes);
         assertEquals("Invalid RPC response type.", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("test_setting_priority_for_response_too_low")
+    public void test_setting_priority_for_response_too_low(){
+        final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/rpc.method");
+        final UAttributes attributes =
+                UAttributesBuilder.response(buildSource(), sink,UPriority.UPRIORITY_CS0,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        assertEquals("UAttributesValidator.Response", validator.toString());
+        final ValidationResult status = validator.validate(attributes);
+        assertEquals("Invalid RPC response type.,Invalid UPriority [UPRIORITY_CS0]", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("test_setting_priority_for_request_too_low")
+    public void test_setting_priority_for_request_too_low(){
+        final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/rpc.method");
+        final UAttributes attributes =
+                UAttributesBuilder.request(buildSource(), sink, UPriority.UPRIORITY_CS0, 1000).build();
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        assertEquals("UAttributesValidator.Request", validator.toString());
+        final ValidationResult status = validator.validate(attributes);
+        assertEquals("Invalid UPriority [UPRIORITY_CS0]", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("test_setting_invalid_priority_for_publish")
+    public void test_setting_invalid_priority_for_publish(){
+        final UAttributes attributes =
+                UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_UNSPECIFIED).build();
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        assertEquals("UAttributesValidator.Publish", validator.toString());
+        final ValidationResult status = validator.validate(attributes);
+        assertEquals("Invalid UPriority [UPRIORITY_UNSPECIFIED]", status.getMessage());
     }
 
     private UUri buildSink() {

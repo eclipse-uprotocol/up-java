@@ -148,7 +148,7 @@ class UCloudEventTest {
 
         final Optional<String> priority = UCloudEvent.getPriority(cloudEvent);
         assertTrue(priority.isPresent());
-        Assertions.assertEquals(UPriority.UPRIORITY_CS1.name(), priority.get());
+        Assertions.assertEquals(UCloudEvent.getCePriority(UPriority.UPRIORITY_CS1), priority.get());
     }
 
     @Test
@@ -159,6 +159,9 @@ class UCloudEventTest {
 
         final Optional<String> priority = UCloudEvent.getPriority(cloudEvent);
         assertTrue(priority.isEmpty());
+
+        UMessage message = UCloudEvent.toMessage(cloudEvent);
+        assertEquals(message.getAttributes().getPriority(), UPriority.UPRIORITY_UNSPECIFIED);
     }
 
     @Test
@@ -772,7 +775,7 @@ class UCloudEventTest {
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
         assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getAttributes().getSource()));
         assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
-        assertEquals(UCloudEvent.getPriority(cloudEvent).get(),result.getAttributes().getPriority().name());
+        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), UCloudEvent.getCePriority(result.getAttributes().getPriority()));
 
         final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
         assertNotNull(cloudEvent1);
@@ -829,7 +832,7 @@ class UCloudEventTest {
         assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
         assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getAttributes().getSource()));
         assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
-        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), result.getAttributes().getPriority().name());
+        assertEquals(UCloudEvent.getPriority(cloudEvent).get(), UCloudEvent.getCePriority(result.getAttributes().getPriority()));
 
         final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent,cloudEvent1);
@@ -956,10 +959,10 @@ class UCloudEventTest {
 
         UMessage result = UCloudEvent.toMessage(cloudEvent);
         assertNotNull(result);
-        assertEquals(UPriority.UPRIORITY_CS4.name(),result.getAttributes().getPriority().name());
+        assertEquals(UCloudEvent.getCePriority(UPriority.UPRIORITY_CS4),UCloudEvent.getCePriority(result.getAttributes().getPriority()));
         CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
         assertTrue(UCloudEvent.getPriority(cloudEvent1).isPresent());
-        assertEquals(UPriority.UPRIORITY_CS4.name(),UCloudEvent.getPriority(cloudEvent1).get());
+        assertEquals(UCloudEvent.getCePriority(UPriority.UPRIORITY_CS4),UCloudEvent.getPriority(cloudEvent1).get());
 
     }
     private String buildSourceForTest(){
