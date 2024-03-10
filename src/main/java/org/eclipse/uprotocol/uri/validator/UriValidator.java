@@ -91,7 +91,7 @@ public interface UriValidator {
      */
     static boolean isRpcMethod(UUri uri) {
         
-        return (uri!= null) && uri.getResource().getName().contains("rpc") && 
+        return (uri!= null) && uri.getResource().getName().equals("rpc") &&
             (uri.getResource().hasInstance() && !uri.getResource().getInstance().trim().isEmpty() 
                 || (uri.getResource().hasId() && uri.getResource().getId() != 0));
     }
@@ -121,8 +121,8 @@ public interface UriValidator {
         }
 
         final UResource resource = uri.getResource();
-        return resource.getName().contains("rpc") && 
-            resource.hasInstance() && resource.getInstance().contains("response") &&
+        return resource.getName().equals("rpc") &&
+            resource.hasInstance() && resource.getInstance().equals("response") &&
             resource.hasId() && resource.getId() == 0;
     }
 
