@@ -27,6 +27,7 @@ package org.eclipse.uprotocol.uuid.factory;
 import com.github.f4b6a3.uuid.enums.UuidVariant;
 import com.github.f4b6a3.uuid.util.UuidTime;
 import com.github.f4b6a3.uuid.util.UuidUtil;
+import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UUID;
 
 import java.util.Optional;
@@ -120,6 +121,71 @@ public interface UuidUtils {
         }
 
         return Optional.ofNullable(time);
+    }
+
+    /**
+     * Calculates the elapsed time since the creation of the specified UUID.
+     *
+     * @param id The UUID of the object whose creation time needs to be determined.
+     * @return An Optional containing the elapsed time in milliseconds,
+     * or an empty Optional if the creation time cannot be determined.
+     */
+    public static Optional<Long> getElapsedTime(UUID id) {
+        final long creationTime = getTime(id).orElse(-1L);
+        if (creationTime < 0) {
+            return Optional.empty();
+        }
+        final long now = System.currentTimeMillis();
+        return (now >= creationTime) ? Optional.of(now - creationTime) : Optional.empty();
+    }
+
+    /**
+     * Calculates the remaining time until the expiration of the event identified by the given UUID.
+     *
+     * @param id  The UUID of the object whose remaining time needs to be determined.
+     * @param ttl The time-to-live (TTL) in milliseconds.
+     * @return An Optional containing the remaining time in milliseconds until the event expires,
+     * or an empty Optional if the UUID is null, TTL is non-positive, or the creation time cannot be determined.
+     */
+    public static Optional<Long> getRemainingTime(UUID id, int ttl) {
+        if (id == null || ttl <= 0) {
+            return Optional.empty();
+        }
+        return getElapsedTime(id).filter(elapsedTime -> ttl > elapsedTime).map(elapsedTime -> ttl - elapsedTime);
+    }
+
+    /**
+     * Calculates the remaining time until the expiration of the event identified by the given UAttributes.
+     *
+     * @param attributes The attributes containing information about the event, including its ID and TTL.
+     * @return An Optional containing the remaining time in milliseconds until the event expires,
+     * or an empty Optional if the attributes do not contain TTL information or the creation time cannot be determined.
+     */
+    public static Optional<Long> getRemainingTime(UAttributes attributes) {
+        return attributes.hasTtl() ? getRemainingTime(attributes.getId(), attributes.getTtl()) : Optional.empty();
+    }
+
+    /**
+     * Checks if the event identified by the given UUID has expired based on the specified time-to-live (TTL).
+     *
+     * @param id  The UUID identifying the event.
+     * @param ttl The time-to-live (TTL) in milliseconds for the event.
+     * @return true if the event has expired, false otherwise. Returns false if TTL is non-positive or creation time
+     * cannot be determined.
+     */
+    public static boolean isExpired(UUID id, int ttl) {
+        return ttl > 0 && getRemainingTime(id, ttl).isEmpty();
+    }
+
+    /**
+     * Checks if the event identified by the given UAttributes has expired.
+     *
+     * @param attributes The attributes containing information about the event, including its ID and TTL.
+     * @return true if the event has expired, false otherwise.Returns false if the attributes do not contain TTL
+     * information or creation time cannot be determined.
+     */
+    public static boolean isExpired(UAttributes attributes) {
+        return attributes.hasTtl() && isExpired(attributes.getId(), attributes.getTtl());
     }
 
     /**
