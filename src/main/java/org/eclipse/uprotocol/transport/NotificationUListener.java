@@ -24,21 +24,22 @@
  */
 package org.eclipse.uprotocol.transport;
 
-import org.eclipse.uprotocol.v1.*;
+import org.eclipse.uprotocol.v1.UAttributes;
+import org.eclipse.uprotocol.v1.UMessageType;
+import org.eclipse.uprotocol.v1.UUri;
 
 /**
- * Generic uProtocol listener (callback) that is called to handle incoming messages of any kind
- * (i.e. not message type specific). <br>
+ * Specific notification type of UListener to handle incoming notification messages. <br>
  * 
- * This interface could be extended to add specific message type handling (publish, request, etc...) as
- * well as any custom message handling in the future.
+ * Notifications have {@link UMessageType} is {@link UMessageType.UMESSAGE_TYPE_PUBLISH} and
+ * {@link UAttributes} sink is set to ourselves, this is because the published event is 
+ * only destined to us. <br>
+ * 
+ * The {@link UUri} passed to {@link org.eclipse.uprotocol.transport.UTransport.registerListener} 
+ * is the notification topic.
+ *
+ * @see org.eclipse.uprotocol.transport.UTransport#registerListener(UUri, UListener)
  */
-public interface UListener {
+public interface NotificationUListener extends UListener {
 
-    /**
-     * Method called to handle/process messages.
-     * @param message Message received.
-     * @return Returns an Ack every time a message is received and processed.
-     */
-    void onReceive(UMessage message);
 }

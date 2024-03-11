@@ -24,21 +24,17 @@
  */
 package org.eclipse.uprotocol.transport;
 
-import org.eclipse.uprotocol.v1.*;
-
 /**
- * Generic uProtocol listener (callback) that is called to handle incoming messages of any kind
- * (i.e. not message type specific). <br>
+ * Specific Response type of UListener to handle incoming Response messages. <br>
  * 
- * This interface could be extended to add specific message type handling (publish, request, etc...) as
- * well as any custom message handling in the future.
+ * Response messages have {@link UMessageType} is {@link UMESSAGE_TYPE_RESPONSE} and the
+ * {@link UAttributes} source is set to the method UUri the client invoked. <br>
+ * 
+ * The {@link UUri} passed to {@link org.eclipse.uprotocol.transport.UTransport.registerListener} 
+ * is the method UUri.
+ *
+ * @see org.eclipse.uprotocol.transport.UTransport#registerListener(UUri, UListener)
  */
-public interface UListener {
 
-    /**
-     * Method called to handle/process messages.
-     * @param message Message received.
-     * @return Returns an Ack every time a message is received and processed.
-     */
-    void onReceive(UMessage message);
+public interface ResponseUListener extends UListener {
 }

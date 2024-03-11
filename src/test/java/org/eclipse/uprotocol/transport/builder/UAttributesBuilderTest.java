@@ -29,6 +29,7 @@ import org.eclipse.uprotocol.v1.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class UAttributesBuilderTest {
@@ -101,6 +102,26 @@ public class UAttributesBuilderTest {
         assertEquals(reqId, attributes.getReqid());
         assertEquals("myParents", attributes.getTraceparent());
     }
+
+    @Test
+    public void testBuildResponseFromRequest() {
+        UUri sink = buildSink();
+        UUri source = buildSource();
+        Integer ttl = 1000;
+        UAttributesBuilder builder = UAttributesBuilder.request(source, sink, UPriority.UPRIORITY_CS4, ttl);
+        assertNotNull(builder);
+        UAttributes attributes = builder.build();
+        assertNotNull(attributes);
+        
+        UAttributes response = UAttributesBuilder.response(attributes).build();
+        assertNotNull(response);
+        assertEquals(UMessageType.UMESSAGE_TYPE_RESPONSE, response.getType());
+        assertEquals(UPriority.UPRIORITY_CS4, response.getPriority());
+        assertEquals(sink, response.getSource());
+        assertEquals(source, response.getSink());
+        assertFalse(response.hasTtl());
+    }
+
 
     private UUri buildSink() {
         return UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.someVin.veh.ultifi.gm.com"))

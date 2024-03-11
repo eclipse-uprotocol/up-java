@@ -116,6 +116,20 @@ public class UAttributesBuilder {
         UMessageType.UMESSAGE_TYPE_RESPONSE, priority).withSink(sink).withReqId(reqid);
     }
 
+    /**
+     * Construct a UAttributesBuilder for a response message passing request UAttributes
+     * @param request UAttributes of the request message.
+     * @return Returns the UAttributesBuilder with the configured response.
+     */
+    public static UAttributesBuilder response(UAttributes request) {
+        Objects.requireNonNull(request, "request cannot be null.");
+        
+        return new UAttributesBuilder(request.getSink(), UuidFactory.Factories.UPROTOCOL.factory().create(), 
+        UMessageType.UMESSAGE_TYPE_RESPONSE, request.getPriority())
+            .withSink(request.getSource())
+            .withReqId(request.getId());
+    }
+
 
     /**
      * Construct the UAttributesBuilder with the configurations that are required for every payload transport.
