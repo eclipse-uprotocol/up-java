@@ -329,12 +329,18 @@ public interface UCloudEvent {
 
 
     /**
-     * Get the string representation of the UMessageType
+     * Get the string representation of the UMessageType.
+     * 
+     * Note: The UMessageType is determined by the type of the CloudEvent. If 
+     * the UMessageType is UMESSAGE_TYPE_NOTIFICATION, we assume the CloudEvent type
+     * is "pub.v1" and the sink is present.
      * @param type The UMessageType
      * @return returns the string representation of the UMessageType
+     * 
      */
     static String getEventType(UMessageType type){
         switch (type){
+            case UMESSAGE_TYPE_NOTIFICATION:
             case UMESSAGE_TYPE_PUBLISH:
                 return "pub.v1";
             case UMESSAGE_TYPE_REQUEST:
@@ -347,14 +353,22 @@ public interface UCloudEvent {
     }
 
     /**
-     * Get the UMessageType from the string representation
-     * @param ce_type The string representation of the UMessageType
+     * Get the UMessageType from the string representation.
+     * 
+     * Note: The UMessageType is determined by the type of the CloudEvent.
+     * If the CloudEvent type is "pub.v1" and the sink is present, the UMessageType is assumed to be
+     * UMESSAGE_TYPE_NOTIFICATION, this is because uProtocol CloudEvent definition did not have an explicit
+     * notification type.
+     * 
+     * @param cloudEvent The CloudEvent containing the data.
+     * 
      * @return returns the UMessageType
      */
-    static UMessageType getMessageType(String ce_type){
-        switch (ce_type){
+    static UMessageType getMessageType(CloudEvent cloudEvent) {
+        switch (cloudEvent.getType()){
             case "pub.v1":
-                return UMessageType.UMESSAGE_TYPE_PUBLISH;
+                return getSink(cloudEvent).isPresent() ? 
+                    UMessageType.UMESSAGE_TYPE_NOTIFICATION : UMessageType.UMESSAGE_TYPE_PUBLISH;
             case "req.v1":
                 return UMessageType.UMESSAGE_TYPE_REQUEST;
             case "res.v1":
@@ -378,7 +392,7 @@ public interface UCloudEvent {
                 UAttributes.newBuilder()
                     .setSource(LongUriSerializer.instance().deserialize(getSource(event)))
                     .setId(LongUuidSerializer.instance().deserialize(event.getId()))
-                    .setType(getMessageType(event.getType()));
+                    .setType(getMessageType(event));
 
         if (hasCommunicationStatusProblem(event)) {
             builder.setCommstatus(getCommunicationStatus(event));
