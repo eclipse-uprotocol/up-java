@@ -26,6 +26,7 @@ package org.eclipse.uprotocol.transport.builder;
 
 import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.v1.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -81,6 +82,21 @@ public class UAttributesBuilderTest {
         assertEquals(UPriority.UPRIORITY_CS6, attributes.getPriority());
         assertEquals(sink, attributes.getSink());
         assertEquals(reqId, attributes.getReqid());
+    }
+
+    @Test
+    @DisplayName("Test response with existing request")
+    public void testResponseWithExistingRequest() {
+        UAttributes request = UAttributesBuilder.request(buildSource(), buildSink(), UPriority.UPRIORITY_CS6, 1000).build();
+        UAttributesBuilder builder = UAttributesBuilder.response(request);
+        assertNotNull(builder);
+        UAttributes response = builder.build();
+        assertNotNull(response);
+        assertEquals(UMessageType.UMESSAGE_TYPE_RESPONSE, response.getType());
+        assertEquals(UPriority.UPRIORITY_CS6, response.getPriority());
+        assertEquals(request.getSource(), response.getSink());
+        assertEquals(request.getSink(), response.getSource());
+        assertEquals(request.getId(), response.getReqid());
     }
 
     @Test

@@ -116,6 +116,16 @@ public class UAttributesBuilder {
         UMessageType.UMESSAGE_TYPE_RESPONSE, priority).withSink(sink).withReqId(reqid);
     }
 
+    /**
+     * Construct a UAttributesBuilder for a response message using an existing request.
+     * @param request The original request {@code UAttributes} used to correlate the response to the request.
+     * @return Returns the UAttributesBuilder with the configured source, sink, priority, and reqid.
+     */
+    public static UAttributesBuilder response(UAttributes request) {
+        Objects.requireNonNull(request, "request cannot be null.");
+        return response(request.getSink(), request.getSource(), request.getPriority(), request.getId());
+    }
+
 
     /**
      * Construct the UAttributesBuilder with the configurations that are required for every payload transport.
