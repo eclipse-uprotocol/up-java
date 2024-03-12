@@ -57,8 +57,21 @@ class UAttributesValidatorTest {
                 UAttributesBuilder.response(buildSource(), UUri.newBuilder().build(), UPriority.UPRIORITY_CS4,
                         UuidFactory.Factories.UPROTOCOL.factory().create()).build());
         assertEquals("UAttributesValidator.Response", response.toString());
+
+        UAttributesValidator notification = UAttributesValidator.getValidator(
+                UAttributesBuilder.notification(buildSource(), UUri.newBuilder().build(), UPriority.UPRIORITY_CS4).build());
+        assertEquals("UAttributesValidator.Notification", notification.toString());
     }
 
+    @Test
+    @DisplayName("test using notification validator for publish type message")
+    public void test_using_notification_validator_for_publish_type_message() {
+        UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS0).build();
+        UAttributesValidator validator = UAttributesValidator.Validators.NOTIFICATION.validator();
+        ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Wrong Attribute Type [UMESSAGE_TYPE_PUBLISH],Missing Sink", status.getMessage());
+    }
 
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be published")
@@ -273,7 +286,7 @@ class UAttributesValidatorTest {
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
         final ValidationResult status = validator.validate(attributes);
         assertTrue(status.isFailure());
-        assertEquals("Wrong Attribute Type [UMESSAGE_TYPE_PUBLISH],Missing correlationId", status.getMessage());
+        assertEquals("Wrong Attribute Type [UMESSAGE_TYPE_NOTIFICATION],Missing correlationId", status.getMessage());
     }
 
 
@@ -642,6 +655,52 @@ class UAttributesValidatorTest {
         assertEquals("UAttributesValidator.Response", validator.toString());
         final ValidationResult status = validator.validate(attributes);
         assertEquals("Invalid RPC response type.", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("test notification validation with missing sink")
+    public void test_notification_validation_with_missing_sink() {
+        final UAttributes attributes = UAttributesBuilder.notification(buildSource(), UUri.getDefaultInstance(), UPriority.UPRIORITY_CS0).build();
+        final UAttributesValidator validator = UAttributesValidator.Validators.NOTIFICATION.validator();
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Missing Sink", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("test notification validation using publish validator")
+    public void test_notification_validation_using_publish_validator() {
+        final UAttributes attributes = UAttributesBuilder.notification(buildSource(), buildSink(), UPriority.UPRIORITY_CS0).build();
+        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Wrong Attribute Type [UMESSAGE_TYPE_NOTIFICATION]", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("test notification validation when sink is missing")
+    public void test_notification_validation_when_sink_is_missing() {
+        final UAttributes attributes = UAttributes.newBuilder()
+            .setId(UuidFactory.Factories.UPROTOCOL.factory().create())
+            .setSource(buildSource())
+            .setType(UMessageType.UMESSAGE_TYPE_NOTIFICATION)
+            .setPriority(UPriority.UPRIORITY_CS0)
+            .build();
+
+        final UAttributesValidator validator = UAttributesValidator.Validators.NOTIFICATION.validator();
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Missing Sink", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("test notification validation with a valid notification UAttributes")
+    public void test_notification_validation_with_a_valid_notification_UAttributes() {
+        final UAttributes attributes = UAttributesBuilder.notification(buildSource(), buildSink(), UPriority.UPRIORITY_CS0).build();
+        final UAttributesValidator validator = UAttributesValidator.Validators.NOTIFICATION.validator();
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isSuccess());
+        assertEquals("", status.getMessage());
     }
 
     private UUri buildSink() {

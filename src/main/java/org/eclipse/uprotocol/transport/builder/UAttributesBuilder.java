@@ -75,7 +75,7 @@ public class UAttributesBuilder {
         Objects.requireNonNull(sink, "sink cannot be null.");
 
         return new UAttributesBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(), 
-        UMessageType.UMESSAGE_TYPE_PUBLISH, priority).withSink(sink);
+        UMessageType.UMESSAGE_TYPE_NOTIFICATION, priority).withSink(sink);
     }
     
 

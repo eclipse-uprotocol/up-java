@@ -50,7 +50,7 @@ public class UAttributesBuilderTest {
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
-        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.getType());
+        assertEquals(UMessageType.UMESSAGE_TYPE_NOTIFICATION, attributes.getType());
         assertEquals(UPriority.UPRIORITY_CS1, attributes.getPriority());
         assertEquals(sink, attributes.getSink());
     }

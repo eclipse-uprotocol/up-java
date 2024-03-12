@@ -61,6 +61,8 @@ public abstract class UAttributesValidator {
                 return Validators.RESPONSE.validator();
             case UMESSAGE_TYPE_REQUEST:
                 return Validators.REQUEST.validator();
+            case UMESSAGE_TYPE_NOTIFICATION:
+                return Validators.NOTIFICATION.validator();
             default:
                 return Validators.PUBLISH.validator();
         }
@@ -180,7 +182,10 @@ public abstract class UAttributesValidator {
      * UAttributesValidator validateForPublishMessageType = UAttributesValidator.Validators.PUBLISH.validator()
      */
     public enum Validators {
-        PUBLISH(new Publish()), REQUEST(new Request()), RESPONSE(new Response());
+        PUBLISH(new Publish()),
+        REQUEST(new Request()),
+        RESPONSE(new Response()),
+        NOTIFICATION(new Notification());
 
         private final UAttributesValidator uattributesValidator;
 
@@ -334,6 +339,45 @@ public abstract class UAttributesValidator {
         @Override
         public String toString() {
             return "UAttributesValidator.Response";
+        }
+    }
+
+        /**
+     * Implements validations for UAttributes that define a message that is meant for notifications.
+     */
+    private static class Notification extends UAttributesValidator {
+
+        /**
+         * Validates that attributes for a message meant to Notification state changes has the correct type.
+         *
+         * @param attributes UAttributes object containing the message type to validate.
+         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         */
+        @Override
+        public ValidationResult validateType(UAttributes attributes) {
+            return UMessageType.UMESSAGE_TYPE_NOTIFICATION == attributes.getType() ? ValidationResult.success() : ValidationResult.failure(
+                    String.format("Wrong Attribute Type [%s]", attributes.getType()));
+        }
+
+        /**
+         * Validates that attributes for a message meant for notifications has a destination sink.
+         * In the case of a notification, the sink is required.
+         *
+         * @param attributes UAttributes object containing the sink to validate.
+         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         */
+        @Override
+        public ValidationResult validateSink(UAttributes attributes) {
+            Objects.requireNonNull(attributes, "UAttributes cannot be null.");
+            if (!attributes.hasSink() || attributes.getSink() == UUri.getDefaultInstance()) {
+                return ValidationResult.failure("Missing Sink");
+            }
+            return ValidationResult.success();
+        }
+
+        @Override
+        public String toString() {
+            return "UAttributesValidator.Notification";
         }
     }
 

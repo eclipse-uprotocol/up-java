@@ -77,7 +77,7 @@ public interface UPayloadBuilder {
         }
         try {
             switch (payload.getFormat()) {
-                case UNRECOGNIZED: // Default is WRAPPED_IN_ANY
+                case UPAYLOAD_FORMAT_UNSPECIFIED: // Default is WRAPPED_IN_ANY
                 case UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY :
                     return Optional.of(Any.parseFrom(payload.getValue()).unpack(clazz));
             

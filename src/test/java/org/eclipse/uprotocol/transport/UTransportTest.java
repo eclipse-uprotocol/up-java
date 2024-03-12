@@ -27,10 +27,9 @@ package org.eclipse.uprotocol.transport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
-import org.eclipse.uprotocol.v1.UPayload;
+import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
@@ -62,7 +61,7 @@ public class UTransportTest {
     @DisplayName("Test happy path register listener")
     public void test_happy_register_listener() {
         UTransport transport = new HappyUTransport();
-        UStatus status = transport.registerListener(UUri.getDefaultInstance(), new MyListener());
+        UStatus status = transport.registerListener(UUri.getDefaultInstance(), new MyListener(), UMessageType.UMESSAGE_TYPE_UNSPECIFIED);
         assertEquals(status.getCode(), UCode.OK);
     }
 
@@ -70,7 +69,7 @@ public class UTransportTest {
     @DisplayName("Test happy path unregister listener")
     public void test_happy_register_unlistener() {
         UTransport transport = new HappyUTransport();
-        UStatus status = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener());
+        UStatus status = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener(), UMessageType.UMESSAGE_TYPE_UNSPECIFIED);
         assertEquals(status.getCode(), UCode.OK);
     }
 
@@ -105,7 +104,7 @@ public class UTransportTest {
     @DisplayName("Test unhappy path register listener")
     public void test_unhappy_register_listener() {
         UTransport transport = new SadUTransport();
-        UStatus status = transport.registerListener(UUri.getDefaultInstance(), new MyListener());
+        UStatus status = transport.registerListener(UUri.getDefaultInstance(), new MyListener(), UMessageType.UMESSAGE_TYPE_UNSPECIFIED);
         assertEquals(status.getCode(), UCode.INTERNAL);
     }
 
@@ -113,7 +112,7 @@ public class UTransportTest {
     @DisplayName("Test unhappy path unregister listener")
     public void test_unhappy_register_unlistener() {
         UTransport transport = new SadUTransport();
-        UStatus status = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener());
+        UStatus status = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener(), UMessageType.UMESSAGE_TYPE_UNSPECIFIED);
         assertEquals(status.getCode(), UCode.INTERNAL);
     }
 
@@ -130,13 +129,13 @@ public class UTransportTest {
 
 
         @Override
-        public UStatus registerListener(UUri topic, UListener listener) {
+        public UStatus registerListener(UUri topic, UListener listener, UMessageType messageType) {
             listener.onReceive(UMessage.getDefaultInstance());
             return UStatus.newBuilder().setCode(UCode.OK).build();
         }
 
         @Override
-        public UStatus unregisterListener(UUri topic, UListener listener) {
+        public UStatus unregisterListener(UUri topic, UListener listener, UMessageType messageType) {
             return UStatus.newBuilder().setCode(UCode.OK).build();
         }
     }
@@ -148,13 +147,13 @@ public class UTransportTest {
         }
 
         @Override
-        public UStatus registerListener(UUri topic, UListener listener) {
+        public UStatus registerListener(UUri topic, UListener listener, UMessageType messageType) {
             listener.onReceive(null);
             return UStatus.newBuilder().setCode(UCode.INTERNAL).build();
         }
 
         @Override
-        public UStatus unregisterListener(UUri topic, UListener listener) {
+        public UStatus unregisterListener(UUri topic, UListener listener, UMessageType messageType) {
             return UStatus.newBuilder().setCode(UCode.INTERNAL).build();
         }
 
