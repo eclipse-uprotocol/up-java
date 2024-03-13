@@ -191,6 +191,7 @@ public interface CloudEventFactory {
                 UCloudEvent.getCeName(priority.getValueDescriptor())));
         attributes.hash().ifPresent(hash -> cloudEventBuilder.withExtension("hash", hash));
         attributes.token().ifPresent(token -> cloudEventBuilder.withExtension("token", token));
+        attributes.traceparent().ifPresent(traceparent -> cloudEventBuilder.withExtension("traceparent", traceparent));
 
         return cloudEventBuilder;
     }

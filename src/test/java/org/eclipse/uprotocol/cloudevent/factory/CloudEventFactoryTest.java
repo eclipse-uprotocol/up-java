@@ -57,6 +57,7 @@ class CloudEventFactoryTest {
                 .withPriority(UPriority.UPRIORITY_CS1)
                 .withTtl(3)
                 .withToken("someOAuthToken")
+                .withTraceparent("myParent")
                 .build();
 
         // build the cloud event
@@ -76,6 +77,7 @@ class CloudEventFactoryTest {
         assertEquals(UCloudEvent.getCePriority(UPriority.UPRIORITY_CS1), cloudEvent.getExtension("priority"));
         assertEquals(3, cloudEvent.getExtension("ttl"));
         assertEquals("someOAuthToken", cloudEvent.getExtension("token"));
+        assertEquals("myParent", cloudEvent.getExtension("traceparent"));
 
         assertArrayEquals(protoPayload.toByteArray(), Objects.requireNonNull(cloudEvent.getData()).toBytes());
     }
