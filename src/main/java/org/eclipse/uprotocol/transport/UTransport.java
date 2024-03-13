@@ -47,11 +47,10 @@ public interface UTransport {
      * @param topic {@code UUri} to listen for messages from.
      * @param listener The {@code UListener} that will be execute when the message is 
      * received on the given {@code UUri}.
-     * @param messageType The {@code UMessageType} the listener is to listen for.
      * @return Returns {@link UStatus} with {@link UCode.OK} if the listener is registered
      * correctly, otherwise it returns with the appropriate failure.
      */
-    UStatus registerListener(UUri topic, UListener listener, UMessageType messageType);
+    UStatus registerListener(UUri topic, UListener listener);
 
     /**
      * Unregister {@code UListener} for {@code UUri} topic. Messages arriving on this topic will
@@ -59,9 +58,8 @@ public interface UTransport {
      * @param topic {@code UUri} to the listener was registered for.
      * @param listener The {@code UListener} that will no longer want to be registered to receive
      * messages.
-     * @param messageType The {@code UMessageType} the listener is to listen for.
      * @return Returns {@link UStatus} with {@link UCode.OK} if the listener is unregistered
      * correctly, otherwise it returns with the appropriate failure.
      */
-    UStatus unregisterListener(UUri topic, UListener listener, UMessageType messageType);
+    UStatus unregisterListener(UUri topic, UListener listener);
 }

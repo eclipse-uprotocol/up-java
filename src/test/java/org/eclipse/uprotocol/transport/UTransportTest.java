@@ -61,7 +61,7 @@ public class UTransportTest {
     @DisplayName("Test happy path register listener")
     public void test_happy_register_listener() {
         UTransport transport = new HappyUTransport();
-        UStatus status = transport.registerListener(UUri.getDefaultInstance(), new MyListener(), UMessageType.UMESSAGE_TYPE_UNSPECIFIED);
+        UStatus status = transport.registerListener(UUri.getDefaultInstance(), new MyListener());
         assertEquals(status.getCode(), UCode.OK);
     }
 
@@ -69,7 +69,7 @@ public class UTransportTest {
     @DisplayName("Test happy path unregister listener")
     public void test_happy_register_unlistener() {
         UTransport transport = new HappyUTransport();
-        UStatus status = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener(), UMessageType.UMESSAGE_TYPE_UNSPECIFIED);
+        UStatus status = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener());
         assertEquals(status.getCode(), UCode.OK);
     }
 
@@ -104,7 +104,7 @@ public class UTransportTest {
     @DisplayName("Test unhappy path register listener")
     public void test_unhappy_register_listener() {
         UTransport transport = new SadUTransport();
-        UStatus status = transport.registerListener(UUri.getDefaultInstance(), new MyListener(), UMessageType.UMESSAGE_TYPE_UNSPECIFIED);
+        UStatus status = transport.registerListener(UUri.getDefaultInstance(), new MyListener());
         assertEquals(status.getCode(), UCode.INTERNAL);
     }
 
@@ -112,7 +112,7 @@ public class UTransportTest {
     @DisplayName("Test unhappy path unregister listener")
     public void test_unhappy_register_unlistener() {
         UTransport transport = new SadUTransport();
-        UStatus status = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener(), UMessageType.UMESSAGE_TYPE_UNSPECIFIED);
+        UStatus status = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener());
         assertEquals(status.getCode(), UCode.INTERNAL);
     }
 
@@ -129,13 +129,13 @@ public class UTransportTest {
 
 
         @Override
-        public UStatus registerListener(UUri topic, UListener listener, UMessageType messageType) {
+        public UStatus registerListener(UUri topic, UListener listener) {
             listener.onReceive(UMessage.getDefaultInstance());
             return UStatus.newBuilder().setCode(UCode.OK).build();
         }
 
         @Override
-        public UStatus unregisterListener(UUri topic, UListener listener, UMessageType messageType) {
+        public UStatus unregisterListener(UUri topic, UListener listener) {
             return UStatus.newBuilder().setCode(UCode.OK).build();
         }
     }
@@ -147,13 +147,13 @@ public class UTransportTest {
         }
 
         @Override
-        public UStatus registerListener(UUri topic, UListener listener, UMessageType messageType) {
+        public UStatus registerListener(UUri topic, UListener listener) {
             listener.onReceive(null);
             return UStatus.newBuilder().setCode(UCode.INTERNAL).build();
         }
 
         @Override
-        public UStatus unregisterListener(UUri topic, UListener listener, UMessageType messageType) {
+        public UStatus unregisterListener(UUri topic, UListener listener) {
             return UStatus.newBuilder().setCode(UCode.INTERNAL).build();
         }
 
