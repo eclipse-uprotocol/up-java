@@ -71,7 +71,7 @@ public class UEntityFactoryTest {
 
         assertEquals(entity.getName(), "core.utwin");
         assertEquals(entity.getId(), 26);
-        assertEquals(entity.getVersionMajor(), 1);
+        assertEquals(entity.getVersionMajor(), 2);
         assertEquals(entity.getVersionMinor(), 0);
     }
 

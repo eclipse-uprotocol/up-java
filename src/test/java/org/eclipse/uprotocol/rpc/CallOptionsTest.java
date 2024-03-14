@@ -101,8 +101,8 @@ class CallOptionsTest {
         final CallOptions callOptions = CallOptions.newBuilder()
                 .build();
         
-         assertFalse(callOptions.hasToken());
-         assertFalse(callOptions.hasTtl());
+        assertFalse(callOptions.hasToken());
+        assertEquals(0, callOptions.getTtl());
     }
 
 }
