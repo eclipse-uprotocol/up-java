@@ -32,7 +32,10 @@ import com.google.protobuf.ProtocolMessageEnum;
 
 public interface UResourceBuilder {
 
-    static final int MAX_RPC_ID = 1000;
+    /**
+     * The minimum topic ID, below this value are methods.
+     */
+    static final int MIN_TOPIC_ID = 0x8000;
 
     /**
      * Builds a UResource for an RPC response.
@@ -94,7 +97,7 @@ public interface UResourceBuilder {
     static UResource fromId(Integer id) {
         Objects.requireNonNull(id, "id cannot be null");
         
-        return (id < MAX_RPC_ID) ? forRpcRequest(id) : UResource.newBuilder().setId(id).build();
+        return (id == 0) ? forRpcResponse() : (id < MIN_TOPIC_ID) ? forRpcRequest(id) : UResource.newBuilder().setId(id).build();
     }
 
 
