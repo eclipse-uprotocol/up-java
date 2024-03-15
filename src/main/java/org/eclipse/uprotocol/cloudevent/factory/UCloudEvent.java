@@ -477,7 +477,11 @@ public interface UCloudEvent {
 
         if(attributes.hasPermissionLevel())
             cloudEventBuilder.withExtension("plevel",attributes.getPermissionLevel());
-       return cloudEventBuilder.build();
+
+        if (attributes.hasTraceparent())
+            cloudEventBuilder.withExtension("traceparent",attributes.getTraceparent());
+
+        return cloudEventBuilder.build();
 
     }
 

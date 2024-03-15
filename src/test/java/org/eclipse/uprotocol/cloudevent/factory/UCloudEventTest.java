@@ -736,6 +736,7 @@ class UCloudEventTest {
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withPriority(UPriority.UPRIORITY_CS2)
                 .withTtl(3)
+                .withTraceparent("someParent")
                 .build();
         //cloudevent
         final CloudEvent cloudEvent = CloudEventFactory.publish(buildSourceForTest(), buildProtoPayloadForTest(),
