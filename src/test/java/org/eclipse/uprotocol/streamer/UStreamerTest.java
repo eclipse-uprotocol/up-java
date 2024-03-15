@@ -28,73 +28,167 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
-import org.eclipse.uprotocol.transport.builder.UAttributesBuilder;
-import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.v1.*;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class UStreamerTest {
+
+
+    /**
+     * This is a simple test where we have a single input and output route.
+     * We also test the addForwardingRule() and deleteForwardingRule() methods.
+     */
     @Test
-    @DisplayName("Initializing the Streamer")
-    public void test_streamer_initialization() {
-        UTransport ingressTransport = new IngressTransport();
-        
-        Route ingress = new Route(
-            UAuthority.newBuilder().setName("Ingress").build(),
-            ingressTransport);
-        
-        Route[] egress = {
-            new Route (
-                UAuthority.newBuilder().setName("Egress").build(),
-                new EgressTransport()
-        )};
+    @DisplayName("simple test with a single input and output route")
+    public void simple_test_with_a_single_input_and_output_route() {
 
-        UStreamer streamer = new UStreamer(ingress, egress);
-        System.out.println("Streamer initialized");
-        streamer.start();
+        // Local Route
+        UAuthority localAuthority = UAuthority.newBuilder().setName("local").build();
+        Route local = new Route(localAuthority, new LocalTransport());
 
-        System.out.println("Sending a message");
-        ingressTransport.send(createMessage());
-        /* Send a message and see if flow through */
-        System.out.println("Message sent");
-        streamer.stop();
+        // A Remote Route
+        UAuthority remoteAuthority = UAuthority.newBuilder().setName("remote").build();
+        Route remote = new Route(remoteAuthority, new RemoteTransport());
+        
+        UStreamer streamer = new UStreamer();
+
+        // Add forwarding rules to route local<->remote 
+        assertEquals(streamer.addForwardingRule(local, remote), UStatus.newBuilder().setCode(UCode.OK).build());
+        assertEquals(streamer.addForwardingRule(remote, local), UStatus.newBuilder().setCode(UCode.OK).build());
+
+        // Add forwarding rules to route local<->local, should report an error
+        assertEquals(streamer.addForwardingRule(local, local), UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).build());
+
+        // Rule already exists so it should report an error
+        assertEquals(streamer.addForwardingRule(local, remote), UStatus.newBuilder().setCode(UCode.ALREADY_EXISTS).build());
+        
+        // Try and remove an invalid rule
+        assertEquals(streamer.deleteForwardingRule(remote, remote), UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).build());
+
+        // remove valid routing rules
+        assertEquals(streamer.deleteForwardingRule(local, remote), UStatus.newBuilder().setCode(UCode.OK).build());
+        assertEquals(streamer.deleteForwardingRule(remote, local), UStatus.newBuilder().setCode(UCode.OK).build());
+
+        // Try and remove a rule that doesn't exist, should report an error
+        assertEquals(streamer.deleteForwardingRule(local, remote), UStatus.newBuilder().setCode(UCode.NOT_FOUND).build());
+
     }
     
 
-    private UMessage createMessage() {
-        final UUri source = UUri.newBuilder()
-                .setAuthority(UAuthority.newBuilder().setName("Ingress"))
-                .setEntity(UEntity.newBuilder().setName("hartley_app").setVersionMajor(1))
-                .setResource(UResourceBuilder.forRpcResponse()).build();
+    /**
+     * This is an example where we need to set up multiple routes to different destinations.
+     */
+    @Test
+    @DisplayName("advanced test where there is an local route and two remote routes")
+    public void advanced_test_where_there_is_an_local_route_and_two_remote_routes() {
+
+        // Local Route
+        UAuthority localAuthority = UAuthority.newBuilder().setName("local").build();
+        Route local = new Route(localAuthority, new LocalTransport());
+
+        // A Remote Route
+        UAuthority remoteAuthority1 = UAuthority.newBuilder().setName("remote1").build();
+
+        Route remote1 = new Route(remoteAuthority1, new RemoteTransport());
+
+        // A Remote Route
+        UAuthority remoteAuthority2 = UAuthority.newBuilder().setName("remote2").build();
+        Route remote2 = new Route(remoteAuthority2, new RemoteTransport());
         
-        final UUri sink = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("Egress"))
-            .setEntity(UEntity.newBuilder().setName("hr_service").setVersionMajor(1))
-            .setResource(UResourceBuilder.forRpcRequest("Raise")).build();
- 
-        final UAttributes attributes = UAttributesBuilder.request(source, sink, UPriority.UPRIORITY_CS4, 1000).build();
-        return UMessage.newBuilder()
-            .setAttributes(attributes)
-            .setPayload(UPayload.getDefaultInstance())
-            .build();
+        UStreamer streamer = new UStreamer();
+
+        // Add forwarding rules to route local<->remote1 
+        assertEquals(streamer.addForwardingRule(local, remote1), UStatus.newBuilder().setCode(UCode.OK).build());
+        assertEquals(streamer.addForwardingRule(remote1, local), UStatus.newBuilder().setCode(UCode.OK).build());
+
+        // Add forwarding rules to route local<->remote2 
+        assertEquals(streamer.addForwardingRule(local, remote2), UStatus.newBuilder().setCode(UCode.OK).build());
+        assertEquals(streamer.addForwardingRule(remote2, local), UStatus.newBuilder().setCode(UCode.OK).build());
+
+        // Add forwarding rules to route remote1<->remote2 
+        assertEquals(streamer.addForwardingRule(remote1, remote2), UStatus.newBuilder().setCode(UCode.OK).build());
+        assertEquals(streamer.addForwardingRule(remote2, remote1), UStatus.newBuilder().setCode(UCode.OK).build());
     }
 
-    
-    private class IngressTransport implements UTransport {
-        private UListener listener;
+    /** 
+     * This is an example where we need to set up multiple routes to different destinations but using the same 
+     * remote UTransport (i.e. connecting to multiple remote servers using the same UTransport instance).
+     */
+    @Test
+    @DisplayName("advanced test where there is an local route and two remote routes but the remote routes have the same instance of UTransport")
+    public void advanced_test_where_there_is_an_local_route_and_two_remote_routes_but_the_remote_routes_have_the_same_instance_of_UTransport() {
 
+        // Local Route
+        UAuthority localAuthority = UAuthority.newBuilder().setName("local").build();
+        Route local = new Route(localAuthority, new LocalTransport());
+
+        // A Remote Route
+        UAuthority remoteAuthority1 = UAuthority.newBuilder().setName("remote1").build();
+        UTransport remoteTransport = new RemoteTransport();
+        Route remote1 = new Route(remoteAuthority1, remoteTransport);
+
+        // A Remote Route
+        UAuthority remoteAuthority2 = UAuthority.newBuilder().setName("remote2").build();
+        Route remote2 = new Route(remoteAuthority2, remoteTransport);
+        
+        UStreamer streamer = new UStreamer();
+
+        // Add forwarding rules to route local<->remote1 
+        assertEquals(streamer.addForwardingRule(local, remote1), UStatus.newBuilder().setCode(UCode.OK).build());
+        assertEquals(streamer.addForwardingRule(remote1, local), UStatus.newBuilder().setCode(UCode.OK).build());
+
+        // Add forwarding rules to route local<->remote2 
+        assertEquals(streamer.addForwardingRule(local, remote2), UStatus.newBuilder().setCode(UCode.OK).build());
+        assertEquals(streamer.addForwardingRule(remote2, local), UStatus.newBuilder().setCode(UCode.OK).build());
+    }
+        
+
+    /**
+     * This is an example where we need to set up multiple routes to different destinations where one of the
+     * routes is the default route (ex. the cloud gateway) 
+     */
+    @Test
+    @DisplayName("advanced test where there is a local route and two remote routes where the second route is the default route")
+    public void advanced_test_where_there_is_a_local_route_and_two_remote_routes_where_the_second_route_is_the_default_route() {
+
+        // Local Route
+        UAuthority localAuthority = UAuthority.newBuilder().setName("local").build();
+        Route local = new Route(localAuthority, new LocalTransport());
+
+        // A Remote Route
+        UAuthority remoteAuthority1 = UAuthority.newBuilder().setName("remote1").build();
+        Route remote1 = new Route(remoteAuthority1, new RemoteTransport());
+
+        // A Remote Route
+        UAuthority remoteAuthority2 = UAuthority.newBuilder().setName("*").build();
+        Route remote2 = new Route(remoteAuthority2, new RemoteTransport());
+        
+        UStreamer streamer = new UStreamer();
+
+        // Add forwarding rules to route local<->remote1 
+        assertEquals(streamer.addForwardingRule(local, remote1), UStatus.newBuilder().setCode(UCode.OK).build());
+        assertEquals(streamer.addForwardingRule(remote1, local), UStatus.newBuilder().setCode(UCode.OK).build());
+
+        // Add forwarding rules to route local<->remote2 
+        assertEquals(streamer.addForwardingRule(local, remote2), UStatus.newBuilder().setCode(UCode.OK).build());
+        assertEquals(streamer.addForwardingRule(remote2, local), UStatus.newBuilder().setCode(UCode.OK).build());
+
+        // Add forwarding rules to route remote1<->remote2 
+        assertEquals(streamer.addForwardingRule(remote1, remote2), UStatus.newBuilder().setCode(UCode.OK).build());
+        assertEquals(streamer.addForwardingRule(remote2, remote1), UStatus.newBuilder().setCode(UCode.OK).build());
+    }
+    
+
+    private class LocalTransport implements UTransport {
         @Override
         public UStatus send(UMessage message) {
-            if (listener != null) {
-                listener.onReceive(message);
-            }
             return UStatus.newBuilder().setCode(UCode.OK).build();
         }
 
         @Override
         public UStatus registerListener(UUri topic, UListener listener) {
-            this.listener = listener;
             return UStatus.newBuilder().setCode(UCode.OK).build();
         }
 
@@ -105,7 +199,7 @@ public class UStreamerTest {
     }
 
 
-    private class EgressTransport implements UTransport {
+    private class RemoteTransport implements UTransport {
 
         @Override
         public UStatus send(UMessage message) {

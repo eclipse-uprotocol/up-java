@@ -24,75 +24,82 @@
  */
 package org.eclipse.uprotocol.streamer;
 
-import org.eclipse.uprotocol.transport.UListener;
-import org.eclipse.uprotocol.v1.UEntity;
-import org.eclipse.uprotocol.v1.UMessage;
+import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
+/** Sample implementation of UStreamer written in Java for demonstration purposes only
+ * 
+ * The streamer provides APIs to simply add remove routing rules.
+ */
 public class UStreamer {
-    private Route ingress;
-    private Route[] egress;
 
-    UStreamer(Route ingress, Route[] egress) {
-        this.ingress = ingress;
-        this.egress = egress;
+    List<TransportListener> listeners;
 
-    }
 
-    public void start() {
-        if (ingress == null || egress == null || egress.length == 0) {
-            return;
-        }
-
-        UUri uri = UUri.newBuilder()
-        .setAuthority(ingress.getAuthority())
-        .setEntity(UEntity.newBuilder().setName("*"))
-        .build();
-        ingress.getTransport().registerListener(uri, new IngressListener());
-
-        for (Route route : egress) {
-            UUri egressUri = UUri.newBuilder()
-                    .setAuthority(route.getAuthority())
-                    .setEntity(UEntity.newBuilder().setName("*"))
-                    .build();
-            route.getTransport().registerListener(egressUri, new EgressListener());
-        }
-    }
-
-    
-    public void stop() {
+    /**
+     * Constructor
+     */
+    public UStreamer() {
+        listeners = new ArrayList<>();
     }
 
 
     /**
-     * Listener for ingress messages. This listener will receive egress
-     * messages and forward to the appropriate egress transports
+     * Add a forwarding rule to the streamer. 
+     * The input route is the route to listen to and the output route is the route to forward the message to.
+     * The forwarding works by registering a listener on the input route and forwarding the message to the output route.
+     * 
+     * NOTE: Default routing rule (where UAuthority.name is "*") *MUST* be added at the end of the list to avoid overriding other rules.
+     * 
+     * @param in input {@code Route} that the streamer listens to
+     * @param out output {@code Route} that the streamer forwards the message to
+     * @return {@code UStatus} with UCode.OK if the forwarding rule was added successfully
      */
-    private class IngressListener implements UListener {
-
-        @Override
-        public void onReceive(UMessage message) {
-            System.out.println("IngressListener received message" + message.toString());
-            for (Route route : egress) {
-                if (route.getAuthority().equals(message.getAttributes().getSink().getAuthority())) {
-                    route.getTransport().send(message);
-                }
-            }
-            
+    public UStatus addForwardingRule(Route in, Route out) {
+        Objects.requireNonNull(in, "input cannot be null.");
+        Objects.requireNonNull(out, "output cannot be null.");
+        
+        // Cannot route to itself
+        if (in.equals(out)) {
+            return UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).build();
         }
+
+        // check if the rule already exists in the list
+        if (listeners.stream().anyMatch(p -> p.getInputRoute().equals(in) && p.getOutputRoute().equals(out))) {
+            return UStatus.newBuilder().setCode(UCode.ALREADY_EXISTS).build();
+        }
+
+        TransportListener listener = new TransportListener(in, out);
+        UUri uri = UUri.newBuilder().setAuthority(out.getAuthority()).build();
+
+        UStatus result = in.getTransport().registerListener(uri, listener);
+
+        if (result.getCode() != UCode.OK) {
+            return result;
+        }
+
+        listeners.add(listener);
+
+        return result;
     }
 
-    /**
-     * Listener for ingress messages from egress transport.
-     */
-    private class EgressListener implements UListener {
-
-        @Override
-        public void onReceive(UMessage message) {
-            System.out.println("EgressListener received message" + message.toString());
-            ingress.getTransport().send(message);
+    public UStatus deleteForwardingRule(Route in, Route out) {
+        Objects.requireNonNull(in, "input cannot be null.");
+        Objects.requireNonNull(out, "output cannot be null.");
+        
+        if (in.equals(out)) {
+            return UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).build();
         }
+
+        if (listeners.removeIf(p -> p.getInputRoute().equals(in) && p.getOutputRoute().equals(out))) {
+            return UStatus.newBuilder().setCode(UCode.OK).build();
+        }
+        return UStatus.newBuilder().setCode(UCode.NOT_FOUND).build();
     }
 
 }
