@@ -32,13 +32,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/** Sample implementation of UStreamer written in Java for demonstration purposes only
+/** 
+ * Example implementation of "Pluggable Streamer" written in Java.
  * 
- * The streamer provides APIs to simply add remove routing rules.
+ * The streamer provides APIs to simply add remove forwarding rules. A rule is defined as a 
+ * combination of input and output routes. The input route is the route to listen to and the output route is the route to forward the message to.
+ * The forwarding works by registering a listener on the input route and forwarding the message to the output route.
  */
 public class UStreamer {
 
-    List<TransportListener> listeners;
+    // List of listeners (routes) that the streamer listens to
+    private List<TransportListener> listeners;
 
 
     /**
@@ -58,7 +62,9 @@ public class UStreamer {
      * 
      * @param in input {@code Route} that the streamer listens to
      * @param out output {@code Route} that the streamer forwards the message to
-     * @return {@code UStatus} with UCode.OK if the forwarding rule was added successfully
+     * @return {@code UStatus} with UCode.OK if the forwarding rule was added successfully,
+     *        {@code UStatus} with UCode.ALREADY_EXISTS if the forwarding rule already exists,
+     *       {@code UStatus} with UCode.INVALID_ARGUMENT if the input and output routes are the same
      */
     public UStatus addForwardingRule(Route in, Route out) {
         Objects.requireNonNull(in, "input cannot be null.");
@@ -88,6 +94,16 @@ public class UStreamer {
         return result;
     }
 
+    
+    /**
+    * Remove a forwarding rule from the streamer. 
+    * 
+    * @param in input {@code Route} that the streamer listens to
+    * @param out output {@code Route} that the streamer forwards the message to
+    * @return {@code UStatus} with UCode.OK if the forwarding rule was removed successfully,
+    *         {@code UStatus} with UCode.NOT_FOUND if the forwarding rule was not found,
+    *         {@code UStatus} with UCode.INVALID_ARGUMENT if the input and output routes are the same
+    */
     public UStatus deleteForwardingRule(Route in, Route out) {
         Objects.requireNonNull(in, "input cannot be null.");
         Objects.requireNonNull(out, "output cannot be null.");

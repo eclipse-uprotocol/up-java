@@ -28,19 +28,36 @@
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.v1.UAuthority;
 
+/**
+ * Route is defined as a combination of UAuthority and UTransport as routes are at the UAuthority level.
+ *
+ */
 public class Route {
     private UAuthority authority;
     private UTransport transport;
 
+    /**
+     * Constructor
+     * @param authority 
+     * @param transport
+     */
     Route(UAuthority authority, UTransport transport) {
         this.authority = authority;
         this.transport = transport;
     }
 
+    /** 
+     * Fetch the authority
+     * @return UAuthority
+     */
     public UAuthority getAuthority() {
         return authority;
     }
     
+    /**
+     * Fetch the transport
+     * @return UTransport
+     */
     public UTransport getTransport() {
         return transport;
     }
