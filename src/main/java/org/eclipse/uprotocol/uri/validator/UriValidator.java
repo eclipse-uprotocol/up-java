@@ -193,4 +193,14 @@ public interface UriValidator {
             !authority.equals(UAuthority.getDefaultInstance()) &&
             (isLongForm(authority) || isMicroForm(authority));
     }
+
+    /**
+     * Return True of the UUri is Short form. A UUri that is micro form (contains numbers) can
+     * also be a Short form Uri.
+     * @param uri {@link UUri} to check
+     * @return Returns true if contains ids can can be serialized to short format.
+     */
+    static boolean isShortForm(UUri uri) {
+        return isMicroForm(uri);
+    }
 }
