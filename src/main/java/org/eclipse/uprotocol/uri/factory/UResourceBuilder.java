@@ -98,7 +98,9 @@ public interface UResourceBuilder {
      */
     static UResource fromId(Integer id) {
         Objects.requireNonNull(id, "id cannot be null");
-        
+        if (id < 0) {
+            return UResource.getDefaultInstance();
+        }
         return (id == 0) ? forRpcResponse() : (id < MIN_TOPIC_ID) ? forRpcRequest(id) : UResource.newBuilder().setId(id).build();
     }
 
@@ -125,25 +127,6 @@ public interface UResourceBuilder {
         }
 
         return builder.build();
-    }
-
-
-    /**
-     * Build a UResource manually from a protobuf message. This method will determine if
-     * the message is a RPC or topic message based on the message type
-     * @param message The protobuf message.
-     * @return Returns a UResource for an RPC request.
-     */
-    static UResource fromProto(ServiceDescriptor descriptor, String topicName) {
-        ServiceOptions options = descriptor.getOptions();
-
-        return options.getExtension(UprotocolOptions.notificationTopic)
-                .stream()
-                .filter(p -> p.getName().equals(topicName))
-                .findFirst()
-                .map(p -> fromUServiceTopic(p))
-                .orElse(UResource.newBuilder().build());
-        
     }
 
 }
