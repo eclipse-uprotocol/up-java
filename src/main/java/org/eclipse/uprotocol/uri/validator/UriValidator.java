@@ -163,13 +163,14 @@ public interface UriValidator {
     }
 
     /**
-     * Returns true if UAuthority contains names so that it can be serialized into long format.
+     * Returns true if UAuthority is local or contains names so that it can be serialized into long format.
      *
      * @param authority {@link UAuthority} to check
      * @return Returns true if URI contains names so that it can be serialized into long format.
      */
     static boolean isLongForm(UAuthority authority) {
-        return (authority != null) && authority.hasName() && !authority.getName().isBlank();
+        return isLocal(authority) || 
+            ((authority != null) && authority.hasName() && !authority.getName().isBlank());
     }
 
 

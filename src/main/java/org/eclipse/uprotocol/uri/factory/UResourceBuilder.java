@@ -25,10 +25,12 @@
 package org.eclipse.uprotocol.uri.factory;
 
 import java.util.Objects;
-
+import org.eclipse.uprotocol.UServiceTopic;
+import org.eclipse.uprotocol.UprotocolOptions;
 import org.eclipse.uprotocol.v1.UResource;
 
-import com.google.protobuf.ProtocolMessageEnum;
+import com.google.protobuf.DescriptorProtos.ServiceOptions;
+import com.google.protobuf.Descriptors.ServiceDescriptor;
 
 public interface UResourceBuilder {
 
@@ -102,18 +104,46 @@ public interface UResourceBuilder {
 
 
     /**
-     * Build a UResource from a protobuf message. This method will determine if
+     * Build a UResource from a UServiceTopic that is defined in protos and 
+     * available from generated stubs.
+     * @param topic The UServiceTopic to build the UResource from.
+     * @return Returns a UResource for an RPC request.
+     */
+    static UResource fromUServiceTopic(UServiceTopic topic) {
+        Objects.requireNonNull(topic, "topic cannot be null");
+        String[] nameAndInstanceParts = topic.getName().split("\\.");
+        String resourceName = nameAndInstanceParts[0];
+        String resourceInstance = nameAndInstanceParts.length > 1 ? nameAndInstanceParts[1] : null;
+        
+        UResource.Builder builder = UResource.newBuilder()
+            .setName(resourceName)
+            .setId(topic.getId())
+            .setMessage(topic.getMessage());
+        
+            if (resourceInstance != null) {
+            builder.setInstance(resourceInstance);
+        }
+
+        return builder.build();
+    }
+
+
+    /**
+     * Build a UResource manually from a protobuf message. This method will determine if
      * the message is a RPC or topic message based on the message type
      * @param message The protobuf message.
      * @return Returns a UResource for an RPC request.
      */
-    static UResource fromProto(ProtocolMessageEnum instance) {
-        UResource resource = UResource.newBuilder()
-            .setName(instance.getDescriptorForType().getContainingType().getName())
-            .setInstance(instance.getValueDescriptor().getName())
-            .setId(instance.getNumber())
-            .build();
-            return resource;
+    static UResource fromProto(ServiceDescriptor descriptor, String topicName) {
+        ServiceOptions options = descriptor.getOptions();
+
+        return options.getExtension(UprotocolOptions.notificationTopic)
+                .stream()
+                .filter(p -> p.getName().equals(topicName))
+                .findFirst()
+                .map(p -> fromUServiceTopic(p))
+                .orElse(UResource.newBuilder().build());
+        
     }
 
 }
