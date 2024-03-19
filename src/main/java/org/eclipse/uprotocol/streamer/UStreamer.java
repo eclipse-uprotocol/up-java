@@ -81,9 +81,9 @@ public class UStreamer {
         }
 
         TransportListener listener = new TransportListener(in, out);
-        UUri uri = UUri.newBuilder().setAuthority(out.getAuthority()).build();
+        UUri out_uri = UUri.newBuilder().setAuthority(out.getAuthority()).build();
 
-        UStatus result = in.getTransport().registerListener(uri, listener);
+        UStatus result = in.getTransport().registerListener(out_uri, listener);
 
         if (result.getCode() != UCode.OK) {
             return result;
@@ -112,6 +112,13 @@ public class UStreamer {
             return UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).build();
         }
 
+
+        // Unregister the listener with the transport
+        listeners.stream()
+            .filter(p -> p.getInputRoute().equals(in) && p.getOutputRoute().equals(out))
+            .forEach(p -> in.getTransport().unregisterListener(UUri.newBuilder().setAuthority(out.getAuthority()).build(), p));
+
+        // Remove the listener from the list
         if (listeners.removeIf(p -> p.getInputRoute().equals(in) && p.getOutputRoute().equals(out))) {
             return UStatus.newBuilder().setCode(UCode.OK).build();
         }
