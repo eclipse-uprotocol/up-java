@@ -1,0 +1,8 @@
+# Plugable Streamer
+
+This is a simple example of a plugable streamer that is used to demonstrate how someone would implement the uStreamer using the UTransport interface. 
+
+For more information on the design, please refer to the code and uProtocol specifications.
+
+NOTE: The following is reference example code and not intended to be used to build an actual production uStreamer
+
