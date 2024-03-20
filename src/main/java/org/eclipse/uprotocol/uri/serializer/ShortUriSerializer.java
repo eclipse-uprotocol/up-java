@@ -67,7 +67,19 @@ public class ShortUriSerializer implements UriSerializer<String> {
         StringBuilder sb = new StringBuilder();
 
         if (Uri.hasAuthority()) {
-            sb.append(buildAuthorityPartOfUri(Uri.getAuthority()));
+            UAuthority authority = Uri.getAuthority();
+            if (authority.hasIp()) {
+                try {
+                    sb.append("/");
+                    sb.append(InetAddress.getByAddress(authority.getIp().toByteArray()));
+                } catch (UnknownHostException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else if (authority.hasId()) {
+                sb.append("//");
+                sb.append(authority.getId().toStringUtf8());
+            }
         }
         sb.append("/");
 
@@ -105,30 +117,6 @@ public class ShortUriSerializer implements UriSerializer<String> {
         return sb.toString();
     }
 
-
-    /**
-     * Create the authority part of the uProtocol URI from an  authority object.
-     * @param Authority represents the deployment location of a specific  Software Entity.
-     * @return Returns the String representation of the  Authority in the uProtocol URI.
-     * @throws UnknownHostException 
-     */
-    private static String buildAuthorityPartOfUri(UAuthority Authority) {
- 
-        StringBuilder partialURI = new StringBuilder("//");
-
-        if (Authority.hasIp()) {
-            try {
-                partialURI.append(InetAddress.getByAddress(Authority.getIp().toByteArray()).getHostName());
-            }
-            catch (UnknownHostException e) {
-                return "";
-            }
-        } else if (Authority.hasId()) {
-            partialURI.append(Authority.getId().toStringUtf8());
-        }
-
-        return partialURI.toString();
-    }
 
     /**
      * Deserialize a String into a UUri object.

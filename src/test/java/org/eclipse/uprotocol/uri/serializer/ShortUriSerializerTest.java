@@ -42,6 +42,21 @@ import com.google.protobuf.ByteString;
 public class ShortUriSerializerTest {
     
     @Test
+    @DisplayName("Test serialize with null uri")
+    public void testSerializeWithNullUri() {
+        final String strUri = ShortUriSerializer.instance().serialize(null);
+        assertEquals("", strUri);
+    }
+
+    @Test
+    @DisplayName("Test serialize with empty uri")
+    public void testSerializeWithEmptyUri() {
+        final String strUri = ShortUriSerializer.instance().serialize(UUri.getDefaultInstance());
+        assertEquals("", strUri);
+    }
+
+
+    @Test
     @DisplayName("Test Creating and using the ShortUriSerializer")
     public void testCreatingShortUriSerializer() {
         final UUri uri = UUri.newBuilder()
@@ -111,5 +126,26 @@ public class ShortUriSerializerTest {
         assertEquals("//192.168.1.100/1/1/20000", strUri);
         final UUri uri2 = ShortUriSerializer.instance().deserialize(strUri);
         assertEquals(uri, uri2);
-    }    
+    }
+    
+    @Test
+    @DisplayName("Test short serializing a URI that doesn't have a resource")
+    public void testShortSerializingUriWithoutResource() {
+        final UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setId(1).setVersionMajor(1))
+                .build();
+        final String strUri = ShortUriSerializer.instance().serialize(uri);
+        assertEquals(strUri, "/1/1"); 
+    }
+
+    @Test
+    @DisplayName("Test short serializing a URI that have a negative number for uEntity version major")
+    public void testShortSerializingUriWithNegativeVersionMajor() {
+        final UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setId(1).setVersionMajor(-1))
+                .setResource(UResourceBuilder.fromId(20000))
+                .build();
+        final String strUri = ShortUriSerializer.instance().serialize(uri);
+        assertEquals(strUri, "/1//20000"); 
+    }
 }

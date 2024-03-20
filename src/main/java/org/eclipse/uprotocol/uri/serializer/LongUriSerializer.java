@@ -61,7 +61,8 @@ public class LongUriSerializer implements UriSerializer<String> {
         StringBuilder sb = new StringBuilder();
 
         if (Uri.hasAuthority()) {
-            sb.append(buildAuthorityPartOfUri(Uri.getAuthority()));
+            sb.append("//");
+            sb.append(Uri.getAuthority().getName());
         }
         sb.append("/");
 
@@ -105,23 +106,6 @@ public class LongUriSerializer implements UriSerializer<String> {
         return sb.toString();
     }
 
-
-    /**
-     * Create the authority part of the uProtocol URI from an  authority object.
-     * @param Authority represents the deployment location of a specific  Software Entity.
-     * @return Returns the String representation of the  Authority in the uProtocol URI.
-     */
-    private static String buildAuthorityPartOfUri(UAuthority Authority) {
- 
-        StringBuilder partialURI = new StringBuilder("//");
-        final Optional<String> maybeName = Optional.ofNullable(Authority.getName());
-
-        if (maybeName.isPresent()) {
-            partialURI.append(maybeName.get());
-        }
-
-        return partialURI.toString();
-    }
 
     /**
      * Deserialize a String into a UUri object.
