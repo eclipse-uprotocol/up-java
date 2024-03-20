@@ -366,6 +366,15 @@ class UAttributesValidatorTest {
     }
 
     @Test
+    @DisplayName("Validate a UAttributes isExpired() for an invalid UUID of UAttributes")
+    public void test_validate_uAttributes_isExpired_for_invalid_UUID() {
+        final UAttributes attributes = UAttributes.getDefaultInstance();
+        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
+        assertFalse(validator.isExpired(attributes));
+    }
+
+
+    @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be published not expired with ttl zero")
     public void test_validate_uAttributes_for_publish_message_payload_not_expired_with_ttl_zero() {
         final UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS0).withTtl(0).build();

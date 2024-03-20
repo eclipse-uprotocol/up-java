@@ -1,5 +1,6 @@
 package org.eclipse.uprotocol.uri.validator;
 
+import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
@@ -78,22 +79,35 @@ public interface UriValidator {
      * @return Returns true if this  URI is an empty container and has no valuable information in building uProtocol sinks or sources.
      */
     static boolean isEmpty(UUri uri) {
-        Objects.requireNonNull(uri, "Uri cannot be null.");
-        return !uri.hasAuthority() && !uri.hasEntity() && !uri.hasResource();
+        return (uri == null || uri.equals(UUri.getDefaultInstance()));
     }
 
 
     /**
-     * Returns true if URI is of type RPC.
+     * Returns true if URI is of type RPC. A UUri is of type RPC if it contains the word rpc in the resource name 
+     * and has an instance name and/or the id is less than MIN_TOPIC_ID.
      *
      * @param uri {@link UUri} to check if it is of type RPC method
      * @return Returns true if URI is of type RPC.
      */
     static boolean isRpcMethod(UUri uri) {
         
-        return (uri!= null) && uri.getResource().getName().contains("rpc") && 
-            (uri.getResource().hasInstance() && !uri.getResource().getInstance().trim().isEmpty() 
-                || (uri.getResource().hasId() && uri.getResource().getId() != 0));
+        return (uri!= null) && isRpcMethod(uri.getResource());
+    }
+
+    /**
+     * Returns true if URI is of type RPC. A UUri is of type RPC if it contains the word rpc in the resource name 
+     * and has an instance name and/or the id is less than MIN_TOPIC_ID.
+     *
+     * @param uri {@link UUri} to check if it is of type RPC method
+     * @return Returns true if URI is of type RPC.
+     */
+    static boolean isRpcMethod(UResource resource) {
+        
+        return (resource != null) && 
+                resource.getName().equals("rpc") && 
+                (resource.hasInstance() && !resource.getInstance().trim().isEmpty() || 
+                (resource.hasId() && resource.getId() < UResourceBuilder.MIN_TOPIC_ID));
     }
 
     /**
@@ -105,7 +119,7 @@ public interface UriValidator {
      * Meaning that this UUri can buree serialized to long or micro formats.
      */
     static boolean isResolved(UUri uri) {
-        return (uri != null) && !isEmpty(uri) && isLongForm(uri) && isMicroForm(uri);
+        return  isLongForm(uri) && isMicroForm(uri);
     }
 
 
@@ -116,14 +130,7 @@ public interface UriValidator {
      * @return Returns true if URI is of type RPC response.
      */
     static boolean isRpcResponse(UUri uri) {
-        if (uri == null) {
-            return false;
-        }
-
-        final UResource resource = uri.getResource();
-        return resource.getName().contains("rpc") && 
-            resource.hasInstance() && resource.getInstance().contains("response") &&
-            resource.hasId() && resource.getId() == 0;
+        return (uri != null) && uri.getResource().equals(UResourceBuilder.forRpcResponse());
     }
 
 
@@ -134,8 +141,11 @@ public interface UriValidator {
      * @return Returns true if URI contains numbers so that it can be serialized into micro format.
      */
     static boolean isMicroForm(UUri uri) {
-        return (uri !=null) && !isEmpty(uri) && uri.getEntity().hasId() && 
-            uri.getResource().hasId() && isMicroForm(uri.getAuthority());
+        return (uri !=null) && 
+                !isEmpty(uri) && 
+                uri.getEntity().hasId() && 
+                uri.getResource().hasId() && 
+                isMicroForm(uri.getAuthority());
     }
 
     /**
@@ -159,7 +169,8 @@ public interface UriValidator {
         return (uri != null) && 
             !isEmpty(uri) && 
             isLongForm(uri.getAuthority()) && 
-            !uri.getEntity().getName().isBlank() && !uri.getResource().getName().isBlank();
+            !uri.getEntity().getName().isBlank() &&
+            !uri.getResource().getName().isBlank();
     }
 
     /**
@@ -169,8 +180,9 @@ public interface UriValidator {
      * @return Returns true if URI contains names so that it can be serialized into long format.
      */
     static boolean isLongForm(UAuthority authority) {
-        return isLocal(authority) || 
-            ((authority != null) && authority.hasName() && !authority.getName().isBlank());
+        return (authority != null) && 
+            (isLocal(authority) || 
+             authority.hasName() && !authority.getName().isBlank());
     }
 
 
@@ -181,7 +193,8 @@ public interface UriValidator {
      * @return Returns true if UAuthority is local meaning the Authority is not populated with name, ip and id
      */
     static boolean isLocal(UAuthority authority) {
-        return (authority == null) || authority.equals(UAuthority.getDefaultInstance());
+        return authority != null && 
+            authority.equals(UAuthority.getDefaultInstance());
     }
 
     /**
@@ -190,9 +203,7 @@ public interface UriValidator {
      * @return Returns true if UAuthority is remote meaning the name and/or ip/id is populated.
      */
     static boolean isRemote(UAuthority authority) {
-        return (authority != null) && 
-            !authority.equals(UAuthority.getDefaultInstance()) &&
-            (isLongForm(authority) || isMicroForm(authority));
+        return (authority != null) && !authority.equals(UAuthority.getDefaultInstance());
     }
 
     /**

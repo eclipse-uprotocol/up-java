@@ -117,6 +117,21 @@ public class UPayloadBuilderTest {
         Optional<UUri> unpacked = UPayloadBuilder.unpack(payload, UUri.class);
         assertTrue(unpacked.isEmpty());
     }
-    
+
+    @Test
+    @DisplayName("Test unpack payload without an unsupported format")
+    public void test_unpack_payload_without_unsupported_format() {
+        CloudEvent message = CloudEvent.newBuilder()
+                .setId("myId")
+                .setSource("mySource")
+                .setType("myType")
+                .build();
+        UPayload payload = UPayload.newBuilder()
+                .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP)
+                .setValue(Any.pack(message).toByteString())
+                .build();
+        Optional<CloudEvent> unpacked = UPayloadBuilder.unpack(payload, CloudEvent.class);
+        assertTrue(unpacked.isEmpty());
+    }
 
 }

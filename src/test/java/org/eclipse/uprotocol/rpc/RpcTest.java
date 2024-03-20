@@ -121,10 +121,18 @@ class RpcTest {
     };
 
 
-    RpcClient WithNullInPayload = new RpcClient() {
+    RpcClient WithNullMessage = new RpcClient() {
         @Override
         public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             return CompletableFuture.completedFuture(null);
+        }
+    };
+
+    
+    RpcClient WithNullInPayload = new RpcClient() {
+        @Override
+        public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
+            return CompletableFuture.completedFuture(UMessage.getDefaultInstance());
         }
     };
 
@@ -590,6 +598,19 @@ class RpcTest {
         assertEquals(exception.getMessage(),
                 "Type of the Any message does not match the given class. [org.eclipse.uprotocol.v1.UStatus]");
     }
+
+    @Test
+    @DisplayName("test RpcMapper.mapResponse with payload is null")
+    void test_map_response_with_payload_is_null() {
+        final CompletionStage<UStatus> rpcResponse = RpcMapper.mapResponse(
+                WithNullInPayload.invokeMethod(buildTopic(), null, buildCallOptions()), UStatus.class);
+
+        assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
+        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, rpcResponse.toCompletableFuture()::get);
+        assertEquals(exception.getMessage(),
+                "java.lang.RuntimeException: Server returned a null payload. Expected org.eclipse.uprotocol.v1.UStatus");
+    }
+   
 
     @Test
     @DisplayName("test invalid payload that is not of type any")

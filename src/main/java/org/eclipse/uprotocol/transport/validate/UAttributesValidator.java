@@ -97,7 +97,7 @@ public abstract class UAttributesValidator {
         final Optional<Long> maybeTime = UuidUtils.getTime(uAttributes.getId());
         
         // if the message does not have a ttl or the original time is not present or the ttl is less than 0
-        if (!uAttributes.hasTtl() || maybeTime.isEmpty() || ttl <= 0) {
+        if (maybeTime.isEmpty() || ttl <= 0) {
             return false;
         }
 

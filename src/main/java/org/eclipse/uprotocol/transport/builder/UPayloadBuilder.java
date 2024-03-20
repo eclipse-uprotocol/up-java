@@ -72,7 +72,7 @@ public interface UPayloadBuilder {
      */
     @SuppressWarnings("unchecked")
     static <T extends Message> Optional<T> unpack(UPayload payload, Class<T> clazz) {
-        if (payload == null || payload.getValue() == null) {
+        if (payload == null || !payload.hasValue()) {
             return Optional.empty();
         }
         try {
