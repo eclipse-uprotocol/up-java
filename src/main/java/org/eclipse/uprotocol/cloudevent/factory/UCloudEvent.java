@@ -403,7 +403,7 @@ public interface UCloudEvent {
                 UAttributes.newBuilder()
                     .setSource(LongUriSerializer.instance().deserialize(getSource(event)))
                     .setId(LongUuidSerializer.instance().deserialize(event.getId()))
-                    .setType(getMessageType(event));
+                    .setType(getMessageType(event.getType()));
 
         if (hasCommunicationStatusProblem(event)) {
             builder.setCommstatus(getCommunicationStatus(event));

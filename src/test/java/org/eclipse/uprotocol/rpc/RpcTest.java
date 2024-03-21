@@ -124,7 +124,7 @@ class RpcTest {
     RpcClient WithNullMessage = new RpcClient() {
         @Override
         public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
-            return CompletableFuture.completedFuture(null);
+            return CompletableFuture.completedFuture(UMessage.newBuilder().build());
         }
     };
 
@@ -659,5 +659,29 @@ class RpcTest {
         assertFalse(stubReturnValue.toCompletableFuture().isCancelled());
 
     }
+
+    @Test
+    @DisplayName("test mapResponse when the response message is null")
+    void test_map_response_when_response_message_is_null() {
+        final CompletionStage<io.cloudevents.v1.proto.CloudEvent> rpcResponse = RpcMapper.mapResponse(
+                WithNullMessage.invokeMethod(buildTopic(), null, buildCallOptions()), io.cloudevents.v1.proto.CloudEvent.class);
+
+        assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
+        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, rpcResponse.toCompletableFuture()::get);
+        assertEquals(exception.getMessage(),
+                "java.lang.RuntimeException: Server returned a null payload. Expected io.cloudevents.v1.proto.CloudEvent");
+    }
+
+    @Test
+    @DisplayName("test mapResponseToResult when the response message not the request payload, is null")
+    void test_map_response_to_result_when_response_message_not_the_request_payload_is_null() throws Exception {
+        final CompletionStage<RpcResult<io.cloudevents.v1.proto.CloudEvent>> rpcResponse = RpcMapper.mapResponseToResult(
+                WithNullMessage.invokeMethod(buildTopic(), null, buildCallOptions()), io.cloudevents.v1.proto.CloudEvent.class);
+
+        assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
+        UStatus status = UStatus.newBuilder().setCode(UCode.UNKNOWN).setMessage("Server returned a null payload. Expected io.cloudevents.v1.proto.CloudEvent").build();
+        assertEquals(status, rpcResponse.toCompletableFuture().get().failureValue());
+    }
+    
 
 }

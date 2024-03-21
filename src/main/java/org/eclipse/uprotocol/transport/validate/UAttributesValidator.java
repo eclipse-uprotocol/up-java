@@ -79,7 +79,7 @@ public abstract class UAttributesValidator {
     public ValidationResult validate(UAttributes attributes) {
         final String errorMessage = Stream.of(validateType(attributes),
                          validateTtl(attributes), validateSink(attributes), validatePriority(attributes),
-                        validateCommStatus(attributes), validatePermissionLevel(attributes), validateReqId(attributes))
+                         validatePermissionLevel(attributes), validateReqId(attributes))
                 .filter(ValidationResult::isFailure).map(ValidationResult::getMessage).collect(Collectors.joining(","));
         return errorMessage.isBlank() ? ValidationResult.success() : ValidationResult.failure(errorMessage);
     }

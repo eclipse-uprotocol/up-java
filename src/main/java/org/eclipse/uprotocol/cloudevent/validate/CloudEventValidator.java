@@ -53,7 +53,7 @@ public abstract class CloudEventValidator {
         }
         
         CloudEventValidator validator;
-        switch (UCloudEvent.getMessageType(cloudEvent)){
+        switch (UCloudEvent.getMessageType(cloudEvent.getType())){
             case UMESSAGE_TYPE_NOTIFICATION:
                 validator = Validators.NOTIFICATION.validator();
                 break;
