@@ -574,6 +574,17 @@ class UriValidatorTest {
         assertTrue(UriValidator.isRpcResponse(uuri));
         assertTrue(status.isSuccess());
     }
+    @Test
+    @DisplayName("Test invalid rpc method uri")
+    public void test_invalid_rpc_method_uri(){
+        UUri uuri =
+                UUri.newBuilder()
+                        .setEntity(UEntity.newBuilder().setName("hello.world").build())
+                        .setResource(UResource.newBuilder().setName("testrpc").setInstance("SayHello").build()).build();
+        ValidationResult status = UriValidator.validateRpcMethod(uuri);
+        assertFalse(UriValidator.isRpcMethod(uuri));
+        assertFalse(status.isSuccess());
+    }
 
     @Test
     @DisplayName("Test invalid rpc response uri")
@@ -582,7 +593,23 @@ class UriValidatorTest {
                 UUri.newBuilder()
                     .setEntity(UEntity.newBuilder().setName("hartley").build())
                     .setResource(UResource.newBuilder().setName("rpc").setId(19999).build()).build();
-        final ValidationResult status = UriValidator.validateRpcResponse(uuri);
+        ValidationResult status = UriValidator.validateRpcResponse(uuri);
+        assertFalse(UriValidator.isRpcResponse(uuri));
+        assertFalse(status.isSuccess());
+
+        uuri =
+                UUri.newBuilder()
+                        .setEntity(UEntity.newBuilder().setName("hartley").build())
+                        .setResource(UResource.newBuilder().setName("testrpc").setInstance("response").build()).build();
+        status = UriValidator.validateRpcResponse(uuri);
+        assertFalse(UriValidator.isRpcResponse(uuri));
+        assertFalse(status.isSuccess());
+
+        uuri =
+                UUri.newBuilder()
+                        .setEntity(UEntity.newBuilder().setName("hartley").build())
+                        .setResource(UResource.newBuilder().setName("rpc").setInstance("testresponse").build()).build();
+        status = UriValidator.validateRpcResponse(uuri);
         assertFalse(UriValidator.isRpcResponse(uuri));
         assertFalse(status.isSuccess());
     }

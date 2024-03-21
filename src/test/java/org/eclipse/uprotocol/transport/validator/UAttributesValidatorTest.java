@@ -623,7 +623,7 @@ class UAttributesValidatorTest {
     public void test_valid_request_methoduri_in_sink(){
         final UUri sink= LongUriSerializer.instance().deserialize("/test.service/1/rpc.method");
         final UAttributes attributes =
-                UAttributesBuilder.request(buildSource(), sink, UPriority.UPRIORITY_CS0,3000).build();
+                UAttributesBuilder.request(buildSource(), sink, UPriority.UPRIORITY_CS4,3000).build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         assertEquals("UAttributesValidator.Request", validator.toString());
         final ValidationResult status = validator.validate(attributes);
@@ -635,7 +635,7 @@ class UAttributesValidatorTest {
     public void test_invalid_request_methoduri_in_sink(){
         final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/test.response");
         final UAttributes attributes =
-                UAttributesBuilder.request(buildSource(), sink,UPriority.UPRIORITY_CS0,3000).build();
+                UAttributesBuilder.request(buildSource(), sink,UPriority.UPRIORITY_CS4,3000).build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         assertEquals("UAttributesValidator.Request", validator.toString());
         final ValidationResult status = validator.validate(attributes);
@@ -647,7 +647,7 @@ class UAttributesValidatorTest {
     public void test_valid_response_uri_in_sink(){
         final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/rpc.response");
         final UAttributes attributes =
-                UAttributesBuilder.response(buildSource(), sink,UPriority.UPRIORITY_CS0,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
+                UAttributesBuilder.response(buildSource(), sink,UPriority.UPRIORITY_CS4,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         assertEquals("UAttributesValidator.Response", validator.toString());
         final ValidationResult status = validator.validate(attributes);
@@ -659,7 +659,7 @@ class UAttributesValidatorTest {
     public void test_invalid_response_uri_in_sink(){
         final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/rpc.method");
         final UAttributes attributes =
-                UAttributesBuilder.response(buildSource(), sink,UPriority.UPRIORITY_CS0,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
+                UAttributesBuilder.response(buildSource(), sink,UPriority.UPRIORITY_CS4,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         assertEquals("UAttributesValidator.Response", validator.toString());
         final ValidationResult status = validator.validate(attributes);

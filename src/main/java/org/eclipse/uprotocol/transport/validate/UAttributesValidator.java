@@ -78,8 +78,8 @@ public abstract class UAttributesValidator {
      */
     public ValidationResult validate(UAttributes attributes) {
         final String errorMessage = Stream.of(validateType(attributes),
-                         validateTtl(attributes), validateSink(attributes),
-                         validatePermissionLevel(attributes), validateReqId(attributes))
+                         validateTtl(attributes), validateSink(attributes), validatePriority(attributes),
+                        validateCommStatus(attributes), validatePermissionLevel(attributes), validateReqId(attributes))
                 .filter(ValidationResult::isFailure).map(ValidationResult::getMessage).collect(Collectors.joining(","));
         return errorMessage.isBlank() ? ValidationResult.success() : ValidationResult.failure(errorMessage);
     }
@@ -168,6 +168,19 @@ public abstract class UAttributesValidator {
             return ValidationResult.success();
         }
     }
+
+
+    /** 
+     * Validate the priority value to ensure it is one of the known CS values
+     * 
+     * @param attributes Attributes object containing the Priority to validate.
+     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+     */
+    public ValidationResult validatePriority(UAttributes attributes) {
+        return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS0_VALUE ? 
+        ValidationResult.success() : ValidationResult.failure(String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
+    }
+
 
     /**
      * Validate the {@link UMessageType} attribute, it is required.
@@ -274,6 +287,19 @@ public abstract class UAttributesValidator {
             }
         }
 
+
+         /** 
+         * Validate the priority value to ensure it is one of the known CS values
+         * 
+         * @param attributes Attributes object containing the Priority to validate.
+         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         */
+        @Override
+        public ValidationResult validatePriority(UAttributes attributes) {
+            return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS4_VALUE ? 
+            ValidationResult.success() : ValidationResult.failure(String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
+        }
+
         @Override
         public String toString() {
             return "UAttributesValidator.Request";
@@ -334,6 +360,18 @@ public abstract class UAttributesValidator {
                 return ValidationResult.success();
             }
 
+        }
+
+         /** 
+         * Validate the priority value to ensure it is one of the known CS values
+         * 
+         * @param attributes Attributes object containing the Priority to validate.
+         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         */
+        @Override
+        public ValidationResult validatePriority(UAttributes attributes) {
+            return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS4_VALUE ? 
+            ValidationResult.success() : ValidationResult.failure(String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
         }
 
         @Override
