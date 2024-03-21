@@ -48,7 +48,7 @@ public abstract class CloudEventValidator {
      */
     public static CloudEventValidator getValidator(CloudEvent cloudEvent){
         final String cloudEventType = cloudEvent.getType();
-        if (cloudEventType == null || cloudEventType.isEmpty()) {
+        if (cloudEventType.isEmpty()) {
             return Validators.PUBLISH.validator();
         }
         
@@ -268,7 +268,7 @@ public abstract class CloudEventValidator {
      * Implements Validations for a CloudEvent of type Publish that behaves as a Notification, meaning
      * it must have a sink.
      */
-    private static class Notification extends Publish {
+    private static class Notification extends CloudEventValidator {
 
         @Override
         public ValidationResult validateSink(CloudEvent cloudEvent) {
@@ -288,6 +288,22 @@ public abstract class CloudEventValidator {
         @Override
         public String toString() {
             return "CloudEventValidator.Notification";
+        }
+
+        @Override
+        public ValidationResult validateSource(CloudEvent cloudEvent) {
+            final String source = cloudEvent.getSource().toString();
+            ValidationResult checkSource = validateTopicUri(source);
+            if (checkSource.isFailure()) {
+                return ValidationResult.failure(String.format("Invalid Notification type CloudEvent source [%s]. %s", source, checkSource.getMessage()));
+            }
+            return ValidationResult.success();
+        }
+
+        @Override
+        public ValidationResult validateType(CloudEvent cloudEvent) {
+            return "not.v1".equals(cloudEvent.getType()) ? ValidationResult.success() :
+                    ValidationResult.failure(String.format("Invalid CloudEvent type [%s]. CloudEvent of type Notification must have a type of 'not.v1'", cloudEvent.getType()));
         }
     }
 

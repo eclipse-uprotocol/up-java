@@ -30,6 +30,7 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
+import org.eclipse.uprotocol.transport.builder.UAttributesBuilder;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
@@ -967,5 +968,26 @@ class UCloudEventTest {
 
         return LongUriSerializer.instance().serialize(Uri);
     }
+
+    @Test
+    @DisplayName("Test fromMessage passing null")
+    public void test_fromMessage_with_null_message() {
+        try {
+            UCloudEvent.fromMessage(null);
+        } catch (NullPointerException e) {
+            assertEquals("message cannot be null.", e.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("Test fromMessage when UPayload in UMessage does not have value but reference")
+    public void test_fromMessage_with_message_with_payload_reference() {
+        UMessage uMessage = UMessage.newBuilder()
+            .setPayload(UPayload.newBuilder().setFormat(UPayloadFormat.UPAYLOAD_FORMAT_RAW).setReference(0))
+            .build();
+        CloudEvent cloudEvent = UCloudEvent.fromMessage(uMessage);
+        
+    }
+
 
 }

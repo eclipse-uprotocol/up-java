@@ -65,7 +65,37 @@ class UCloudEventAttributesTest {
         String expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken', traceparent='darthvader'}";
         assertEquals(expected, uCloudEventAttributes.toString());
     }
+    
+    @Test
+    @DisplayName("Test creating a valid attributes but traceparent is blank")
+    public void test_create_valid_with_blank_traceparent() {
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withHash("somehash")
+                .withPriority(UPriority.UPRIORITY_CS6)
+                .withTtl(3)
+                .withToken("someOAuthToken")
+                .withTraceparent("  ")
+                .build();
+        assertTrue(uCloudEventAttributes.hash().isPresent());
+        assertEquals("somehash", uCloudEventAttributes.hash().get());
+        assertFalse(uCloudEventAttributes.traceparent().isPresent());
+    }
 
+    @Test
+    @DisplayName("Test creating a empty attributes with only traceparent")
+    public void test_create_empty_with_only_traceparent() {
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withTraceparent("someTraceParent")
+                .build();
+        assertFalse(uCloudEventAttributes.hash().isPresent());
+        assertFalse(uCloudEventAttributes.priority().isPresent());
+        assertFalse(uCloudEventAttributes.token().isPresent());
+        assertFalse(uCloudEventAttributes.ttl().isPresent());
+        assertTrue(uCloudEventAttributes.traceparent().isPresent());
+        assertFalse(uCloudEventAttributes.isEmpty());
+        assertEquals("someTraceParent", uCloudEventAttributes.traceparent().get());
+    }
+            
     @Test
     @DisplayName("Test creating a valid attributes object")
     public void test_create_valid() {

@@ -73,12 +73,15 @@ public class ShortUriSerializer implements UriSerializer<String> {
                     sb.append("/");
                     sb.append(InetAddress.getByAddress(authority.getIp().toByteArray()));
                 } catch (UnknownHostException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    return "";
                 }
             } else if (authority.hasId()) {
                 sb.append("//");
                 sb.append(authority.getId().toStringUtf8());
+            }
+            // Missing IP and ID, only has name
+            else {
+                return "";
             }
         }
         sb.append("/");
@@ -137,7 +140,7 @@ public class ShortUriSerializer implements UriSerializer<String> {
         final String[] uriParts = uri.split("/");
         final int numberOfPartsInUri = uriParts.length;
 
-        if(numberOfPartsInUri == 0 || numberOfPartsInUri == 1) {
+        if(numberOfPartsInUri < 2) {
             return UUri.getDefaultInstance();
         }
 
@@ -156,6 +159,10 @@ public class ShortUriSerializer implements UriSerializer<String> {
                 if (numberOfPartsInUri > 3) {
                     uResource = parseFromString(uriParts[3]);
                 }
+                // Too many parts now
+                if(numberOfPartsInUri > 4) {
+                    return UUri.getDefaultInstance();
+                }
             } 
         } else {
             // If authority is blank, it is an error
@@ -164,9 +171,9 @@ public class ShortUriSerializer implements UriSerializer<String> {
             }
 
             // Try if it is an IP address, if not then it must be an ID
-            try {
-                uAuthority = UAuthority.newBuilder().setIp(ByteString.copyFrom(InetAddress.getByName(uriParts[2]).getAddress())).build();
-            } catch (UnknownHostException e) {
+            if (IpAddress.isValid(uriParts[2])) {
+                uAuthority = UAuthority.newBuilder().setIp(ByteString.copyFrom(IpAddress.toBytes(uriParts[2]))).build();
+            } else {
                 uAuthority = UAuthority.newBuilder().setId(ByteString.copyFromUtf8(uriParts[2])).build();
             }
 
@@ -178,7 +185,10 @@ public class ShortUriSerializer implements UriSerializer<String> {
                     if (numberOfPartsInUri > 5) { 
                         uResource = parseFromString(uriParts[5]);
                     }
-
+                    // Way too many parts in the URI
+                    if (numberOfPartsInUri > 6) {
+                        return UUri.getDefaultInstance();
+                    }
                 } 
             } else {
                 return UUri.newBuilder()
@@ -201,13 +211,16 @@ public class ShortUriSerializer implements UriSerializer<String> {
             return UUri.getDefaultInstance();
         }
 
-        UEntity.Builder UEntityFactory = UEntity.newBuilder().setId(ueIdInt);
+        UEntity.Builder uEntityBuilder = UEntity.newBuilder();
 
+        if (ueIdInt != null) {
+            uEntityBuilder.setId(ueIdInt);
+        }
         if (useVersionInt != null) {
-            UEntityFactory.setVersionMajor(useVersionInt);
+            uEntityBuilder.setVersionMajor(useVersionInt);
         }
             
-        UUri.Builder uriBuilder = UUri.newBuilder().setEntity(UEntityFactory);
+        UUri.Builder uriBuilder = UUri.newBuilder().setEntity(uEntityBuilder);
         if (uAuthority != null) {
             uriBuilder.setAuthority(uAuthority);
         }

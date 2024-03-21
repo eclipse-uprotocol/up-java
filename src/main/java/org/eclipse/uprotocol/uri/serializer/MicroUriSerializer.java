@@ -153,13 +153,11 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
                 if (Uri.getAuthority().hasIp()) {
                     os.write(Uri.getAuthority().getIp().toByteArray());
                 }
-                else if (Uri.getAuthority().hasId()) {
+                else {
                     os.write(Uri.getAuthority().getId().toByteArray());
-                }
-                
+                } 
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                return new byte[0];
             }
         }
 

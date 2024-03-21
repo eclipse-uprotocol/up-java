@@ -27,6 +27,7 @@ package org.eclipse.uprotocol.cloudevent.validate;
 import com.google.protobuf.Any;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.CloudEventAttributes;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
@@ -60,7 +61,7 @@ class CloudEventValidatorTest {
     @DisplayName("Test get a notification cloud event validator")
     void test_get_a_notification_cloud_event_validator() {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("sink", "//bo.cloud/petapp")
-                .withType("pub.v1");
+                .withType("not.v1");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final UStatus status = validator.validateType(cloudEvent).toStatus();
@@ -88,7 +89,7 @@ class CloudEventValidatorTest {
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final UStatus status = validator.validateType(cloudEvent).toStatus();
         assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
-        assertEquals("Invalid CloudEvent type [res.v1]. CloudEvent of type Publish must have a type of 'pub.v1'",
+        assertEquals("Invalid CloudEvent type [res.v1]. CloudEvent of type Notification must have a type of 'not.v1'",
                 status.getMessage());
     }
 
@@ -293,6 +294,20 @@ class CloudEventValidatorTest {
     }
 
     @Test
+    @DisplayName("Test Notification type CloudEvent is not valid when source is empty")
+    void test_notification_type_cloudevent_is_not_valid_when_source_is_empty() {
+        UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
+        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
+                .withSource(URI.create("/")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_NOTIFICATION));
+        CloudEvent cloudEvent = builder.build();
+        final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
+        final ValidationResult result = validator.validate(cloudEvent);
+        assertEquals("Invalid Notification type CloudEvent source [/]. Uri is empty.,Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.", result.getMessage());
+    }
+
+    @Test
     @DisplayName("Test Publish type CloudEvent is not valid when source is invalid and id invalid")
     void test_publish_type_cloudevent_is_not_valid_when_source_is_missing_authority() {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId("testme")
@@ -327,7 +342,7 @@ class CloudEventValidatorTest {
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+                .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_NOTIFICATION))
                 .withExtension("sink", "//bo.cloud/petapp");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
@@ -342,7 +357,7 @@ class CloudEventValidatorTest {
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
+                .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_NOTIFICATION));
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -356,7 +371,7 @@ class CloudEventValidatorTest {
         String str_uuid = LongUuidSerializer.instance().serialize(uuid);
         
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid)
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+                .withSource(URI.create("/body.access/1/door.front_left#Door")).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_NOTIFICATION))
                 .withExtension("sink", "//bo.cloud");
         CloudEvent cloudEvent = builder.build();
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
@@ -627,4 +642,17 @@ class CloudEventValidatorTest {
         assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
         assertEquals("CloudEventValidator.Publish", validator.toString());
     }
+
+    @Test
+    @DisplayName("Test fetching the notification validator")
+    void test_fetching_the_notification_validator() {
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest();
+        builder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_NOTIFICATION));
+        CloudEvent cloudEvent = builder.build();
+        final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
+        final UStatus status = validator.validateType(cloudEvent).toStatus();
+        assertEquals(status, ValidationResult.STATUS_SUCCESS);
+        assertEquals("CloudEventValidator.Notification", validator.toString());
+    }
+
 }

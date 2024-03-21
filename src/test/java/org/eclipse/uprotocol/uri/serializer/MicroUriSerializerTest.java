@@ -176,6 +176,48 @@ public class MicroUriSerializerTest {
     }
 
     @Test
+    @DisplayName("Test serialize with good IPv4 based authority and the uEntity major version is missing")
+    public void test_serialize_good_ipv4_based_authority_missing_major_version() throws UnknownHostException {
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(IpAddress.toBytes("192.168.1.100"))))
+                .setEntity(UEntity.newBuilder().setId(29999))
+                .setResource(UResourceBuilder.forRpcResponse())
+                .build();
+        byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+        UUri uri2 = MicroUriSerializer.instance().deserialize(bytes);
+        assertEquals(uri2.getEntity().getVersionMajor(), 0);
+    }
+
+    @Test
+    @DisplayName("Test serialize without uauthority ip or id")
+    public void test_serialize_without_uauthority_ip_or_id() {
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setName("vcu.vin").build())
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(19999))
+                .build();
+        byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+        assertTrue(bytes.length == 0);
+    }
+
+    @Test
+    @DisplayName("Test serialize with id that is out of range")
+    public void test_serialize_id_out_of_range() {
+        byte[] byteArray = new byte[258];
+        for (int i = 0; i < 256; i++) {
+            byteArray[i] = (byte) (i);
+        }
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(byteArray)))
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(19999))
+                .build();
+        byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+        assertTrue(bytes.length == 0);
+    }
+
+
+    @Test
     @DisplayName("Test serialize with good IPv6 based authority")
     public void test_serialize_good_ipv6_based_authority() throws UnknownHostException {
         UUri uri = UUri.newBuilder()

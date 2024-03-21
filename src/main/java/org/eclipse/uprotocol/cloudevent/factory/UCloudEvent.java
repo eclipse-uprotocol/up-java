@@ -339,8 +339,9 @@ public interface UCloudEvent {
      * 
      */
     static String getEventType(UMessageType type){
-        switch (type){
+        switch (type) {
             case UMESSAGE_TYPE_NOTIFICATION:
+                return "not.v1";
             case UMESSAGE_TYPE_PUBLISH:
                 return "pub.v1";
             case UMESSAGE_TYPE_REQUEST:
@@ -367,12 +368,13 @@ public interface UCloudEvent {
     static UMessageType getMessageType(CloudEvent cloudEvent) {
         switch (cloudEvent.getType()){
             case "pub.v1":
-                return getSink(cloudEvent).isPresent() ? 
-                    UMessageType.UMESSAGE_TYPE_NOTIFICATION : UMessageType.UMESSAGE_TYPE_PUBLISH;
+                return UMessageType.UMESSAGE_TYPE_PUBLISH;
             case "req.v1":
                 return UMessageType.UMESSAGE_TYPE_REQUEST;
             case "res.v1":
                 return UMessageType.UMESSAGE_TYPE_RESPONSE;
+            case "not.v1":
+                return UMessageType.UMESSAGE_TYPE_NOTIFICATION;
             default:
                 return UMessageType.UMESSAGE_TYPE_UNSPECIFIED;
         }
@@ -428,9 +430,7 @@ public interface UCloudEvent {
      * @return returns the cloud event
      */
     static CloudEvent fromMessage(UMessage message) {
-        if (message == null) {
-            return CloudEventBuilder.v1().build();
-        }
+        Objects.requireNonNull(message, "message cannot be null.");
 
         UAttributes attributes = Objects.requireNonNullElse(message.getAttributes(), UAttributes.getDefaultInstance());
         UPayload payload = Objects.requireNonNullElse(message.getPayload(), UPayload.getDefaultInstance());
