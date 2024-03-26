@@ -26,6 +26,10 @@ package org.eclipse.uprotocol.streamer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.eclipse.uprotocol.core.usubscription.v3.FetchSubscriptionsRequest;
+import org.eclipse.uprotocol.core.usubscription.v3.FetchSubscriptionsResponse;
+import org.eclipse.uprotocol.core.usubscription.v3.NotificationsRequest;
+import org.eclipse.uprotocol.core.usubscription.v3.USubscription;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.v1.*;
@@ -52,7 +56,7 @@ public class UStreamerTest {
         UAuthority remoteAuthority = UAuthority.newBuilder().setName("remote").build();
         Route remote = new Route(remoteAuthority, new RemoteTransport());
         
-        UStreamer streamer = new UStreamer();
+        UStreamer streamer = new UStreamer(new LocalSubMgr());
 
         // Add forwarding rules to route local<->remote 
         assertEquals(streamer.addForwardingRule(local, remote), UStatus.newBuilder().setCode(UCode.OK).build());
@@ -97,7 +101,7 @@ public class UStreamerTest {
         UAuthority remoteAuthority2 = UAuthority.newBuilder().setName("remote2").build();
         Route remote2 = new Route(remoteAuthority2, new RemoteTransport());
         
-        UStreamer streamer = new UStreamer();
+        UStreamer streamer = new UStreamer(new LocalSubMgr());
 
         // Add forwarding rules to route local<->remote1 
         assertEquals(streamer.addForwardingRule(local, remote1), UStatus.newBuilder().setCode(UCode.OK).build());
@@ -133,7 +137,7 @@ public class UStreamerTest {
         UAuthority remoteAuthority2 = UAuthority.newBuilder().setName("remote2").build();
         Route remote2 = new Route(remoteAuthority2, remoteTransport);
         
-        UStreamer streamer = new UStreamer();
+        UStreamer streamer = new UStreamer(new LocalSubMgr());
 
         // Add forwarding rules to route local<->remote1 
         assertEquals(streamer.addForwardingRule(local, remote1), UStatus.newBuilder().setCode(UCode.OK).build());
@@ -165,7 +169,7 @@ public class UStreamerTest {
         UAuthority remoteAuthority2 = UAuthority.newBuilder().setName("*").build();
         Route remote2 = new Route(remoteAuthority2, new RemoteTransport());
         
-        UStreamer streamer = new UStreamer();
+        UStreamer streamer = new UStreamer(new LocalSubMgr());
 
         // Add forwarding rules to route local<->remote1 
         assertEquals(streamer.addForwardingRule(local, remote1), UStatus.newBuilder().setCode(UCode.OK).build());
@@ -215,6 +219,25 @@ public class UStreamerTest {
         public UStatus unregisterListener(UUri topic, UListener listener) {
             return UStatus.newBuilder().setCode(UCode.OK).build();
         }
+    }
+
+    class LocalSubMgr implements USubscription {
+
+        @Override
+        public FetchSubscriptionsResponse fetchSubscriptions(FetchSubscriptionsRequest request) {
+            return FetchSubscriptionsResponse.getDefaultInstance();
+        }
+
+        @Override
+        public UStatus registerForNotifications(NotificationsRequest request) {
+            return UStatus.newBuilder().setCode(UCode.OK).build();
+        }
+
+        @Override
+        public UStatus unregisterForNotifications(NotificationsRequest request) {
+            return UStatus.newBuilder().setCode(UCode.OK).build();
+        }
+        
     }
 
 }
