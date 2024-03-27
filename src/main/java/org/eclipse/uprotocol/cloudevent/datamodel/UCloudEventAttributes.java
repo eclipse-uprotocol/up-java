@@ -81,7 +81,11 @@ public class UCloudEventAttributes {
      * @return Returns true if this attributes container is an empty container and has no valuable information in building a CloudEvent.
      */
     public boolean isEmpty() {
-        return hash().isEmpty() && priority().isEmpty() && ttl().isEmpty() && token().isEmpty() && traceparent().isEmpty();
+        return hash().isEmpty() && 
+               priority().isEmpty() &&
+               ttl().isEmpty() &&
+               token().isEmpty() &&
+               traceparent().isEmpty();
     }
 
     /**

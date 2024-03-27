@@ -37,6 +37,8 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.google.protobuf.ByteString;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -668,4 +670,222 @@ class UriValidatorTest {
         assertFalse(UriValidator.isRemote(uri.getAuthority()));
     }
 
+    @Test
+    @DisplayName("Test isRpcMethod with UResource and no UAuthority")
+    public void test_is_rpc_method_with_uresource_and_no_uauthority() {
+
+        assertFalse(UriValidator.isRpcMethod(UUri.newBuilder().build()));
+
+        UUri uri = UUri.newBuilder()
+        .setEntity(UEntity.newBuilder().setName("hartley").build())
+        .setResource(UResourceBuilder.fromId(0x8000))
+        .build();
+        assertFalse(UriValidator.isRpcMethod(uri));
+    }
+    
+    @Test
+    @DisplayName("Test isRpcMethod passing null for uri")
+    public void test_is_rpc_method_passing_null_for_uri() {
+        assertFalse(UriValidator.isRpcMethod((UUri)null));
+    }
+    
+    @Test
+    @DisplayName("Test isRpcMethod passing null for resource")
+    public void test_is_rpc_method_passing_null_for_resource() {
+        assertFalse(UriValidator.isRpcMethod((UResource)null));
+    }
+
+    @Test
+    @DisplayName("Test isRpcMethod for UResource without an instance")
+    public void test_is_rpc_method_for_uresource_without_an_instance() {
+        UResource resource = UResource.newBuilder().setName("rpc").build();
+        assertFalse(UriValidator.isRpcMethod(resource));
+    }
+
+    @Test
+    @DisplayName("Test isRpcMethod for UResource an empty instance")
+    public void test_is_rpc_method_for_uresource_with_an_empty_instance() {
+        UResource resource = UResource.newBuilder().setName("rpc").setInstance("").build();
+        assertFalse(UriValidator.isRpcMethod(resource));
+    }
+
+    @Test
+    @DisplayName("Test isRpcMethod for UResource with id that is less than min_topic")
+    public void test_is_rpc_method_for_uresource_with_id_that_is_less_than_min_topic() {
+        UResource resource = UResource.newBuilder().setName("rpc").setId(0).build();
+        assertTrue(UriValidator.isRpcMethod(resource));
+    }
+
+    @Test
+    @DisplayName("Test isRpcMethod for UResource with id that is greater than min_topic")
+    public void test_is_rpc_method_for_uresource_with_id_that_is_greater_than_min_topic() {
+        UResource resource = UResource.newBuilder().setName("rpc").setId(0x8000).build();
+        assertFalse(UriValidator.isRpcMethod(resource));
+    }
+
+
+    @Test
+    @DisplayName("Test isEmpty with null uri")
+    public void test_is_empty_with_null_uri() {
+        assertTrue(UriValidator.isEmpty(null));
+    }
+
+    @Test
+    @DisplayName("Test isResolved when URI is long form only")
+    public void test_is_resolved_when_uri_is_long_form_only() {
+        UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setName("hartley").setVersionMajor(23))
+                .setResource(UResource.newBuilder().setName("rpc").setInstance("echo"))
+                .build();
+        assertFalse(UriValidator.isResolved(uri));
+    }
+
+    @Test
+    @DisplayName("Test isResolved when URI is micro form only")
+    public void test_is_resolved_when_uri_is_micro_form_only() {
+        UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setId(0).setVersionMajor(23))
+                .setResource(UResourceBuilder.fromId(300))
+                .build();
+        assertFalse(UriValidator.isResolved(uri));
+    }
+
+    @Test
+    @DisplayName("Test isResolved when URI is both long and micro form")
+    public void test_is_resolved_when_uri_is_both_long_and_micro_form() {
+        UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setName("hartley").setId(0).setVersionMajor(23))
+                .setResource(UResourceBuilder.forRpcResponse())
+                .build();
+        assertTrue(UriValidator.isResolved(uri));
+    }
+
+    @Test
+    @DisplayName("Test isRpcResponse when URI is null")
+    public void test_is_rpc_response_when_uri_is_null() {
+        assertFalse(UriValidator.isRpcResponse((UUri)null));
+    }
+
+    @Test
+    @DisplayName("Test isRpcResponse when uri is a valid RPC response")
+    public void test_is_rpc_response_when_uri_is_a_valid_rpc_response() {
+        UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setName("hartley").setId(0).setVersionMajor(23))
+                .setResource(UResourceBuilder.forRpcResponse())
+                .build();
+        assertTrue(UriValidator.isRpcResponse(uri));
+    }
+
+    @Test
+    @DisplayName("Test isMicroForm when URI is null")
+    public void test_is_micro_form_when_uri_is_null() {
+        assertFalse(UriValidator.isMicroForm((UUri)null));
+    }
+
+    @Test
+    @DisplayName("Test isMicroForm when URI is empty")
+    public void test_is_micro_form_when_uri_is_empty() {
+        assertFalse(UriValidator.isMicroForm(UUri.getDefaultInstance()));
+    }
+
+    @Test 
+    @DisplayName("Test isMicroForm when URI does not have UResource but does have UEntity")
+    public void test_is_micro_form_when_uri_does_not_have_uresource_but_does_have_uentity() {
+        UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setName("hartley").setId(0).setVersionMajor(23))
+                .build();
+        assertFalse(UriValidator.isMicroForm(uri));
+    }
+
+    @Test
+    @DisplayName("Test isLongForm when URI is null")
+    public void test_is_long_form_when_uri_is_null() {
+        assertFalse(UriValidator.isLongForm((UUri)null));
+        assertFalse(UriValidator.isLongForm((UAuthority)null));
+    }
+
+    @Test 
+    @DisplayName("Test isLongForm when UAuthority is not long form")
+    public void test_is_long_form_when_uauthority_is_not_long_form() {
+        UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setName("hartley").setId(0).setVersionMajor(23))
+                .setAuthority(UAuthority.getDefaultInstance())
+                .build();
+        assertFalse(UriValidator.isLongForm(uri));
+        assertTrue(UriValidator.isLongForm(uri.getAuthority()));
+    }
+
+    @Test
+    @DisplayName("Test isLongForm when UAuthority is long form but not the rest")
+    public void test_is_long_form_when_uauthority_is_long_form_but_not_the_rest() {
+        UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setName("hartley").setId(0).setVersionMajor(23))
+                .setAuthority(UAuthority.newBuilder().setName("vcu.veh.gm.com").build())
+                .build();
+        assertFalse(UriValidator.isLongForm(uri));
+        assertTrue(UriValidator.isLongForm(uri.getAuthority()));
+    }
+
+    @Test
+    @DisplayName("Test isLongForm when UAuthority blank name")
+    public void test_is_long_form_when_uauthority_is_blank_name() {
+        UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setName("hartley").setId(0).setVersionMajor(23))
+                .setAuthority(UAuthority.newBuilder().setName("").build())
+                .build();
+        assertFalse(UriValidator.isLongForm(uri));
+        assertFalse(UriValidator.isLongForm(uri.getAuthority()));
+    }
+
+    @Test
+    @DisplayName("Test isLongForm when UAuthority is not long form but the rest is")
+    public void test_is_long_form_when_uauthority_is_not_long_form_but_the_rest_is() {
+        UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setName("hartley").setId(0).setVersionMajor(23))
+                .setResource(UResourceBuilder.forRpcResponse())
+                .setAuthority(UAuthority.newBuilder().setId(ByteString.copyFromUtf8("hello Jello")))
+                .build();
+        assertFalse(UriValidator.isLongForm(uri));
+        assertFalse(UriValidator.isLongForm(uri.getAuthority()));
+    }
+
+    @Test
+    @DisplayName("Test isLocal when authority is null")
+    public void test_is_local_when_authority_is_null() {
+        assertFalse(UriValidator.isLocal((UAuthority)null));
+    }
+
+    @Test
+    @DisplayName("Test isRemote when authority is null")
+    public void test_is_remote_when_authority_is_null() {
+        assertFalse(UriValidator.isRemote((UAuthority)null));
+    }
+
+    @Test
+    @DisplayName("Test isRemote when authority doesn't have a name but does have a number set")
+    public void test_is_remote_when_authority_does_not_have_a_name_but_does_have_a_number_set() {
+        UAuthority authority = UAuthority.newBuilder().setId(ByteString.copyFromUtf8("hello Jello")).build();
+        assertTrue(UriValidator.isRemote(authority));
+        assertFalse(authority.hasName());
+        assertEquals(authority.getNumberCase(), UAuthority.NumberCase.ID);
+    }
+    
+    @Test
+    @DisplayName("Test isRemote when authority has name and number set")
+    public void test_is_remote_when_authority_has_name_and_number_set() {
+        UAuthority authority = UAuthority.newBuilder().setName("vcu.veh.gm.com").setId(ByteString.copyFromUtf8("hello Jello")).build();
+        assertTrue(UriValidator.isRemote(authority));
+        assertTrue(authority.hasName());
+        assertEquals(authority.getNumberCase(), UAuthority.NumberCase.ID);
+    }
+
+    @Test
+    @DisplayName("Test isRemote when authority has name and number is NOT set")
+    public void test_is_remote_when_authority_has_name_and_number_is_not_set() {
+        UAuthority authority = UAuthority.newBuilder().setName("vcu.veh.gm.com").build();
+        assertTrue(UriValidator.isRemote(authority));
+        assertTrue(authority.hasName());
+        assertEquals(authority.getNumberCase(), UAuthority.NumberCase.NUMBER_NOT_SET);
+    }
+    
 }

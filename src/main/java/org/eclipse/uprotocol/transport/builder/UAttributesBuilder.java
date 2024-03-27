@@ -43,7 +43,7 @@ public class UAttributesBuilder {
     private String token;
     private UUri sink;
     private Integer plevel;
-    private Integer commstatus;
+    private UCode commstatus;
     private UUID reqid;
     private String traceparent;
 
@@ -75,7 +75,7 @@ public class UAttributesBuilder {
         Objects.requireNonNull(sink, "sink cannot be null.");
 
         return new UAttributesBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(), 
-        UMessageType.UMESSAGE_TYPE_PUBLISH, priority).withSink(sink);
+        UMessageType.UMESSAGE_TYPE_NOTIFICATION, priority).withSink(sink);
     }
     
 
@@ -114,6 +114,16 @@ public class UAttributesBuilder {
         
         return new UAttributesBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(), 
         UMessageType.UMESSAGE_TYPE_RESPONSE, priority).withSink(sink).withReqId(reqid);
+    }
+
+    /**
+     * Construct a UAttributesBuilder for a response message using an existing request.
+     * @param request The original request {@code UAttributes} used to correlate the response to the request.
+     * @return Returns the UAttributesBuilder with the configured source, sink, priority, and reqid.
+     */
+    public static UAttributesBuilder response(UAttributes request) {
+        Objects.requireNonNull(request, "request cannot be null.");
+        return response(request.getSink(), request.getSource(), request.getPriority(), request.getId());
     }
 
 
@@ -186,7 +196,7 @@ public class UAttributesBuilder {
      * @param commstatus the communication status of the message.
      * @return Returns the UAttributesBuilder with the configured commstatus.
      */
-    public UAttributesBuilder withCommStatus(Integer commstatus) {
+    public UAttributesBuilder withCommStatus(UCode commstatus) {
         this.commstatus = commstatus;
         return this;
     }

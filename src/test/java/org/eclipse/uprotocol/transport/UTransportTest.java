@@ -27,10 +27,9 @@ package org.eclipse.uprotocol.transport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
-import org.eclipse.uprotocol.v1.UPayload;
+import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;

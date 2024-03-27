@@ -29,7 +29,6 @@ import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UEntity;
-import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -70,7 +69,10 @@ public class MicroUriSerializerTest {
     @DisplayName("Test happy path Byte serialization of local UUri")
     public void test_serialize_uri() {
 
-        UUri uri = UUri.newBuilder().setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build()).setResource(UResource.newBuilder().setId(19999).build()).build();
+        UUri uri = UUri.newBuilder()
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(19999))
+                .build();
 
 
         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
@@ -83,7 +85,11 @@ public class MicroUriSerializerTest {
     @Test
     @DisplayName("Test Serialize a remote UUri to micro without the address")
     public void test_serialize_remote_uri_without_address() {
-        UUri uri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.vin").build()).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build()).setResource(UResource.newBuilder().setId(19999).build()).build();
+        UUri uri = UUri.newBuilder()
+            .setAuthority(UAuthority.newBuilder().setName("vcu.vin").build())
+            .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+            .setResource(UResourceBuilder.fromId(19999))
+            .build();
 
         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
         assertTrue(bytes.length == 0);
@@ -155,7 +161,11 @@ public class MicroUriSerializerTest {
     @Test
     @DisplayName("Test serialize with good IPv4 based authority")
     public void test_serialize_good_ipv4_based_authority() throws UnknownHostException {
-        UUri uri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(InetAddress.getByName("10.0.3.3").getAddress())).build()).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build()).setResource(UResourceBuilder.forRpcRequest(99)).build();
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(InetAddress.getByName("10.0.3.3").getAddress())).build())
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.forRpcRequest(99))
+                .build();
         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
         UUri uri2 = MicroUriSerializer.instance().deserialize(bytes);
         assertTrue(bytes.length > 0);
@@ -166,9 +176,56 @@ public class MicroUriSerializerTest {
     }
 
     @Test
+    @DisplayName("Test serialize with good IPv4 based authority and the uEntity major version is missing")
+    public void test_serialize_good_ipv4_based_authority_missing_major_version() throws UnknownHostException {
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(IpAddress.toBytes("192.168.1.100"))))
+                .setEntity(UEntity.newBuilder().setId(29999))
+                .setResource(UResourceBuilder.forRpcResponse())
+                .build();
+        byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+        UUri uri2 = MicroUriSerializer.instance().deserialize(bytes);
+        assertEquals(uri2.getEntity().getVersionMajor(), 0);
+    }
+
+    @Test
+    @DisplayName("Test serialize without uauthority ip or id")
+    public void test_serialize_without_uauthority_ip_or_id() {
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setName("vcu.vin").build())
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(19999))
+                .build();
+        byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+        assertTrue(bytes.length == 0);
+    }
+
+    @Test
+    @DisplayName("Test serialize with id that is out of range")
+    public void test_serialize_id_out_of_range() {
+        byte[] byteArray = new byte[258];
+        for (int i = 0; i < 256; i++) {
+            byteArray[i] = (byte) (i);
+        }
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(byteArray)))
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(19999))
+                .build();
+        byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+        assertTrue(bytes.length == 0);
+    }
+
+
+    @Test
     @DisplayName("Test serialize with good IPv6 based authority")
     public void test_serialize_good_ipv6_based_authority() throws UnknownHostException {
-        UUri uri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334").getAddress())).build()).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build()).setResource(UResource.newBuilder().setId(19999).build()).build();
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder()
+                        .setIp(ByteString.copyFrom(InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334").getAddress()))
+                        .build())
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(19999)).build();
         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
         UUri uri2 = MicroUriSerializer.instance().deserialize(bytes);
         assertTrue(UriValidator.isMicroForm(uri));
@@ -186,7 +243,16 @@ public class MicroUriSerializerTest {
         for (int i = 0; i < size; i++) {
             byteArray[i] = (byte) (i);
         }
-        UUri uri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setId(ByteString.copyFrom(byteArray)).build()).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build()).setResource(UResource.newBuilder().setId(19999).build()).build();
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder()
+                        .setId(ByteString.copyFrom(byteArray))
+                        .build())
+                .setEntity(UEntity.newBuilder()
+                        .setId(29999)
+                        .setVersionMajor(254)
+                        .build())
+                .setResource(UResourceBuilder.fromId(19999))
+                .build();
         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
         UUri uri2 = MicroUriSerializer.instance().deserialize(bytes);
         assertTrue(UriValidator.isMicroForm(uri));
@@ -198,7 +264,11 @@ public class MicroUriSerializerTest {
     @DisplayName("Test serialize with bad length IP based authority")
     public void test_serialize_bad_length_ip_based_authority() throws UnknownHostException {
         byte[] byteArray = {127, 1, 23, 123, 12, 6};
-        UUri uri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(byteArray)).build()).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build()).setResource(UResource.newBuilder().setId(19999).build()).build();
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(byteArray)).build())
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(19999))
+                .build();
         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
         assertTrue(bytes.length == 0);
     }
@@ -213,12 +283,16 @@ public class MicroUriSerializerTest {
         for (int i = 0; i < size; i++) {
             byteArray[i] = (byte) (i);
         }
-        UUri uri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().setId(ByteString.copyFrom(byteArray)).build()).setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build()).setResource(UResource.newBuilder().setId(19999).build()).build();
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setId(ByteString.copyFrom(byteArray)).build())
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(19999))
+                .build();
         byte[] bytes = MicroUriSerializer.instance().serialize(uri);
         assertEquals(bytes.length, 9+size);
         UUri uri2 = MicroUriSerializer.instance().deserialize(bytes);
         assertTrue(UriValidator.isMicroForm(uri));
-        assertTrue(uri.equals(uri2));
+        assertEquals(uri, uri2);
     }
 
 }

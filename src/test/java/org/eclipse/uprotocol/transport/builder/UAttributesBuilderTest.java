@@ -26,6 +26,7 @@ package org.eclipse.uprotocol.transport.builder;
 
 import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.v1.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,7 +51,7 @@ public class UAttributesBuilderTest {
         assertNotNull(builder);
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
-        assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.getType());
+        assertEquals(UMessageType.UMESSAGE_TYPE_NOTIFICATION, attributes.getType());
         assertEquals(UPriority.UPRIORITY_CS1, attributes.getPriority());
         assertEquals(sink, attributes.getSink());
     }
@@ -84,11 +85,26 @@ public class UAttributesBuilderTest {
     }
 
     @Test
+    @DisplayName("Test response with existing request")
+    public void testResponseWithExistingRequest() {
+        UAttributes request = UAttributesBuilder.request(buildSource(), buildSink(), UPriority.UPRIORITY_CS6, 1000).build();
+        UAttributesBuilder builder = UAttributesBuilder.response(request);
+        assertNotNull(builder);
+        UAttributes response = builder.build();
+        assertNotNull(response);
+        assertEquals(UMessageType.UMESSAGE_TYPE_RESPONSE, response.getType());
+        assertEquals(UPriority.UPRIORITY_CS6, response.getPriority());
+        assertEquals(request.getSource(), response.getSink());
+        assertEquals(request.getSink(), response.getSource());
+        assertEquals(request.getId(), response.getReqid());
+    }
+
+    @Test
     public void testBuild() {
         final UUID reqId = getUUID();
 
         UAttributesBuilder builder = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS1).withTtl(1000).withToken("test_token")
-                .withSink(buildSink()).withPermissionLevel(2).withCommStatus(1).withReqId(reqId).withTraceparent("myParents");
+                .withSink(buildSink()).withPermissionLevel(2).withCommStatus(UCode.CANCELLED).withReqId(reqId).withTraceparent("myParents");
         UAttributes attributes = builder.build();
         assertNotNull(attributes);
         assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, attributes.getType());
@@ -97,7 +113,7 @@ public class UAttributesBuilderTest {
         assertEquals("test_token", attributes.getToken());
         assertEquals(buildSink(), attributes.getSink());
         assertEquals(2, attributes.getPermissionLevel());
-        assertEquals(1, attributes.getCommstatus());
+        assertEquals(UCode.CANCELLED, attributes.getCommstatus());
         assertEquals(reqId, attributes.getReqid());
         assertEquals("myParents", attributes.getTraceparent());
     }

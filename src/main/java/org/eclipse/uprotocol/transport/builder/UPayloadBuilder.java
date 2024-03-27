@@ -72,12 +72,12 @@ public interface UPayloadBuilder {
      */
     @SuppressWarnings("unchecked")
     static <T extends Message> Optional<T> unpack(UPayload payload, Class<T> clazz) {
-        if (payload == null || payload.getValue() == null) {
+        if (payload == null || !payload.hasValue()) {
             return Optional.empty();
         }
         try {
             switch (payload.getFormat()) {
-                case UNRECOGNIZED: // Default is WRAPPED_IN_ANY
+                case UPAYLOAD_FORMAT_UNSPECIFIED: // Default is WRAPPED_IN_ANY
                 case UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY :
                     return Optional.of(Any.parseFrom(payload.getValue()).unpack(clazz));
             

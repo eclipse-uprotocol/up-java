@@ -39,12 +39,3 @@ final ValidationResult status = UriValidator.validateRpcMethod(uuri);
             assertTrue(status.isSuccess());
 ----
 
-=== Serializing & Deserializing
-[,java]
-----
-        UUri uri = .../* UUri example above */
-        byte[] micro = MicroUriSerializer.instance().serialize(uri);
-        String long = LongUriSerializer.instance().serialize(uri);
-        UUri uri2 = UriSerializer.buildResolved(long, micro);
-        assertTrue(uri.equals(uri2));
-----

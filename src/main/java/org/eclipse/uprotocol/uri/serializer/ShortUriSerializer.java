@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 General Motors GTO LLC
+ * Copyright (c) 2024 General Motors GTO LLC
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,33 +17,39 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ * 
  * SPDX-FileType: SOURCE
- * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
+ * SPDX-FileCopyrightText: 2024 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.eclipse.uprotocol.uri.serializer;
 
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Objects;
-import java.util.Optional;
+
+import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UEntity;
 import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
 
+import com.google.protobuf.ByteString;
+
 /**
- * UUri Serializer that serializes a UUri to a long format string per
+ * UUri Serializer that serializes a UUri to a Short format string per
  * https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
  */
-public class LongUriSerializer implements UriSerializer<String> {
+public class ShortUriSerializer implements UriSerializer<String> {
 
-    private static final LongUriSerializer INSTANCE = new LongUriSerializer();
+    private static final ShortUriSerializer INSTANCE = new ShortUriSerializer();
 
-    private LongUriSerializer(){}
+    private ShortUriSerializer(){}
 
-    public static LongUriSerializer instance() {
+    public static ShortUriSerializer instance() {
         return INSTANCE;
     }
 
@@ -61,8 +67,22 @@ public class LongUriSerializer implements UriSerializer<String> {
         StringBuilder sb = new StringBuilder();
 
         if (Uri.hasAuthority()) {
-            sb.append("//");
-            sb.append(Uri.getAuthority().getName());
+            UAuthority authority = Uri.getAuthority();
+            if (authority.hasIp()) {
+                try {
+                    sb.append("/");
+                    sb.append(InetAddress.getByAddress(authority.getIp().toByteArray()));
+                } catch (UnknownHostException e) {
+                    return "";
+                }
+            } else if (authority.hasId()) {
+                sb.append("//");
+                sb.append(authority.getId().toStringUtf8());
+            }
+            // Missing IP and ID, only has name
+            else {
+                return "";
+            }
         }
         sb.append("/");
 
@@ -80,15 +100,8 @@ public class LongUriSerializer implements UriSerializer<String> {
         final UResource uResource = uri.getResource();
 
         StringBuilder sb = new StringBuilder("/");
-        sb.append(uResource.getName());
+        sb.append(uResource.getId());
 
-        if (uResource.hasInstance()) {
-            sb.append(".").append(uResource.getInstance());
-        }
-        if (uResource.hasMessage()) {
-            sb.append("#").append(uResource.getMessage());
-        }
-        
         return sb.toString();
     }
 
@@ -97,7 +110,8 @@ public class LongUriSerializer implements UriSerializer<String> {
      * @param use  Software Entity representing a service or an application.
      */
     private static String buildSoftwareEntityPartOfUri(UEntity use) {
-        StringBuilder sb = new StringBuilder(use.getName().trim());
+        StringBuilder sb = new StringBuilder();
+        sb.append(use.getId());
         sb.append("/");
         if (use.getVersionMajor() > 0) {
             sb.append(use.getVersionMajor());
@@ -109,7 +123,7 @@ public class LongUriSerializer implements UriSerializer<String> {
 
     /**
      * Deserialize a String into a UUri object.
-     * @param uProtocolUri A long format uProtocol URI.
+     * @param uProtocolUri A short format uProtocol URI.
      * @return Returns an UUri data object.
      */
     @Override
@@ -126,24 +140,28 @@ public class LongUriSerializer implements UriSerializer<String> {
         final String[] uriParts = uri.split("/");
         final int numberOfPartsInUri = uriParts.length;
 
-        if(numberOfPartsInUri == 0 || numberOfPartsInUri == 1) {
+        if(numberOfPartsInUri < 2) {
             return UUri.getDefaultInstance();
         }
 
-        String useName;
-        String useVersion = "";
+        String uEId = "";
+        String ueVersion = "";
 
         UResource uResource = null;
 
         UAuthority uAuthority = null;
 
         if(isLocal) {
-            useName = uriParts[1];
+            uEId = uriParts[1];
             if (numberOfPartsInUri > 2) {
-                useVersion = uriParts[2];
+                ueVersion = uriParts[2];
 
                 if (numberOfPartsInUri > 3) {
                     uResource = parseFromString(uriParts[3]);
+                }
+                // Too many parts now
+                if(numberOfPartsInUri > 4) {
+                    return UUri.getDefaultInstance();
                 }
             } 
         } else {
@@ -151,17 +169,26 @@ public class LongUriSerializer implements UriSerializer<String> {
             if (uriParts[2].isBlank()) {
                 return UUri.getDefaultInstance();
             }
-            uAuthority = UAuthority.newBuilder().setName(uriParts[2]).build();
+
+            // Try if it is an IP address, if not then it must be an ID
+            if (IpAddress.isValid(uriParts[2])) {
+                uAuthority = UAuthority.newBuilder().setIp(ByteString.copyFrom(IpAddress.toBytes(uriParts[2]))).build();
+            } else {
+                uAuthority = UAuthority.newBuilder().setId(ByteString.copyFromUtf8(uriParts[2])).build();
+            }
 
             if (uriParts.length > 3) {
-                useName = uriParts[3];
+                uEId = uriParts[3];
                 if (numberOfPartsInUri > 4) {
-                    useVersion = uriParts[4];
+                    ueVersion = uriParts[4];
 
                     if (numberOfPartsInUri > 5) { 
                         uResource = parseFromString(uriParts[5]);
                     }
-
+                    // Way too many parts in the URI
+                    if (numberOfPartsInUri > 6) {
+                        return UUri.getDefaultInstance();
+                    }
                 } 
             } else {
                 return UUri.newBuilder()
@@ -171,21 +198,29 @@ public class LongUriSerializer implements UriSerializer<String> {
         }
 
         Integer useVersionInt = null;
+        Integer ueIdInt = null;
         try {
-            if (!useVersion.isBlank()) {
-                useVersionInt = Integer.valueOf(useVersion);
+            if (!ueVersion.isBlank()) {
+                useVersionInt = Integer.valueOf(ueVersion);
+            }
+
+            if (!uEId.isBlank()) {
+                ueIdInt = Integer.parseInt(uEId);
             }
         } catch (NumberFormatException ignored) {
             return UUri.getDefaultInstance();
         }
 
-        UEntity.Builder UEntityFactory = UEntity.newBuilder().setName(useName);
+        UEntity.Builder uEntityBuilder = UEntity.newBuilder();
 
+        if (ueIdInt != null) {
+            uEntityBuilder.setId(ueIdInt);
+        }
         if (useVersionInt != null) {
-            UEntityFactory.setVersionMajor(useVersionInt);
+            uEntityBuilder.setVersionMajor(useVersionInt);
         }
             
-        UUri.Builder uriBuilder = UUri.newBuilder().setEntity(UEntityFactory);
+        UUri.Builder uriBuilder = UUri.newBuilder().setEntity(uEntityBuilder);
         if (uAuthority != null) {
             uriBuilder.setAuthority(uAuthority);
         }
@@ -196,34 +231,21 @@ public class LongUriSerializer implements UriSerializer<String> {
     }
 
     /**
-     * Static factory method for creating a UResource using a string that contains 
-     * name + instance + message.
-     * @param resourceString String that contains the UResource information.
+     * Static factory method for creating a UResource using a string value 
+     * @param resourceString String that contains the UResource id.
      * @return Returns a UResource object.
      */
     private static UResource parseFromString(String resourceString) {
         Objects.requireNonNull(resourceString, " Resource must have a command name.");
-        String[] parts = resourceString.split("#");
-        String nameAndInstance = parts[0];
+        Integer id = null;
 
-        String[] nameAndInstanceParts = nameAndInstance.split("\\.");
-        String resourceName = nameAndInstanceParts[0];
-        String resourceInstance = nameAndInstanceParts.length > 1 ? nameAndInstanceParts[1] : null;
-        String resourceMessage = parts.length > 1 ? parts[1] : null;
-
-        UResource.Builder uResourceBuilder = UResource.newBuilder().setName(resourceName);
-        if (resourceInstance != null) {
-            uResourceBuilder.setInstance(resourceInstance);
-        }
-        if (resourceMessage != null) {
-            uResourceBuilder.setMessage(resourceMessage);
+        try {
+            id = Integer.parseInt(resourceString);
+        } catch (NumberFormatException ignored) {
+            return UResource.getDefaultInstance();
         }
 
-        if (resourceName.contains("rpc") && resourceInstance != null && resourceInstance.contains("response")) {
-            uResourceBuilder.setId(0);
-        }
-        
-        return uResourceBuilder.build();
+        return UResourceBuilder.fromId(id);
     }
 
 }

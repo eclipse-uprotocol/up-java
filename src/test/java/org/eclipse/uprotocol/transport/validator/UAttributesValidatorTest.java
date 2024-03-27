@@ -57,8 +57,21 @@ class UAttributesValidatorTest {
                 UAttributesBuilder.response(buildSource(), UUri.newBuilder().build(), UPriority.UPRIORITY_CS4,
                         UuidFactory.Factories.UPROTOCOL.factory().create()).build());
         assertEquals("UAttributesValidator.Response", response.toString());
+
+        UAttributesValidator notification = UAttributesValidator.getValidator(
+                UAttributesBuilder.notification(buildSource(), UUri.newBuilder().build(), UPriority.UPRIORITY_CS4).build());
+        assertEquals("UAttributesValidator.Notification", notification.toString());
     }
 
+    @Test
+    @DisplayName("test using notification validator for publish type message")
+    public void test_using_notification_validator_for_publish_type_message() {
+        UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS0).build();
+        UAttributesValidator validator = UAttributesValidator.Validators.NOTIFICATION.validator();
+        ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Wrong Attribute Type [UMESSAGE_TYPE_PUBLISH],Missing Sink", status.getMessage());
+    }
 
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be published")
@@ -75,7 +88,7 @@ class UAttributesValidatorTest {
     @DisplayName("Validate a UAttributes for payload that is meant to be published with all values")
     public void test_validate_uAttributes_for_publish_message_payload_all_values() {
         final UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS0).withTtl(1000).withSink(buildSink())
-                .withPermissionLevel(2).withCommStatus(3).withReqId(UuidFactory.Factories.UPROTOCOL.factory().create())
+                .withPermissionLevel(2).withCommStatus(UCode.INVALID_ARGUMENT).withReqId(UuidFactory.Factories.UPROTOCOL.factory().create())
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
@@ -130,17 +143,7 @@ class UAttributesValidatorTest {
         assertEquals("Invalid Permission Level", status.getMessage());
     }
 
-    @Test
-    @DisplayName("Validate a UAttributes for payload that is meant to be published with invalid communication status")
-    public void test_validate_uAttributes_for_publish_message_payload_invalid_communication_status() {
-        final UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS0).withCommStatus(-42).build();
-
-        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final ValidationResult status = validator.validate(attributes);
-        assertTrue(status.isFailure());
-        assertEquals("Invalid Communication Status Code", status.getMessage());
-    }
-
+    
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be published with invalid request id")
     public void test_validate_uAttributes_for_publish_message_payload_invalid_request_id() {
@@ -173,7 +176,7 @@ class UAttributesValidatorTest {
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with all values")
     public void test_validate_uAttributes_for_rpc_request_message_payload_all_values() {
         final UAttributes attributes = UAttributesBuilder.request(buildSource(), buildSink(), UPriority.UPRIORITY_CS4, 1000)
-                .withPermissionLevel(2).withCommStatus(3).withReqId(UuidFactory.Factories.UPROTOCOL.factory().create())
+                .withPermissionLevel(2).withCommStatus(UCode.INVALID_ARGUMENT).withReqId(UuidFactory.Factories.UPROTOCOL.factory().create())
                 .build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
@@ -232,18 +235,7 @@ class UAttributesValidatorTest {
         assertEquals("Invalid Permission Level", status.getMessage());
     }
 
-    @Test
-    @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid communication " + "status")
-    public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_communication_status() {
-        final UAttributes attributes = UAttributesBuilder.request(buildSource(), buildSink(), UPriority.UPRIORITY_CS4, 1000).withCommStatus(-42)
-                .build();
-
-        final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        final ValidationResult status = validator.validate(attributes);
-        assertTrue(status.isFailure());
-        assertEquals("Invalid Communication Status Code", status.getMessage());
-    }
-
+   
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid request id")
     public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_request_id() {
@@ -277,7 +269,7 @@ class UAttributesValidatorTest {
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with all values")
     public void test_validate_uAttributes_for_rpc_response_message_payload_all_values() {
         final UAttributes attributes = UAttributesBuilder.response(buildSource(), buildSink(), UPriority.UPRIORITY_CS4,
-                UuidFactory.Factories.UPROTOCOL.factory().create()).withPermissionLevel(2).withCommStatus(3).build();
+                UuidFactory.Factories.UPROTOCOL.factory().create()).withPermissionLevel(2).withCommStatus(UCode.INVALID_ARGUMENT).build();
 
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
         final ValidationResult status = validator.validate(attributes);
@@ -294,7 +286,7 @@ class UAttributesValidatorTest {
         final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
         final ValidationResult status = validator.validate(attributes);
         assertTrue(status.isFailure());
-        assertEquals("Wrong Attribute Type [UMESSAGE_TYPE_PUBLISH],Missing correlationId", status.getMessage());
+        assertEquals("Wrong Attribute Type [UMESSAGE_TYPE_NOTIFICATION],Missing correlationId", status.getMessage());
     }
 
 
@@ -335,17 +327,6 @@ class UAttributesValidatorTest {
         assertEquals("Invalid Permission Level", status.getMessage());
     }
 
-    @Test
-    @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with invalid communication " + "status")
-    public void test_validate_uAttributes_for_rpc_response_message_payload_invalid_communication_status() {
-        final UAttributes attributes = UAttributesBuilder.response(buildSource(), buildSink(), UPriority.UPRIORITY_CS4,
-                UuidFactory.Factories.UPROTOCOL.factory().create()).withCommStatus(-42).build();
-
-        final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        final ValidationResult status = validator.validate(attributes);
-        assertTrue(status.isFailure());
-        assertEquals("Invalid Communication Status Code", status.getMessage());
-    }
 
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC response with missing request id")
@@ -383,6 +364,15 @@ class UAttributesValidatorTest {
         final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
         assertFalse(validator.isExpired(attributes));
     }
+
+    @Test
+    @DisplayName("Validate a UAttributes isExpired() for an invalid UUID of UAttributes")
+    public void test_validate_uAttributes_isExpired_for_invalid_UUID() {
+        final UAttributes attributes = UAttributes.getDefaultInstance();
+        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
+        assertFalse(validator.isExpired(attributes));
+    }
+
 
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be published not expired with ttl zero")
@@ -535,30 +525,6 @@ class UAttributesValidatorTest {
         assertEquals("Invalid Permission Level", status.getMessage());
     }
 
-    @Test
-    @DisplayName("test validating invalid commstatus attribute")
-    public void test_validating_invalid_commstatus_attribute() {
-
-        final UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS0).withCommStatus(100).build();
-
-        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final ValidationResult status = validator.validateCommStatus(attributes);
-        assertTrue(status.isFailure());
-        assertEquals("Invalid Communication Status Code", status.getMessage());
-    }
-
-    @Test
-    @DisplayName("test validating valid commstatus attribute")
-    public void test_validating_valid_commstatus_attribute() {
-
-        final UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS0).withCommStatus(UCode.ABORTED_VALUE)
-                .build();
-
-        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        final ValidationResult status = validator.validateCommStatus(attributes);
-        assertEquals(ValidationResult.success(), status);
-    }
-
 
     @Test
     @DisplayName("test validating request message types")
@@ -701,38 +667,49 @@ class UAttributesValidatorTest {
     }
 
     @Test
-    @DisplayName("test_setting_priority_for_response_too_low")
-    public void test_setting_priority_for_response_too_low(){
-        final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/rpc.method");
-        final UAttributes attributes =
-                UAttributesBuilder.response(buildSource(), sink,UPriority.UPRIORITY_CS0,UuidFactory.Factories.UPROTOCOL.factory().create()).build();
-        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        assertEquals("UAttributesValidator.Response", validator.toString());
+    @DisplayName("test notification validation with missing sink")
+    public void test_notification_validation_with_missing_sink() {
+        final UAttributes attributes = UAttributesBuilder.notification(buildSource(), UUri.getDefaultInstance(), UPriority.UPRIORITY_CS0).build();
+        final UAttributesValidator validator = UAttributesValidator.Validators.NOTIFICATION.validator();
         final ValidationResult status = validator.validate(attributes);
-        assertEquals("Invalid RPC response type.,Invalid UPriority [UPRIORITY_CS0]", status.getMessage());
+        assertTrue(status.isFailure());
+        assertEquals("Missing Sink", status.getMessage());
     }
 
     @Test
-    @DisplayName("test_setting_priority_for_request_too_low")
-    public void test_setting_priority_for_request_too_low(){
-        final UUri sink= LongUriSerializer.instance().deserialize("/test.client/1/rpc.method");
-        final UAttributes attributes =
-                UAttributesBuilder.request(buildSource(), sink, UPriority.UPRIORITY_CS0, 1000).build();
-        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        assertEquals("UAttributesValidator.Request", validator.toString());
+    @DisplayName("test notification validation using publish validator")
+    public void test_notification_validation_using_publish_validator() {
+        final UAttributes attributes = UAttributesBuilder.notification(buildSource(), buildSink(), UPriority.UPRIORITY_CS0).build();
+        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
         final ValidationResult status = validator.validate(attributes);
-        assertEquals("Invalid UPriority [UPRIORITY_CS0]", status.getMessage());
+        assertTrue(status.isFailure());
+        assertEquals("Wrong Attribute Type [UMESSAGE_TYPE_NOTIFICATION]", status.getMessage());
     }
 
     @Test
-    @DisplayName("test_setting_invalid_priority_for_publish")
-    public void test_setting_invalid_priority_for_publish(){
-        final UAttributes attributes =
-                UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_UNSPECIFIED).build();
-        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        assertEquals("UAttributesValidator.Publish", validator.toString());
+    @DisplayName("test notification validation when sink is missing")
+    public void test_notification_validation_when_sink_is_missing() {
+        final UAttributes attributes = UAttributes.newBuilder()
+            .setId(UuidFactory.Factories.UPROTOCOL.factory().create())
+            .setSource(buildSource())
+            .setType(UMessageType.UMESSAGE_TYPE_NOTIFICATION)
+            .setPriority(UPriority.UPRIORITY_CS0)
+            .build();
+
+        final UAttributesValidator validator = UAttributesValidator.Validators.NOTIFICATION.validator();
         final ValidationResult status = validator.validate(attributes);
-        assertEquals("Invalid UPriority [UPRIORITY_UNSPECIFIED]", status.getMessage());
+        assertTrue(status.isFailure());
+        assertEquals("Missing Sink", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("test notification validation with a valid notification UAttributes")
+    public void test_notification_validation_with_a_valid_notification_UAttributes() {
+        final UAttributes attributes = UAttributesBuilder.notification(buildSource(), buildSink(), UPriority.UPRIORITY_CS0).build();
+        final UAttributesValidator validator = UAttributesValidator.Validators.NOTIFICATION.validator();
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isSuccess());
+        assertEquals("", status.getMessage());
     }
 
     private UUri buildSink() {

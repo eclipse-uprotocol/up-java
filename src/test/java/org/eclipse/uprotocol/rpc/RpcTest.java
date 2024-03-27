@@ -121,10 +121,18 @@ class RpcTest {
     };
 
 
+    RpcClient WithNullMessage = new RpcClient() {
+        @Override
+        public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
+            return CompletableFuture.completedFuture(UMessage.newBuilder().build());
+        }
+    };
+
+    
     RpcClient WithNullInPayload = new RpcClient() {
         @Override
         public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
-            return CompletableFuture.completedFuture(null);
+            return CompletableFuture.completedFuture(UMessage.getDefaultInstance());
         }
     };
 
@@ -147,7 +155,7 @@ class RpcTest {
 
     private static CallOptions buildCallOptions() {
         return CallOptions.newBuilder()
-                .withTimeout(1000)
+                .setTtl(1000)
                 .build();
 
     }
@@ -592,6 +600,19 @@ class RpcTest {
     }
 
     @Test
+    @DisplayName("test RpcMapper.mapResponse with payload is null")
+    void test_map_response_with_payload_is_null() {
+        final CompletionStage<UStatus> rpcResponse = RpcMapper.mapResponse(
+                WithNullInPayload.invokeMethod(buildTopic(), null, buildCallOptions()), UStatus.class);
+
+        assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
+        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, rpcResponse.toCompletableFuture()::get);
+        assertEquals(exception.getMessage(),
+                "java.lang.RuntimeException: Server returned a null payload. Expected org.eclipse.uprotocol.v1.UStatus");
+    }
+   
+
+    @Test
     @DisplayName("test invalid payload that is not of type any")
     void test_invalid_payload_that_is_not_type_any() {
         UPayload payload = buildUPayload();
@@ -638,5 +659,29 @@ class RpcTest {
         assertFalse(stubReturnValue.toCompletableFuture().isCancelled());
 
     }
+
+    @Test
+    @DisplayName("test mapResponse when the response message is null")
+    void test_map_response_when_response_message_is_null() {
+        final CompletionStage<io.cloudevents.v1.proto.CloudEvent> rpcResponse = RpcMapper.mapResponse(
+                WithNullMessage.invokeMethod(buildTopic(), null, buildCallOptions()), io.cloudevents.v1.proto.CloudEvent.class);
+
+        assertTrue(rpcResponse.toCompletableFuture().isCompletedExceptionally());
+        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, rpcResponse.toCompletableFuture()::get);
+        assertEquals(exception.getMessage(),
+                "java.lang.RuntimeException: Server returned a null payload. Expected io.cloudevents.v1.proto.CloudEvent");
+    }
+
+    @Test
+    @DisplayName("test mapResponseToResult when the response message not the request payload, is null")
+    void test_map_response_to_result_when_response_message_not_the_request_payload_is_null() throws Exception {
+        final CompletionStage<RpcResult<io.cloudevents.v1.proto.CloudEvent>> rpcResponse = RpcMapper.mapResponseToResult(
+                WithNullMessage.invokeMethod(buildTopic(), null, buildCallOptions()), io.cloudevents.v1.proto.CloudEvent.class);
+
+        assertTrue(rpcResponse.toCompletableFuture().get().isFailure());
+        UStatus status = UStatus.newBuilder().setCode(UCode.UNKNOWN).setMessage("Server returned a null payload. Expected io.cloudevents.v1.proto.CloudEvent").build();
+        assertEquals(status, rpcResponse.toCompletableFuture().get().failureValue());
+    }
+    
 
 }

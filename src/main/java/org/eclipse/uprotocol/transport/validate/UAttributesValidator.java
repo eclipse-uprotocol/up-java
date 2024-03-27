@@ -61,6 +61,8 @@ public abstract class UAttributesValidator {
                 return Validators.RESPONSE.validator();
             case UMESSAGE_TYPE_REQUEST:
                 return Validators.REQUEST.validator();
+            case UMESSAGE_TYPE_NOTIFICATION:
+                return Validators.NOTIFICATION.validator();
             default:
                 return Validators.PUBLISH.validator();
         }
@@ -77,7 +79,7 @@ public abstract class UAttributesValidator {
     public ValidationResult validate(UAttributes attributes) {
         final String errorMessage = Stream.of(validateType(attributes),
                          validateTtl(attributes), validateSink(attributes), validatePriority(attributes),
-                        validateCommStatus(attributes), validatePermissionLevel(attributes), validateReqId(attributes))
+                         validatePermissionLevel(attributes), validateReqId(attributes))
                 .filter(ValidationResult::isFailure).map(ValidationResult::getMessage).collect(Collectors.joining(","));
         return errorMessage.isBlank() ? ValidationResult.success() : ValidationResult.failure(errorMessage);
     }
@@ -95,7 +97,7 @@ public abstract class UAttributesValidator {
         final Optional<Long> maybeTime = UuidUtils.getTime(uAttributes.getId());
         
         // if the message does not have a ttl or the original time is not present or the ttl is less than 0
-        if (!uAttributes.hasTtl() || maybeTime.isEmpty() || ttl <= 0) {
+        if (maybeTime.isEmpty() || ttl <= 0) {
             return false;
         }
 
@@ -151,31 +153,7 @@ public abstract class UAttributesValidator {
         }
     }
 
-    /**
-     * Validate the commStatus for the default case. If the UAttributes does not contain a comm status then the
-     * ValidationResult is ok.
-     *
-     * @param attributes UAttributes object containing the comm status to validate.
-     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
-     */
-    public ValidationResult validateCommStatus(UAttributes attributes) {
-        {
-            if (attributes.hasCommstatus()) {
-
-                Optional<UCode> enumValue = Optional.ofNullable(UCode.forNumber(attributes.getCommstatus()));
-                if (enumValue.isPresent()) {
-                    return ValidationResult.success();
-
-                } else {
-                    return ValidationResult.failure("Invalid Communication Status Code");
-                }
-
-            }
-
-            return ValidationResult.success();
-        }
-    }
-
+    
     /**
      * Validate the correlationId for the default case. If the UAttributes does not contain a request id then the
      * ValidationResult is ok.
@@ -217,7 +195,10 @@ public abstract class UAttributesValidator {
      * UAttributesValidator validateForPublishMessageType = UAttributesValidator.Validators.PUBLISH.validator()
      */
     public enum Validators {
-        PUBLISH(new Publish()), REQUEST(new Request()), RESPONSE(new Response());
+        PUBLISH(new Publish()),
+        REQUEST(new Request()),
+        RESPONSE(new Response()),
+        NOTIFICATION(new Notification());
 
         private final UAttributesValidator uattributesValidator;
 
@@ -396,6 +377,45 @@ public abstract class UAttributesValidator {
         @Override
         public String toString() {
             return "UAttributesValidator.Response";
+        }
+    }
+
+        /**
+     * Implements validations for UAttributes that define a message that is meant for notifications.
+     */
+    private static class Notification extends UAttributesValidator {
+
+        /**
+         * Validates that attributes for a message meant to Notification state changes has the correct type.
+         *
+         * @param attributes UAttributes object containing the message type to validate.
+         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         */
+        @Override
+        public ValidationResult validateType(UAttributes attributes) {
+            return UMessageType.UMESSAGE_TYPE_NOTIFICATION == attributes.getType() ? ValidationResult.success() : ValidationResult.failure(
+                    String.format("Wrong Attribute Type [%s]", attributes.getType()));
+        }
+
+        /**
+         * Validates that attributes for a message meant for notifications has a destination sink.
+         * In the case of a notification, the sink is required.
+         *
+         * @param attributes UAttributes object containing the sink to validate.
+         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         */
+        @Override
+        public ValidationResult validateSink(UAttributes attributes) {
+            Objects.requireNonNull(attributes, "UAttributes cannot be null.");
+            if (!attributes.hasSink() || attributes.getSink() == UUri.getDefaultInstance()) {
+                return ValidationResult.failure("Missing Sink");
+            }
+            return ValidationResult.success();
+        }
+
+        @Override
+        public String toString() {
+            return "UAttributesValidator.Notification";
         }
     }
 

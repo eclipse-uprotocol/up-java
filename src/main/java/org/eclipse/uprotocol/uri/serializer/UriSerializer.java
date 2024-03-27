@@ -25,12 +25,6 @@
 package org.eclipse.uprotocol.uri.serializer;
 
 
-import java.util.Optional;
-
-import org.eclipse.uprotocol.uri.validator.UriValidator;
-import org.eclipse.uprotocol.v1.UAuthority;
-import org.eclipse.uprotocol.v1.UEntity;
-import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
@@ -54,40 +48,5 @@ public interface UriSerializer<T> {
      * @return Returns the {@link UUri} in the transport serialized format.
      */
     T serialize(UUri uri);
-
-    /**
-     * Build a fully resolved {@link UUri} from the serialized long format and the serializes micro format.
-     * @param longUri {@link UUri} serialized as a Sting.
-     * @param microUri {@link UUri} serialized as a byte[].
-     * @return Returns a {@link UUri} object serialized from one of the forms.
-     */
-    default Optional<UUri> buildResolved(String longUri, byte[] microUri) {
-        
-        if ((longUri == null || longUri.isEmpty()) && (microUri == null || microUri.length == 0)) {
-            return Optional.of(UUri.getDefaultInstance());
-        }
-
-        UUri longUUri = LongUriSerializer.instance().deserialize(longUri);
-        UUri microUUri = MicroUriSerializer.instance().deserialize(microUri);
- 
-        final UAuthority.Builder uAuthorityBuilder = 
-            UAuthority.newBuilder(microUUri.getAuthority())
-                .setName(longUUri.getAuthority().getName());
- 
-        
-        final UEntity.Builder UEntityFactory = UEntity.newBuilder(microUUri.getEntity())
-            .setName(longUUri.getEntity().getName());
-            
-
-        final UResource.Builder uResourceBuilder = UResource.newBuilder(longUUri.getResource())
-            .setId(microUUri.getResource().getId());
-            
-        UUri uUri = UUri.newBuilder()
-            .setAuthority(uAuthorityBuilder)
-            .setEntity(UEntityFactory)
-            .setResource(uResourceBuilder)
-            .build();
-        return UriValidator.isResolved(uUri) ? Optional.of(uUri) : Optional.empty();
-        }
 
 }

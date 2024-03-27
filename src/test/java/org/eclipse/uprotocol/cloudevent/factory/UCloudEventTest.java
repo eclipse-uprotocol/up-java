@@ -30,6 +30,7 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
+import org.eclipse.uprotocol.transport.builder.UAttributesBuilder;
 import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
@@ -216,7 +217,7 @@ class UCloudEventTest {
         CloudEvent cloudEvent = builder.build();
 
         assertTrue(UCloudEvent.hasCommunicationStatusProblem(cloudEvent));
-        assertEquals(10, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.ABORTED, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -228,7 +229,7 @@ class UCloudEventTest {
         CloudEvent cloudEvent = builder.build();
 
         assertFalse(UCloudEvent.hasCommunicationStatusProblem(cloudEvent));
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -240,7 +241,7 @@ class UCloudEventTest {
         CloudEvent cloudEvent = builder.build();
 
         assertFalse(UCloudEvent.hasCommunicationStatusProblem(cloudEvent));
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -252,8 +253,7 @@ class UCloudEventTest {
 
         CloudEvent cloudEvent = builder.build();
 
-        final Integer communicationStatus = UCloudEvent.getCommunicationStatus(cloudEvent);
-        assertEquals(3, communicationStatus);
+        assertEquals(UCode.INVALID_ARGUMENT, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -263,8 +263,7 @@ class UCloudEventTest {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest();
         CloudEvent cloudEvent = builder.build();
 
-        final Integer communicationStatus = UCloudEvent.getCommunicationStatus(cloudEvent);
-        assertEquals(UCode.OK_VALUE, communicationStatus);
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -273,12 +272,12 @@ class UCloudEventTest {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest();
         CloudEvent cloudEvent = builder.build();
 
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
 
         CloudEvent cloudEvent1 = UCloudEvent.addCommunicationStatus(cloudEvent, UCode.DEADLINE_EXCEEDED_VALUE);
 
-        assertEquals(4, UCloudEvent.getCommunicationStatus(cloudEvent1));
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.DEADLINE_EXCEEDED, UCloudEvent.getCommunicationStatus(cloudEvent1));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
     }
 
     @Test
@@ -287,11 +286,11 @@ class UCloudEventTest {
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest();
         CloudEvent cloudEvent = builder.build();
 
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
 
         CloudEvent cloudEvent1 = UCloudEvent.addCommunicationStatus(cloudEvent, null);
 
-        assertEquals(UCode.OK_VALUE, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.OK, UCloudEvent.getCommunicationStatus(cloudEvent));
 
         assertEquals(cloudEvent, cloudEvent1);
     }
@@ -856,7 +855,7 @@ class UCloudEventTest {
         CloudEvent cloudEvent = cloudEventBuilder.build();
         UMessage result = UCloudEvent.toMessage(cloudEvent);
         assertNotNull(result);
-        assertEquals(10, UCloudEvent.getCommunicationStatus(cloudEvent));
+        assertEquals(UCode.ABORTED, UCloudEvent.getCommunicationStatus(cloudEvent));
         assertEquals(2, result.getAttributes().getPermissionLevel());
 
         CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
@@ -973,5 +972,26 @@ class UCloudEventTest {
 
         return LongUriSerializer.instance().serialize(Uri);
     }
+
+    @Test
+    @DisplayName("Test fromMessage passing null")
+    public void test_fromMessage_with_null_message() {
+        try {
+            UCloudEvent.fromMessage(null);
+        } catch (NullPointerException e) {
+            assertEquals("message cannot be null.", e.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("Test fromMessage when UPayload in UMessage does not have value but reference")
+    public void test_fromMessage_with_message_with_payload_reference() {
+        UMessage uMessage = UMessage.newBuilder()
+            .setPayload(UPayload.newBuilder().setFormat(UPayloadFormat.UPAYLOAD_FORMAT_RAW).setReference(0))
+            .build();
+        CloudEvent cloudEvent = UCloudEvent.fromMessage(uMessage);
+        
+    }
+
 
 }
