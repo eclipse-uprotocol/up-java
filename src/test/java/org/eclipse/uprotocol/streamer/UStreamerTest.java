@@ -26,10 +26,16 @@ package org.eclipse.uprotocol.streamer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.eclipse.uprotocol.core.usubscription.v3.FetchSubscribersRequest;
+import org.eclipse.uprotocol.core.usubscription.v3.FetchSubscribersResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.FetchSubscriptionsRequest;
 import org.eclipse.uprotocol.core.usubscription.v3.FetchSubscriptionsResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.NotificationsRequest;
+import org.eclipse.uprotocol.core.usubscription.v3.ResetRequest;
+import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionRequest;
+import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.USubscription;
+import org.eclipse.uprotocol.core.usubscription.v3.UnsubscribeRequest;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.v1.*;
@@ -236,6 +242,30 @@ public class UStreamerTest {
         @Override
         public UStatus unregisterForNotifications(NotificationsRequest request) {
             return UStatus.newBuilder().setCode(UCode.OK).build();
+        }
+
+        @Override
+        public SubscriptionResponse subscribe(SubscriptionRequest request) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'subscribe'");
+        }
+
+        @Override
+        public UStatus unsubscribe(UnsubscribeRequest request) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'unsubscribe'");
+        }
+
+        @Override
+        public FetchSubscribersResponse fetchSubscribers(FetchSubscribersRequest request) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'fetchSubscribers'");
+        }
+
+        @Override
+        public UStatus reset(ResetRequest request) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'reset'");
         }
         
     }
