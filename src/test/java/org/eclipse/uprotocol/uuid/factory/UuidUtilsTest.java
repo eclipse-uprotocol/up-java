@@ -26,11 +26,13 @@ package org.eclipse.uprotocol.uuid.factory;
 
 import org.eclipse.uprotocol.transport.builder.UAttributesBuilder;
 import org.eclipse.uprotocol.v1.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.eclipse.uprotocol.v1.UPriority.UPRIORITY_CS0;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.Instant;
 
 public class UuidUtilsTest {
     private static final int DELTA = 30;
@@ -141,6 +143,20 @@ public class UuidUtilsTest {
     public void testIsExpiredAttributesNoTtl() {
         final UAttributes attributes = UAttributesBuilder.publish(buildSourceForTest(), UPRIORITY_CS0).build();
         assertFalse(UuidUtils.isExpired(attributes));
+    }
+
+    @Test
+    @DisplayName("Test getElapseTime() when passed invalid UUID")
+    public void testGetElapsedTimeInvalidUUID() {
+        assertFalse(UuidUtils.getElapsedTime(null).isPresent());
+    }
+
+    @Test
+    @DisplayName("Test getElapseTime() when UUID time is in the future")
+    public void testGetElapsedTimePast() throws InterruptedException {
+        final Instant now = Instant.now().plusMillis(DELAY_MS);
+        final UUID id = UuidFactory.Factories.UPROTOCOL.factory().create(now);
+        assertTrue(UuidUtils.getElapsedTime(id).isEmpty());
     }
 
 }

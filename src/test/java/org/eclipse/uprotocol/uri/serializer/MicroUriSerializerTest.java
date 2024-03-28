@@ -295,4 +295,56 @@ public class MicroUriSerializerTest {
         assertEquals(uri, uri2);
     }
 
+    @Test
+    @DisplayName("Test serialize with id that is out of range")
+    public void test_serialize_id_out_of_range_2() {
+        byte[] byteArray = new byte[258];
+        for (int i = 0; i < 256; i++) {
+            byteArray[i] = (byte) (i);
+        }
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setId(ByteString.copyFrom(byteArray)).build())
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(19999))
+                .build();
+        byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+        assertTrue(bytes.length == 0);
+    }
+
+    @Test
+    @DisplayName("Test serialize with uResource id that is out of range")
+    public void test_serialize_resource_id_out_of_range() {
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setId(ByteString.copyFrom(new byte[]{0x1})).build())
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(65536))
+                .build();
+        byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+        assertTrue(bytes.length == 0);
+    }
+
+    @Test
+    @DisplayName("Test serialize with uEntity id that is out of range")
+    public void test_serialize_entity_id_out_of_range() {
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setId(ByteString.copyFrom(new byte[]{0x1})).build())
+                .setEntity(UEntity.newBuilder().setId(65536).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(19999))
+                .build();
+        byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+        assertTrue(bytes.length == 0);
+    }
+
+    @Test
+    @DisplayName("Test serialize with uAuthority ip that is invalid")
+    public void test_serialize_authority_ip_invalid() {
+        UUri uri = UUri.newBuilder()
+                .setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(new byte[]{0x1})).build())
+                .setEntity(UEntity.newBuilder().setId(29999).setVersionMajor(254).build())
+                .setResource(UResourceBuilder.fromId(19999))
+                .build();
+        byte[] bytes = MicroUriSerializer.instance().serialize(uri);
+        assertTrue(bytes.length == 0);
+    }
+
 }

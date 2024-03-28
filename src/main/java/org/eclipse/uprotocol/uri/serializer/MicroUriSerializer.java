@@ -51,6 +51,8 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
 
     static final byte UP_VERSION = 0x1; // UP version
 
+    static final int MAX_ID_LENGTH = 255; // Maximum ID length
+
     private static final MicroUriSerializer INSTANCE = new MicroUriSerializer();
 
     private MicroUriSerializer(){}
@@ -126,6 +128,12 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
 
         os.write(type.getValue());
 
+        // Validate that the URESOURCE_ID and UENTITY_ID are within the valid range
+        if (maybeUResourceId.get() > 0xFFFF || 
+            maybeUeId.get() > 0xFFFF) {
+            return new byte[0];
+        }
+
         // URESOURCE_ID
         os.write(maybeUResourceId.get()>>8);
         os.write(maybeUResourceId.get());
@@ -146,6 +154,10 @@ public class MicroUriSerializer implements UriSerializer<byte[]> {
 
             // Write the ID length if the type is ID
             if (type == AddressType.ID) {
+                // If the ID length is greater than the maximum allowed, return an empty byte[]
+                if (Uri.getAuthority().getId().size() > MAX_ID_LENGTH) {
+                    return new byte[0];
+                }
                 os.write(Uri.getAuthority().getId().size());
             }
                 
