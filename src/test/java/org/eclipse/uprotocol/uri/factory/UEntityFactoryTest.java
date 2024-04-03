@@ -32,7 +32,7 @@ import com.google.protobuf.Descriptors.ServiceDescriptor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
  
 import org.eclipse.uprotocol.core.usubscription.v3.USubscriptionProto;
-import org.eclipse.uprotocol.core.utwin.v1.UTwinProto;
+import org.eclipse.uprotocol.core.utwin.v2.UTwinProto;
 import org.eclipse.uprotocol.core.udiscovery.v3.UDiscoveryProto;
 import org.eclipse.uprotocol.v1.UEntity;
 
