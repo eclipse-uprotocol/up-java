@@ -34,9 +34,8 @@ import org.eclipse.uprotocol.validation.ValidationResult;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 class UAttributesValidatorTest {
@@ -143,7 +142,7 @@ class UAttributesValidatorTest {
         assertEquals("Invalid Permission Level", status.getMessage());
     }
 
-    
+
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be published with invalid request id")
     public void test_validate_uAttributes_for_publish_message_payload_invalid_request_id() {
@@ -235,7 +234,7 @@ class UAttributesValidatorTest {
         assertEquals("Invalid Permission Level", status.getMessage());
     }
 
-   
+
     @Test
     @DisplayName("Validate a UAttributes for payload that is meant to be an RPC request with invalid request id")
     public void test_validate_uAttributes_for_rpc_request_message_payload_invalid_request_id() {
@@ -712,6 +711,112 @@ class UAttributesValidatorTest {
         assertEquals("", status.getMessage());
     }
 
+    @Test
+    public void testPublishValidationWithoutId() {
+        UAttributesBuilder builder = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS1);
+        assertNotNull(builder);
+        UAttributes attributes = builder.build();
+        attributes = attributes.toBuilder().clearId().build();
+        UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
+        ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Missing id", status.getMessage());
+    }
+
+    @Test
+    public void testNotificationValidationWithoutId() {
+        UUri sink = buildSink();
+        UAttributesBuilder builder = UAttributesBuilder.notification(buildSource(), sink, UPriority.UPRIORITY_CS1);
+        assertNotNull(builder);
+        UAttributes attributes = builder.build();
+        attributes = attributes.toBuilder().clearId().build();
+        UAttributesValidator validator = UAttributesValidator.Validators.NOTIFICATION.validator();
+        ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Missing id", status.getMessage());
+    }
+
+    @Test
+    public void testRequestValidationWithoutId() {
+        UUri sink = buildSink();
+        Integer ttl = 1000;
+        UAttributesBuilder builder = UAttributesBuilder.request(buildSource(), sink, UPriority.UPRIORITY_CS4, ttl);
+        assertNotNull(builder);
+        UAttributes attributes = builder.build();
+        attributes = attributes.toBuilder().clearId().build();
+        UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
+        ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Missing id", status.getMessage());
+    }
+
+    @Test
+    public void testResponseValidationWithoutId() {
+        UUri sink = buildSink();
+        UUID reqId = UuidFactory.Factories.UPROTOCOL.factory().create();
+        UAttributesBuilder builder = UAttributesBuilder.response(buildSource(), sink, UPriority.UPRIORITY_CS6, reqId);
+        assertNotNull(builder);
+        UAttributes attributes = builder.build();
+        attributes = attributes.toBuilder().clearId().build();
+        UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
+        ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Missing id", status.getMessage());
+    }
+
+    @Test
+    public void testPublishValidationWithInvalidId() {
+        UAttributesBuilder builder = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS1);
+        assertNotNull(builder);
+        UAttributes attributes = builder.build();
+        attributes = attributes.toBuilder().setId(getUUID()).build();
+        UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
+        ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Attributes must contain valid uProtocol UUID in id property", status.getMessage());
+    }
+
+    @Test
+    public void testNotificationValidationWithInvalidId() {
+        UUri sink = buildSink();
+        UAttributesBuilder builder = UAttributesBuilder.notification(buildSource(), sink, UPriority.UPRIORITY_CS1);
+        assertNotNull(builder);
+        UAttributes attributes = builder.build();
+        attributes = attributes.toBuilder().setId(getUUID()).build();
+        UAttributesValidator validator = UAttributesValidator.Validators.NOTIFICATION.validator();
+        ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Attributes must contain valid uProtocol UUID in id property", status.getMessage());
+    }
+
+    @Test
+    public void testRequestValidationWithInvalidId() {
+        UUri sink = buildSink();
+        Integer ttl = 1000;
+        UAttributesBuilder builder = UAttributesBuilder.request(buildSource(), sink, UPriority.UPRIORITY_CS4, ttl);
+        assertNotNull(builder);
+        UAttributes attributes = builder.build();
+        attributes = attributes.toBuilder().setId(getUUID()).build();
+        UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
+        ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Attributes must contain valid uProtocol UUID in id property", status.getMessage());
+    }
+
+    @Test
+    public void testResponseValidationWithInvalidId() {
+        UUri sink = buildSink();
+        UUID reqId = UuidFactory.Factories.UPROTOCOL.factory().create();
+        UAttributesBuilder builder = UAttributesBuilder.response(buildSource(), sink, UPriority.UPRIORITY_CS6, reqId);
+        assertNotNull(builder);
+        UAttributes attributes = builder.build();
+        attributes = attributes.toBuilder().setId(getUUID()).build();
+        UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
+        ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Attributes must contain valid uProtocol UUID in id property", status.getMessage());
+    }
+
     private UUri buildSink() {
         return UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.someVin.veh.ultifi.gm.com"))
                 .setEntity(UEntity.newBuilder().setName("petapp.ultifi.gm.com").setVersionMajor(1))
@@ -722,6 +827,12 @@ class UAttributesValidatorTest {
         return UUri.newBuilder()
                 .setEntity(UEntity.newBuilder().setName("hartley_app").setVersionMajor(1))
                 .setResource(UResourceBuilder.forRpcResponse()).build();
+    }
+
+    private UUID getUUID() {
+        java.util.UUID uuid_java = java.util.UUID.randomUUID();
+        return UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits()).setLsb(uuid_java.getLeastSignificantBits())
+                .build();
     }
 
 }
