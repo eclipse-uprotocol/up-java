@@ -1,0 +1,54 @@
+name: Java Code Coverage
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+
+      - name: Build with Maven
+        run: mvn -B clean verify
+
+      - name: Run tests with coverage
+        run: mvn jacoco:prepare-agent test jacoco:report
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: target/site/jacoco/index.html
+
+      - name: Generate coverage comment
+        run: |
+          COVERAGE_PERCENTAGE=$(awk '/TOTAL/{print $4}' target/site/jacoco/index.html)
+          echo "COVERAGE_PERCENTAGE=$COVERAGE_PERCENTAGE" >> $GITHUB_ENV
+          echo "COVERAGE_PERCENTAGE: $COVERAGE_PERCENTAGE"
+
+      - name: Upload PR comment
+        uses: actions/upload-artifact@v2
+        with:
+          name: pr-comment
+          path: pr-comment/
+
+      - name: Check code coverage
+        run: |
+          COVERAGE_PERCENTAGE=${{ env.COVERAGE_PERCENTAGE }}
+          if [ $COVERAGE_PERCENTAGE -lt 95 ]; then
+            echo "Coverage Percentage is less than 95%: $COVERAGE_PERCENTAGE"
+            exit 1
+          else
+            echo "Success"
+            echo $COVERAGE_PERCENTAGE
+          fi
