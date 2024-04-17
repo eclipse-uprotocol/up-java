@@ -25,10 +25,10 @@
 
 package org.eclipse.uprotocol.uri.serializer;
 
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
@@ -47,7 +47,8 @@ public class ShortUriSerializer implements UriSerializer<String> {
 
     private static final ShortUriSerializer INSTANCE = new ShortUriSerializer();
 
-    private ShortUriSerializer(){}
+    private ShortUriSerializer() {
+    }
 
     public static ShortUriSerializer instance() {
         return INSTANCE;
@@ -55,23 +56,27 @@ public class ShortUriSerializer implements UriSerializer<String> {
 
     /**
      * Support for serializing {@link UUri} objects into their String format.
-     * @param Uri {@link UUri} object to be serialized to the String format.
-     * @return Returns the String format of the supplied {@link UUri} that can be used as a sink or a source in a uProtocol publish communication.
+     * 
+     * @param uri {@link UUri} object to be serialized to the String format.
+     * @return Returns the String format of the supplied {@link UUri} that can be
+     *         used as a sink or a source in a uProtocol publish communication.
      */
     @Override
-    public String serialize(UUri Uri) {
-        if (Uri == null || UriValidator.isEmpty(Uri)) {
+    public String serialize(UUri uri) {
+        if (uri == null || UriValidator.isEmpty(uri)) {
             return "";
         }
 
         StringBuilder sb = new StringBuilder();
 
-        if (Uri.hasAuthority()) {
-            UAuthority authority = Uri.getAuthority();
+        if (uri.hasAuthority()) {
+            UAuthority authority = uri.getAuthority();
+
             if (authority.hasIp()) {
                 try {
-                    sb.append("/");
-                    sb.append(InetAddress.getByAddress(authority.getIp().toByteArray()));
+                    InetAddress ipAddress = InetAddress.getByAddress(authority.getIp().toByteArray());
+                    sb.append("//");
+                    sb.append(ipAddress.getHostAddress());
                 } catch (UnknownHostException e) {
                     return "";
                 }
@@ -86,9 +91,9 @@ public class ShortUriSerializer implements UriSerializer<String> {
         }
         sb.append("/");
 
-        sb.append(buildSoftwareEntityPartOfUri(Uri.getEntity()));
-        
-        sb.append(buildResourcePartOfUri(Uri));
+        sb.append(buildSoftwareEntityPartOfUri(uri.getEntity()));
+
+        sb.append(buildResourcePartOfUri(uri));
 
         return sb.toString().replaceAll("/+$", "");
     }
@@ -106,8 +111,9 @@ public class ShortUriSerializer implements UriSerializer<String> {
     }
 
     /**
-     * Create the service part of the uProtocol URI from an  software entity object.
-     * @param use  Software Entity representing a service or an application.
+     * Create the service part of the uProtocol URI from an software entity object.
+     * 
+     * @param use Software Entity representing a service or an application.
      */
     private static String buildSoftwareEntityPartOfUri(UEntity use) {
         StringBuilder sb = new StringBuilder();
@@ -120,9 +126,9 @@ public class ShortUriSerializer implements UriSerializer<String> {
         return sb.toString();
     }
 
-
     /**
      * Deserialize a String into a UUri object.
+     * 
      * @param uProtocolUri A short format uProtocol URI.
      * @return Returns an UUri data object.
      */
@@ -132,15 +138,16 @@ public class ShortUriSerializer implements UriSerializer<String> {
             return UUri.getDefaultInstance();
         }
 
-        String uri = uProtocolUri.contains(":") ? uProtocolUri.substring(uProtocolUri.indexOf(":")+1) : uProtocolUri 
-                .replace('\\', '/');
-        
+        String uri = uProtocolUri.contains(":") ? uProtocolUri.substring(uProtocolUri.indexOf(":") + 1)
+                : uProtocolUri
+                        .replace('\\', '/');
+
         boolean isLocal = !uri.startsWith("//");
 
         final String[] uriParts = uri.split("/");
         final int numberOfPartsInUri = uriParts.length;
 
-        if(numberOfPartsInUri < 2) {
+        if (numberOfPartsInUri < 2) {
             return UUri.getDefaultInstance();
         }
 
@@ -151,7 +158,7 @@ public class ShortUriSerializer implements UriSerializer<String> {
 
         UAuthority uAuthority = null;
 
-        if(isLocal) {
+        if (isLocal) {
             uEId = uriParts[1];
             if (numberOfPartsInUri > 2) {
                 ueVersion = uriParts[2];
@@ -160,10 +167,10 @@ public class ShortUriSerializer implements UriSerializer<String> {
                     uResource = parseFromString(uriParts[3]);
                 }
                 // Too many parts now
-                if(numberOfPartsInUri > 4) {
+                if (numberOfPartsInUri > 4) {
                     return UUri.getDefaultInstance();
                 }
-            } 
+            }
         } else {
             // If authority is blank, it is an error
             if (uriParts[2].isBlank()) {
@@ -182,18 +189,18 @@ public class ShortUriSerializer implements UriSerializer<String> {
                 if (numberOfPartsInUri > 4) {
                     ueVersion = uriParts[4];
 
-                    if (numberOfPartsInUri > 5) { 
+                    if (numberOfPartsInUri > 5) {
                         uResource = parseFromString(uriParts[5]);
                     }
                     // Way too many parts in the URI
                     if (numberOfPartsInUri > 6) {
                         return UUri.getDefaultInstance();
                     }
-                } 
+                }
             } else {
                 return UUri.newBuilder()
-                .setAuthority(uAuthority)
-                .build();
+                        .setAuthority(uAuthority)
+                        .build();
             }
         }
 
@@ -219,7 +226,7 @@ public class ShortUriSerializer implements UriSerializer<String> {
         if (useVersionInt != null) {
             uEntityBuilder.setVersionMajor(useVersionInt);
         }
-            
+
         UUri.Builder uriBuilder = UUri.newBuilder().setEntity(uEntityBuilder);
         if (uAuthority != null) {
             uriBuilder.setAuthority(uAuthority);
@@ -231,7 +238,8 @@ public class ShortUriSerializer implements UriSerializer<String> {
     }
 
     /**
-     * Static factory method for creating a UResource using a string value 
+     * Static factory method for creating a UResource using a string value
+     * 
      * @param resourceString String that contains the UResource id.
      * @return Returns a UResource object.
      */
