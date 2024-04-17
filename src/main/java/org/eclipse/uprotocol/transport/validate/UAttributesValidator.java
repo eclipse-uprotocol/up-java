@@ -79,7 +79,7 @@ public abstract class UAttributesValidator {
     public ValidationResult validate(UAttributes attributes) {
         final String errorMessage = Stream.of(validateType(attributes),
                          validateTtl(attributes), validateSink(attributes), validatePriority(attributes),
-                         validatePermissionLevel(attributes), validateReqId(attributes))
+                         validatePermissionLevel(attributes), validateReqId(attributes), validateId(attributes))
                 .filter(ValidationResult::isFailure).map(ValidationResult::getMessage).collect(Collectors.joining(","));
         return errorMessage.isBlank() ? ValidationResult.success() : ValidationResult.failure(errorMessage);
     }
@@ -179,6 +179,25 @@ public abstract class UAttributesValidator {
     public ValidationResult validatePriority(UAttributes attributes) {
         return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS0_VALUE ? 
         ValidationResult.success() : ValidationResult.failure(String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
+    }
+
+
+    /**
+     * Validate the Id for the default case. If the UAttributes object does not contain an Id,
+     * the ValidationResult is failed.
+     *
+     * @param attributes Attributes object containing the id to validate.
+     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+     */
+    public ValidationResult validateId(UAttributes attributes) {
+        if (!attributes.hasId()) {
+            return ValidationResult.failure("Missing id");
+        }
+        if (!UuidUtils.isUuid(attributes.getId())) {
+            return ValidationResult.failure("Attributes must contain valid uProtocol UUID in id property");
+        } else {
+            return ValidationResult.success();
+        }
     }
 
 
