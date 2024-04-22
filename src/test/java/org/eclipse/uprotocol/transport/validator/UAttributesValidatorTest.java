@@ -712,6 +712,35 @@ class UAttributesValidatorTest {
     }
 
     @Test
+    @DisplayName("test publish validation when an invalid priority")
+    public void test_publish_validation_when_an_invalid_priority() {
+        final UAttributes attributes = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_UNSPECIFIED).build();
+        final UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid UPriority [UPRIORITY_UNSPECIFIED]", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("test request validation with invalid priority")
+    public void test_request_validation_with_invalid_priority() {
+        final UAttributes attributes = UAttributesBuilder.request(buildSource(), buildSink(), UPriority.UPRIORITY_UNSPECIFIED, 1000).build();
+        final UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid UPriority [UPRIORITY_UNSPECIFIED]", status.getMessage());
+    }
+
+    @Test
+    @DisplayName("test response validation with invalid priority")
+    public void test_response_validation_with_invalid_priority() {
+        final UAttributes attributes = UAttributesBuilder.response(buildSource(), buildSink(), UPriority.UPRIORITY_UNSPECIFIED,
+                UuidFactory.Factories.UPROTOCOL.factory().create()).build();
+        final UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
+        final ValidationResult status = validator.validate(attributes);
+        assertTrue(status.isFailure());
+        assertEquals("Invalid UPriority [UPRIORITY_UNSPECIFIED]", status.getMessage());
+    }
     public void testPublishValidationWithoutId() {
         UAttributesBuilder builder = UAttributesBuilder.publish(buildSource(), UPriority.UPRIORITY_CS1);
         assertNotNull(builder);
