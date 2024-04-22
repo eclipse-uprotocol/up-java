@@ -606,12 +606,12 @@ public class LongUriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test Create a uProtocol URI from an  URI object with an empty USE")
+    @DisplayName("Test Create an invalid uProtocol URI from an URI object with an empty USE")
     public void test_build_protocol_uri_from__uri_when__uri_has_empty_use() {
         UEntity use = UEntity.newBuilder().build();
-        UUri uuri = UUri.newBuilder().setAuthority(UAuthority.newBuilder().build()).setEntity(use).setResource(UResource.newBuilder().setName("door").build()).build();
+        UUri uuri = UUri.newBuilder().setResource(UResource.newBuilder().setName("door").build()).build();
         String uProtocolUri = LongUriSerializer.instance().serialize(uuri);
-        assertEquals("/////door", uProtocolUri);
+        assertEquals("///door", uProtocolUri);
     }
 
     @Test
@@ -853,6 +853,37 @@ public class LongUriSerializerTest {
         assertEquals(uri2, LongUriSerializer.instance().serialize(uuri));
     }
 
+    @Test
+    @DisplayName("Test Create a URI that has an empty UResource instance but the rest of the UUri is present")
+    public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource_with_empty_instance() {
+        final UAuthority uAuthority = UAuthority.newBuilder().setName("vcu.my_car_vin").build();
+        final UEntity use = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build();
+        final UResource uResource = UResource.newBuilder().setName("door").setInstance("").setMessage("Door").build();
+        final UUri uri = UUri.newBuilder().setAuthority(uAuthority).setEntity(use).setResource(uResource).build();
+        String uProtocolUri = LongUriSerializer.instance().serialize(uri);
+        assertEquals("//vcu.my_car_vin/body.access/1/door#Door", uProtocolUri);
+    }
 
+    @Test
+    @DisplayName("Test Create a URI that has an empty UResource message but the rest of the UUri is present")
+    public void test_build_protocol_uri_from__uri_when__uri_has_remote_authority_service_and_version_with_resource_with_empty_message() {
+        final UAuthority uAuthority = UAuthority.newBuilder().setName("vcu.my_car_vin").build();
+        final UEntity use = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build();
+        final UResource uResource = UResource.newBuilder().setName("door").setInstance("front_left").setMessage("").build();
+        final UUri uri = UUri.newBuilder().setAuthority(uAuthority).setEntity(use).setResource(uResource).build();
+        String uProtocolUri = LongUriSerializer.instance().serialize(uri);
+        assertEquals("//vcu.my_car_vin/body.access/1/door.front_left", uProtocolUri);
+    }
+
+    @Test
+    @DisplayName("Test Create a URI that has an empty UAuthority but the rest of the UUri is present")
+    public void test_build_protocol_uri_from__uri_when__uri_has_empty_authority_service_and_version_with_resource() {
+        final UAuthority uAuthority = UAuthority.newBuilder().setName("").build();
+        final UEntity use = UEntity.newBuilder().setName("body.access").setVersionMajor(1).build();
+        final UResource uResource = UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door").build();
+        final UUri uri = UUri.newBuilder().setAuthority(uAuthority).setEntity(use).setResource(uResource).build();
+        String uProtocolUri = LongUriSerializer.instance().serialize(uri);
+        assertEquals("/body.access/1/door.front_left#Door", uProtocolUri);
+    }
 
 }

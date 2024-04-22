@@ -26,7 +26,6 @@ package org.eclipse.uprotocol.uri.serializer;
 
 
 import java.util.Objects;
-import java.util.Optional;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UAuthority;
 import org.eclipse.uprotocol.v1.UEntity;
@@ -60,7 +59,7 @@ public class LongUriSerializer implements UriSerializer<String> {
 
         StringBuilder sb = new StringBuilder();
 
-        if (Uri.hasAuthority()) {
+        if (Uri.hasAuthority() && !Uri.getAuthority().getName().isBlank()) {
             sb.append("//");
             sb.append(Uri.getAuthority().getName());
         }
@@ -82,10 +81,10 @@ public class LongUriSerializer implements UriSerializer<String> {
         StringBuilder sb = new StringBuilder("/");
         sb.append(uResource.getName());
 
-        if (uResource.hasInstance()) {
+        if (uResource.hasInstance() && !uResource.getInstance().isBlank()) {
             sb.append(".").append(uResource.getInstance());
         }
-        if (uResource.hasMessage()) {
+        if (uResource.hasMessage() && !uResource.getMessage().isBlank()) {
             sb.append("#").append(uResource.getMessage());
         }
         
