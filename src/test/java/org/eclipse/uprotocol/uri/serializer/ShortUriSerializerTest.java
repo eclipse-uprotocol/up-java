@@ -23,7 +23,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
- package org.eclipse.uprotocol.uri.serializer;
+package org.eclipse.uprotocol.uri.serializer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -43,7 +43,7 @@ import org.junit.jupiter.api.Test;
 import com.google.protobuf.ByteString;
 
 public class ShortUriSerializerTest {
-    
+
     @Test
     @DisplayName("Test serialize with null uri")
     public void testSerializeWithNullUri() {
@@ -57,7 +57,6 @@ public class ShortUriSerializerTest {
         final String strUri = ShortUriSerializer.instance().serialize(UUri.getDefaultInstance());
         assertEquals("", strUri);
     }
-
 
     @Test
     @DisplayName("Test Creating and using the ShortUriSerializer")
@@ -115,13 +114,13 @@ public class ShortUriSerializerTest {
         final UUri uri2 = ShortUriSerializer.instance().deserialize(strUri);
         assertEquals(uri, uri2);
     }
- 
+
     @Test
     @DisplayName("Test Creating and using the ShortUriSerializer with ip authority")
     public void testCreatingShortUriSerializerWithIpAuthority() throws UnknownHostException {
         final UUri uri = UUri.newBuilder()
-                .setEntity(UEntity.newBuilder().setId(1).setVersionMajor(1))
                 .setAuthority(UAuthority.newBuilder().setIp(ByteString.copyFrom(IpAddress.toBytes("192.168.1.100"))))
+                .setEntity(UEntity.newBuilder().setId(1).setVersionMajor(1))
                 .setResource(UResourceBuilder.fromId(20000))
                 .build();
 
@@ -130,7 +129,7 @@ public class ShortUriSerializerTest {
         final UUri uri2 = ShortUriSerializer.instance().deserialize(strUri);
         assertEquals(uri, uri2);
     }
-    
+
     @Test
     @DisplayName("Test short serializing a URI that doesn't have a resource")
     public void testShortSerializingUriWithoutResource() {
@@ -138,9 +137,9 @@ public class ShortUriSerializerTest {
                 .setEntity(UEntity.newBuilder().setId(1).setVersionMajor(1))
                 .build();
         final String strUri = ShortUriSerializer.instance().serialize(uri);
-        assertEquals(strUri, "/1/1"); 
+        assertEquals(strUri, "/1/1");
     }
-    
+
     @Test
     @DisplayName("Test short serializing a URI that have a negative number for uEntity version major")
     public void testShortSerializingUriWithNegativeVersionMajor() {
@@ -149,9 +148,9 @@ public class ShortUriSerializerTest {
                 .setResource(UResourceBuilder.fromId(20000))
                 .build();
         final String strUri = ShortUriSerializer.instance().serialize(uri);
-        assertEquals(strUri, "/1//20000"); 
+        assertEquals(strUri, "/1//20000");
     }
- 
+
     @Test
     @DisplayName("Test short deserialize a null URI")
     public void testShortDeserializeNullUri() {
@@ -165,7 +164,7 @@ public class ShortUriSerializerTest {
         final UUri uri = ShortUriSerializer.instance().deserialize("");
         assertEquals(uri, UUri.getDefaultInstance());
     }
-  
+
     @Test
     @DisplayName("Test short deserialize of a valid URI with scheme")
     public void testShortDeserializeUriWithSchemeAndAuthority() {
@@ -284,8 +283,7 @@ public class ShortUriSerializerTest {
         assertTrue(uri.hasResource());
         assertEquals(uri.getResource().getId(), 1);
     }
-    
-    
+
     @Test
     @DisplayName("Test short deserialize with a remote authority that is an IP address but missing resource")
     public void testShortDeserializeWithRemoteAuthorityIpAddressMissingResource() {
