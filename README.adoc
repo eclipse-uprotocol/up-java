@@ -24,46 +24,27 @@ To pull the Library from maven central, setting ${uprotocol.version} to the late
 
 === Using The Library
 
-
-.Package Folders
-[#pkg-folders,width=100%,cols="20%,80%",options="header"]
-|===
-
-| Folder | Purpose
-
-| `*builder*` or `*factory*`
-| Contains factory methods for creating uProtocol data types
-
-| `*serializer*`
-| Contains serializers to convert the objects into byte or string form representation of said object
-
-| `*validator*`
-| Contains validators to validate the data types and report errors if the objects are missing or incorrect
-
-|===
-
-
 .SDK Packages
 [#sdk-packages,width=100%,cols="20%,80%",options="header"]
 |===
 
 | Package | Purpose
 
+| xref:src/main/java/org/eclipse/uprotocol/communication/README.adoc[`*communication*`]
+| Top level client-facing  https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l2[communication layer (uP-L2)] interfaces that applications and services use to implement the publisher/subscriber, notification, and RPC patterns on top of the transport layer (uTransport) API. 
+
 | link:src/main/java/org/eclipse/uprotocol/uri/README.adoc[`*uuri*`]
-| Uniform Resource Identifier (RFC3986), how uProtocol addresses things (devices, software, methods, topics, etc...) on the network
+| Builders, validators, and serializers for uProtocol addressing scheme (UUri). 
 
 
 | link:src/main/java/org/eclipse/uprotocol/uuid/README.adoc[`*uuid*`] 
 | Identifier used to uniquely identify (and timestamp) messages that are sent
 
 | link:src/main/java/org/eclipse/uprotocol/transport/README.adoc[`*transport*`] 
-| Interface declaration used for bidirectional point-2-point communication between uEs. This interface is then implemented by https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/upclient.adoc[uPClient] libraries for a given underlining transport (ex. Binder, MQTT, Zenoh, SOME/IP, DDS, HTTP, etc…​)
+| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[uP-L1 Transport Layer] interface and data model that wraps communication middlewares like zenoh, mqtt, http, etc... into a thin and simple to use transport interface. This model is used by the communication layer (uP-L2) to send and receive messages and transports are expected to implement the link:src/main/java/org/eclipse/uprotocol/transport/UTransport.java[uTransport] interface.
 
 | link:src/main/java/org/eclipse/uprotocol/cloudevent/README.adoc[`*cloudevent*`] 
-| Common way to represent uProtocol messages using CloudEvent data model used by some transports (ex. MQTT, HTTP, etc…​)
-
-| link:src/main/java/org/eclipse/uprotocol/rpc/README.adoc[`*rpc*`] 
-| RPC client and server-side interfaces that are to be implemented by uLink libraries
+| A representation of uProtocol messages used in older versions of the specifications and kept for backwards compatibility.
 
 |===
 

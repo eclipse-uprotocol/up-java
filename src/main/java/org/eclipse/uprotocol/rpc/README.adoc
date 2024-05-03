@@ -1,8 +1,0 @@
-= uProtocol Rpc Interfaces
-:toc:
-:sectnums:
-
-== Overview
-
-The following module declares the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l2/rpcclient.adoc[RpcClient interface] defined in uProtocol specification. The interface is used by code generators to build client and service stubs for uServices. 
-

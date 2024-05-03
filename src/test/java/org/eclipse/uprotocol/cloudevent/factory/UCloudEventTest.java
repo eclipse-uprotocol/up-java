@@ -1,43 +1,16 @@
-/*
- * Copyright (c) 2023 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- * SPDX-FileType: SOURCE
- * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.eclipse.uprotocol.cloudevent.factory;
-
-import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.CloudEventData;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
-import org.eclipse.uprotocol.transport.builder.UAttributesBuilder;
-import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
-import org.eclipse.uprotocol.uuid.factory.UuidFactory;
-import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
-import org.eclipse.uprotocol.v1.*;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.time.Instant;
@@ -45,7 +18,29 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.CloudEventData;
+import io.cloudevents.core.builder.CloudEventBuilder;
+
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
+import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
+import org.eclipse.uprotocol.uuid.factory.UuidFactory;
+import org.eclipse.uprotocol.uuid.serializer.UuidSerializer;
+import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.UPriority;
+import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.v1.UMessage;
+import org.eclipse.uprotocol.v1.UMessageType;
+import org.eclipse.uprotocol.v1.UUID;
+import org.eclipse.uprotocol.v1.UPayloadFormat;
 
 class UCloudEventTest {
 
@@ -58,7 +53,7 @@ class UCloudEventTest {
         CloudEvent cloudEvent = builder.build();
 
         String source = UCloudEvent.getSource(cloudEvent);
-        assertEquals("/body.access//door.front_left#Door", source);
+        assertEquals("/2/1/8000", source);
     }
 
     @Test
@@ -308,7 +303,7 @@ class UCloudEventTest {
     @DisplayName("Test extracting creation timestamp from the CloudEvent UUIDV8 id when the id is valid.")
     public void test_extract_creation_timestamp_from_cloudevent_UUIDV8_Id_when_UUIDV8_id_is_valid() {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        String str_uuid = UuidSerializer.serialize(uuid);
         
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
@@ -356,7 +351,7 @@ class UCloudEventTest {
     public void test_cloudevent_is_not_expired_cd_when_ttl_3_mili_no_creation_date() {
         final Any protoPayload = buildProtoPayloadForTest();
         final CloudEventBuilder builder = CloudEventBuilder.v1().withId("id").withType("pub.v1")
-                .withSource(URI.create("/body.accss//door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
+                .withSource(URI.create("/body.accss//8000")).withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create(protoPayload.getTypeUrl())).withData(protoPayload.toByteArray())
                 .withExtension("ttl", 500);
         CloudEvent cloudEvent = builder.build();
@@ -395,7 +390,7 @@ class UCloudEventTest {
     @DisplayName("Test if the CloudEvent is not expired when no ttl is configured.")
     public void test_cloudevent_is_not_expired_when_no_ttl_configured() {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        String str_uuid = UuidSerializer.serialize(uuid);
         
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withoutExtension("ttl").withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
@@ -406,7 +401,7 @@ class UCloudEventTest {
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is zero.")
     public void test_cloudevent_is_not_expired_when_ttl_is_zero() {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        String str_uuid = UuidSerializer.serialize(uuid);
         
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 0).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
@@ -417,7 +412,7 @@ class UCloudEventTest {
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is minus one.")
     public void test_cloudevent_is_not_expired_when_ttl_is_minus_one() {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        String str_uuid = UuidSerializer.serialize(uuid);
         
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", -1).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
@@ -428,7 +423,7 @@ class UCloudEventTest {
     @DisplayName("Test if the CloudEvent is not expired when configured ttl is large number.")
     public void test_cloudevent_is_not_expired_when_ttl_is_large_number_mili() {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        String str_uuid = UuidSerializer.serialize(uuid);
         
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", Integer.MAX_VALUE)
                 .withId(str_uuid);
@@ -440,7 +435,7 @@ class UCloudEventTest {
     @DisplayName("Test if the CloudEvent is expired when configured ttl is 1 milliseconds.")
     public void test_cloudevent_is_expired_when_ttl_1_mili() throws InterruptedException {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        String str_uuid = UuidSerializer.serialize(uuid);
         
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 1).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
@@ -460,7 +455,7 @@ class UCloudEventTest {
     @DisplayName("Test if the CloudEvent has a UUIDV8 id.")
     public void test_cloudevent_has_a_UUIDV8_id() {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
-        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        String str_uuid = UuidSerializer.serialize(uuid);
         
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
@@ -473,7 +468,7 @@ class UCloudEventTest {
         final java.util.UUID uuid_java = java.util.UUID.randomUUID();
         UUID uuid = UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
                 .setLsb(uuid_java.getLeastSignificantBits()).build();
-        String str_uuid = LongUuidSerializer.instance().serialize(uuid);
+        String str_uuid = UuidSerializer.serialize(uuid);
         
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("ttl", 3).withId(str_uuid);
         CloudEvent cloudEvent = builder.build();
@@ -495,7 +490,7 @@ class UCloudEventTest {
         byte[] cloudEventData = payloadForCloudEvent.toByteArray();
 
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
+                .withSource(URI.create("/body.access/1/8000")).withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create(payloadForCloudEvent.getTypeUrl())).withData(cloudEventData);
         CloudEvent cloudEvent = cloudEventBuilder.build();
 
@@ -512,7 +507,7 @@ class UCloudEventTest {
         byte[] cloudEventData = payloadForCloudEvent.toByteArray();
 
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
+                .withSource(URI.create("/body.access/1/8000")).withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent"))
                 .withData(cloudEventData);
         CloudEvent cloudEvent = cloudEventBuilder.build();
@@ -529,7 +524,7 @@ class UCloudEventTest {
     @DisplayName("Test extract payload from cloud event when payload is a bad protobuf object")
     public void test_extractPayload_from_cloud_event_when_payload_is_bad_proto_object() {
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
+                .withSource(URI.create("/body.access/1/8000")).withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent"))
                 .withData("<html><head></head><body><p>Hello</p></body></html>".getBytes());
         CloudEvent cloudEvent = cloudEventBuilder.build();
@@ -546,7 +541,7 @@ class UCloudEventTest {
         byte[] cloudEventData = payloadForCloudEvent.toByteArray();
 
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
+                .withSource(URI.create("/body.access/1/8000")).withDataContentType(DATA_CONTENT_TYPE)
                 .withData(cloudEventData);
         CloudEvent cloudEvent = cloudEventBuilder.build();
 
@@ -561,7 +556,7 @@ class UCloudEventTest {
         Any payloadForCloudEvent = buildProtoPayloadForTest();
 
         final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
+                .withSource(URI.create("/body.access/1/8000")).withDataContentType(DATA_CONTENT_TYPE)
                 .withDataSchema(URI.create(payloadForCloudEvent.getTypeUrl()));
         CloudEvent cloudEvent = cloudEventBuilder.build();
 
@@ -570,47 +565,6 @@ class UCloudEventTest {
         assertEquals(Any.getDefaultInstance(), extracted);
     }
 
-    @Test
-    @DisplayName("Test unpack payload by class from cloud event as protobuf Message object")
-    public void test_unpack_payload_by_class_from_cloud_event_proto_message_object() {
-        Any payloadForCloudEvent = Any.pack(
-                io.cloudevents.v1.proto.CloudEvent.newBuilder().setSpecVersion("1.0").setId("hello")
-                        .setSource("//VCU.MY_CAR_VIN/someService").setType("example.demo")
-                        .setProtoData(Any.newBuilder().build()).build());
-        byte[] cloudEventData = payloadForCloudEvent.toByteArray();
-
-        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
-                .withDataSchema(URI.create(payloadForCloudEvent.getTypeUrl())).withData(cloudEventData);
-        CloudEvent cloudEvent = cloudEventBuilder.build();
-
-        final Optional<io.cloudevents.v1.proto.CloudEvent> extracted = UCloudEvent.unpack(cloudEvent,
-                io.cloudevents.v1.proto.CloudEvent.class);
-
-        assertTrue(extracted.isPresent());
-        final io.cloudevents.v1.proto.CloudEvent unpackedCE = extracted.get();
-        assertEquals("1.0", unpackedCE.getSpecVersion());
-        assertEquals("hello", unpackedCE.getId());
-        assertEquals("example.demo", unpackedCE.getType());
-        assertEquals("//VCU.MY_CAR_VIN/someService", unpackedCE.getSource());
-
-    }
-
-    @Test
-    @DisplayName("Test unpack payload by class from cloud event when protobuf Message is not unpack-able")
-    public void test_unpack_payload_by_class_from_cloud_event_proto_message_object_when_not_valid_getMessage() {
-        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1().withId("someId").withType("pub.v1")
-                .withSource(URI.create("/body.access/1/door.front_left#Door")).withDataContentType(DATA_CONTENT_TYPE)
-                .withDataSchema(URI.create("type.googleapis.com/io.cloudevents.v1.CloudEvent"))
-                .withData("<html><head></head><body><p>Hello</p></body></html>".getBytes());
-        CloudEvent cloudEvent = cloudEventBuilder.build();
-
-        final Optional<io.cloudevents.v1.proto.CloudEvent> extracted = UCloudEvent.unpack(cloudEvent,
-                io.cloudevents.v1.proto.CloudEvent.class);
-
-        assertTrue(extracted.isEmpty());
-
-    }
 
     @Test
     @DisplayName("Test pretty printing a cloud event with a sink")
@@ -622,7 +576,7 @@ class UCloudEventTest {
         CloudEvent cloudEvent = builder.build();
 
         final String prettyPrint = UCloudEvent.toString(cloudEvent);
-        final String expected = "CloudEvent{id='testme', source='/body.access//door.front_left#Door', " + "sink='//bo"
+        final String expected = "CloudEvent{id='testme', source='/2/1/8000', " + "sink='//bo"
                 + ".cloud/petapp/1/rpc.response', type='pub.v1'}";
 
         assertEquals(expected, prettyPrint);
@@ -644,18 +598,19 @@ class UCloudEventTest {
         CloudEvent cloudEvent = buildBaseCloudEventBuilderForTest().build();
 
         final String prettyPrint = UCloudEvent.toString(cloudEvent);
-        final String expected = "CloudEvent{id='testme', source='/body.access//door.front_left#Door', type='pub.v1'}";
+        final String expected = "CloudEvent{id='testme', source='/2/1/8000', type='pub.v1'}";
 
         assertEquals(expected, prettyPrint);
     }
 
     private CloudEventBuilder buildBaseCloudEventBuilderForTest() {
         // source
-        UUri Uri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access"))
-                .setResource(UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door"))
+        UUri Uri = UUri.newBuilder().setUeId(2)
+                .setUeVersionMajor(1)
+                .setResourceId(0x8000)
                 .build();
 
-        String source = LongUriSerializer.instance().serialize(Uri);
+        String source = UriSerializer.serialize(Uri);
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -669,7 +624,7 @@ class UCloudEventTest {
 
         // build the cloud event
         final CloudEventBuilder cloudEventBuilder = CloudEventFactory.buildBaseCloudEvent("testme", source,
-                protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
+                 protoPayload, uCloudEventAttributes);
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
 
         return cloudEventBuilder;
@@ -681,7 +636,7 @@ class UCloudEventTest {
 
     private io.cloudevents.v1.proto.CloudEvent buildProtoPayloadForTest1() {
         return io.cloudevents.v1.proto.CloudEvent.newBuilder().setSpecVersion("1.0").setId("hello")
-                .setSource("//VCU.MY_CAR_VIN/body.access//door.front_left#Door").setType("example.demo")
+                .setSource("//VCU.MY_CAR_VIN/2/1/8000").setType("example.demo")
                 .setProtoData(Any.newBuilder().build()).build();
     }
     @Test
@@ -758,9 +713,8 @@ class UCloudEventTest {
                 .withTtl(3)
                 .build();
         //cloudevent
-        final CloudEvent cloudEvent = CloudEventFactory.request(buildSourceForTest(),"//bo.cloud/petapp/1/rpc" +
-                        ".response", buildProtoPayloadForTest(),
-                uCloudEventAttributes);
+        final CloudEvent cloudEvent = CloudEventFactory.request(buildSourceForTest(),
+        "//bo.cloud/2/1/0", buildProtoPayloadForTest(), uCloudEventAttributes);
 
 
         UMessage result = UCloudEvent.toMessage(cloudEvent);
@@ -771,9 +725,9 @@ class UCloudEventTest {
         assertEquals(UCloudEvent.getToken(cloudEvent).get(), result.getAttributes().getToken());
         assertTrue(UCloudEvent.getSink(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getSink(cloudEvent).get(),
-                LongUriSerializer.instance().serialize(result.getAttributes().getSink()));
-        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
-        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getAttributes().getSource()));
+                UriSerializer.serialize(result.getAttributes().getSink()));
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload());
+        assertEquals(UCloudEvent.getSource(cloudEvent),UriSerializer.serialize(result.getAttributes().getSource()));
         assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getPriority(cloudEvent).get(), UCloudEvent.getCePriority(result.getAttributes().getPriority()));
 
@@ -788,18 +742,20 @@ class UCloudEventTest {
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .build();
         //cloudevent
-        final CloudEvent cloudEvent = CloudEventFactory.request(buildSourceForTest(),"//bo.cloud/petapp/1/rpc.response", buildProtoPayloadForTest(),
+        final CloudEvent cloudEvent = CloudEventFactory.request(buildSourceForTest(),"//bo.cloud/2/1/0", buildProtoPayloadForTest(),
                 uCloudEventAttributes);
 
         UMessage result = UCloudEvent.toMessage(cloudEvent);
         assertNotNull(result);
-        assertFalse(result.getAttributes().hasTtl());
+        assertEquals(result.getAttributes().getTtl(), 0);
         assertTrue(UCloudEvent.getSink(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getSink(cloudEvent).get(),
-                LongUriSerializer.instance().serialize(result.getAttributes().getSink()));
-        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
-        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getAttributes().getSource()));
-        assertEquals(result.getAttributes().getPriority().getNumber(),0);
+                UriSerializer.serialize(result.getAttributes().getSink()));
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload());
+        assertEquals(UCloudEvent.getSource(cloudEvent),UriSerializer.serialize(result.getAttributes().getSource()));
+        assertEquals(result.getAttributes().getPriority(),UPriority.UPRIORITY_UNSPECIFIED);
+
+        assertEquals(result.getPayload(), buildProtoPayloadForTest().toByteString());
 
         final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent,cloudEvent1);
@@ -814,23 +770,22 @@ class UCloudEventTest {
                 .withTtl(3)
                 .build();
         //cloudevent
-        final CloudEvent cloudEvent = CloudEventFactory.response(buildSourceForTest(),"//bo.cloud/petapp/1/rpc" +
-                        ".response", LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()),
-                buildProtoPayloadForTest(),
-                uCloudEventAttributes);
+        final CloudEvent cloudEvent = CloudEventFactory.response(buildSourceForTest(),"//bo.cloud/2/1/0",
+            UuidSerializer.serialize(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                buildProtoPayloadForTest(), uCloudEventAttributes);
 
         UMessage result = UCloudEvent.toMessage(cloudEvent);
         assertNotNull(result);
         assertTrue(UCloudEvent.getRequestId(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getRequestId(cloudEvent).get(),
-                LongUuidSerializer.instance().serialize(result.getAttributes().getReqid()));
+                UuidSerializer.serialize(result.getAttributes().getReqid()));
         assertTrue(UCloudEvent.getTtl(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getTtl(cloudEvent).get(), result.getAttributes().getTtl());
         assertTrue(UCloudEvent.getSink(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getSink(cloudEvent).get(),
-                LongUriSerializer.instance().serialize(result.getAttributes().getSink()));
-        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
-        assertEquals(UCloudEvent.getSource(cloudEvent),LongUriSerializer.instance().serialize(result.getAttributes().getSource()));
+                UriSerializer.serialize(result.getAttributes().getSink()));
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload());
+        assertEquals(UCloudEvent.getSource(cloudEvent),UriSerializer.serialize(result.getAttributes().getSource()));
         assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getPriority(cloudEvent).get(), UCloudEvent.getCePriority(result.getAttributes().getPriority()));
 
@@ -847,8 +802,8 @@ class UCloudEventTest {
 
         Any protoPayload= buildProtoPayloadForTest();
         final CloudEventBuilder cloudEventBuilder =
-                CloudEventFactory.buildBaseCloudEvent(LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), buildSourceForTest(),
-                protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
+                CloudEventFactory.buildBaseCloudEvent(UuidSerializer.serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), buildSourceForTest(),
+                 protoPayload, uCloudEventAttributes);
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
                 .withExtension("commstatus", UCode.ABORTED_VALUE).withExtension("plevel",2);
 
@@ -862,6 +817,30 @@ class UCloudEventTest {
         assertEquals(cloudEvent,cloudEvent1);
 
     }
+
+    @Test
+    @DisplayName("Test to/from UMesage when there is no Payload")
+    public void test_to_from_message_when_no_payload() {
+        // additional attributes
+        final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+                .withPriority(UPriority.UPRIORITY_CS2)
+                .withTtl(3)
+                .build();
+        //cloudevent
+        final CloudEvent cloudEvent = CloudEventFactory.publish(buildSourceForTest(), null,
+                uCloudEventAttributes);
+
+        UMessage result = UCloudEvent.toMessage(cloudEvent);
+        assertNotNull(result);
+        assertEquals(result.getAttributes().getTtl(), 3);
+        assertEquals(result.getAttributes().getPriority(), UPriority.UPRIORITY_CS2);
+        assertFalse(result.hasPayload());
+        assertEquals(result.getAttributes().getPayloadFormat(), UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED);
+
+        final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
+        assertEquals(cloudEvent,cloudEvent1);
+    }
+
 
     @Test
     public void testToMessageWithNullEvent() {
@@ -878,15 +857,15 @@ class UCloudEventTest {
 
         Any protoPayload= buildProtoPayloadForTest();
         final CloudEventBuilder cloudEventBuilder =
-                CloudEventFactory.buildBaseCloudEvent(LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), buildSourceForTest(),
-                        protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
+                CloudEventFactory.buildBaseCloudEvent(UuidSerializer.serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), buildSourceForTest(),
+                         protoPayload, uCloudEventAttributes);
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
 
         CloudEvent cloudEvent = cloudEventBuilder.build();
 
         UMessage result = UCloudEvent.toMessage(cloudEvent);
         assertNotNull(result);
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,result.getPayload().getFormat());
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,result.getAttributes().getPayloadFormat());
 
         final CloudEvent cloudEvent1 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent,cloudEvent1);
@@ -895,14 +874,14 @@ class UCloudEventTest {
         final CloudEvent cloudEvent2 = cloudEventBuilder.withDataContentType("").build();
         result = UCloudEvent.toMessage(cloudEvent2);
         assertNotNull(result);
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,result.getPayload().getFormat());
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,result.getAttributes().getPayloadFormat());
         final CloudEvent cloudEvent3 = UCloudEvent.fromMessage(result);
         assertNull(cloudEvent3.getDataContentType());
 
         final CloudEvent cloudEvent4 = cloudEventBuilder.withDataContentType("application/json").build();
         result = UCloudEvent.toMessage(cloudEvent4);
         assertNotNull(result);
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_JSON,result.getPayload().getFormat());
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_JSON,result.getAttributes().getPayloadFormat());
         final CloudEvent cloudEvent5 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent4,cloudEvent5);
         assertEquals("application/json",cloudEvent5.getDataContentType());
@@ -910,7 +889,7 @@ class UCloudEventTest {
         final CloudEvent cloudEvent6 = cloudEventBuilder.withDataContentType("application/octet-stream").build();
         result = UCloudEvent.toMessage(cloudEvent6);
         assertNotNull(result);
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_RAW,result.getPayload().getFormat());
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_RAW,result.getAttributes().getPayloadFormat());
         final CloudEvent cloudEvent7 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent6,cloudEvent7);
         assertEquals("application/octet-stream",cloudEvent7.getDataContentType());
@@ -918,7 +897,7 @@ class UCloudEventTest {
         final CloudEvent cloudEvent8 = cloudEventBuilder.withDataContentType("text/plain").build();
         result = UCloudEvent.toMessage(cloudEvent8);
         assertNotNull(result);
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_TEXT,result.getPayload().getFormat());
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_TEXT,result.getAttributes().getPayloadFormat());
         final CloudEvent cloudEvent9 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent8,cloudEvent9);
         assertEquals("text/plain",cloudEvent9.getDataContentType());
@@ -926,7 +905,7 @@ class UCloudEventTest {
         final CloudEvent cloudEvent10 = cloudEventBuilder.withDataContentType("application/x-someip").build();
         result = UCloudEvent.toMessage(cloudEvent10);
         assertNotNull(result);
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP,result.getPayload().getFormat());
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP,result.getAttributes().getPayloadFormat());
         final CloudEvent cloudEvent11 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent10,cloudEvent11);
         assertEquals("application/x-someip",cloudEvent11.getDataContentType());
@@ -934,7 +913,7 @@ class UCloudEventTest {
         final CloudEvent cloudEvent12 = cloudEventBuilder.withDataContentType("application/x-someip_tlv").build();
         result = UCloudEvent.toMessage(cloudEvent12);
         assertNotNull(result);
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV,result.getPayload().getFormat());
+        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV,result.getAttributes().getPayloadFormat());
         final CloudEvent cloudEvent13 = UCloudEvent.fromMessage(result);
         assertEquals(cloudEvent12,cloudEvent13);
         assertEquals("application/x-someip_tlv",cloudEvent13.getDataContentType());
@@ -950,8 +929,8 @@ class UCloudEventTest {
 
         Any protoPayload= buildProtoPayloadForTest();
         final CloudEventBuilder cloudEventBuilder =
-                CloudEventFactory.buildBaseCloudEvent(LongUuidSerializer.instance().serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), buildSourceForTest(),
-                        protoPayload.toByteArray(), protoPayload.getTypeUrl(), uCloudEventAttributes);
+                CloudEventFactory.buildBaseCloudEvent(UuidSerializer.serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), buildSourceForTest(),
+                         protoPayload, uCloudEventAttributes);
         cloudEventBuilder.withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH));
         cloudEventBuilder.withExtension("priority","CS4");
 
@@ -965,12 +944,24 @@ class UCloudEventTest {
         assertEquals(UCloudEvent.getCePriority(UPriority.UPRIORITY_CS4),UCloudEvent.getPriority(cloudEvent1).get());
 
     }
+
+    @Test
+    @DisplayName("Test fromMessage when payload is empty")
+    public void test_from_message_when_payload_is_empty() {
+        final UMessage message = UMessageBuilder.publish(UUri.newBuilder().setUeId(2).setResourceId(0x8000).build()).build();
+        final CloudEvent ce = UCloudEvent.fromMessage(message);
+        assertNotNull(message);
+        assertNotNull(ce);
+        assertNull(ce.getData());
+    }
+
+    
     private String buildSourceForTest(){
-        UUri Uri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access"))
-                .setResource(UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door"))
+        UUri Uri = UUri.newBuilder().setUeId(2)
+                .setResourceId(0x8000)
                 .build();
 
-        return LongUriSerializer.instance().serialize(Uri);
+        return UriSerializer.serialize(Uri);
     }
 
     @Test
@@ -982,16 +973,5 @@ class UCloudEventTest {
             assertEquals("message cannot be null.", e.getMessage());
         }
     }
-
-    @Test
-    @DisplayName("Test fromMessage when UPayload in UMessage does not have value but reference")
-    public void test_fromMessage_with_message_with_payload_reference() {
-        UMessage uMessage = UMessage.newBuilder()
-            .setPayload(UPayload.newBuilder().setFormat(UPayloadFormat.UPAYLOAD_FORMAT_RAW).setReference(0))
-            .build();
-        CloudEvent cloudEvent = UCloudEvent.fromMessage(uMessage);
-        
-    }
-
 
 }

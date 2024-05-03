@@ -1,42 +1,30 @@
-/*
- * Copyright (c) 2023 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- * SPDX-FileType: SOURCE
- * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.eclipse.uprotocol.cloudevent.factory;
 
-import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
+import java.net.URI;
 
 import com.google.protobuf.Any;
-import com.google.protobuf.Empty;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+
+import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
-import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
+import org.eclipse.uprotocol.uuid.serializer.UuidSerializer;
 import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UUID;
 import org.eclipse.uprotocol.v1.UUri;
 
-import java.net.URI;
 
 
 /**
@@ -63,7 +51,7 @@ public interface CloudEventFactory {
                               Any protoPayload,
                               UCloudEventAttributes attributes) {
         String id = generateCloudEventId();
-        return buildBaseCloudEvent(id, applicationUriForRPC, protoPayload.toByteArray(), protoPayload.getTypeUrl(), attributes )
+        return buildBaseCloudEvent(id, applicationUriForRPC, protoPayload, attributes )
                 .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_REQUEST))
                 .withExtension("sink", URI.create(serviceMethodUri))
                 .build();
@@ -86,7 +74,7 @@ public interface CloudEventFactory {
                                Any protoPayload,
                                UCloudEventAttributes attributes) {
         String id = generateCloudEventId();
-        return buildBaseCloudEvent(id, serviceMethodUri, protoPayload.toByteArray(), protoPayload.getTypeUrl(), attributes)
+        return buildBaseCloudEvent(id, serviceMethodUri, protoPayload, attributes)
                 .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
                 .withExtension("sink", URI.create(applicationUriForRPC))
                 .withExtension("reqid", requestId)
@@ -109,8 +97,8 @@ public interface CloudEventFactory {
                                      Integer communicationStatus,
                                      UCloudEventAttributes attributes) {
         String id = generateCloudEventId();
-        final Any protoPayload = Any.pack(Empty.getDefaultInstance());
-        return buildBaseCloudEvent(id, serviceMethodUri, protoPayload.toByteArray(), protoPayload.getTypeUrl(), attributes)
+
+        return buildBaseCloudEvent(id, serviceMethodUri, null, attributes)
                 .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_RESPONSE))
                 .withExtension("sink", URI.create(applicationUriForRPC))
                 .withExtension("reqid", requestId)
@@ -126,9 +114,9 @@ public interface CloudEventFactory {
      * @param attributes Additional attributes such as ttl, hash and priority.
      * @return Returns a publish CloudEvent.
      */
-    static CloudEvent publish(String source, Any protoPayload, UCloudEventAttributes attributes) {
+    static CloudEvent publish(String source,  Any protoPayload, UCloudEventAttributes attributes) {
         String id = generateCloudEventId();
-        return buildBaseCloudEvent(id, source, protoPayload.toByteArray(), protoPayload.getTypeUrl(), attributes )
+        return buildBaseCloudEvent(id, source, protoPayload, attributes)
                 .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
                 .build();
     }
@@ -145,8 +133,8 @@ public interface CloudEventFactory {
      */
     static CloudEvent notification(String source, String sink, Any protoPayload, UCloudEventAttributes attributes) {
         String id = generateCloudEventId();
-        return buildBaseCloudEvent(id, source, protoPayload.toByteArray(), protoPayload.getTypeUrl(), attributes )
-                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+        return buildBaseCloudEvent(id, source, protoPayload, attributes )
+                .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_NOTIFICATION))
                 .withExtension("sink", URI.create(sink))
                 .build();
     }
@@ -156,7 +144,7 @@ public interface CloudEventFactory {
      */
     static String generateCloudEventId() {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
-        return LongUuidSerializer.instance().serialize(uuid);
+        return UuidSerializer.serialize(uuid);
     }
 
     /**
@@ -165,26 +153,22 @@ public interface CloudEventFactory {
      * @param id                 Event unique identifier.
      * @param source             Identifies who is sending this event in the format of a uProtocol URI that
      *                           can be built from a {@link UUri} object.
-     * @param protoPayloadBytes  The serialized Event data with the content type of "application/x-protobuf".
-     * @param protoPayloadSchema The schema of the proto payload bytes, for example you can use <code>protoPayload.getTypeUrl()</code> on your service/app object.
-     * @param attributes        Additional cloud event attributes that can be passed in. All attributes are optional and will be added only if they
+     * @param protoPayload        Optional payload for the message
+     * @param attributes         Additional cloud event attributes that can be passed in. All attributes are optional and will be added only if they
      *                           were configured.
      * @return Returns a CloudEventBuilder that can be additionally configured and then by calling .build() construct a CloudEvent
      * ready to be serialized and sent to the transport layer.
      */
-    @SuppressWarnings("null")
     static CloudEventBuilder buildBaseCloudEvent(String id, String source,
-                                                 byte[] protoPayloadBytes,
-                                                 String protoPayloadSchema,
+                                                 Any protoPayload,
                                                  UCloudEventAttributes attributes) {
-        final CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
+        CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                 .withId(id)
-                .withSource(URI.create(source))
-                /* Not needed:
-                .withDataContentType(PROTOBUF_CONTENT_TYPE)
-                .withDataSchema(URI.create(protoPayloadSchema))
-                */
-                .withData(protoPayloadBytes);
+                .withSource(URI.create(source));
+
+        if (protoPayload != null) {
+            cloudEventBuilder.withData(protoPayload.toByteArray());
+        }
 
         attributes.ttl().ifPresent(ttl -> cloudEventBuilder.withExtension("ttl", ttl));
         attributes.priority().ifPresent(priority -> cloudEventBuilder.withExtension("priority",

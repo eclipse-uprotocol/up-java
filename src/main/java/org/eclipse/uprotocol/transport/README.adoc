@@ -4,4 +4,36 @@
 :source-highlighter: prettify
 
 == Overview
-The purpose of this moduel is to provide the Java implementation of https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[uTransport API & Data Model]. The transport API is used by all uE developers to send and receive messages across any transport. The interface is to be implemented by communication transport developers (i.e. developing a uTransport for SOME/IP, DDS, Zenoh, MQTT, etc...).
+The following section implements https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[uP-L1 Transport Layer Specifications]. The purpose of the transport layer is to wrap communication middlewares into a common interface that allows us to send and receive any kind of uProtocol messages (publish, request, response, notification) over any kind of transport (HTTP, MQTT, WebSockets, etc).
+
+the datamodel is declared in the uProtocol specifications project in https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[up-core-api] folder and this project declares the language specific transport interface (UListener & UTransport) and the builders, serializers, and validators, for the up-core-api data model. .
+
+Below are the list of the classes and interfaces that are part of the uProtocol Transport Interface & Data Model:
+
+.Transport Interfaces
+[table-transport-interfaces, cols="1,3"]
+|===
+| Class/Interface | Description
+
+| xref:UTransport.java[*`UTransport`*]
+| Interface that defines the methods that a transport middleware must implement in order to be used by the uProtocol library.
+
+| xref:UListener.java[*`UListener`*]
+| Callback/listener interface to be able to receive messages from a transport.
+
+| xref:builder/UMessageBuilder.java[*`UMessageBuilder`*]
+| Interface that simply builds request, response, publish, and defines the methods that a message builder must implement in order to be used by the uProtocol library.
+
+| xref:validator/UAttributesValidator.java[*`UAttributesValidator`*]
+| uProtocol Attributes validator that ensures that the publish, notification, request, and response messages are built with the correct information.
+
+|===
+
+== Examples
+
+In the following section we will provide an example for how a transport implementations are expected to implement the uTransport library
+
+[source,java]
+----
+include::../../../../../../test/java/org/eclipse/uprotocol/communication/TestUTransport.java[]
+----

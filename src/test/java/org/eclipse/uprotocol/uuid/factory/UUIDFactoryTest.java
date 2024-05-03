@@ -1,31 +1,18 @@
-/*
- * Copyright (c) 2023 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- * SPDX-FileType: SOURCE
- * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.eclipse.uprotocol.uuid.factory;
 
-import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
-import org.eclipse.uprotocol.uuid.serializer.MicroUuidSerializer;
+import org.eclipse.uprotocol.uuid.serializer.UuidSerializer;
 import org.eclipse.uprotocol.v1.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,8 +34,7 @@ public class UUIDFactoryTest {
         final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create(now);
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
-        final byte[] bytes = MicroUuidSerializer.instance().serialize(uuid);
-        final String uuidString = LongUuidSerializer.instance().serialize(uuid);
+        final String uuidString = UuidSerializer.serialize(uuid);
 
         assertNotNull(uuid);
         assertTrue(UuidUtils.isUProtocol(uuid));
@@ -58,14 +44,10 @@ public class UUIDFactoryTest {
         assertTrue(time.isPresent());
         assertEquals(time.get(), now.toEpochMilli());
 
-        assertTrue(bytes.length>0);
         assertFalse(uuidString.isBlank());
 
-        final UUID uuid1 = MicroUuidSerializer.instance().deserialize(bytes);
-        final UUID uuid2 = LongUuidSerializer.instance().deserialize(uuidString);
-        assertFalse(uuid1.equals(UUID.getDefaultInstance()));
+        final UUID uuid2 = UuidSerializer.deserialize(uuidString);
         assertFalse(uuid2.equals(UUID.getDefaultInstance()));
-        assertEquals(uuid, uuid1);
         assertEquals(uuid, uuid2);
     }
 
@@ -75,8 +57,7 @@ public class UUIDFactoryTest {
         final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create(null);
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
-        final byte[] bytes = MicroUuidSerializer.instance().serialize(uuid);
-        final String uuidString = LongUuidSerializer.instance().serialize(uuid);
+        final String uuidString = UuidSerializer.serialize(uuid);
 
         assertNotNull(uuid);
         assertTrue(UuidUtils.isUProtocol(uuid));
@@ -84,15 +65,11 @@ public class UUIDFactoryTest {
         assertFalse(UuidUtils.isUuidv6(uuid));
         assertTrue(version.isPresent());
         assertTrue(time.isPresent());
-        assertTrue(bytes.length>0);
         assertFalse(uuidString.isBlank());
 
-        final UUID uuid1 = MicroUuidSerializer.instance().deserialize(bytes);
-        final UUID uuid2 = LongUuidSerializer.instance().deserialize(uuidString);
+        final UUID uuid2 = UuidSerializer.deserialize(uuidString);
         
-        assertFalse(uuid1.equals(UUID.getDefaultInstance()));
         assertFalse(uuid2.equals(UUID.getDefaultInstance()));
-        assertEquals(uuid, uuid1);
         assertEquals(uuid, uuid2);
     }
 
@@ -126,8 +103,7 @@ public class UUIDFactoryTest {
         final UUID uuid = UuidFactory.Factories.UUIDV6.factory().create(now);
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
-        final byte[] bytes = MicroUuidSerializer.instance().serialize(uuid);
-        final String uuidString = LongUuidSerializer.instance().serialize(uuid);
+        final String uuidString = UuidSerializer.serialize(uuid);
 
         assertNotNull(uuid);
         assertTrue(UuidUtils.isUuidv6(uuid));
@@ -136,14 +112,10 @@ public class UUIDFactoryTest {
         assertTrue(version.isPresent());
         assertTrue(time.isPresent());
         assertEquals(time.get(), now.toEpochMilli());
-        assertTrue(bytes.length>0);
         assertFalse(uuidString.isBlank());
 
-        final UUID uuid1 = MicroUuidSerializer.instance().deserialize(bytes);
-        final UUID uuid2 = LongUuidSerializer.instance().deserialize(uuidString);
-        assertFalse(uuid1.equals(UUID.getDefaultInstance()));
+        final UUID uuid2 = UuidSerializer.deserialize(uuidString);
         assertFalse(uuid2.equals(UUID.getDefaultInstance()));
-        assertEquals(uuid, uuid1);
         assertEquals(uuid, uuid2);    }
 
     @Test
@@ -152,8 +124,7 @@ public class UUIDFactoryTest {
         final UUID uuid = UuidFactory.Factories.UUIDV6.factory().create(null);
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
-        final byte[] bytes = MicroUuidSerializer.instance().serialize(uuid);
-        final String uuidString = LongUuidSerializer.instance().serialize(uuid);
+        final String uuidString = UuidSerializer.serialize(uuid);
 
         assertNotNull(uuid);
         assertTrue(UuidUtils.isUuidv6(uuid));
@@ -161,14 +132,10 @@ public class UUIDFactoryTest {
         assertTrue(UuidUtils.isUuid(uuid));
         assertTrue(version.isPresent());
         assertTrue(time.isPresent());
-        assertTrue(bytes.length>0);
         assertFalse(uuidString.isBlank());
 
-        final UUID uuid1 = MicroUuidSerializer.instance().deserialize(bytes);
-        final UUID uuid2 = LongUuidSerializer.instance().deserialize(uuidString);
-        assertFalse(uuid1.equals(UUID.getDefaultInstance()));
+        final UUID uuid2 = UuidSerializer.deserialize(uuidString);
         assertFalse(uuid2.equals(UUID.getDefaultInstance()));
-        assertEquals(uuid, uuid1);
         assertEquals(uuid, uuid2);
     }
 
@@ -180,8 +147,7 @@ public class UUIDFactoryTest {
                 .setLsb(uuid_java.getLeastSignificantBits()).build();
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
-        final byte[] bytes = MicroUuidSerializer.instance().serialize(uuid);
-        final String uuidString = LongUuidSerializer.instance().serialize(uuid);
+        final String uuidString = UuidSerializer.serialize(uuid);
 
         assertNotNull(uuid);
         assertFalse(UuidUtils.isUuidv6(uuid));
@@ -189,15 +155,11 @@ public class UUIDFactoryTest {
         assertFalse(UuidUtils.isUuid(uuid));
         assertTrue(version.isPresent());
         assertFalse(time.isPresent());
-        assertTrue(bytes.length>0);
         assertFalse(uuidString.isBlank());
 
-        final UUID uuid1 = MicroUuidSerializer.instance().deserialize(bytes);
-        final UUID uuid2 = LongUuidSerializer.instance().deserialize(uuidString);
+        final UUID uuid2 = UuidSerializer.deserialize(uuidString);
                 
-        assertFalse(uuid1.equals(UUID.getDefaultInstance()));
         assertFalse(uuid2.equals(UUID.getDefaultInstance()));
-        assertEquals(uuid, uuid1);
         assertEquals(uuid, uuid2);
     }
 
@@ -207,8 +169,7 @@ public class UUIDFactoryTest {
         final UUID uuid =  UUID.newBuilder().setMsb(0L).setLsb(0L).build();
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
-        final byte[] bytes = MicroUuidSerializer.instance().serialize(uuid);
-        final String uuidString = LongUuidSerializer.instance().serialize(uuid);
+        final String uuidString = UuidSerializer.serialize(uuid);
 
         assertNotNull(uuid);
         assertFalse(UuidUtils.isUuidv6(uuid));
@@ -216,18 +177,12 @@ public class UUIDFactoryTest {
         assertTrue(version.isPresent());
         assertEquals(version.get(), UuidUtils.Version.VERSION_UNKNOWN);
         assertFalse(time.isPresent());
-        assertTrue(bytes.length>0);
         assertFalse(uuidString.isBlank());
         assertFalse(UuidUtils.isUuidv6(null));
         assertFalse(UuidUtils.isUProtocol(null));
         assertFalse(UuidUtils.isUuid(null));
 
-        final UUID uuid1 = MicroUuidSerializer.instance().deserialize(bytes);
-
-        assertTrue(uuid1.equals(UUID.getDefaultInstance()));
-        assertEquals(uuid, uuid1);
-
-        final UUID uuid2 = LongUuidSerializer.instance().deserialize(uuidString);
+        final UUID uuid2 = UuidSerializer.deserialize(uuidString);
         assertTrue(uuid2.equals(UUID.getDefaultInstance()));
         assertEquals(uuid, uuid2);
     }
@@ -236,8 +191,7 @@ public class UUIDFactoryTest {
     @DisplayName("Test UUIDUtils for a null UUID")
     void test_uuidutils_for_null_uuid() {
         assertFalse(UuidUtils.getVersion(null).isPresent());
-        assertTrue(MicroUuidSerializer.instance().serialize(null).length==0);
-        assertTrue(LongUuidSerializer.instance().serialize(null).isBlank());
+        assertTrue(UuidSerializer.serialize(null).isBlank());
         assertFalse(UuidUtils.isUuidv6(null));
         assertFalse(UuidUtils.isUProtocol(null));
         assertFalse(UuidUtils.isUuid(null));
@@ -251,8 +205,7 @@ public class UUIDFactoryTest {
 
         assertFalse(UuidUtils.getVersion(uuid).isPresent());
         assertFalse(UuidUtils.getTime(uuid).isPresent());
-        assertTrue(MicroUuidSerializer.instance().serialize(uuid).length>0);
-        assertFalse(LongUuidSerializer.instance().serialize(uuid).isBlank());
+        assertFalse(UuidSerializer.serialize(uuid).isBlank());
         assertFalse(UuidUtils.isUuidv6(uuid));
         assertFalse(UuidUtils.isUProtocol(uuid));
         assertFalse(UuidUtils.isUuid(uuid));
@@ -263,20 +216,12 @@ public class UUIDFactoryTest {
     @Test
     @DisplayName("Test UUIDUtils fromString with invalid string")
     void test_uuidutils_fromstring_with_invalid_string() {
-        final UUID uuid = LongUuidSerializer.instance().deserialize(null);
+        final UUID uuid = UuidSerializer.deserialize(null);
         assertTrue(uuid.equals(UUID.getDefaultInstance()));
-        final UUID uuid1 = LongUuidSerializer.instance().deserialize("");
+        final UUID uuid1 = UuidSerializer.deserialize("");
         assertTrue(uuid1.equals(UUID.getDefaultInstance()));
     }
 
-    @Test
-    @DisplayName("Test UUIDUtils fromBytes with invalid bytes")
-    void test_uuidutils_frombytes_with_invalid_bytes() {
-        final UUID uuid = MicroUuidSerializer.instance().deserialize(null);
-        assertTrue(uuid.equals(UUID.getDefaultInstance()));
-        final UUID uuid1 = MicroUuidSerializer.instance().deserialize(new byte[0]);
-        assertTrue(uuid1.equals(UUID.getDefaultInstance()));
-    }
 
     @Test
     @DisplayName("Test Create UProtocol UUID in the past")

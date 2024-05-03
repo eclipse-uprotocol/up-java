@@ -1,25 +1,13 @@
-/*
- * Copyright (c) 2023 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- * 
- * SPDX-FileType: SOURCE
- * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 package org.eclipse.uprotocol.transport.validate;
@@ -27,7 +15,11 @@ package org.eclipse.uprotocol.transport.validate;
 
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
-import org.eclipse.uprotocol.v1.*;
+import org.eclipse.uprotocol.v1.UAttributes;
+import org.eclipse.uprotocol.v1.UMessageType;
+import org.eclipse.uprotocol.v1.UPriority;
+import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.v1.UUID;
 import org.eclipse.uprotocol.validation.ValidationResult;
 
 import java.util.Objects;
@@ -67,6 +59,7 @@ public abstract class UAttributesValidator {
                 return Validators.PUBLISH.validator();
         }
     }
+    
 
     /**
      * Take a {@link UAttributes} object and run validations.
@@ -124,19 +117,12 @@ public abstract class UAttributesValidator {
     }
 
     /**
-     * Validate the sink UriPart for the default case. If the UAttributes does not contain a sink then the
-     * ValidationResult is ok.
+     * Validate the sink UriPart.
      *
      * @param attributes UAttributes object containing the sink to validate.
      * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
      */
-    public ValidationResult validateSink(UAttributes attributes) {
-        if (attributes.hasSink()) {
-            return UriValidator.validate(attributes.getSink());
-        } else {
-            return ValidationResult.success();
-        }
-    }
+    public abstract ValidationResult validateSink(UAttributes attributes);
 
     /**
      * Validate the permissionLevel for the default case. If the UAttributes does not contain a permission level then
@@ -155,18 +141,14 @@ public abstract class UAttributesValidator {
 
     
     /**
-     * Validate the correlationId for the default case. If the UAttributes does not contain a request id then the
-     * ValidationResult is ok.
+     * Validate the correlationId for the default case. Only the response message should have a reqid.
      *
      * @param attributes Attributes object containing the request id to validate.
      * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
      */
     public ValidationResult validateReqId(UAttributes attributes) {
-        if (attributes.hasReqid() && !UuidUtils.isUuid(attributes.getReqid())) {
-            return ValidationResult.failure("Invalid UUID");
-        } else {
-            return ValidationResult.success();
-        }
+        return (attributes.hasReqid()) ?
+            ValidationResult.failure("Message should not have a reqid") : ValidationResult.success();
     }
 
 
@@ -178,7 +160,8 @@ public abstract class UAttributesValidator {
      */
     public ValidationResult validatePriority(UAttributes attributes) {
         return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS0_VALUE ? 
-        ValidationResult.success() : ValidationResult.failure(String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
+        ValidationResult.success() : ValidationResult.failure(
+            String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
     }
 
 
@@ -247,6 +230,19 @@ public abstract class UAttributesValidator {
                     String.format("Wrong Attribute Type [%s]", attributes.getType()));
         }
 
+        
+        /**
+         * Validate the sink UriPart for Publish events. Publish should not have a sink.
+         *
+         * @param attributes UAttributes object containing the sink to validate.
+         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         */
+        @Override
+        public ValidationResult validateSink(UAttributes attributes) {
+            return (attributes.hasSink() ? ValidationResult.failure("Sink should not be present") : ValidationResult.success());
+        }
+
+
         @Override
         public String toString() {
             return "UAttributesValidator.Publish";
@@ -282,8 +278,8 @@ public abstract class UAttributesValidator {
             if (!attributes.hasSink()) {
                 return ValidationResult.failure("Missing Sink");
             }
-            return UriValidator.validateRpcMethod(attributes.getSink());
-
+            return UriValidator.isRpcMethod(attributes.getSink()) ? 
+                ValidationResult.success() : ValidationResult.failure("Invalid Sink Uri");
         }
 
         /**
@@ -316,7 +312,8 @@ public abstract class UAttributesValidator {
         @Override
         public ValidationResult validatePriority(UAttributes attributes) {
             return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS4_VALUE ? 
-            ValidationResult.success() : ValidationResult.failure(String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
+            ValidationResult.success() : ValidationResult.failure(
+                String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
         }
 
         @Override
@@ -353,12 +350,11 @@ public abstract class UAttributesValidator {
         @Override
         public ValidationResult validateSink(UAttributes attributes) {
             Objects.requireNonNull(attributes, "UAttributes cannot be null.");
-            if (!attributes.hasSink()|| attributes.getSink() == UUri.getDefaultInstance()) {
+            if (!attributes.hasSink() || attributes.getSink() == UUri.getDefaultInstance()) {
                 return ValidationResult.failure("Missing Sink");
             }
-            ValidationResult result = UriValidator.validateRpcResponse(attributes.getSink());
-            return result;
-
+            return UriValidator.isRpcResponse(attributes.getSink()) ? 
+                ValidationResult.success() : ValidationResult.failure("Invalid Sink Uri");
         }
 
 
@@ -370,11 +366,11 @@ public abstract class UAttributesValidator {
          */
         @Override
         public ValidationResult validateReqId(UAttributes attributes) {
-            if (!attributes.hasReqid()||attributes.getReqid()== UUID.getDefaultInstance()) {
+            if (!attributes.hasReqid() || attributes.getReqid() == UUID.getDefaultInstance()) {
                 return ValidationResult.failure("Missing correlationId");
             }
             if (!UuidUtils.isUuid(attributes.getReqid())) {
-                return ValidationResult.failure(String.format("Invalid correlationId [%s]", attributes.getReqid()));
+                return ValidationResult.failure("Invalid correlation UUID");
             } else {
                 return ValidationResult.success();
             }
@@ -390,7 +386,8 @@ public abstract class UAttributesValidator {
         @Override
         public ValidationResult validatePriority(UAttributes attributes) {
             return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS4_VALUE ? 
-            ValidationResult.success() : ValidationResult.failure(String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
+            ValidationResult.success() : ValidationResult.failure(
+                String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
         }
 
         @Override
@@ -412,7 +409,8 @@ public abstract class UAttributesValidator {
          */
         @Override
         public ValidationResult validateType(UAttributes attributes) {
-            return UMessageType.UMESSAGE_TYPE_NOTIFICATION == attributes.getType() ? ValidationResult.success() : ValidationResult.failure(
+            return UMessageType.UMESSAGE_TYPE_NOTIFICATION == attributes.getType() ?
+                ValidationResult.success() : ValidationResult.failure(
                     String.format("Wrong Attribute Type [%s]", attributes.getType()));
         }
 
@@ -429,7 +427,8 @@ public abstract class UAttributesValidator {
             if (!attributes.hasSink() || attributes.getSink() == UUri.getDefaultInstance()) {
                 return ValidationResult.failure("Missing Sink");
             }
-            return ValidationResult.success();
+            return UriValidator.isDefaultResourceId(attributes.getSink()) ? 
+                ValidationResult.success() : ValidationResult.failure("Invalid Sink Uri");
         }
 
         @Override
