@@ -35,7 +35,7 @@
         <slf4j.version>2.6.18</slf4j.version>
         <cloudevents.version>2.4.2</cloudevents.version>
         <protobuf.version>3.21.10</protobuf.version>
-        <git.tag.name>uprotocol-core-api-1.5.7</git.tag.name>
+        <git.tag.name>main</git.tag.name>
     </properties>
 
     <licenses>
@@ -90,8 +90,8 @@
                                 <argument>clone</argument>
                                 <argument>--branch</argument>
                                 <argument>${git.tag.name}</argument>
-                                <argument>https://github.com/eclipse-uprotocol/up-core-api.git</argument>
-                                <argument>${project.build.directory}/up-core-api</argument>
+                                <argument>https://github.com/eclipse-uprotocol/up-spec.git</argument>
+                                <argument>${project.build.directory}/up-spec</argument>
                             </arguments>
                             <!-- Allow non-zero exit code (error) -->
                             <successCodes>
@@ -108,7 +108,7 @@
                         </goals>
                         <configuration>
                             <executable>git</executable>
-                            <workingDirectory>${project.build.directory}/up-core-api</workingDirectory>
+                            <workingDirectory>${project.build.directory}/up-spec/up-core-api</workingDirectory>
                             <arguments>
                                 <argument>pull</argument>
                                 <argument>origin</argument>
@@ -152,7 +152,7 @@
                 </executions>
                 <configuration>
                     <protocArtifact>com.google.protobuf:protoc:3.17.3:exe:${os.detected.classifier}</protocArtifact>
-                    <protoSourceRoot>${project.build.directory}/up-core-api/uprotocol</protoSourceRoot>
+                    <protoSourceRoot>${project.build.directory}/up-spec/up-core-api/uprotocol</protoSourceRoot>
                     <outputDirectory>${project.build.directory}/generated-sources/protobuf/java</outputDirectory>
 
                 </configuration>
