@@ -24,7 +24,6 @@
 
 package org.eclipse.uprotocol.transport.builder;
 
-import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.v1.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -119,9 +118,10 @@ public class UAttributesBuilderTest {
     }
 
     private UUri buildSink() {
-        return UUri.newBuilder().setAuthority(UAuthority.newBuilder().setName("vcu.someVin.veh.ultifi.gm.com"))
-                .setEntity(UEntity.newBuilder().setName("petapp.ultifi.gm.com").setVersionMajor(1))
-                .setResource(UResourceBuilder.forRpcResponse()).build();
+        return UUri.newBuilder().setAuthorityName("vcu.someVin.veh.ultifi.gm.com")
+                .setUeId(1)
+                .setUeVersionMajor(1)
+                .setResourceId(0).build();
     }
 
     private UUID getUUID() {
@@ -131,8 +131,6 @@ public class UAttributesBuilderTest {
     }
 
     private UUri buildSource() {
-        return UUri.newBuilder()
-                .setEntity(UEntity.newBuilder().setName("hartley_app").setVersionMajor(1))
-                .setResource(UResourceBuilder.forRpcResponse()).build();
+        return UUri.newBuilder().setUeId(2).setUeVersionMajor(1).setResourceId(0).build();
     }
 }

@@ -132,7 +132,8 @@ public abstract class UAttributesValidator {
      */
     public ValidationResult validateSink(UAttributes attributes) {
         if (attributes.hasSink()) {
-            return UriValidator.validate(attributes.getSink());
+            return UriValidator.isEmpty(attributes.getSink()) ? 
+                ValidationResult.failure("Uri is empty.") : ValidationResult.success();
         } else {
             return ValidationResult.success();
         }
@@ -282,8 +283,8 @@ public abstract class UAttributesValidator {
             if (!attributes.hasSink()) {
                 return ValidationResult.failure("Missing Sink");
             }
-            return UriValidator.validateRpcMethod(attributes.getSink());
-
+            return UriValidator.isRpcMethod(attributes.getSink()) ? 
+                ValidationResult.success() : ValidationResult.failure("Invalid Sink Uri");
         }
 
         /**
@@ -353,12 +354,11 @@ public abstract class UAttributesValidator {
         @Override
         public ValidationResult validateSink(UAttributes attributes) {
             Objects.requireNonNull(attributes, "UAttributes cannot be null.");
-            if (!attributes.hasSink()|| attributes.getSink() == UUri.getDefaultInstance()) {
+            if (!attributes.hasSink() || attributes.getSink() == UUri.getDefaultInstance()) {
                 return ValidationResult.failure("Missing Sink");
             }
-            ValidationResult result = UriValidator.validateRpcResponse(attributes.getSink());
-            return result;
-
+            return UriValidator.isRpcResponse(attributes.getSink()) ? 
+                ValidationResult.success() : ValidationResult.failure("Invalid Sink Uri");
         }
 
 

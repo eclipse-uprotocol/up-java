@@ -37,7 +37,6 @@ import java.time.Instant;
 public class UuidUtilsTest {
     private static final int DELTA = 30;
     private static final int DELAY_MS = 100;
-    private static final long DELAY_LONG_MS = 100000;
     private static final int TTL = 10000;
 
 
@@ -53,8 +52,8 @@ public class UuidUtilsTest {
     }
 
     private UUri buildSourceForTest() {
-        UUri uuri = UUri.newBuilder().setEntity(UEntity.newBuilder().setName("body.access"))
-                .setResource(UResource.newBuilder().setName("door").setInstance("front_left").setMessage("Door"))
+        UUri uuri = UUri.newBuilder().setUeId(1)
+                .setResourceId(0x8000)
                 .build();
 
         return uuri;

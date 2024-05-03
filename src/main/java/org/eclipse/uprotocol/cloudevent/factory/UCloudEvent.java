@@ -25,7 +25,7 @@
 package org.eclipse.uprotocol.cloudevent.factory;
 
 import org.eclipse.uprotocol.UprotocolOptions;
-import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
 
@@ -353,20 +353,7 @@ public interface UCloudEvent {
         return getCeName(priority.getValueDescriptor());
     }
 
-    /**
-     * Get the UPriority from the string name
-     * @param priority
-     * @return returns the UPriority
-     */
-    static UPriority getUPriority(String ce_priority) {
-        return UPriority.getDescriptor().getValues().stream()
-            .filter(v -> v.getOptions().hasExtension(UprotocolOptions.ceName) &&
-                v.getOptions().getExtension(UprotocolOptions.ceName).equals(ce_priority))
-            .map(v -> UPriority.forNumber(v.getNumber()))
-            .findFirst()
-            .orElse(UPriority.UNRECOGNIZED);
-    }
-
+    
     /**
      * Get the UMessageType from the string representation.
      * 
@@ -401,7 +388,7 @@ public interface UCloudEvent {
 
         UAttributes.Builder builder =
                 UAttributes.newBuilder()
-                    .setSource(LongUriSerializer.instance().deserialize(getSource(event)))
+                    .setSource(UriSerializer.deserialize(getSource(event)))
                     .setId(LongUuidSerializer.instance().deserialize(event.getId()))
                     .setType(getMessageType(event.getType()));
 
@@ -416,7 +403,7 @@ public interface UCloudEvent {
                 .orElse(UPriority.UPRIORITY_UNSPECIFIED)
                 ).ifPresent(builder::setPriority);
 
-        getSink(event).map(LongUriSerializer.instance()::deserialize).ifPresent(builder::setSink);
+        getSink(event).map(UriSerializer::deserialize).ifPresent(builder::setSink);
 
         getRequestId(event).map(LongUuidSerializer.instance()::deserialize).ifPresent(builder::setReqid);
 
@@ -455,7 +442,7 @@ public interface UCloudEvent {
 
         cloudEventBuilder.withType(getEventType(attributes.getType()));
 
-        cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(attributes.getSource())));
+        cloudEventBuilder.withSource(URI.create(UriSerializer.serialize(attributes.getSource())));
 
         final String contentType = getContentTypeFromUPayloadFormat(payload.getFormat());
         if(!contentType.isEmpty()){
@@ -476,7 +463,7 @@ public interface UCloudEvent {
 
         if(attributes.hasSink())
             cloudEventBuilder.withExtension("sink",
-                     URI.create(LongUriSerializer.instance().serialize(attributes.getSink())));
+                     URI.create(UriSerializer.serialize(attributes.getSink())));
 
         if(attributes.hasCommstatus())
             cloudEventBuilder.withExtension("commstatus",attributes.getCommstatus().getNumber());

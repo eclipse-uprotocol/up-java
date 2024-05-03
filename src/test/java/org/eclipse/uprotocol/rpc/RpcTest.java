@@ -29,7 +29,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
 import org.eclipse.uprotocol.v1.*;
 
 import org.junit.jupiter.api.DisplayName;
@@ -150,7 +150,7 @@ class RpcTest {
     }
 
     private static UUri buildTopic() {
-        return LongUriSerializer.instance().deserialize("//vcu.vin/hartley/1/rpc.Raise");
+        return UriSerializer.deserialize("//vcu.vin/1/1/20");
     }
 
     private static CallOptions buildCallOptions() {

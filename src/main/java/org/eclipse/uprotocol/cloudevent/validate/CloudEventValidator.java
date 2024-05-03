@@ -29,7 +29,7 @@ import io.cloudevents.CloudEvent;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
 import org.eclipse.uprotocol.v1.*;
 import org.eclipse.uprotocol.validation.ValidationResult;
-import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 
 import java.util.Optional;
@@ -152,12 +152,13 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateUEntityUri(String uri) {
-        UUri Uri = LongUriSerializer.instance().deserialize(uri);
+        UUri Uri = UriSerializer.deserialize(uri);
         return validateUEntityUri(Uri);
     }
 
     public static ValidationResult validateUEntityUri(UUri Uri) {
-        return UriValidator.validate(Uri);
+        return UriValidator.isEmpty(Uri) ? 
+            ValidationResult.failure("Uri is empty.") : ValidationResult.success();
     }
 
 /**
@@ -166,7 +167,7 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateTopicUri(String uri) {
-        UUri Uri = LongUriSerializer.instance().deserialize(uri);
+        UUri Uri = UriSerializer.deserialize(uri);
         return validateTopicUri(Uri);
     }
 
@@ -180,12 +181,8 @@ public abstract class CloudEventValidator {
         if (validationResult.isFailure()) {
             return validationResult;
         }
-        final UResource uResource = Uri.getResource();
-        if (uResource.getName().isBlank()) {
-            return ValidationResult.failure("UriPart is missing uResource name.");
-        }
-        if (uResource.getMessage().isEmpty()) {
-            return ValidationResult.failure("UriPart is missing Message information.");
+        if (UriValidator.isRpcMethod(Uri)) {
+            return ValidationResult.failure("Invalid topic uri. UriPart should have a resource id greater than 0x8000.");
         }
         return ValidationResult.success();
     }
@@ -197,7 +194,7 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateRpcTopicUri(String uri) {
-        UUri Uri = LongUriSerializer.instance().deserialize(uri);
+        UUri Uri = UriSerializer.deserialize(uri);
         return validateRpcTopicUri(Uri);
     }
 
@@ -211,9 +208,8 @@ public abstract class CloudEventValidator {
         if (validationResult.isFailure()){
             return ValidationResult.failure(String.format("Invalid RPC uri application response topic. %s", validationResult.getMessage()));
         }
-        final UResource uResource = Uri.getResource();
-        String topic = String.format("%s.%s", uResource.getName(), uResource.getInstance());
-        if (!"rpc.response".equals(topic)) {
+        
+        if (UriValidator.isRpcResponse(Uri)) {
             return ValidationResult.failure("Invalid RPC uri application response topic. UriPart is missing rpc.response.");
         }
         return ValidationResult.success();
@@ -225,7 +221,7 @@ public abstract class CloudEventValidator {
      * @return Returns the ValidationResult containing a success or a failure with the error message.
      */
     public static ValidationResult validateRpcMethod(String uri) {
-        UUri Uri = LongUriSerializer.instance().deserialize(uri);
+        UUri Uri = UriSerializer.deserialize(uri);
         ValidationResult validationResult = validateUEntityUri(Uri);
         if (validationResult.isFailure()){
             return ValidationResult.failure(String.format("Invalid RPC method uri. %s", validationResult.getMessage()));

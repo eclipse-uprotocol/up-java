@@ -32,7 +32,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import org.eclipse.uprotocol.cloudevent.datamodel.UCloudEventAttributes;
 import org.eclipse.uprotocol.cloudevent.factory.CloudEventFactory;
 import org.eclipse.uprotocol.cloudevent.factory.UCloudEvent;
-import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
 import org.eclipse.uprotocol.v1.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -326,14 +326,11 @@ class CloudEventToProtobufSerializerTest {
 
     private String buildUriForTest() {
         UUri Uri = UUri.newBuilder()
-            .setEntity(UEntity.newBuilder().setName("body.access"))
-            .setResource(UResource.newBuilder()
-                .setName("door")
-                .setInstance("front_left")
-                .setMessage("Door"))
+            .setUeId(1)
+            .setResourceId(0x8000)
             .build();
         
-        return LongUriSerializer.instance().serialize(Uri);
+        return UriSerializer.serialize(Uri);
     }
 
     private Any buildProtoPayloadForTest() {

@@ -25,28 +25,108 @@
 package org.eclipse.uprotocol.uri.serializer;
 
 
+import java.util.Objects;
+import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
- * UUris are used in transport layers and hence need to be serialized.
- * Each transport supports different serialization formats.
- * For more information, please refer to <a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc">...</a>
- * @param <T> The data structure that the UUri will be serialized into. For example String or byte[].
+ * UUri Serializer that serializes a UUri to a long format string per
+ * https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
  */
-public interface UriSerializer<T> {
+public interface UriSerializer {
 
     /**
-     * Deserialize from the format to a {@link UUri}.
-     * @param uri serialized UUri.
-     * @return Returns a {@link UUri} object from the serialized format from the wire.
+     * Support for serializing {@link UUri} objects into their String format.
+     * @param Uri {@link UUri} object to be serialized to the String format.
+     * @return Returns the String format of the supplied {@link UUri} that can be used as a sink or a source in a uProtocol publish communication.
      */
-    UUri deserialize(T uri);
+    static String serialize(UUri Uri) {
+        if (Uri == null || UriValidator.isEmpty(Uri)) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        if (!Uri.getAuthorityName().isBlank()) {
+            sb.append("//");
+            sb.append(Uri.getAuthorityName());
+        }
+
+        sb.append("/");
+        sb.append( Uri.getUeId());
+        sb.append("/");
+        sb.append(Uri.getUeVersionMajor());
+        sb.append("/");
+        sb.append(Uri.getResourceId());
+        return sb.toString().replaceAll("/+$", "");
+    }
 
     /**
-     * Serialize from a {@link UUri} to a specific serialization format.
-     * @param uri UUri object to be serialized to the format T.
-     * @return Returns the {@link UUri} in the transport serialized format.
+     * Deserialize a String into a UUri object.
+     * @param uProtocolUri A long format uProtocol URI.
+     * @return Returns an UUri data object.
      */
-    T serialize(UUri uri);
+    static UUri deserialize(String uProtocolUri) {
+        if (uProtocolUri == null) {
+            return UUri.getDefaultInstance();
+        }
 
+        String uri = uProtocolUri.contains(":") ? uProtocolUri.substring(uProtocolUri.indexOf(":")+1) : uProtocolUri 
+                .replace('\\', '/');
+        
+        boolean isLocal = !uri.startsWith("//");
+
+        final String[] uriParts = uri.split("/");
+        final int numberOfPartsInUri = uriParts.length;
+
+        if(numberOfPartsInUri == 0 || numberOfPartsInUri == 1) {
+            return UUri.getDefaultInstance();
+        }
+
+        UUri.Builder builder = UUri.newBuilder();
+        try {
+            if(isLocal) {
+                builder.setUeId(Integer.parseUnsignedInt(uriParts[1]));
+                if (numberOfPartsInUri > 2) {
+                    builder.setUeVersionMajor(Integer.parseUnsignedInt(uriParts[2]));
+
+                    if (numberOfPartsInUri > 3) {
+                        builder.setResourceId(Integer.parseUnsignedInt(uriParts[3]));
+                    }
+                } 
+            } else {
+                // If authority is blank, it is an error
+                if (uriParts[2].isBlank()) {
+                    return UUri.getDefaultInstance();
+                }
+                builder.setAuthorityName(uriParts[2]);
+
+                if (uriParts.length > 3) {
+                    builder.setUeId(Integer.parseUnsignedInt(uriParts[3]));
+                    if (numberOfPartsInUri > 4) {
+                        builder.setUeVersionMajor(Integer.parseUnsignedInt(uriParts[4]));
+
+                        if (numberOfPartsInUri > 5) { 
+                            builder.setResourceId(Integer.parseUnsignedInt(uriParts[5]));
+                        }
+
+                    } 
+                }
+            }
+        } catch (NumberFormatException e) {
+            return UUri.getDefaultInstance();
+        }
+
+        // Ensure the major version is less than the wildcard
+        if (builder.getUeVersionMajor() > UriValidator.MAJOR_VERSION_WILDCARD) {
+            return UUri.getDefaultInstance();
+        }
+
+        // Ensure the resource id is less than the wildcard
+        if (builder.getResourceId() > UriValidator.WILDCARD_ID) {
+            return UUri.getDefaultInstance();
+        }
+
+        return builder.build();
+    }
 }

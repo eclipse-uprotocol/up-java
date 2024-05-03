@@ -1,5 +1,6 @@
 package org.eclipse.uprotocol.transport.builder;
 
+import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UPayload;
 import org.eclipse.uprotocol.v1.UPayloadFormat;
 import org.eclipse.uprotocol.v1.UUri;
@@ -11,7 +12,6 @@ import com.google.protobuf.Any;
 import io.cloudevents.v1.proto.CloudEvent;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
@@ -114,7 +114,7 @@ public class UPayloadBuilderTest {
                 .setType("myType")
                 .build();
         UPayload payload = UPayloadBuilder.pack(message);
-        Optional<UUri> unpacked = UPayloadBuilder.unpack(payload, UUri.class);
+        Optional<UAttributes> unpacked = UPayloadBuilder.unpack(payload, UAttributes.class);
         assertTrue(unpacked.isEmpty());
     }
 
