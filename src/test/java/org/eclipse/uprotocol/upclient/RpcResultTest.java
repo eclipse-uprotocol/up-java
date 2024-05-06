@@ -22,12 +22,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.uprotocol.rpc;
+package org.eclipse.uprotocol.upclient;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.eclipse.uprotocol.upclient.RpcResult;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UStatus;
 

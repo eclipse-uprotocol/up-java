@@ -22,7 +22,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.uprotocol.rpc;
+package org.eclipse.uprotocol.upclient;
 
 import java.util.concurrent.CompletionStage;
 

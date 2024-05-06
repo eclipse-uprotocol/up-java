@@ -22,13 +22,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.uprotocol.rpc;
+package org.eclipse.uprotocol.upclient;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import org.eclipse.uprotocol.upclient.RpcMapper;
+import org.eclipse.uprotocol.upclient.RpcResult;
 import org.eclipse.uprotocol.uri.serializer.UriSerializer;
 import org.eclipse.uprotocol.v1.*;
 

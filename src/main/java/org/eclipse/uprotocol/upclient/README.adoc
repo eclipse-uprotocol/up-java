@@ -1,0 +1,21 @@
+# UPClient API (uP-L2 Interface)
+
+The following folder will define the Layer 2 interface specifications per the uP-L2 API specifications defined in https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l2[uProtocol Specifications].
+
+uP-L1 interfaces implements the core uProtocol across various the communication middlewares and programming languages while uP-L2 API are the client-facing APIs that wrap the transport functionality into easy to use, language specific, APIs to do the most common functionality of the protocol (subscribe, publish, notify, invoke a Method, or handle RPC requests).
+
+This folder contains the uP-L2 interface and data models for Java that will be implemented by the various UPClient implementations.
+
+## uP-L2 Interfaces
+
+.UPClient Interfaces (uP-L2 Interface)
+[cols="1,3",options="header"]
+|===
+| uP-L2 Interface | Description  
+
+| link:Publisher.java[*Publisher.java*] | Producers API to send publish or notification messages
+| link:Subscriber.java[*Subscriber.java*] | Consumers API to subscribe or unsubscribe to topics
+| link:RpcClient.java[*RpcClient.java*] | Client interface to invoke a method
+| link:RpcServer.java[*RpcServer.java*] | Server interface to register a listener for incoming RPC requests and automatically send a response
+
+|===
