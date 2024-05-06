@@ -45,7 +45,7 @@ public interface UPayloadBuilder {
     static UPayload packToAny(Message message) {
         return UPayload.newBuilder()
             .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
-            .setValue(Any.pack(message).toByteString())
+            .setData(Any.pack(message).toByteString())
             .build();
     }
 
@@ -58,7 +58,7 @@ public interface UPayloadBuilder {
     static UPayload pack(Message message) {
         return UPayload.newBuilder()
             .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
-            .setValue(message.toByteString())
+            .setData(message.toByteString())
             .build();
     }
 
@@ -72,18 +72,18 @@ public interface UPayloadBuilder {
      */
     @SuppressWarnings("unchecked")
     static <T extends Message> Optional<T> unpack(UPayload payload, Class<T> clazz) {
-        if (payload == null || !payload.hasValue()) {
+        if (payload == null || payload.getData().isEmpty()) {
             return Optional.empty();
         }
         try {
             switch (payload.getFormat()) {
                 case UPAYLOAD_FORMAT_UNSPECIFIED: // Default is WRAPPED_IN_ANY
                 case UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY :
-                    return Optional.of(Any.parseFrom(payload.getValue()).unpack(clazz));
+                    return Optional.of(Any.parseFrom(payload.getData()).unpack(clazz));
             
                 case UPAYLOAD_FORMAT_PROTOBUF: 
                     T defaultInstance = com.google.protobuf.Internal.getDefaultInstance(clazz);
-                    return Optional.of((T)defaultInstance.getParserForType().parseFrom(payload.getValue()));
+                    return Optional.of((T)defaultInstance.getParserForType().parseFrom(payload.getData()));
                 
                 default:
                     return Optional.empty();

@@ -29,7 +29,7 @@ public class UPayloadBuilderTest {
         UPayload payload = UPayloadBuilder.packToAny(message);
         assertTrue(payload.getFormat() == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY);
         try {
-            Any any = Any.parseFrom(payload.getValue());
+            Any any = Any.parseFrom(payload.getData());
             CloudEvent unpacked = any.unpack(CloudEvent.class);
             assertEquals(message, unpacked);
         } catch (Exception e) {
@@ -48,7 +48,7 @@ public class UPayloadBuilderTest {
         UPayload payload = UPayloadBuilder.pack(message);
         assertTrue(payload.getFormat() == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
         try {
-            CloudEvent unpacked = CloudEvent.parseFrom(payload.getValue());
+            CloudEvent unpacked = CloudEvent.parseFrom(payload.getData());
             assertEquals(message, unpacked);
         } catch (Exception e) {
             e.printStackTrace();
@@ -65,7 +65,7 @@ public class UPayloadBuilderTest {
                 .build();
         UPayload payload = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF)
-                .setValue(message.toByteString())
+                .setData(message.toByteString())
                 .build();
         Optional<CloudEvent> unpacked = UPayloadBuilder.unpack(payload, CloudEvent.class);
         assertTrue(unpacked.isPresent());
@@ -97,7 +97,7 @@ public class UPayloadBuilderTest {
                 .setType("myType")
                 .build();
         UPayload payload = UPayload.newBuilder()
-                .setValue(Any.pack(message).toByteString())
+                .setData(Any.pack(message).toByteString())
                 .build();
         Optional<CloudEvent> unpacked = UPayloadBuilder.unpack(payload, CloudEvent.class);
         assertEquals(payload.getFormat(), UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED);
@@ -128,7 +128,7 @@ public class UPayloadBuilderTest {
                 .build();
         UPayload payload = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP)
-                .setValue(Any.pack(message).toByteString())
+                .setData(Any.pack(message).toByteString())
                 .build();
         Optional<CloudEvent> unpacked = UPayloadBuilder.unpack(payload, CloudEvent.class);
         assertTrue(unpacked.isEmpty());

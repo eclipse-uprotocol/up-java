@@ -58,7 +58,7 @@ public interface RpcMapper {
             }
             Any any;
             try {
-                any = Any.parseFrom(message.getPayload().getValue());
+                any = Any.parseFrom(message.getPayload().getData());
             
                 // Expected type
                 if (any.is(expectedClazz)) {
@@ -95,7 +95,7 @@ public interface RpcMapper {
 
             Any any;
             try {
-                any = Any.parseFrom(message.getPayload().getValue());
+                any = Any.parseFrom(message.getPayload().getData());
                 
                 // Expected type
                 if (any.is(expectedClazz)) {

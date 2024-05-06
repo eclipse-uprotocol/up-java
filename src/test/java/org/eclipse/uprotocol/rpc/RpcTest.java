@@ -48,7 +48,7 @@ class RpcTest {
         public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UPayload data = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
-                .setValue(Any.pack(Int32Value.of(3)).toByteString())
+                .setData(Any.pack(Int32Value.of(3)).toByteString())
                 .build();
             return CompletableFuture.completedFuture(UMessage.newBuilder().setPayload(data).build());
         }
@@ -69,7 +69,7 @@ class RpcTest {
             Any any = Any.pack(status);
             UPayload data = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
-                .setValue(any.toByteString())
+                .setData(any.toByteString())
                 .build();
             return CompletableFuture.completedFuture(UMessage.newBuilder().setPayload(data).build());
         }
@@ -82,7 +82,7 @@ class RpcTest {
             Any any = Any.pack(status);
             UPayload data = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
-                .setValue(any.toByteString())
+                .setData(any.toByteString())
                 .build();
             return CompletableFuture.completedFuture(UMessage.newBuilder().setPayload(data).build());
         }
@@ -93,7 +93,7 @@ class RpcTest {
         public CompletionStage<UMessage> invokeMethod(UUri topic, UPayload payload, CallOptions options) {
             UPayload response = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_RAW)
-                .setValue(ByteString.copyFrom(new byte[]{0}))
+                .setData(ByteString.copyFrom(new byte[]{0}))
                 .build();
             return CompletableFuture.completedFuture(UMessage.newBuilder().setPayload(response).build());
         }
@@ -114,7 +114,7 @@ class RpcTest {
             Any any = Any.pack(Int32Value.of(42));
             UPayload data = UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
-                .setValue(any.toByteString())
+                .setData(any.toByteString())
                 .build();
             return CompletableFuture.completedFuture(UMessage.newBuilder().setPayload(data).build());
         }
@@ -145,7 +145,7 @@ class RpcTest {
         Any any = Any.pack(buildCloudEvent());
         return UPayload.newBuilder()
                 .setFormat(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY)
-                .setValue(any.toByteString())
+                .setData(any.toByteString())
                 .build();
     }
 
@@ -167,7 +167,7 @@ class RpcTest {
                 (message, exception) -> {
                     Any any;
                     try {
-                        any = Any.parseFrom(message.getPayload().getValue());
+                        any = Any.parseFrom(message.getPayload().getData());
                     } catch (InvalidProtocolBufferException e) {
                         throw new RuntimeException(e.getMessage(), e);
                     }
@@ -405,7 +405,7 @@ class RpcTest {
                     assertFalse(true);
 
                     try {
-                        any = Any.parseFrom(message.getPayload().getValue());
+                        any = Any.parseFrom(message.getPayload().getData());
                         // happy flow, no exception
                         assertNull(exception);
 
@@ -435,7 +435,7 @@ class RpcTest {
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
                 (message, exception) -> {
                     try {
-                        Any any = Any.parseFrom(message.getPayload().getValue());
+                        Any any = Any.parseFrom(message.getPayload().getData());
                         // happy flow, no exception
                         assertNull(exception);
 
@@ -498,7 +498,7 @@ class RpcTest {
         final CompletionStage<io.cloudevents.v1.proto.CloudEvent> stubReturnValue = rpcResponse.handle(
                 (message, exception) -> {
                     try {
-                        Any any = Any.parseFrom(message.getPayload().getValue());
+                        Any any = Any.parseFrom(message.getPayload().getData());
                         // happy flow, no exception
                         assertNull(exception);
 

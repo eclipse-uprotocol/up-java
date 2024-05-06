@@ -771,7 +771,7 @@ class UCloudEventTest {
         assertTrue(UCloudEvent.getSink(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getSink(cloudEvent).get(),
                 UriSerializer.serialize(result.getAttributes().getSink()));
-        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getData());
         assertEquals(UCloudEvent.getSource(cloudEvent),UriSerializer.serialize(result.getAttributes().getSource()));
         assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getPriority(cloudEvent).get(), UCloudEvent.getCePriority(result.getAttributes().getPriority()));
@@ -796,7 +796,7 @@ class UCloudEventTest {
         assertTrue(UCloudEvent.getSink(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getSink(cloudEvent).get(),
                 UriSerializer.serialize(result.getAttributes().getSink()));
-        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getData());
         assertEquals(UCloudEvent.getSource(cloudEvent),UriSerializer.serialize(result.getAttributes().getSource()));
         assertEquals(result.getAttributes().getPriority().getNumber(),0);
 
@@ -828,7 +828,7 @@ class UCloudEventTest {
         assertTrue(UCloudEvent.getSink(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getSink(cloudEvent).get(),
                 UriSerializer.serialize(result.getAttributes().getSink()));
-        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getValue());
+        assertEquals(UCloudEvent.getPayload(cloudEvent).toByteString(),result.getPayload().getData());
         assertEquals(UCloudEvent.getSource(cloudEvent),UriSerializer.serialize(result.getAttributes().getSource()));
         assertTrue(UCloudEvent.getPriority(cloudEvent).isPresent());
         assertEquals(UCloudEvent.getPriority(cloudEvent).get(), UCloudEvent.getCePriority(result.getAttributes().getPriority()));

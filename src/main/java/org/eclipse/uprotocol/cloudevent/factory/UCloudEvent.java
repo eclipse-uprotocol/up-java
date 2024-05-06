@@ -384,7 +384,7 @@ public interface UCloudEvent {
         Objects.requireNonNull(event);
 
         UPayload payload = UPayload.newBuilder().setFormat(getUPayloadFormatFromContentType(event.getDataContentType()))
-                .setValue(getPayload(event).toByteString()).build();
+                .setData(getPayload(event).toByteString()).build();
 
         UAttributes.Builder builder =
                 UAttributes.newBuilder()
@@ -448,9 +448,9 @@ public interface UCloudEvent {
         if(!contentType.isEmpty()){
             cloudEventBuilder.withDataContentType(contentType);
         }
-        // IMPORTANT: Currently, ONLY the VALUE format is supported in the SDK!
-        if (payload.hasValue())
-            cloudEventBuilder.withData(payload.getValue().toByteArray());
+        
+        if (!payload.getData().isEmpty())
+            cloudEventBuilder.withData(payload.getData().toByteArray());
 
         if (attributes.hasTtl())
             cloudEventBuilder.withExtension("ttl",attributes.getTtl());
