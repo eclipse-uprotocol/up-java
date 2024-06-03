@@ -28,7 +28,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - language: 'java-kotlin'
+          # Analyzes Java code directly from the codebase without a build
+          - language: java-kotlin
+            build-mode: none # analyzes Java only
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
