@@ -198,6 +198,16 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <includes>
+                        <include>**/cloudevent/**</include>
+                        <include>**/rpc/**</include>
+                        <include>**/transport/**</include>
+                        <include>**/uri/**</include>
+                        <include>**/uuid/**</include>
+                        <include>**/validation/**</include>
+                    </includes>
+                </configuration>
             </plugin>
 
             <plugin>
