@@ -1,0 +1,90 @@
+name: Java Test and Coverage
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-and-coverage:
+    name: Test with coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: |
+          git config --global user.name 'eclipse-uprotocol-bot'
+          git config --global user.email 'uprotocol-bot@eclipse.org'
+
+      - name: Checkout code
+        uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+
+      - name: Set up Apache Maven Central
+        uses: actions/setup-java@v3
+        with: # configure settings.xml
+          distribution: 'temurin'
+          java-version: '11'
+          server-id: ossrh
+          server-username: OSSRH_USER
+          server-password: OSSRH_PASSWORD
+          gpg-private-key: ${{ secrets.ORG_GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+
+
+      - name: Run tests with coverage
+        run: |
+          mvn clean test jacoco:report
+
+
+      - name: Extract JaCoCo report
+        run: |
+          echo "Extracting coverage percentage from JaCoCo report"
+          INDEX_PATH="target/site/jacoco/index.html"
+          export COVERAGE_PERCENTAGE=$(grep -oP '(?<=<td class="ctr2">).*?(?=%</td>)' $INDEX_PATH | sed 's/ //g')
+          export COVERAGE_PERCENTAGE=$(printf "%.2f" "$COVERAGE_PERCENTAGE")
+          echo "COVERAGE_PERCENTAGE= $COVERAGE_PERCENTAGE" >> $GITHUB_ENV
+          echo "COVERAGE_PERCENTAGE: $COVERAGE_PERCENTAGE"
+
+
+      - name: Upload JaCoCo Coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: target/site/jacoco
+
+      - name: Generate coverage comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const COVERAGE_PERCENTAGE = `${{ env.COVERAGE_PERCENTAGE }}`;
+            const COVERAGE_REPORT_PATH = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/`;
+            
+            fs.mkdirSync('./pr-comment', { recursive: true });
+            
+            var pr_number = `${{ github.event.number }}`;
+            var body = `
+              Code coverage report is ready! :chart_with_upwards_trend:
+            
+              - **Code Coverage Percentage:** ${COVERAGE_PERCENTAGE}%
+              - **Code Coverage Report:** [View Coverage Report](${COVERAGE_REPORT_PATH})
+            `;
+            
+            fs.writeFileSync('./pr-comment/pr-number.txt', pr_number);
+            fs.writeFileSync('./pr-comment/body.txt', body);
+
+      - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: pr-comment
+          path: pr-comment/
+
+#      - name: Check code coverage
+#        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+#        with:
+#          script: |
+#            const COVERAGE_PERCENTAGE = process.env.COVERAGE_PERCENTAGE;
+#            if (parseInt(COVERAGE_PERCENTAGE) < 95){
+#              core.setFailed(`Coverage Percentage is less than 95%: ${COVERAGE_PERCENTAGE}`);
+#            }else{
+#              core.info(`Success`);
+#              core.info(parseInt(COVERAGE_PERCENTAGE));
+#            }
