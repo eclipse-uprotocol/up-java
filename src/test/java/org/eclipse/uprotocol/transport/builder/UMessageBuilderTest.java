@@ -18,15 +18,13 @@ import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UUID;
-import org.eclipse.uprotocol.v1.UPayloadFormat;
 import org.eclipse.uprotocol.v1.UAttributes;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.google.protobuf.Any;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class UMessageBuilderTest {
@@ -106,37 +104,15 @@ public class UMessageBuilderTest {
         assertEquals("myParents", attributes.getTraceparent());
     }
 
-    @Test
-    @DisplayName("Test building UMessage with google.protobuf.Message payload")
-    public void testBuildWithPayload() {
-        UMessage message = UMessageBuilder.publish(buildSource())
-                .build(buildSink());
-        assertNotNull(message);
-        assertNotNull(message.getPayload());
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, message.getAttributes().getPayloadFormat());
-        assertEquals(message.getPayload(), buildSink().toByteString());
-    }
 
+   
     @Test
-    @DisplayName("Test building UMessage with UPayload payload")
-    public void testBuildWithUPayload() {
-        UMessage message = UMessageBuilder.publish(buildSource())
-                .build(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, buildSink().toByteString());
-        assertNotNull(message);
-        assertNotNull(message.getPayload());
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, message.getAttributes().getPayloadFormat());
-        assertEquals(message.getPayload(), buildSink().toByteString());
-    }
-
-    @Test
-    @DisplayName("Test building UMessage with google.protobuf.Any payload")
+    @DisplayName("Test building UMessage with empty payload")
     public void testBuildWithAnyPayload() {
         UMessage message = UMessageBuilder.publish(buildSource())
-                .build(Any.getDefaultInstance());
+                .build();
         assertNotNull(message);
-        assertNotNull(message.getPayload());
-        assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY, message.getAttributes().getPayloadFormat());
-        assertEquals(message.getPayload(), Any.getDefaultInstance().toByteString());
+        assertFalse(message.hasPayload());
     }
 
 
