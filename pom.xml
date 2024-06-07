@@ -23,10 +23,8 @@
     <url>https://github.com/eclipse-uprotocol/up-java/</url>    
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <junit.platform.version>1.9.1</junit.platform.version>
         <junit-jupiter.version>5.9.1</junit-jupiter.version>
@@ -35,7 +33,7 @@
         <slf4j.version>2.6.18</slf4j.version>
         <cloudevents.version>2.4.2</cloudevents.version>
         <protobuf.version>3.21.10</protobuf.version>
-        <git.tag.name>uprotocol-core-api-1.5.7</git.tag.name>
+        <git.tag.name>main</git.tag.name>
     </properties>
 
     <licenses>
@@ -90,8 +88,8 @@
                                 <argument>clone</argument>
                                 <argument>--branch</argument>
                                 <argument>${git.tag.name}</argument>
-                                <argument>https://github.com/eclipse-uprotocol/up-core-api.git</argument>
-                                <argument>${project.build.directory}/up-core-api</argument>
+                                <argument>https://github.com/eclipse-uprotocol/up-spec.git</argument>
+                                <argument>${project.build.directory}/up-spec</argument>
                             </arguments>
                             <!-- Allow non-zero exit code (error) -->
                             <successCodes>
@@ -108,7 +106,7 @@
                         </goals>
                         <configuration>
                             <executable>git</executable>
-                            <workingDirectory>${project.build.directory}/up-core-api</workingDirectory>
+                            <workingDirectory>${project.build.directory}/up-spec/up-core-api</workingDirectory>
                             <arguments>
                                 <argument>pull</argument>
                                 <argument>origin</argument>
@@ -125,7 +123,7 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
-                <version>3.10.1</version> <!-- 3.8.1 -->
+                <version>3.13.0</version> <!-- 3.8.1 -->
             </plugin>
             <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
             <plugin>
@@ -152,9 +150,7 @@
                 </executions>
                 <configuration>
                     <protocArtifact>com.google.protobuf:protoc:3.17.3:exe:${os.detected.classifier}</protocArtifact>
-                    <protoSourceRoot>${project.build.directory}/up-core-api/uprotocol</protoSourceRoot>
-                    <outputDirectory>${project.build.directory}/generated-sources/protobuf/java</outputDirectory>
-
+                    <protoSourceRoot>${project.build.directory}/up-spec/up-core-api</protoSourceRoot>
                 </configuration>
             </plugin>
             <plugin>
@@ -196,12 +192,19 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <!-- Exclude specific packages or classes -->
+                        <configuration>
+                            <excludes>
+                                <exclude>org/eclipse/uprotocol/core/**</exclude>
+                                <exclude>org/eclipse/uprotocol/v1/**</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
                     <includes>
                         <include>**/cloudevent/**</include>
-                        <include>**/rpc/**</include>
+                        <include>**/communication/**</include>
                         <include>**/transport/**</include>
                         <include>**/uri/**</include>
                         <include>**/uuid/**</include>
@@ -415,6 +418,7 @@
       </repository>
     </distributionManagement>
 
+<!--
     <pluginRepositories>
         <pluginRepository>
             <id>dash-licenses-snapshots</id>
@@ -422,7 +426,7 @@
         </pluginRepository>
 
     </pluginRepositories>
-    
+-->    
     <profiles>
         <profile>
             <id>release</id>

@@ -1,194 +1,319 @@
-/*
- * Copyright (c) 2023 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- * SPDX-FileType: SOURCE
- * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 package org.eclipse.uprotocol.uri.serializer;
 
-import org.eclipse.uprotocol.uri.factory.UEntityFactory;
-import org.eclipse.uprotocol.uri.factory.UResourceBuilder;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
-import org.eclipse.uprotocol.v1.UAuthority;
-import org.eclipse.uprotocol.v1.UEntity;
-import org.eclipse.uprotocol.v1.UResource;
 import org.eclipse.uprotocol.v1.UUri;
-import org.eclipse.uprotocol.UprotocolOptions;
-import org.eclipse.uprotocol.core.usubscription.v3.USubscriptionProto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.DescriptorProtos.ServiceOptions;
-import com.google.protobuf.Descriptors.ServiceDescriptor;
-
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.net.InetAddress;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 
 public class UriSerializerTest {
 
 
     @Test
-    @DisplayName("Test building uSubscription Update Notification topic and comparing long, short, and micro URIs")
-    public void test_build_resolved_full_information_compare() {
-        
-        ServiceDescriptor descriptor = USubscriptionProto.getDescriptor().getServices().get(0);
+    @DisplayName("Test using the serializers")
+    public void test_using_the_serializers() {
+        UUri uri = UUri.newBuilder()
+                .setAuthorityName("myAuthority")
+                .setUeId(1)
+                .setUeVersionMajor(2)
+                .setResourceId(3)
+                .build();
 
-        UEntity entity = UEntityFactory.fromProto(descriptor);
-        
-        ServiceOptions options = descriptor.getOptions();
+        String serializedUri = UriSerializer.serialize(uri);
+        assertEquals("//myAuthority/1/2/3", serializedUri);
+    }
 
-        UResource resource = options.getExtension(UprotocolOptions.notificationTopic)
-            .stream()
-            .filter(p -> p.getName().contains("SubscriptionChange"))
-            .map(UResourceBuilder::fromUServiceTopic)
-            .findFirst()
-            .orElse(UResource.newBuilder().build());
-        
-        UUri uUri = UUri.newBuilder()
-            .setEntity(entity)
-            .setResource(resource)
-            .build();
+    @Test
+    @DisplayName("Test deserializing a null UUri")
+    public void test_deserializing_a_null_UUri() {
+        UUri uri = UriSerializer.deserialize(null);
+        assertTrue(UriValidator.isEmpty(uri));
+    }
 
-        assertFalse(UriValidator.isEmpty(uUri));
-        assertTrue(UriValidator.isMicroForm(uUri));
-        assertTrue(UriValidator.isLongForm(uUri));
-        assertTrue(UriValidator.isShortForm(uUri));
-        String longUri = LongUriSerializer.instance().serialize(uUri);
-        byte[] microUri = MicroUriSerializer.instance().serialize(uUri);
-        String shortUri = ShortUriSerializer.instance().serialize(uUri);
-        
-        assertEquals(longUri, "/core.usubscription/3/SubscriptionChange#Update");
-        assertEquals(shortUri, "/0/3/32768");
-        assertEquals(Arrays.toString(microUri), "[1, 0, -128, 0, 0, 0, 3, 0]");
+    @Test
+    @DisplayName("Test deserializing an empty UUri")
+    public void test_deserializing_an_empty_UUri() {
+        UUri uri = UriSerializer.deserialize("");
+        assertTrue(UriValidator.isEmpty(uri));
     }
 
 
     @Test
-    @DisplayName("Test building uSubscription Update Notification topic with IPv4 address UAuthority and comparing long, short, and micro URIs")
-    public void test_build_resolved_full_information_compare_with_ipv4() throws UnknownHostException {
-        
-        ServiceDescriptor descriptor = USubscriptionProto.getDescriptor().getServices().get(0);
-        UEntity entity = UEntityFactory.fromProto(descriptor);
-        ServiceOptions options = descriptor.getOptions();
-
-        UResource resource = options.getExtension(UprotocolOptions.notificationTopic)
-            .stream()
-            .filter(p -> p.getName().contains("SubscriptionChange"))
-            .map(UResourceBuilder::fromUServiceTopic)
-            .findFirst()
-            .orElse(UResource.newBuilder().build());
-        
-        UUri uUri = UUri.newBuilder()
-            .setEntity(entity)
-            .setResource(resource)
-            .setAuthority(UAuthority.newBuilder()
-                .setName("vcu.veh.gm.com")
-                .setIp(ByteString.copyFrom(InetAddress.getByName("192.168.1.100").getAddress())))
-            .build();
-
-        assertFalse(UriValidator.isEmpty(uUri));
-        assertTrue(UriValidator.isMicroForm(uUri));
-        assertTrue(UriValidator.isLongForm(uUri));
-        assertTrue(UriValidator.isShortForm(uUri));
-        String longUri = LongUriSerializer.instance().serialize(uUri);
-        byte[] microUri = MicroUriSerializer.instance().serialize(uUri);
-        String shortUri = ShortUriSerializer.instance().serialize(uUri);
-        
-        assertEquals(longUri, "//vcu.veh.gm.com/core.usubscription/3/SubscriptionChange#Update");
-        assertEquals(shortUri, "//192.168.1.100/0/3/32768");
-        assertEquals(Arrays.toString(microUri), "[1, 1, -128, 0, 0, 0, 3, 0, -64, -88, 1, 100]");
+    @DisplayName("Test deserializing a blank UUri")
+    public void test_deserializing_a_blank_UUri() {
+        UUri uri = UriSerializer.deserialize("  ");
+        assertTrue(UriValidator.isEmpty(uri));
     }
 
     @Test
-    @DisplayName("Test building uSubscription Update Notification topic with IPv6 address UAuthority and comparing long, short, and micro URIs")
-    public void test_build_resolved_full_information_compare_with_ipv6() throws UnknownHostException {
-        
-        ServiceDescriptor descriptor = USubscriptionProto.getDescriptor().getServices().get(0);
-        UEntity entity = UEntityFactory.fromProto(descriptor);
-        ServiceOptions options = descriptor.getOptions();
-
-        UResource resource = options.getExtension(UprotocolOptions.notificationTopic)
-            .stream()
-            .filter(p -> p.getName().contains("SubscriptionChange"))
-            .map(UResourceBuilder::fromUServiceTopic)
-            .findFirst()
-            .orElse(UResource.newBuilder().build());
-        
-        UUri uUri = UUri.newBuilder()
-            .setEntity(entity)
-            .setResource(resource)
-            .setAuthority(UAuthority.newBuilder()
-                .setName("vcu.veh.gm.com")
-                .setIp(ByteString.copyFrom(InetAddress.getByName("2001:db8:85a3:0:0:8a2e:370:7334").getAddress())))
-            .build();
-
-        assertFalse(UriValidator.isEmpty(uUri));
-        assertTrue(UriValidator.isMicroForm(uUri));
-        assertTrue(UriValidator.isLongForm(uUri));
-        assertTrue(UriValidator.isShortForm(uUri));
-        String longUri = LongUriSerializer.instance().serialize(uUri);
-        byte[] microUri = MicroUriSerializer.instance().serialize(uUri);
-        String shortUri = ShortUriSerializer.instance().serialize(uUri);
-        
-        assertEquals(longUri, "//vcu.veh.gm.com/core.usubscription/3/SubscriptionChange#Update");
-        assertEquals(shortUri, "//2001:db8:85a3:0:0:8a2e:370:7334/0/3/32768");
-        assertEquals(Arrays.toString(microUri), "[1, 2, -128, 0, 0, 0, 3, 0, 32, 1, 13, -72, -123, -93, 0, 0, 0, 0, -118, 46, 3, 112, 115, 52]");
+    @DisplayName("Test deserializing with a valid URI that has scheme")
+    public void test_deserializing_with_a_valid_URI_that_has_scheme() {
+        UUri uri = UriSerializer.deserialize("up://myAuthority/1/2/3");
+        assertEquals("myAuthority", uri.getAuthorityName());
+        assertEquals(1, uri.getUeId());
+        assertEquals(2, uri.getUeVersionMajor());
+        assertEquals(3, uri.getResourceId());
     }
 
     @Test
-    @DisplayName("Test building uSubscription Update Notification topic with id address UAuthority and comparing long, short, and micro URIs")
-    public void test_build_resolved_full_information_compare_with_id() throws UnknownHostException {
-        
-        ServiceDescriptor descriptor = USubscriptionProto.getDescriptor().getServices().get(0);
-        UEntity entity = UEntityFactory.fromProto(descriptor);
-        ServiceOptions options = descriptor.getOptions();
+    @DisplayName("Test deserializing with a valid URI that has scheme but nothing else")
+    public void test_deserializing_with_a_valid_URI_that_has_scheme_but_nothing_else() {
+        UUri uri = UriSerializer.deserialize("up://");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
 
-        UResource resource = options.getExtension(UprotocolOptions.notificationTopic)
-            .stream()
-            .filter(p -> p.getName().contains("SubscriptionChange"))
-            .map(UResourceBuilder::fromUServiceTopic)
-            .findFirst()
-            .orElse(UResource.newBuilder().build());
-        
-        UUri uUri = UUri.newBuilder()
-            .setEntity(entity)
-            .setResource(resource)
-            .setAuthority(UAuthority.newBuilder()
-                .setName("1G1YZ23J9P5800001.veh.gm.com")
-                .setId(ByteString.copyFromUtf8("1G1YZ23J9P5800001")))
-            .build();
+    @Test
+    @DisplayName("Test deserializing a valid UUri with all fields")
+    public void test_deserializing_a_valid_UUri_with_all_fields() {
+        UUri uri = UriSerializer.deserialize("//myAuthority/1/2/3");
+        assertEquals("myAuthority", uri.getAuthorityName());
+        assertEquals(1, uri.getUeId());
+        assertEquals(2, uri.getUeVersionMajor());
+        assertEquals(3, uri.getResourceId());
+    }
 
-        assertFalse(UriValidator.isEmpty(uUri));
-        assertTrue(UriValidator.isMicroForm(uUri));
-        assertTrue(UriValidator.isLongForm(uUri));
-        assertTrue(UriValidator.isShortForm(uUri));
-        String longUri = LongUriSerializer.instance().serialize(uUri);
-        byte[] microUri = MicroUriSerializer.instance().serialize(uUri);
-        String shortUri = ShortUriSerializer.instance().serialize(uUri);
-        
-        assertEquals(longUri, "//1G1YZ23J9P5800001.veh.gm.com/core.usubscription/3/SubscriptionChange#Update");
-        assertEquals(shortUri, "//1G1YZ23J9P5800001/0/3/32768");
-        assertEquals(Arrays.toString(microUri), "[1, 3, -128, 0, 0, 0, 3, 0, 17, 49, 71, 49, 89, 90, 50, 51, 74, 57, 80, 53, 56, 48, 48, 48, 48, 49]");
+    @Test
+    @DisplayName("Test deserializing a valid UUri with only authority")
+    public void test_deserializing_a_valid_UUri_with_only_authority() {
+        UUri uri = UriSerializer.deserialize("//myAuthority");
+        assertEquals("myAuthority", uri.getAuthorityName());
+        assertEquals(0, uri.getUeId());
+        assertEquals(0, uri.getUeVersionMajor());
+        assertEquals(0, uri.getResourceId());
+    }
+
+    @Test
+    @DisplayName("Test deserializing a valid UUri with only authority and ueId")
+    public void test_deserializing_a_valid_UUri_with_only_authority_and_ueId() {
+        UUri uri = UriSerializer.deserialize("//myAuthority/1");
+        assertEquals("myAuthority", uri.getAuthorityName());
+        assertEquals(1, uri.getUeId());
+        assertEquals(0, uri.getUeVersionMajor());
+        assertEquals(0, uri.getResourceId());
+    }
+
+    @Test
+    @DisplayName("Test deserializing a valid UUri with only authority, ueId and ueVersionMajor")
+    public void test_deserializing_a_valid_UUri_with_only_authority_ueId_and_ueVersionMajor() {
+        UUri uri = UriSerializer.deserialize("//myAuthority/1/2");
+        assertEquals("myAuthority", uri.getAuthorityName());
+        assertEquals(1, uri.getUeId());
+        assertEquals(2, uri.getUeVersionMajor());
+        assertEquals(0, uri.getResourceId());
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with invalid characters at the beginning")
+    public void test_deserializing_a_string_with_invalid_characters() {
+        UUri uri = UriSerializer.deserialize("$$");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with names instead of ids for UeId")
+    public void test_deserializing_a_string_with_names_instead_of_ids_for_UeId() {
+        UUri uri = UriSerializer.deserialize("//myAuthority/myUeId/2/3");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with names instead of ids for UeVersionMajor")
+    public void test_deserializing_a_string_with_names_instead_of_ids_for_UeVersionMajor() {
+        UUri uri = UriSerializer.deserialize("//myAuthority/1/myUeVersionMajor/3");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with names instead of ids for ResourceId")
+    public void test_deserializing_a_string_with_names_instead_of_ids_for_ResourceId() {
+        UUri uri = UriSerializer.deserialize("//myAuthority/1/2/myResourceId");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string without authority")
+    public void test_deserializing_a_string_without_authority() {
+        UUri uri = UriSerializer.deserialize("/1/2/3");
+        assertEquals(1, uri.getUeId());
+        assertEquals(2, uri.getUeVersionMajor());
+        assertEquals(3, uri.getResourceId());
+        assertTrue(uri.getAuthorityName().isBlank());
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string without authority and ResourceId")
+    public void test_deserializing_a_string_without_authority_and_ResourceId() {
+        UUri uri = UriSerializer.deserialize("/1/2");
+        assertEquals(1, uri.getUeId());
+        assertEquals(2, uri.getUeVersionMajor());
+        assertEquals(0, uri.getResourceId());
+        assertTrue(uri.getAuthorityName().isBlank());
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string without authority, ResourceId and UeVersionMajor")
+    public void test_deserializing_a_string_without_authority_ResourceId_and_UeVersionMajor() {
+        UUri uri = UriSerializer.deserialize("/1");
+        assertEquals(1, uri.getUeId());
+        assertEquals(0, uri.getUeVersionMajor());
+        assertEquals(0, uri.getResourceId());
+        assertTrue(uri.getAuthorityName().isBlank());
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with blank authority")
+    public void test_deserializing_a_string_with_blank_authority() {
+        UUri uri = UriSerializer.deserialize("///2");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with all the items are the wildcard values")
+    public void test_deserializing_a_string_with_all_the_items_are_the_wildcard_values() {
+        UUri uri = UriSerializer.deserialize("//*/FFFF/ff/ffff");
+        assertEquals("*", uri.getAuthorityName());
+        assertEquals(0xFFFF, uri.getUeId());
+        assertEquals(0xFF, uri.getUeVersionMajor());
+        assertEquals(0xFFFF, uri.getResourceId());
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with uEId() out of range")
+    public void test_deserializing_a_string_with_uEId_out_of_range() {
+        UUri uri = UriSerializer.deserialize("/fffffffff/2/3");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with uEVersionMajor out of range")
+    public void test_deserializing_a_string_with_uEVersionMajor_out_of_range() {
+        UUri uri = UriSerializer.deserialize("/1/256/3");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with resourceId out of range")
+    public void test_deserializing_a_string_with_resourceId_out_of_range() {
+        UUri uri = UriSerializer.deserialize("/1/2/65536");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with negative uEId")
+    public void test_deserializing_a_string_with_negative_uEId() {
+        UUri uri = UriSerializer.deserialize("/-1/2/3");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with negative uEVersionMajor")
+    public void test_deserializing_a_string_with_negative_uEVersionMajor() {
+        UUri uri = UriSerializer.deserialize("/1/-2/3");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with negative resourceId")
+    public void test_deserializing_a_string_with_negative_resourceId() {
+        UUri uri = UriSerializer.deserialize("/1/2/-3");
+        assertTrue(UriValidator.isEmpty(uri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing a string with wildcard ResourceId")
+    public void test_deserializing_a_string_with_wildcard_resourceId() {
+        UUri uri = UriSerializer.deserialize("/1/2/ffff");
+        assertEquals(1, uri.getUeId());
+        assertEquals(2, uri.getUeVersionMajor());
+        assertEquals(0xFFFF, uri.getResourceId());
+    }
+
+    @Test
+    @DisplayName("Test serializing an Empty UUri")
+    public void test_serializing_an_empty_UUri() {
+        UUri uri = UUri.getDefaultInstance();
+        String serializedUri = UriSerializer.serialize(uri);
+        assertTrue(serializedUri.isBlank());
+    }
+
+    @Test
+    @DisplayName("Test serializing a null UUri")
+    public void test_serializing_a_null_UUri() {
+        String serializedUri = UriSerializer.serialize(null);
+        assertTrue(serializedUri.isBlank());
+    }
+
+    @Test
+    @DisplayName("Test serializing a full UUri")
+    public void test_serializing_a_full_UUri() {
+        UUri uri = UUri.newBuilder()
+                .setAuthorityName("myAuthority")
+                .setUeId(1)
+                .setUeVersionMajor(2)
+                .setResourceId(3)
+                .build();
+        String serializedUri = UriSerializer.serialize(uri);
+        assertEquals("//myAuthority/1/2/3", serializedUri);
+    }
+
+    @Test
+    @DisplayName("Test serializing a UUri with only authority")
+    public void test_serializing_a_UUri_with_only_authority() {
+        UUri uri = UUri.newBuilder()
+                .setAuthorityName("myAuthority")
+                .build();
+        String serializedUri = UriSerializer.serialize(uri);
+        assertEquals("//myAuthority/0/0/0", serializedUri);
+    }
+
+    @Test
+    @DisplayName("Test serializing a UUri with only authority and ueId")
+    public void test_serializing_a_UUri_with_only_authority_and_ueId() {
+        UUri uri = UUri.newBuilder()
+                .setAuthorityName("myAuthority")
+                .setUeId(1)
+                .build();
+        String serializedUri = UriSerializer.serialize(uri);
+        assertEquals("//myAuthority/1/0/0", serializedUri);
+    }
+
+    @Test
+    @DisplayName("Test serializing a UUri with only authority, ueId and ueVersionMajor")
+    public void test_serializing_a_UUri_with_only_authority_ueId_and_ueVersionMajor() {
+        UUri uri = UUri.newBuilder()
+                .setAuthorityName("myAuthority")
+                .setUeId(1)
+                .setUeVersionMajor(2)
+                .build();
+        String serializedUri = UriSerializer.serialize(uri);
+        assertEquals("//myAuthority/1/2/0", serializedUri);
+    }
+
+    @Test
+    @DisplayName("Test serializing a UUri with only authority, ueId, ueVersionMajor and resourceId")
+    public void test_serializing_a_UUri_with_only_authority_ueId_ueVersionMajor_and_resourceId() {
+        UUri uri = UUri.newBuilder()
+                .setAuthorityName("myAuthority")
+                .setUeId(1)
+                .setUeVersionMajor(2)
+                .setResourceId(3)
+                .build();
+        String serializedUri = UriSerializer.serialize(uri);
+        assertEquals("//myAuthority/1/2/3", serializedUri);
     }
 }

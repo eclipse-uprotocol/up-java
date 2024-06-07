@@ -1,45 +1,16 @@
-/*
- * Copyright (c) 2023 General Motors GTO LLC
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- * SPDX-FileType: SOURCE
- * SPDX-FileCopyrightText: 2023 General Motors GTO LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.eclipse.uprotocol.cloudevent.factory;
-
-import org.eclipse.uprotocol.UprotocolOptions;
-import org.eclipse.uprotocol.uri.serializer.LongUriSerializer;
-import org.eclipse.uprotocol.uuid.factory.UuidUtils;
-import org.eclipse.uprotocol.uuid.serializer.LongUuidSerializer;
-
-import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
-import com.google.protobuf.DescriptorProtos.EnumValueOptions;
-import com.google.protobuf.Descriptors.EnumDescriptor;
-import com.google.protobuf.Descriptors.EnumValueDescriptor;
-
-import io.cloudevents.CloudEvent;
-import io.cloudevents.CloudEventData;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import org.eclipse.uprotocol.v1.*;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -47,6 +18,29 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+
+import com.google.protobuf.Any;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.Descriptors.EnumValueDescriptor;
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.CloudEventData;
+import io.cloudevents.core.builder.CloudEventBuilder;
+
+
+import org.eclipse.uprotocol.Uoptions;
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
+import org.eclipse.uprotocol.uuid.factory.UuidUtils;
+import org.eclipse.uprotocol.uuid.serializer.UuidSerializer;
+
+import org.eclipse.uprotocol.v1.UAttributes;
+import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.UPayloadFormat;
+import org.eclipse.uprotocol.v1.UPriority;
+import org.eclipse.uprotocol.v1.UMessageType;
+import org.eclipse.uprotocol.v1.UUID;
+import org.eclipse.uprotocol.v1.UMessage;
 
 /**
  * Class to extract  information from a CloudEvent.
@@ -182,7 +176,7 @@ public interface UCloudEvent {
      */
     static Optional<Long> getCreationTimestamp(CloudEvent cloudEvent) {
         final String cloudEventId = cloudEvent.getId();
-        final UUID uuid = LongUuidSerializer.instance().deserialize(cloudEventId);
+        final UUID uuid = UuidSerializer.deserialize(cloudEventId);
 
         return UuidUtils.getTime(uuid);
     }
@@ -228,7 +222,7 @@ public interface UCloudEvent {
             return false;
         }
         final String cloudEventId = cloudEvent.getId();
-        final UUID uuid = LongUuidSerializer.instance().deserialize(cloudEventId);
+        final UUID uuid = UuidSerializer.deserialize(cloudEventId);
 
         if (uuid.equals(UUID.getDefaultInstance())) {
             return false;
@@ -246,7 +240,7 @@ public interface UCloudEvent {
      */
     static boolean isCloudEventId(CloudEvent cloudEvent) {
         final String cloudEventId = cloudEvent.getId();
-        final UUID uuid = LongUuidSerializer.instance().deserialize(cloudEventId);
+        final UUID uuid = UuidSerializer.deserialize(cloudEventId);
 
         return UuidUtils.isUuid(uuid);
     }
@@ -268,27 +262,6 @@ public interface UCloudEvent {
             return Any.getDefaultInstance();
         }
     }
-
-    /**
-     * Extract the payload from the CloudEvent as a protobuf Message of the provided class. The protobuf of this message
-     * class must be loaded on the client for this to work. <br>
-     * An all or nothing error handling strategy is implemented. If anything goes wrong, an empty optional will be returned. <br>
-     * Example: <br>
-     * <pre>Optional&lt;SomeMessage&gt; unpacked = UCloudEvent.unpack(cloudEvent, SomeMessage.class);</pre>
-     * @param cloudEvent CloudEvent containing the payload to extract.
-     * @param clazz The class that extends {@link Message} that the payload is extracted into.
-     * @return Returns a {@link Message} payload of the class type that is provided.
-     * @param <T> The class type of the Message to be unpacked.
-     */
-    static <T extends Message> Optional<T> unpack(CloudEvent cloudEvent, Class<T> clazz) {
-        try {
-            return Optional.of(getPayload(cloudEvent).unpack(clazz));
-        } catch (InvalidProtocolBufferException e) {
-            // All or nothing error handling strategy. If something goes wrong, you just get an empty.
-            return Optional.empty();
-        }
-    }
-
     /**
      * Function used to pretty print a CloudEvent containing only the id, source, type and maybe a sink. Used mainly for logging.
      * @param cloudEvent The CloudEvent we want to pretty print.
@@ -353,20 +326,7 @@ public interface UCloudEvent {
         return getCeName(priority.getValueDescriptor());
     }
 
-    /**
-     * Get the UPriority from the string name
-     * @param priority
-     * @return returns the UPriority
-     */
-    static UPriority getUPriority(String ce_priority) {
-        return UPriority.getDescriptor().getValues().stream()
-            .filter(v -> v.getOptions().hasExtension(UprotocolOptions.ceName) &&
-                v.getOptions().getExtension(UprotocolOptions.ceName).equals(ce_priority))
-            .map(v -> UPriority.forNumber(v.getNumber()))
-            .findFirst()
-            .orElse(UPriority.UNRECOGNIZED);
-    }
-
+    
     /**
      * Get the UMessageType from the string representation.
      * 
@@ -381,8 +341,8 @@ public interface UCloudEvent {
      */
     static UMessageType getMessageType(String ce_type){
         return UMessageType.getDescriptor().getValues().stream()
-            .filter(v -> v.getOptions().hasExtension(UprotocolOptions.ceName) &&
-                v.getOptions().getExtension(UprotocolOptions.ceName).equals(ce_type))
+            .filter(v -> v.getOptions().hasExtension(Uoptions.ceName) &&
+                v.getOptions().getExtension(Uoptions.ceName).equals(ce_type))
             .map(v -> UMessageType.forNumber(v.getNumber()))
             .findFirst()
             .orElse(UMessageType.UNRECOGNIZED);
@@ -396,43 +356,51 @@ public interface UCloudEvent {
     static UMessage toMessage(CloudEvent event) {
         Objects.requireNonNull(event);
 
-        UPayload payload = UPayload.newBuilder().setFormat(getUPayloadFormatFromContentType(event.getDataContentType()))
-                .setValue(getPayload(event).toByteString()).build();
-
         UAttributes.Builder builder =
                 UAttributes.newBuilder()
-                    .setSource(LongUriSerializer.instance().deserialize(getSource(event)))
-                    .setId(LongUuidSerializer.instance().deserialize(event.getId()))
+                    .setSource(UriSerializer.deserialize(getSource(event)))
+                    .setId(UuidSerializer.deserialize(event.getId()))
                     .setType(getMessageType(event.getType()));
+
+        if (event.getData() != null) {
+            builder.setPayloadFormat(getUPayloadFormatFromContentType(event.getDataContentType()));
+        }
 
         if (hasCommunicationStatusProblem(event)) {
             builder.setCommstatus(getCommunicationStatus(event));
         }
         getPriority(event).map(p -> UPriority.getDescriptor().getValues().stream()
-                .filter(v -> v.getOptions().hasExtension(UprotocolOptions.ceName) &&
-                v.getOptions().getExtension(UprotocolOptions.ceName).equals(p))
+                .filter(v -> v.getOptions().hasExtension(Uoptions.ceName) &&
+                             v.getOptions().getExtension(Uoptions.ceName).equals(p))
                 .map(v -> UPriority.forNumber(v.getNumber()))
                 .findFirst()
-                .orElse(UPriority.UPRIORITY_UNSPECIFIED)
-                ).ifPresent(builder::setPriority);
+                .orElse(UPriority.UPRIORITY_UNSPECIFIED))
+                .ifPresent(builder::setPriority);
 
-        getSink(event).map(LongUriSerializer.instance()::deserialize).ifPresent(builder::setSink);
+        getSink(event).map(UriSerializer::deserialize).ifPresent(builder::setSink);
 
-        getRequestId(event).map(LongUuidSerializer.instance()::deserialize).ifPresent(builder::setReqid);
+        getRequestId(event).map(UuidSerializer::deserialize).ifPresent(builder::setReqid);
 
         getTtl(event).ifPresent(builder::setTtl);
 
         getToken(event).ifPresent(builder::setToken);
 
-        getTraceparent(event).ifPresent(builder::setTraceparent);        
+        getTraceparent(event).ifPresent(builder::setTraceparent);
 
         Optional<Integer> permission_level = extractIntegerValueFromExtension("plevel", event);
         permission_level.ifPresent(builder::setPermissionLevel);
 
-        UAttributes attributes = builder.build();
+        UMessage.Builder messageBuilder = UMessage.newBuilder().setAttributes(builder);
 
-        return UMessage.newBuilder().setAttributes(attributes).setPayload(payload).build();
+        // Set the data payload if it is present
+        Optional.ofNullable(event.getData())
+            .stream()
+            .map(CloudEventData::toBytes)
+            .map(ByteString::copyFrom)
+            .findFirst()
+            .ifPresent(messageBuilder::setPayload);
 
+        return messageBuilder.build();
     }
 
     
@@ -448,22 +416,23 @@ public interface UCloudEvent {
         Objects.requireNonNull(message, "message cannot be null.");
 
         UAttributes attributes = Objects.requireNonNullElse(message.getAttributes(), UAttributes.getDefaultInstance());
-        UPayload payload = Objects.requireNonNullElse(message.getPayload(), UPayload.getDefaultInstance());
+
 
         CloudEventBuilder cloudEventBuilder =
-                CloudEventBuilder.v1().withId(LongUuidSerializer.instance().serialize(attributes.getId()));
+                CloudEventBuilder.v1().withId(UuidSerializer.serialize(attributes.getId()));
 
         cloudEventBuilder.withType(getEventType(attributes.getType()));
 
-        cloudEventBuilder.withSource(URI.create(LongUriSerializer.instance().serialize(attributes.getSource())));
+        cloudEventBuilder.withSource(URI.create(UriSerializer.serialize(attributes.getSource())));
 
-        final String contentType = getContentTypeFromUPayloadFormat(payload.getFormat());
+        if (!message.getPayload().isEmpty()) {
+            cloudEventBuilder.withData(message.getPayload().toByteArray());
+        }
+
+        final String contentType = getContentTypeFromUPayloadFormat(message.getAttributes().getPayloadFormat());
         if(!contentType.isEmpty()){
             cloudEventBuilder.withDataContentType(contentType);
         }
-        // IMPORTANT: Currently, ONLY the VALUE format is supported in the SDK!
-        if (payload.hasValue())
-            cloudEventBuilder.withData(payload.getValue().toByteArray());
 
         if (attributes.hasTtl())
             cloudEventBuilder.withExtension("ttl",attributes.getTtl());
@@ -476,13 +445,13 @@ public interface UCloudEvent {
 
         if(attributes.hasSink())
             cloudEventBuilder.withExtension("sink",
-                     URI.create(LongUriSerializer.instance().serialize(attributes.getSink())));
+                     URI.create(UriSerializer.serialize(attributes.getSink())));
 
         if(attributes.hasCommstatus())
             cloudEventBuilder.withExtension("commstatus",attributes.getCommstatus().getNumber());
 
         if(attributes.hasReqid())
-            cloudEventBuilder.withExtension("reqid",LongUuidSerializer.instance().serialize(attributes.getReqid()));
+            cloudEventBuilder.withExtension("reqid",UuidSerializer.serialize(attributes.getReqid()));
 
         if(attributes.hasPermissionLevel())
             cloudEventBuilder.withExtension("plevel",attributes.getPermissionLevel());
@@ -501,14 +470,10 @@ public interface UCloudEvent {
      * @param contentType The content type string representing the format of the payload.
      * @return The corresponding UPayloadFormat enumeration based on the content type.
      */
-    static UPayloadFormat getUPayloadFormatFromContentType(String contentType){
-        if(contentType == null) {
-            return UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY;
-        }
-
+    static UPayloadFormat getUPayloadFormatFromContentType(String contentType) {
         return UPayloadFormat.getDescriptor().getValues().stream()
-            .filter(v -> v.getOptions().hasExtension(UprotocolOptions.mimeType) &&
-                v.getOptions().getExtension(UprotocolOptions.mimeType).equals(contentType))
+            .filter(v -> v.getOptions().hasExtension(Uoptions.mimeType) &&
+                v.getOptions().getExtension(Uoptions.mimeType).equals(contentType))
             .map(v -> UPayloadFormat.forNumber(v.getNumber()))
             .findFirst()
             .orElse(UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY);
@@ -526,7 +491,7 @@ public interface UCloudEvent {
         if (format == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY) {
             return "";
         }
-        return format.getValueDescriptor().getOptions().<String>getExtension(UprotocolOptions.mimeType);
+        return format.getValueDescriptor().getOptions().<String>getExtension(Uoptions.mimeType);
     }
 
 
@@ -537,7 +502,7 @@ public interface UCloudEvent {
      * @return The corresponding string name for the value.
      */
     static String getCeName(EnumValueDescriptor descriptor) {
-        return descriptor.getOptions().<String>getExtension(UprotocolOptions.ceName);
+        return descriptor.getOptions().<String>getExtension(Uoptions.ceName);
     }
 
 }
