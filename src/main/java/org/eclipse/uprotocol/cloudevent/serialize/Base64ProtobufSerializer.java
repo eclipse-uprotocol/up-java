@@ -21,6 +21,7 @@ public interface Base64ProtobufSerializer {
 
     /**
      * Deserialize a base64 protobuf payload into a Base64 String.
+     * 
      * @param bytes byte[] data
      * @return Returns a String from the base64 protobuf payload.
      */
@@ -33,10 +34,11 @@ public interface Base64ProtobufSerializer {
 
     /**
      * Serialize a String into Base64 format.
+     * 
      * @param stringToSerialize String to serialize.
      * @return Returns the Base64 formatted String as a byte[].
      */
-    static  byte[] serialize(String stringToSerialize) {
+    static byte[] serialize(String stringToSerialize) {
         if (stringToSerialize == null) {
             return new byte[0];
         }

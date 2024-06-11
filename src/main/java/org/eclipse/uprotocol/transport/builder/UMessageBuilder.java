@@ -12,7 +12,6 @@
  */
 package org.eclipse.uprotocol.transport.builder;
 
-
 import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UAttributes;
@@ -27,7 +26,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
-
 
 import java.util.Objects;
 import java.util.Optional;
@@ -52,92 +50,100 @@ public class UMessageBuilder {
     private UPayloadFormat format;
     private ByteString payload;
 
-
     /**
      * Construct a UMessageBuilder for a publish message.
      * 
-     * @param source  The topic the message is published to (a.k.a Source address).
+     * @param source The topic the message is published to (a.k.a Source address).
      * @return Returns the UMessageBuilder with the configured priority.
      */
     public static UMessageBuilder publish(UUri source) {
         Objects.requireNonNull(source, "source cannot be null.");
-        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(), 
-        UMessageType.UMESSAGE_TYPE_PUBLISH);
+        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UMessageType.UMESSAGE_TYPE_PUBLISH);
     }
-
 
     /**
      * Construct a UMessageBuilder for a notification message.
-     * @param source   The topic the message is published to (a.k.a Source address).
-     * @param sink     The destination address for the notification (who will receive the notification).
+     * 
+     * @param source The topic the message is published to (a.k.a Source address).
+     * @param sink   The destination address for the notification (who will receive
+     *               the notification).
      * @return Returns the UMessageBuilder with the configured priority and sink.
      */
     public static UMessageBuilder notification(UUri source, UUri sink) {
         Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
 
-        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(), 
-        UMessageType.UMESSAGE_TYPE_NOTIFICATION).withSink(sink);
+        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UMessageType.UMESSAGE_TYPE_NOTIFICATION).withSink(sink);
     }
-    
 
     /**
      * Construct a UMessageBuilder for a request message.
-     * @param source  Source address for the message (address of the client sending the request message).
-     * @param sink The method that is being requested (a.k.a. destination address).
-     * @param ttl The time to live in milliseconds.
-     * @return Returns the UMessageBuilder with the configured priority, sink and ttl.
+     * 
+     * @param source Source address for the message (address of the client sending
+     *               the request message).
+     * @param sink   The method that is being requested (a.k.a. destination
+     *               address).
+     * @param ttl    The time to live in milliseconds.
+     * @return Returns the UMessageBuilder with the configured priority, sink and
+     *         ttl.
      */
     public static UMessageBuilder request(UUri source, UUri sink, Integer ttl) {
         Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(ttl, "ttl cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
-        
-        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(), 
-        UMessageType.UMESSAGE_TYPE_REQUEST).withTtl(ttl).withSink(sink);
-    }
 
-   
+        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UMessageType.UMESSAGE_TYPE_REQUEST).withTtl(ttl).withSink(sink);
+    }
 
     /**
      * Construct a UMessageBuilder for a response message.
-     * @param source  The source address of the method that was requested
-     * @param sink    The destination of the client thatsend the request.
-     * @param reqid The original request UUID used to correlate the response to the request.
-     * @return Returns the UMessageBuilder with the configured priority, sink and reqid.
+     * 
+     * @param source The source address of the method that was requested
+     * @param sink   The destination of the client thatsend the request.
+     * @param reqid  The original request UUID used to correlate the response to the
+     *               request.
+     * @return Returns the UMessageBuilder with the configured priority, sink and
+     *         reqid.
      */
     public static UMessageBuilder response(UUri source, UUri sink, UUID reqid) {
         Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
         Objects.requireNonNull(reqid, "reqid cannot be null.");
-        
-        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(), 
-        UMessageType.UMESSAGE_TYPE_RESPONSE).withSink(sink).withReqId(reqid);
+
+        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UMessageType.UMESSAGE_TYPE_RESPONSE).withSink(sink).withReqId(reqid);
     }
 
     /**
      * Construct a UMessageBuilder for a response message using an existing request.
-     * @param request The original request {@code UAttributes} used to correlate the response to the request.
-     * @return Returns the UMessageBuilder with the configured source, sink, priority, and reqid.
+     * 
+     * @param request The original request {@code UAttributes} used to correlate the
+     *                response to the request.
+     * @return Returns the UMessageBuilder with the configured source, sink,
+     *         priority, and reqid.
      */
     public static UMessageBuilder response(UAttributes request) {
         Objects.requireNonNull(request, "request cannot be null.");
         return new UMessageBuilder(
-                request.getSink(), 
-                UuidFactory.Factories.UPROTOCOL.factory().create(), 
+                request.getSink(),
+                UuidFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.UMESSAGE_TYPE_RESPONSE)
-            .withPriority(request.getPriority())
-            .withSink(request.getSource())
-            .withReqId(request.getId());
+                .withPriority(request.getPriority())
+                .withSink(request.getSource())
+                .withReqId(request.getId());
     }
 
-
     /**
-     * Construct the UMessageBuilder with the configurations that are required for every payload transport.
+     * Construct the UMessageBuilder with the configurations that are required for
+     * every payload transport.
      *
-     * @param source   Source address of the message.
-     * @param id       Unique identifier for the message.
-     * @param type     Message type such as Publish a state change, RPC request or RPC response.
+     * @param source Source address of the message.
+     * @param id     Unique identifier for the message.
+     * @param type   Message type such as Publish a state change, RPC request or RPC
+     *               response.
      */
     private UMessageBuilder(UUri source, UUID id, UMessageType type) {
         this.source = source;
@@ -156,7 +162,6 @@ public class UMessageBuilder {
         return this;
     }
 
-
     /**
      * Add the authorization token used for TAP.
      *
@@ -167,7 +172,6 @@ public class UMessageBuilder {
         this.token = token;
         return this;
     }
-
 
     /**
      * Add the priority of the message.
@@ -213,7 +217,6 @@ public class UMessageBuilder {
         return this;
     }
 
-
     /**
      * Add the request ID.
      *
@@ -235,7 +238,6 @@ public class UMessageBuilder {
         this.sink = sink;
         return this;
     }
-
 
     /**
      * Build a message with the passed google protobuf message object
@@ -270,6 +272,7 @@ public class UMessageBuilder {
         this.payload = payload;
         return build();
     }
+
     /**
      * Construct the UMessage from the builder.
      *
@@ -288,15 +291,15 @@ public class UMessageBuilder {
             case UMESSAGE_TYPE_REQUEST:
             case UMESSAGE_TYPE_RESPONSE:
                 attributesBuilder.setPriority(
-                    priority
-                        .filter(v -> v.getNumber() >= UPriority.UPRIORITY_CS4.getNumber())
-                        .orElse(UPriority.UPRIORITY_CS4));
+                        priority
+                                .filter(v -> v.getNumber() >= UPriority.UPRIORITY_CS4.getNumber())
+                                .orElse(UPriority.UPRIORITY_CS4));
                 break;
             default:
                 attributesBuilder.setPriority(
-                    priority
-                        .filter(v -> v.getNumber() >= UPriority.UPRIORITY_CS1.getNumber())
-                        .orElse(UPriority.UPRIORITY_CS1));
+                        priority
+                                .filter(v -> v.getNumber() >= UPriority.UPRIORITY_CS1.getNumber())
+                                .orElse(UPriority.UPRIORITY_CS1));
                 break;
         }
 

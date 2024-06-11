@@ -14,7 +14,6 @@ package org.eclipse.uprotocol.uri.validator;
 
 import org.eclipse.uprotocol.v1.UUri;
 
-
 /**
  * class for validating Uris.
  */
@@ -35,31 +34,31 @@ public interface UriValidator {
      */
     int MAJOR_VERSION_WILDCARD = 0xFF;
 
-
     /**
-     * Indicates that this  URI is an empty as it does not contain authority, entity, and resource.
+     * Indicates that this URI is an empty as it does not contain authority, entity,
+     * and resource.
      *
      * @param uri {@link UUri} to check if it is empty
-     * @return Returns true if this  URI is an empty container and has no valuable information in building uProtocol sinks or sources.
+     * @return Returns true if this URI is an empty container and has no valuable
+     *         information in building uProtocol sinks or sources.
      */
     static boolean isEmpty(UUri uri) {
         return uri == null || uri.equals(UUri.getDefaultInstance());
     }
 
-
     /**
-     * Returns true if URI is of type RPC. A UUri is of type RPC if it contains the word rpc in the resource name 
+     * Returns true if URI is of type RPC. A UUri is of type RPC if it contains the
+     * word rpc in the resource name
      * and has an instance name and/or the id is less than MIN_TOPIC_ID.
      *
      * @param uri {@link UUri} to check if it is of type RPC method
      * @return Returns true if URI is of type RPC.
      */
     static boolean isRpcMethod(UUri uri) {
-        return !isEmpty(uri) && 
-            uri.getResourceId() != DEFAULT_RESOURCE_ID &&
-            uri.getResourceId() < MIN_TOPIC_ID;
+        return !isEmpty(uri) &&
+                uri.getResourceId() != DEFAULT_RESOURCE_ID &&
+                uri.getResourceId() < MIN_TOPIC_ID;
     }
-
 
     /**
      * Returns true if URI is of type RPC response.

@@ -15,8 +15,11 @@ package org.eclipse.uprotocol.uuid.serializer;
 import org.eclipse.uprotocol.v1.UUID;
 
 /**
- * UUID Serializer interface used to serialize/deserialize UUIDs to/from either Long (string) or micro (bytes) form
-  * @param <T> The data structure that the UUID will be serialized into. For example String or byte[].
+ * UUID Serializer interface used to serialize/deserialize UUIDs to/from either
+ * Long (string) or micro (bytes) form
+ * 
+ * @param <T> The data structure that the UUID will be serialized into. For
+ *            example String or byte[].
  */
 public interface UuidSerializer {
 
@@ -31,9 +34,9 @@ public interface UuidSerializer {
             return UUID.getDefaultInstance();
         }
         try {
-            java.util.UUID uuid_java = java.util.UUID.fromString(stringUuid);
-            return UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
-                    .setLsb(uuid_java.getLeastSignificantBits()).build();
+            java.util.UUID uuidJava = java.util.UUID.fromString(stringUuid);
+            return UUID.newBuilder().setMsb(uuidJava.getMostSignificantBits())
+                    .setLsb(uuidJava.getLeastSignificantBits()).build();
         } catch (IllegalArgumentException e) {
             return UUID.getDefaultInstance();
         }
@@ -49,4 +52,3 @@ public interface UuidSerializer {
         return uuid == null ? new String() : new java.util.UUID(uuid.getMsb(), uuid.getLsb()).toString();
     }
 }
-

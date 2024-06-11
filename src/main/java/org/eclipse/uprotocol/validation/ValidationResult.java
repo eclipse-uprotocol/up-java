@@ -18,7 +18,8 @@ import org.eclipse.uprotocol.v1.UCode;
 import java.util.Objects;
 
 /**
- * Class wrapping a ValidationResult of success or failure wrapping the value of a google.rpc.Status.
+ * Class wrapping a ValidationResult of success or failure wrapping the value of
+ * a google.rpc.Status.
  */
 public abstract class ValidationResult {
 
@@ -26,7 +27,8 @@ public abstract class ValidationResult {
 
     private static final ValidationResult SUCCESS = new Success();
 
-    private ValidationResult(){}
+    private ValidationResult() {
+    }
 
     public abstract UStatus toStatus();
 

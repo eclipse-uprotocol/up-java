@@ -16,19 +16,20 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.protobuf.ProtobufFormat;
 
 /**
- * CloudEventSerializer to serialize and deserialize CloudEvents to protobuf format.
+ * CloudEventSerializer to serialize and deserialize CloudEvents to protobuf
+ * format.
  */
 public class CloudEventToProtobufSerializer implements CloudEventSerializer {
 
-    private static final ProtobufFormat serializer = new ProtobufFormat();
+    private static final ProtobufFormat SERIALIZER = new ProtobufFormat();
 
     public byte[] serialize(CloudEvent cloudEvent) {
-        return serializer.serialize(cloudEvent);
+        return SERIALIZER.serialize(cloudEvent);
     }
 
     @Override
     public CloudEvent deserialize(byte[] bytes) {
-        return serializer.deserialize(bytes);
+        return SERIALIZER.deserialize(bytes);
     }
 
 }

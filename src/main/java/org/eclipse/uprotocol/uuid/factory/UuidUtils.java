@@ -28,7 +28,8 @@ public interface UuidUtils {
      * Fetch the UUID version.
      *
      * @param uuid The UUID to fetch the version from.
-     * @return the UUID version from the UUID object or Optional.empty() if the uuid is null.
+     * @return the UUID version from the UUID object or Optional.empty() if the uuid
+     *         is null.
      */
     static Optional<Version> getVersion(UUID uuid) {
         // Version is bits masked by 0x000000000000F000 in MS long
@@ -42,15 +43,16 @@ public interface UuidUtils {
      * @return UUID variant or Empty if uuid is null.
      */
     static Optional<Integer> getVariant(UUID uuid) {
-        return uuid == null ? Optional.empty() : Optional.of(
-                (int) ((uuid.getLsb() >>> (64 - (uuid.getLsb() >>> 62))) & (uuid.getLsb() >> 63)));
+        return uuid == null ? Optional.empty()
+                : Optional.of(
+                        (int) ((uuid.getLsb() >>> (64 - (uuid.getLsb() >>> 62))) & (uuid.getLsb() >> 63)));
     }
 
     /**
      * Verify if version is a formal UUIDv8 uProtocol ID.
      *
      * @return true if is a uProtocol UUID or false if uuid passed is null
-     * or the UUID is not uProtocol format.
+     *         or the UUID is not uProtocol format.
      */
     static boolean isUProtocol(UUID uuid) {
         final Optional<Version> version = getVersion(uuid);
@@ -65,7 +67,8 @@ public interface UuidUtils {
     static boolean isUuidv6(UUID uuid) {
         final Optional<Version> version = getVersion(uuid);
         final Optional<Integer> variant = getVariant(uuid);
-        return uuid != null && version.isPresent() && version.get() == Version.VERSION_TIME_ORDERED && variant.get() == UuidVariant.VARIANT_RFC_4122.getValue();
+        return uuid != null && version.isPresent() && version.get() == Version.VERSION_TIME_ORDERED
+                && variant.get() == UuidVariant.VARIANT_RFC_4122.getValue();
     }
 
     /**
@@ -95,10 +98,10 @@ public interface UuidUtils {
                 time = uuid.getMsb() >> 16;
                 break;
             case VERSION_TIME_ORDERED:
-                //convert Ticks to Millis
+                // convert Ticks to Millis
                 try {
-                    java.util.UUID uuid_java=new java.util.UUID(uuid.getMsb(),uuid.getLsb());
-                    time = UuidTime.toUnixTimestamp(UuidUtil.getTimestamp(uuid_java)) / UuidTime.TICKS_PER_MILLI;
+                    java.util.UUID uuidJava = new java.util.UUID(uuid.getMsb(), uuid.getLsb());
+                    time = UuidTime.toUnixTimestamp(UuidUtil.getTimestamp(uuidJava)) / UuidTime.TICKS_PER_MILLI;
                 } catch (IllegalArgumentException e) {
                     return Optional.empty();
                 }
@@ -115,7 +118,7 @@ public interface UuidUtils {
      *
      * @param id The UUID of the object whose creation time needs to be determined.
      * @return An Optional containing the elapsed time in milliseconds,
-     * or an empty Optional if the creation time cannot be determined.
+     *         or an empty Optional if the creation time cannot be determined.
      */
     static Optional<Long> getElapsedTime(UUID id) {
         final long creationTime = getTime(id).orElse(-1L);
@@ -127,12 +130,16 @@ public interface UuidUtils {
     }
 
     /**
-     * Calculates the remaining time until the expiration of the event identified by the given UUID.
+     * Calculates the remaining time until the expiration of the event identified by
+     * the given UUID.
      *
-     * @param id  The UUID of the object whose remaining time needs to be determined.
+     * @param id  The UUID of the object whose remaining time needs to be
+     *            determined.
      * @param ttl The time-to-live (TTL) in milliseconds.
-     * @return An Optional containing the remaining time in milliseconds until the event expires,
-     * or an empty Optional if the UUID is null, TTL is non-positive, or the creation time cannot be determined.
+     * @return An Optional containing the remaining time in milliseconds until the
+     *         event expires,
+     *         or an empty Optional if the UUID is null, TTL is non-positive, or the
+     *         creation time cannot be determined.
      */
     static Optional<Long> getRemainingTime(UUID id, int ttl) {
         if (id == null || ttl <= 0) {
@@ -141,19 +148,19 @@ public interface UuidUtils {
         return getElapsedTime(id).filter(elapsedTime -> ttl > elapsedTime).map(elapsedTime -> ttl - elapsedTime);
     }
 
-
     /**
-     * Checks if the event identified by the given UUID has expired based on the specified time-to-live (TTL).
+     * Checks if the event identified by the given UUID has expired based on the
+     * specified time-to-live (TTL).
      *
      * @param id  The UUID identifying the event.
      * @param ttl The time-to-live (TTL) in milliseconds for the event.
-     * @return true if the event has expired, false otherwise. Returns false if TTL is non-positive or creation time
-     * cannot be determined.
+     * @return true if the event has expired, false otherwise. Returns false if TTL
+     *         is non-positive or creation time
+     *         cannot be determined.
      */
     static boolean isExpired(UUID id, int ttl) {
         return ttl > 0 && getRemainingTime(id, ttl).isEmpty();
     }
-
 
     /**
      * UUID Version
@@ -187,7 +194,8 @@ public interface UuidUtils {
          * Get the Version from the passed integer representation of the version.
          *
          * @param value The integer representation of the version.
-         * @return The Version object or Optional.empty() if the value is not a valid version.
+         * @return The Version object or Optional.empty() if the value is not a valid
+         *         version.
          */
         public static Optional<Version> getVersion(int value) {
             for (Version version : Version.values()) {

@@ -22,11 +22,11 @@ public interface UriFactory {
         return fromProto(descriptor, resourceId, null);
     }
 
-
     /**
      * Builds a UEntity for an protobuf generated code Service Descriptor.
-     * @param descriptor The protobuf generated code Service Descriptor.
-     * @param resourceId The resource id.
+     * 
+     * @param descriptor    The protobuf generated code Service Descriptor.
+     * @param resourceId    The resource id.
      * @param authorityName The authority name.
      * @return Returns a UEntity for an protobuf generated code Service Descriptor.
      */
@@ -38,9 +38,9 @@ public interface UriFactory {
         final ServiceOptions options = descriptor.getOptions();
 
         UUri.Builder builder = UUri.newBuilder()
-            .setUeId(options.<Integer>getExtension(Uoptions.serviceId))
-            .setUeVersionMajor(options.<Integer>getExtension(Uoptions.serviceVersionMajor))
-            .setResourceId(resourceId);
+                .setUeId(options.<Integer>getExtension(Uoptions.serviceId))
+                .setUeVersionMajor(options.<Integer>getExtension(Uoptions.serviceVersionMajor))
+                .setResourceId(resourceId);
 
         if (authorityName != null && !authorityName.isEmpty()) {
             builder.setAuthorityName(authorityName);
@@ -50,12 +50,13 @@ public interface UriFactory {
 
     /**
      * Builds a UEntity for an protobuf generated code Service Descriptor.
+     * 
      * @param descriptor The protobuf generated code Service Descriptor.
      * @return Returns a UEntity for an protobuf generated code Service Descriptor.
      */
     UUri ANY = UUri.newBuilder()
-        .setAuthorityName("*")
-        .setUeId(0xFFFF)
-        .setUeVersionMajor(0xFF)
-        .setResourceId(0xFFFF).build();
+            .setAuthorityName("*")
+            .setUeId(0xFFFF)
+            .setUeVersionMajor(0xFF)
+            .setResourceId(0xFFFF).build();
 }

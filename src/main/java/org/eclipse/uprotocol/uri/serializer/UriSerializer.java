@@ -12,7 +12,6 @@
  */
 package org.eclipse.uprotocol.uri.serializer;
 
-
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UUri;
 
@@ -29,8 +28,10 @@ public interface UriSerializer {
 
     /**
      * Support for serializing {@link UUri} objects into their String format.
+     * 
      * @param uri {@link UUri} object to be serialized to the String format.
-     * @return Returns the String format of the supplied {@link UUri} that can be used as a sink or a source in a uProtocol publish communication.
+     * @return Returns the String format of the supplied {@link UUri} that can be
+     *         used as a sink or a source in a uProtocol publish communication.
      */
     static String serialize(UUri uri) {
         if (uri == null || UriValidator.isEmpty(uri)) {
@@ -55,6 +56,7 @@ public interface UriSerializer {
 
     /**
      * Deserialize a String into a UUri object.
+     * 
      * @param uProtocolUri A long format uProtocol URI.
      * @return Returns an UUri data object.
      */
@@ -63,9 +65,10 @@ public interface UriSerializer {
             return UUri.getDefaultInstance();
         }
 
-        String uri = uProtocolUri.contains(":") ? uProtocolUri.substring(uProtocolUri.indexOf(":")+1) : uProtocolUri 
-                .replace('\\', '/');
-        
+        String uri = uProtocolUri.contains(":") ? uProtocolUri.substring(uProtocolUri.indexOf(":") + 1)
+                : uProtocolUri
+                        .replace('\\', '/');
+
         boolean isLocal = !uri.startsWith("//");
 
         final String[] uriParts = uri.split("/");
@@ -85,7 +88,7 @@ public interface UriSerializer {
                     if (numberOfPartsInUri > 3) {
                         builder.setResourceId(Integer.parseUnsignedInt(uriParts[3], 16));
                     }
-                } 
+                }
             } else {
                 // If authority is blank, it is an error
                 if (uriParts[2].isBlank()) {
@@ -98,11 +101,11 @@ public interface UriSerializer {
                     if (numberOfPartsInUri > 4) {
                         builder.setUeVersionMajor(Integer.parseUnsignedInt(uriParts[4], 16));
 
-                        if (numberOfPartsInUri > 5) { 
+                        if (numberOfPartsInUri > 5) {
                             builder.setResourceId(Integer.parseUnsignedInt(uriParts[5], 16));
                         }
 
-                    } 
+                    }
                 }
             }
         } catch (NumberFormatException e) {

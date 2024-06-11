@@ -28,24 +28,15 @@
         <!-- Formatting -->
         <module name="WhitespaceAround"/>
         <module name="WhitespaceAfter"/>
-<!--        <module name="EmptyLineSeparator"/>-->
         <module name="Indentation"/>
         <module name="LeftCurly"/>
         <module name="RightCurly"/>
 
         <!-- Miscellaneous -->
-<!--        <module name="FinalParameters"/>-->
         <module name="VisibilityModifier"/>
-        <module name="BooleanExpressionComplexity">
-            <property name="max" value="3"/>
-        </module>
-        <module name="CyclomaticComplexity">
-            <property name="max" value="10"/>
-        </module>
         <module name="NestedIfDepth">
             <property name="max" value="3"/>
         </module>
-        <module name="TrailingComment"/>
     </module>
 </module>
 
