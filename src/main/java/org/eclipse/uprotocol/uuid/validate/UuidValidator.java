@@ -51,7 +51,7 @@ public abstract class UuidValidator {
             return uuidValidator;
         }
 
-        private Validators(UuidValidator uuidValidator) {
+        Validators(UuidValidator uuidValidator) {
             this.uuidValidator = uuidValidator;
         }
     }
@@ -94,14 +94,14 @@ public abstract class UuidValidator {
         @Override
         public ValidationResult validateVersion(UUID uuid) {
             final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
-            return (version.isPresent() && version.get() == UuidUtils.Version.VERSION_TIME_ORDERED) ?
+            return version.isPresent() && version.get() == UuidUtils.Version.VERSION_TIME_ORDERED ?
                     ValidationResult.success() : ValidationResult.failure(String.format("Not a UUIDv6 Version"));
         }
 
         @Override
         public ValidationResult validateVariant(UUID uuid) {
             final Optional<Integer> variant = UuidUtils.getVariant(uuid);
-            return (variant.isPresent() && (variant.get() == UuidVariant.VARIANT_RFC_4122.getValue())) ?
+            return variant.isPresent() && (variant.get() == UuidVariant.VARIANT_RFC_4122.getValue()) ?
                     ValidationResult.success() : ValidationResult.failure(String.format("Invalid UUIDv6 variant"));
         }
     }

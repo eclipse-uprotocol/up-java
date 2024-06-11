@@ -30,7 +30,7 @@ public interface UuidUtils {
      * @param uuid The UUID to fetch the version from.
      * @return the UUID version from the UUID object or Optional.empty() if the uuid is null.
      */
-    public static Optional<Version> getVersion(UUID uuid) {
+    static Optional<Version> getVersion(UUID uuid) {
         // Version is bits masked by 0x000000000000F000 in MS long
         return uuid == null ? Optional.empty() : Version.getVersion((int) ((uuid.getMsb() >> 12) & 0x0f));
     }
@@ -41,7 +41,7 @@ public interface UuidUtils {
      * @param uuid The UUID to fetch the variant from.
      * @return UUID variant or Empty if uuid is null.
      */
-    public static Optional<Integer> getVariant(UUID uuid) {
+    static Optional<Integer> getVariant(UUID uuid) {
         return uuid == null ? Optional.empty() : Optional.of(
                 (int) ((uuid.getLsb() >>> (64 - (uuid.getLsb() >>> 62))) & (uuid.getLsb() >> 63)));
     }
@@ -52,7 +52,7 @@ public interface UuidUtils {
      * @return true if is a uProtocol UUID or false if uuid passed is null
      * or the UUID is not uProtocol format.
      */
-    public static boolean isUProtocol(UUID uuid) {
+    static boolean isUProtocol(UUID uuid) {
         final Optional<Version> version = getVersion(uuid);
         return uuid != null && version.isPresent() && version.get() == Version.VERSION_UPROTOCOL;
     }
@@ -62,7 +62,7 @@ public interface UuidUtils {
      *
      * @return true if is UUID version 6 or false if uuid is null or not version 6
      */
-    public static boolean isUuidv6(UUID uuid) {
+    static boolean isUuidv6(UUID uuid) {
         final Optional<Version> version = getVersion(uuid);
         final Optional<Integer> variant = getVariant(uuid);
         return uuid != null && version.isPresent() && version.get() == Version.VERSION_TIME_ORDERED && variant.get() == UuidVariant.VARIANT_RFC_4122.getValue();
@@ -73,7 +73,7 @@ public interface UuidUtils {
      *
      * @return true if is UUID version 6 or 8
      */
-    public static boolean isUuid(UUID uuid) {
+    static boolean isUuid(UUID uuid) {
         return isUProtocol(uuid) || isUuidv6(uuid);
     }
 
@@ -83,7 +83,7 @@ public interface UuidUtils {
      * @param uuid passed uuid to fetch the time.
      * @return number of milliseconds since unix epoch or empty if uuid is null.
      */
-    public static Optional<Long> getTime(UUID uuid) {
+    static Optional<Long> getTime(UUID uuid) {
         Long time = null;
         Optional<Version> version = getVersion(uuid);
         if (uuid == null || version.isEmpty()) {
@@ -117,13 +117,13 @@ public interface UuidUtils {
      * @return An Optional containing the elapsed time in milliseconds,
      * or an empty Optional if the creation time cannot be determined.
      */
-    public static Optional<Long> getElapsedTime(UUID id) {
+    static Optional<Long> getElapsedTime(UUID id) {
         final long creationTime = getTime(id).orElse(-1L);
         if (creationTime < 0) {
             return Optional.empty();
         }
         final long now = System.currentTimeMillis();
-        return (now >= creationTime) ? Optional.of(now - creationTime) : Optional.empty();
+        return now >= creationTime ? Optional.of(now - creationTime) : Optional.empty();
     }
 
     /**
@@ -134,7 +134,7 @@ public interface UuidUtils {
      * @return An Optional containing the remaining time in milliseconds until the event expires,
      * or an empty Optional if the UUID is null, TTL is non-positive, or the creation time cannot be determined.
      */
-    public static Optional<Long> getRemainingTime(UUID id, int ttl) {
+    static Optional<Long> getRemainingTime(UUID id, int ttl) {
         if (id == null || ttl <= 0) {
             return Optional.empty();
         }
@@ -150,7 +150,7 @@ public interface UuidUtils {
      * @return true if the event has expired, false otherwise. Returns false if TTL is non-positive or creation time
      * cannot be determined.
      */
-    public static boolean isExpired(UUID id, int ttl) {
+    static boolean isExpired(UUID id, int ttl) {
         return ttl > 0 && getRemainingTime(id, ttl).isEmpty();
     }
 
@@ -158,7 +158,7 @@ public interface UuidUtils {
     /**
      * UUID Version
      */
-    public enum Version {
+    enum Version {
 
         /**
          * An unknown version.
@@ -179,7 +179,7 @@ public interface UuidUtils {
 
         private final int value;
 
-        private Version(int value) {
+        Version(int value) {
             this.value = value;
         }
 

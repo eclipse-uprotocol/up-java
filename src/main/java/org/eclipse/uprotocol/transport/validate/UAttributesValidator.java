@@ -147,7 +147,7 @@ public abstract class UAttributesValidator {
      * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
      */
     public ValidationResult validateReqId(UAttributes attributes) {
-        return (attributes.hasReqid()) ?
+        return attributes.hasReqid() ?
             ValidationResult.failure("Message should not have a reqid") : ValidationResult.success();
     }
 
@@ -239,7 +239,7 @@ public abstract class UAttributesValidator {
          */
         @Override
         public ValidationResult validateSink(UAttributes attributes) {
-            return (attributes.hasSink() ? ValidationResult.failure("Sink should not be present") : ValidationResult.success());
+            return attributes.hasSink() ? ValidationResult.failure("Sink should not be present") : ValidationResult.success();
         }
 
 

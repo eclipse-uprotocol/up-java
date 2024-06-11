@@ -43,7 +43,7 @@ public interface UriValidator {
      * @return Returns true if this  URI is an empty container and has no valuable information in building uProtocol sinks or sources.
      */
     static boolean isEmpty(UUri uri) {
-        return (uri == null || uri.equals(UUri.getDefaultInstance()));
+        return uri == null || uri.equals(UUri.getDefaultInstance());
     }
 
 

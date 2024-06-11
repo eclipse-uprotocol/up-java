@@ -35,7 +35,7 @@ public abstract class UuidFactory {
 
         private final UuidFactory factory;
 
-        private Factories(UuidFactory factory) {
+        Factories(UuidFactory factory) {
             this.factory = factory;
         }
 
@@ -97,7 +97,7 @@ public abstract class UuidFactory {
             final long time = Objects.requireNonNullElse(instant, Instant.now()).toEpochMilli();
 
             // Check if the current time is the same as the previous time
-            if (time == (msb >> 16)) {
+            if (time == msb >> 16) {
                 // Increment the counter if we are not at MAX_COUNT
                 if ((msb & 0xFFFL) < MAX_COUNT) {
                     msb++;
