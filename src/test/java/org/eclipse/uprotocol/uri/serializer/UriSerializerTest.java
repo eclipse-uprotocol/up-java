@@ -316,4 +316,5 @@ public class UriSerializerTest {
         String serializedUri = UriSerializer.serialize(uri);
         assertEquals("//myAuthority/1/2/3", serializedUri);
     }
+    
 }
