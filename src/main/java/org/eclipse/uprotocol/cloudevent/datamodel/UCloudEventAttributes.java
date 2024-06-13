@@ -33,11 +33,15 @@ public class UCloudEventAttributes {
     /**
      * Construct the properties object.
      *
-     * @param hash     An HMAC generated on the data portion of the CloudEvent message using the device key.
+     * @param hash     An HMAC generated on the data portion of the CloudEvent
+     *                 message using the device key.
      * @param priority uProtocol Prioritization classifications.
-     * @param ttl      How long this event should live for after it was generated (in milliseconds).
-     *                 Events without this attribute (or value is 0) MUST NOT timeout.
-     * @param token    Oauth2 access token to perform the access request defined in the request message.
+     * @param ttl      How long this event should live for after it was generated
+     *                 (in milliseconds).
+     *                 Events without this attribute (or value is 0) MUST NOT
+     *                 timeout.
+     * @param token    Oauth2 access token to perform the access request defined in
+     *                 the request message.
      */
     private UCloudEventAttributes(String hash, UPriority priority, Integer ttl, String token) {
         this.hash = hash;
@@ -56,28 +60,35 @@ public class UCloudEventAttributes {
     }
 
     /**
-     * Static factory method for creating an empty  cloud event attributes object, to avoid working with null<br>
-     * @return Returns an empty  cloud event attributes that indicates
-     * that there are no added additional attributes to configure.
+     * Static factory method for creating an empty cloud event attributes object, to
+     * avoid working with null<br>
+     * 
+     * @return Returns an empty cloud event attributes that indicates
+     *         that there are no added additional attributes to configure.
      */
     public static UCloudEventAttributes empty() {
         return EMPTY;
     }
 
     /**
-     * Indicates that there are no added additional attributes to configure when building a CloudEvent.
-     * @return Returns true if this attributes container is an empty container and has no valuable information in building a CloudEvent.
+     * Indicates that there are no added additional attributes to configure when
+     * building a CloudEvent.
+     * 
+     * @return Returns true if this attributes container is an empty container and
+     *         has no valuable information in building a CloudEvent.
      */
     public boolean isEmpty() {
-        return hash().isEmpty() && 
-               priority().isEmpty() &&
-               ttl().isEmpty() &&
-               token().isEmpty() &&
-               traceparent().isEmpty();
+        return hash().isEmpty() &&
+                priority().isEmpty() &&
+                ttl().isEmpty() &&
+                token().isEmpty() &&
+                traceparent().isEmpty();
     }
 
     /**
-     * An HMAC generated on the data portion of the CloudEvent message using the device key.
+     * An HMAC generated on the data portion of the CloudEvent message using the
+     * device key.
+     * 
      * @return Returns an Optional hash attribute.
      */
     public Optional<String> hash() {
@@ -86,6 +97,7 @@ public class UCloudEventAttributes {
 
     /**
      * uProtocol Prioritization classifications.
+     * 
      * @return Returns an Optional priority attribute.
      */
     public Optional<UPriority> priority() {
@@ -94,28 +106,32 @@ public class UCloudEventAttributes {
 
     /**
      * How long this event should live for after it was generated (in milliseconds).
+     * 
      * @return Returns an Optional time to live attribute.
      */
     public Optional<Integer> ttl() {
         return ttl == null ? Optional.empty() : Optional.of(ttl);
     }
-    
+
     /**
-     * Oauth2 access token to perform the access request defined in the request message.
+     * Oauth2 access token to perform the access request defined in the request
+     * message.
+     * 
      * @return Returns an Optional OAuth token attribute.
      */
     public Optional<String> token() {
         return token == null || token.isBlank() ? Optional.empty() : Optional.of(token);
     }
-    
+
     /**
      * An identifier used to correlate observability across related events.
+     * 
      * @return Returns an Optional traceparent attribute.
      */
     public Optional<String> traceparent() {
         return traceparent == null || traceparent.isBlank() ? Optional.empty() : Optional.of(traceparent);
     }
-    
+
     /**
      * Builder for constructing the UCloudEventAttributes.
      */
@@ -126,11 +142,15 @@ public class UCloudEventAttributes {
         private String token;
         private String traceparent;
 
-        public UCloudEventAttributesBuilder() {}
+        public UCloudEventAttributesBuilder() {
+        }
 
         /**
-         * add an HMAC generated on the data portion of the CloudEvent message using the device key.
-         * @param hash an HMAC generated on the data portion of the CloudEvent message using the device key.
+         * add an HMAC generated on the data portion of the CloudEvent message using the
+         * device key.
+         * 
+         * @param hash an HMAC generated on the data portion of the CloudEvent message
+         *             using the device key.
          * @return Returns the UCloudEventAttributesBuilder with the configured hash.
          */
         public UCloudEventAttributesBuilder withHash(String hash) {
@@ -140,8 +160,10 @@ public class UCloudEventAttributes {
 
         /**
          * add a uProtocol Prioritization classifications.
+         * 
          * @param priority uProtocol Prioritization classifications.
-         * @return Returns the UCloudEventAttributesBuilder with the configured priority.
+         * @return Returns the UCloudEventAttributesBuilder with the configured
+         *         priority.
          */
         public UCloudEventAttributesBuilder withPriority(UPriority priority) {
             this.priority = priority;
@@ -149,11 +171,15 @@ public class UCloudEventAttributes {
         }
 
         /**
-         * add a time to live which is how long this event should live for after it was generated (in milliseconds).
+         * add a time to live which is how long this event should live for after it was
+         * generated (in milliseconds).
          * Events without this attribute (or value is 0) MUST NOT timeout.
-         * @param ttl How long this event should live for after it was generated (in milliseconds).
+         * 
+         * @param ttl How long this event should live for after it was generated (in
+         *            milliseconds).
          *            Events without this attribute (or value is 0) MUST NOT timeout.
-         * @return Returns the UCloudEventAttributesBuilder with the configured time to live.
+         * @return Returns the UCloudEventAttributesBuilder with the configured time to
+         *         live.
          */
         public UCloudEventAttributesBuilder withTtl(Integer ttl) {
             this.ttl = ttl;
@@ -161,9 +187,13 @@ public class UCloudEventAttributes {
         }
 
         /**
-         * Add an Oauth2 access token to perform the access request defined in the request message.
-         * @param token An Oauth2 access token to perform the access request defined in the request message.
-         * @return Returns the UCloudEventAttributesBuilder with the configured OAuth token.
+         * Add an Oauth2 access token to perform the access request defined in the
+         * request message.
+         * 
+         * @param token An Oauth2 access token to perform the access request defined in
+         *              the request message.
+         * @return Returns the UCloudEventAttributesBuilder with the configured OAuth
+         *         token.
          */
         public UCloudEventAttributesBuilder withToken(String token) {
             this.token = token;
@@ -172,16 +202,20 @@ public class UCloudEventAttributes {
 
         /**
          * Add an identifier used to correlate observability across related events.
-         * @param traceparent An identifier used to correlate observability across related events.
-         * @return Returns the UCloudEventAttributesBuilder with the configured traceparent.
+         * 
+         * @param traceparent An identifier used to correlate observability across
+         *                    related events.
+         * @return Returns the UCloudEventAttributesBuilder with the configured
+         *         traceparent.
          */
         public UCloudEventAttributesBuilder withTraceparent(String traceparent) {
             this.traceparent = traceparent;
             return this;
         }
-        
+
         /**
          * Construct the UCloudEventAttributes from the builder.
+         * 
          * @return Returns a constructed UProperty.
          */
         public UCloudEventAttributes build() {
@@ -192,8 +226,10 @@ public class UCloudEventAttributes {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         UCloudEventAttributes that = (UCloudEventAttributes) o;
         return Objects.equals(hash, that.hash) && priority == that.priority
                 && Objects.equals(ttl, that.ttl) && Objects.equals(token, that.token)

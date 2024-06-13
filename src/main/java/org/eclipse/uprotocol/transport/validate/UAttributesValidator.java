@@ -12,7 +12,6 @@
  */
 package org.eclipse.uprotocol.transport.validate;
 
-
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.v1.UAttributes;
@@ -28,23 +27,28 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * {@link UAttributes} is the class that defines the Payload. It is the place for configuring time to live, priority,
+ * {@link UAttributes} is the class that defines the Payload. It is the place
+ * for configuring time to live, priority,
  * security tokens and more.
- * Each UAttributes class defines a different type of message payload. The payload can represent a simple published
+ * Each UAttributes class defines a different type of message payload. The
+ * payload can represent a simple published
  * payload with some state change,
  * Payload representing an RPC request or Payload representing an RPC response.
- * UAttributesValidator is a base class for all UAttribute validators, that can help validate that the
+ * UAttributesValidator is a base class for all UAttribute validators, that can
+ * help validate that the
  * {@link UAttributes} object is correctly defined
  * to define the Payload correctly.
  */
 public abstract class UAttributesValidator {
 
     /**
-     * Static factory method for getting a validator according to the {@link UMessageType} defined in the
+     * Static factory method for getting a validator according to the
+     * {@link UMessageType} defined in the
      * {@link UAttributes}.
      *
      * @param attribute UAttributes containing the UMessageType.
-     * @return returns a UAttributesValidator according to the {@link UMessageType} defined in the {@link UAttributes}.
+     * @return returns a UAttributesValidator according to the {@link UMessageType}
+     *         defined in the {@link UAttributes}.
      */
     public static UAttributesValidator getValidator(UAttributes attribute) {
 
@@ -59,52 +63,58 @@ public abstract class UAttributesValidator {
                 return Validators.PUBLISH.validator();
         }
     }
-    
 
     /**
      * Take a {@link UAttributes} object and run validations.
      *
      * @param attributes The UAttriubes to validate.
-     * @return Returns a {@link ValidationResult} that is success or failed with a message containing all validation
-     * errors for
-     * invalid configurations.
+     * @return Returns a {@link ValidationResult} that is success or failed with a
+     *         message containing all validation
+     *         errors for
+     *         invalid configurations.
      */
     public ValidationResult validate(UAttributes attributes) {
         final String errorMessage = Stream.of(validateType(attributes),
-                         validateTtl(attributes), validateSink(attributes), validatePriority(attributes),
-                         validatePermissionLevel(attributes), validateReqId(attributes), validateId(attributes))
+                validateTtl(attributes), validateSink(attributes), validatePriority(attributes),
+                validatePermissionLevel(attributes), validateReqId(attributes), validateId(attributes))
                 .filter(ValidationResult::isFailure).map(ValidationResult::getMessage).collect(Collectors.joining(","));
         return errorMessage.isBlank() ? ValidationResult.success() : ValidationResult.failure(errorMessage);
     }
 
     /**
      * Check the time-to-live attribute to see if it has expired. <br>
-     * The message has expired when the current time is greater than the original UUID time
+     * The message has expired when the current time is greater than the original
+     * UUID time
      * plus the ttl attribute.
      *
      * @param uAttributes UAttributes with time to live value.
-     * @return Returns a true if the original time plus the ttl is less than the current time
+     * @return Returns a true if the original time plus the ttl is less than the
+     *         current time
      */
     public boolean isExpired(UAttributes uAttributes) {
         final int ttl = uAttributes.getTtl();
         final Optional<Long> maybeTime = UuidUtils.getTime(uAttributes.getId());
-        
-        // if the message does not have a ttl or the original time is not present or the ttl is less than 0
+
+        // if the message does not have a ttl or the original time is not present or the
+        // ttl is less than 0
         if (maybeTime.isEmpty() || ttl <= 0) {
             return false;
         }
 
-        // the original time plus the ttl is less than the current time, the message has expired 
+        // the original time plus the ttl is less than the current time, the message has
+        // expired
         return (maybeTime.get() + ttl) < System.currentTimeMillis();
     }
 
-
     /**
-     * Validate the time to live configuration. If the UAttributes does not contain a time to live then the
+     * Validate the time to live configuration. If the UAttributes does not contain
+     * a time to live then the
      * ValidationResult is ok.
      *
-     * @param attributes UAttributes object containing the message time to live configuration to validate.
-     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+     * @param attributes UAttributes object containing the message time to live
+     *                   configuration to validate.
+     * @return Returns a {@link ValidationResult} that is success or failed with a
+     *         failure message.
      */
     public ValidationResult validateTtl(UAttributes attributes) {
         int ttl = attributes.getTtl();
@@ -120,16 +130,20 @@ public abstract class UAttributesValidator {
      * Validate the sink UriPart.
      *
      * @param attributes UAttributes object containing the sink to validate.
-     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+     * @return Returns a {@link ValidationResult} that is success or failed with a
+     *         failure message.
      */
     public abstract ValidationResult validateSink(UAttributes attributes);
 
     /**
-     * Validate the permissionLevel for the default case. If the UAttributes does not contain a permission level then
+     * Validate the permissionLevel for the default case. If the UAttributes does
+     * not contain a permission level then
      * the ValidationResult is ok.
      *
-     * @param attributes UAttributes object containing the permission level to validate.
-     * @return Returns a ValidationResult indicating if the permissionLevel is valid or not.
+     * @param attributes UAttributes object containing the permission level to
+     *                   validate.
+     * @return Returns a ValidationResult indicating if the permissionLevel is valid
+     *         or not.
      */
     public ValidationResult validatePermissionLevel(UAttributes attributes) {
         if (!attributes.hasPermissionLevel() || attributes.getPermissionLevel() > 0) {
@@ -139,38 +153,40 @@ public abstract class UAttributesValidator {
         }
     }
 
-    
     /**
-     * Validate the correlationId for the default case. Only the response message should have a reqid.
+     * Validate the correlationId for the default case. Only the response message
+     * should have a reqid.
      *
      * @param attributes Attributes object containing the request id to validate.
-     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+     * @return Returns a {@link ValidationResult} that is success or failed with a
+     *         failure message.
      */
     public ValidationResult validateReqId(UAttributes attributes) {
-        return (attributes.hasReqid()) ?
-            ValidationResult.failure("Message should not have a reqid") : ValidationResult.success();
+        return attributes.hasReqid() ? ValidationResult.failure("Message should not have a reqid")
+                : ValidationResult.success();
     }
 
-
-    /** 
+    /**
      * Validate the priority value to ensure it is one of the known CS values
      * 
      * @param attributes Attributes object containing the Priority to validate.
-     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+     * @return Returns a {@link ValidationResult} that is success or failed with a
+     *         failure message.
      */
     public ValidationResult validatePriority(UAttributes attributes) {
-        return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS0_VALUE ? 
-        ValidationResult.success() : ValidationResult.failure(
-            String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
+        return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS0_VALUE ? ValidationResult.success()
+                : ValidationResult.failure(
+                        String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
     }
 
-
     /**
-     * Validate the Id for the default case. If the UAttributes object does not contain an Id,
+     * Validate the Id for the default case. If the UAttributes object does not
+     * contain an Id,
      * the ValidationResult is failed.
      *
      * @param attributes Attributes object containing the id to validate.
-     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+     * @return Returns a {@link ValidationResult} that is success or failed with a
+     *         failure message.
      */
     public ValidationResult validateId(UAttributes attributes) {
         if (!attributes.hasId()) {
@@ -183,18 +199,19 @@ public abstract class UAttributesValidator {
         }
     }
 
-
     /**
      * Validate the {@link UMessageType} attribute, it is required.
      *
      * @param attributes UAttributes object containing the message type to validate.
-     * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+     * @return Returns a {@link ValidationResult} that is success or failed with a
+     *         failure message.
      */
     public abstract ValidationResult validateType(UAttributes attributes);
 
     /**
      * Validators Factory. Example:
-     * UAttributesValidator validateForPublishMessageType = UAttributesValidator.Validators.PUBLISH.validator()
+     * UAttributesValidator validateForPublishMessageType =
+     * UAttributesValidator.Validators.PUBLISH.validator()
      */
     public enum Validators {
         PUBLISH(new Publish()),
@@ -214,34 +231,38 @@ public abstract class UAttributesValidator {
     }
 
     /**
-     * Implements validations for UAttributes that define a message that is meant for publishing state changes.
+     * Implements validations for UAttributes that define a message that is meant
+     * for publishing state changes.
      */
     private static class Publish extends UAttributesValidator {
 
         /**
-         * Validates that attributes for a message meant to publish state changes has the correct type.
+         * Validates that attributes for a message meant to publish state changes has
+         * the correct type.
          *
          * @param attributes UAttributes object containing the message type to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validateType(UAttributes attributes) {
-            return UMessageType.UMESSAGE_TYPE_PUBLISH == attributes.getType() ? ValidationResult.success() : ValidationResult.failure(
-                    String.format("Wrong Attribute Type [%s]", attributes.getType()));
+            return UMessageType.UMESSAGE_TYPE_PUBLISH == attributes.getType() ? ValidationResult.success()
+                    : ValidationResult.failure(
+                            String.format("Wrong Attribute Type [%s]", attributes.getType()));
         }
 
-        
         /**
          * Validate the sink UriPart for Publish events. Publish should not have a sink.
          *
          * @param attributes UAttributes object containing the sink to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validateSink(UAttributes attributes) {
-            return (attributes.hasSink() ? ValidationResult.failure("Sink should not be present") : ValidationResult.success());
+            return attributes.hasSink() ? ValidationResult.failure("Sink should not be present")
+                    : ValidationResult.success();
         }
-
 
         @Override
         public String toString() {
@@ -250,36 +271,42 @@ public abstract class UAttributesValidator {
     }
 
     /**
-     * Implements validations for UAttributes that define a message that is meant for an RPC request.
+     * Implements validations for UAttributes that define a message that is meant
+     * for an RPC request.
      */
     private static class Request extends UAttributesValidator {
 
         /**
-         * Validates that attributes for a message meant for an RPC request has the correct type.
+         * Validates that attributes for a message meant for an RPC request has the
+         * correct type.
          *
          * @param attributes UAttributes object containing the message type to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validateType(UAttributes attributes) {
-            return UMessageType.UMESSAGE_TYPE_REQUEST == attributes.getType() ? ValidationResult.success() : ValidationResult.failure(
-                    String.format("Wrong Attribute Type [%s]", attributes.getType()));
+            return UMessageType.UMESSAGE_TYPE_REQUEST == attributes.getType() ? ValidationResult.success()
+                    : ValidationResult.failure(
+                            String.format("Wrong Attribute Type [%s]", attributes.getType()));
         }
 
         /**
-         * Validates that attributes for a message meant for an RPC request has a destination sink.
+         * Validates that attributes for a message meant for an RPC request has a
+         * destination sink.
          * In the case of an RPC request, the sink is required.
          *
          * @param attributes UAttributes object containing the sink to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validateSink(UAttributes attributes) {
             if (!attributes.hasSink()) {
                 return ValidationResult.failure("Missing Sink");
             }
-            return UriValidator.isRpcMethod(attributes.getSink()) ? 
-                ValidationResult.success() : ValidationResult.failure("Invalid Sink Uri");
+            return UriValidator.isRpcMethod(attributes.getSink()) ? ValidationResult.success()
+                    : ValidationResult.failure("Invalid Sink Uri");
         }
 
         /**
@@ -287,7 +314,8 @@ public abstract class UAttributesValidator {
          * In the case of an RPC request, the time to live is required.
          *
          * @param attributes UAttributes object containing the time to live to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validateTtl(UAttributes attributes) {
@@ -302,18 +330,18 @@ public abstract class UAttributesValidator {
             }
         }
 
-
-         /** 
+        /**
          * Validate the priority value to ensure it is one of the known CS values
          * 
          * @param attributes Attributes object containing the Priority to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validatePriority(UAttributes attributes) {
-            return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS4_VALUE ? 
-            ValidationResult.success() : ValidationResult.failure(
-                String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
+            return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS4_VALUE ? ValidationResult.success()
+                    : ValidationResult.failure(
+                            String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
         }
 
         @Override
@@ -323,29 +351,34 @@ public abstract class UAttributesValidator {
     }
 
     /**
-     * Implements validations for UAttributes that define a message that is meant for an RPC response.
+     * Implements validations for UAttributes that define a message that is meant
+     * for an RPC response.
      */
     private static class Response extends UAttributesValidator {
 
         /**
-         * Validates that attributes for a message meant for an RPC response has the correct type.
+         * Validates that attributes for a message meant for an RPC response has the
+         * correct type.
          *
          * @param attributes UAttributes object containing the message type to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validateType(UAttributes attributes) {
-            return UMessageType.UMESSAGE_TYPE_RESPONSE == attributes.getType() ? ValidationResult.success() :
-                    ValidationResult.failure(
-                    String.format("Wrong Attribute Type [%s]", attributes.getType()));
+            return UMessageType.UMESSAGE_TYPE_RESPONSE == attributes.getType() ? ValidationResult.success()
+                    : ValidationResult.failure(
+                            String.format("Wrong Attribute Type [%s]", attributes.getType()));
         }
 
         /**
-         * Validates that attributes for a message meant for an RPC response has a destination sink.
+         * Validates that attributes for a message meant for an RPC response has a
+         * destination sink.
          * In the case of an RPC response, the sink is required.
          *
          * @param attributes UAttributes object containing the sink to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validateSink(UAttributes attributes) {
@@ -353,16 +386,18 @@ public abstract class UAttributesValidator {
             if (!attributes.hasSink() || attributes.getSink() == UUri.getDefaultInstance()) {
                 return ValidationResult.failure("Missing Sink");
             }
-            return UriValidator.isRpcResponse(attributes.getSink()) ? 
-                ValidationResult.success() : ValidationResult.failure("Invalid Sink Uri");
+            return UriValidator.isRpcResponse(attributes.getSink()) ? ValidationResult.success()
+                    : ValidationResult.failure("Invalid Sink Uri");
         }
 
-
         /**
-         * Validate the correlationId. n the case of an RPC response, the correlation id is required.
+         * Validate the correlationId. n the case of an RPC response, the correlation id
+         * is required.
          *
-         * @param attributes UAttributes object containing the correlation id to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @param attributes UAttributes object containing the correlation id to
+         *                   validate.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validateReqId(UAttributes attributes) {
@@ -377,17 +412,18 @@ public abstract class UAttributesValidator {
 
         }
 
-         /** 
+        /**
          * Validate the priority value to ensure it is one of the known CS values
          * 
          * @param attributes Attributes object containing the Priority to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validatePriority(UAttributes attributes) {
-            return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS4_VALUE ? 
-            ValidationResult.success() : ValidationResult.failure(
-                String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
+            return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS4_VALUE ? ValidationResult.success()
+                    : ValidationResult.failure(
+                            String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
         }
 
         @Override
@@ -396,30 +432,35 @@ public abstract class UAttributesValidator {
         }
     }
 
-        /**
-     * Implements validations for UAttributes that define a message that is meant for notifications.
+    /**
+     * Implements validations for UAttributes that define a message that is meant
+     * for notifications.
      */
     private static class Notification extends UAttributesValidator {
 
         /**
-         * Validates that attributes for a message meant to Notification state changes has the correct type.
+         * Validates that attributes for a message meant to Notification state changes
+         * has the correct type.
          *
          * @param attributes UAttributes object containing the message type to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validateType(UAttributes attributes) {
-            return UMessageType.UMESSAGE_TYPE_NOTIFICATION == attributes.getType() ?
-                ValidationResult.success() : ValidationResult.failure(
-                    String.format("Wrong Attribute Type [%s]", attributes.getType()));
+            return UMessageType.UMESSAGE_TYPE_NOTIFICATION == attributes.getType() ? ValidationResult.success()
+                    : ValidationResult.failure(
+                            String.format("Wrong Attribute Type [%s]", attributes.getType()));
         }
 
         /**
-         * Validates that attributes for a message meant for notifications has a destination sink.
+         * Validates that attributes for a message meant for notifications has a
+         * destination sink.
          * In the case of a notification, the sink is required.
          *
          * @param attributes UAttributes object containing the sink to validate.
-         * @return Returns a {@link ValidationResult} that is success or failed with a failure message.
+         * @return Returns a {@link ValidationResult} that is success or failed with a
+         *         failure message.
          */
         @Override
         public ValidationResult validateSink(UAttributes attributes) {
@@ -427,8 +468,8 @@ public abstract class UAttributesValidator {
             if (!attributes.hasSink() || attributes.getSink() == UUri.getDefaultInstance()) {
                 return ValidationResult.failure("Missing Sink");
             }
-            return UriValidator.isDefaultResourceId(attributes.getSink()) ? 
-                ValidationResult.success() : ValidationResult.failure("Invalid Sink Uri");
+            return UriValidator.isDefaultResourceId(attributes.getSink()) ? ValidationResult.success()
+                    : ValidationResult.failure("Invalid Sink Uri");
         }
 
         @Override

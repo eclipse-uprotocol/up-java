@@ -21,15 +21,15 @@ import io.cloudevents.jackson.JsonFormat;
 public class CloudEventToJsonSerializer implements CloudEventSerializer {
 
     // Force database64 encoding as we know the data will be in a protobuf format
-    private static final JsonFormat serializer = new JsonFormat(true, false);
+    private static final JsonFormat SERIALIZER = new JsonFormat(true, false);
 
     public byte[] serialize(CloudEvent cloudEvent) {
-        return serializer.serialize(cloudEvent);
+        return SERIALIZER.serialize(cloudEvent);
     }
 
     @Override
     public CloudEvent deserialize(byte[] bytes) {
-        return serializer.deserialize(bytes);
+        return SERIALIZER.deserialize(bytes);
     }
 
 }

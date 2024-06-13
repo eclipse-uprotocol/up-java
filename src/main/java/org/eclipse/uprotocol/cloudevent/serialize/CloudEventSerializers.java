@@ -16,10 +16,11 @@ package org.eclipse.uprotocol.cloudevent.serialize;
  * Provides Singleton instances of the CloudEvent Serializers.
  */
 public enum CloudEventSerializers {
-    JSON (new CloudEventToJsonSerializer()),
-    PROTOBUF (new CloudEventToProtobufSerializer());
+    JSON(new CloudEventToJsonSerializer()),
+    PROTOBUF(new CloudEventToProtobufSerializer());
 
     private final CloudEventSerializer cloudEventSerializer;
+
     public CloudEventSerializer serializer() {
         return cloudEventSerializer;
     }
