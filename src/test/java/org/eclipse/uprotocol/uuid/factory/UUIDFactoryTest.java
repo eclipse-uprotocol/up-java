@@ -28,8 +28,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UUIDFactoryTest {
 
     @Test
-    @DisplayName("Test UUIDv8 Creation")
-    void test_uuidv8_creation() {
+    @DisplayName("Test UUIDv7 Creation")
+    void test_uuidv7_creation() {
         final Instant now = Instant.now();
         final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create(now);
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
@@ -52,8 +52,8 @@ public class UUIDFactoryTest {
     }
 
     @Test
-    @DisplayName("Test UUIDv8 Creation with null Instant")
-    void test_uuidv8_creation_with_null_instant() {
+    @DisplayName("Test UUIDv7 Creation with null Instant")
+    void test_uuidv7_creation_with_null_instant() {
         final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create(null);
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
@@ -74,27 +74,6 @@ public class UUIDFactoryTest {
     }
 
 
-    @Test
-    @DisplayName("Test UUIDv8 overflow")
-    void test_uuidv8_overflow() {
-        final List<UUID> uuidList = new ArrayList<>();
-        final int MAX_COUNT = 4095;
-
-        // Build UUIDs above MAX_COUNT (4095) so we can test the limits
-        final Instant now = Instant.now();
-        for (int i = 0; i < MAX_COUNT * 2; i++) {
-            uuidList.add(UuidFactory.Factories.UPROTOCOL.factory().create(now));
-
-            // Time should be the same as the 1st
-            assertEquals(UuidUtils.getTime(uuidList.get(0)), UuidUtils.getTime(uuidList.get(i)));
-
-            // Random should always remain the same be the same
-            assertEquals(uuidList.get(0).getLsb(), uuidList.get(i).getLsb());
-            if (i > MAX_COUNT) {
-                assertEquals(uuidList.get(MAX_COUNT).getMsb(), uuidList.get(i).getMsb());
-            }
-        }
-    }
 
     @Test
     @DisplayName("Test UUIDv6 creation with Instance")
@@ -262,17 +241,17 @@ public class UUIDFactoryTest {
     }
 
     @Test
-    @DisplayName("Test Create both UUIDv6 and v8 to compare performance")
-    void test_create_both_uuidv6_and_v8_to_compare_performance() throws InterruptedException {
+    @DisplayName("Test Create both UUIDv6 and v7 to compare performance")
+    void test_create_both_uuidv6_and_v7_to_compare_performance() throws InterruptedException {
         final List<UUID> uuidv6List = new ArrayList<>();
-        final List<UUID> uuidv8List = new ArrayList<>();
+        final List<UUID> uuidv7List = new ArrayList<>();
         final int MAX_COUNT = 10000;
 
         Instant start = Instant.now();
         for (int i = 0; i < MAX_COUNT; i++) {
-            uuidv8List.add(UuidFactory.Factories.UPROTOCOL.factory().create());
+            uuidv7List.add(UuidFactory.Factories.UPROTOCOL.factory().create());
         }
-        final Duration v8Diff = Duration.between(start, Instant.now());
+        final Duration v7Diff = Duration.between(start, Instant.now());
 
         start = Instant.now();
         for (int i = 0; i < MAX_COUNT; i++) {
@@ -280,7 +259,19 @@ public class UUIDFactoryTest {
         }
         final Duration v6Diff = Duration.between(start, Instant.now());
         System.out.println(
-                "UUIDv8:[" + v8Diff.toNanos() / MAX_COUNT + "ns]" + " UUIDv6:[" + v6Diff.toNanos() / MAX_COUNT + "ns]");
+                "UUIDv7:[" + v7Diff.toNanos() / MAX_COUNT + "ns]" + " UUIDv6:[" + v6Diff.toNanos() / MAX_COUNT + "ns]");
     }
+
+    @Test
+    @DisplayName("Test Create UUIDv7 with the same time to confirm the UUIDs are not the same")
+    void test_create_uuidv7_with_the_same_time_to_confirm_the_uuids_are_not_the_same() {
+        Instant now = Instant.now();
+        final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create(now);
+        final UUID uuid1 = UuidFactory.Factories.UPROTOCOL.factory().create(now);
+        assertNotEquals(uuid, uuid1);
+        assertEquals(UuidUtils.getTime(uuid1).get(), UuidUtils.getTime(uuid).get());
+    }
+
+
 }
 

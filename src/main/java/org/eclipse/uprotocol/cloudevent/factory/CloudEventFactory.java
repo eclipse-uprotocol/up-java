@@ -164,7 +164,7 @@ public interface CloudEventFactory {
     }
 
     /**
-     * @return Returns a UUIDv8 id.
+     * @return Returns a UUIDv7 id.
      */
     static String generateCloudEventId() {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
