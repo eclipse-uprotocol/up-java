@@ -21,10 +21,9 @@ import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UPayloadFormat;
 import org.eclipse.uprotocol.v1.UUID;
 
-import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Message;
 
+import org.eclipse.uprotocol.communication.UPayload;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 
 import java.util.Objects;
@@ -240,39 +239,20 @@ public class UMessageBuilder {
     }
 
     /**
-     * Build a message with the passed google protobuf message object
+     * Build a message with the passed {@link UPayload}.
      * 
-     * @param message Google protobuf message to be packed into the payload
+     * @param payload The payload to be packed into the message.
      * @return Returns the UMessage with the configured payload.
      */
-    public UMessage build(Message message) {
-        Objects.requireNonNull(message, "Protobuf Message cannot be null.");
-        this.format = UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF;
-        this.payload = message.toByteString();
+    public UMessage build(UPayload payload) {
+        if (payload != null ) {
+            this.format = payload.format();
+            this.payload = payload.data();
+        }
         return build();
     }
 
-    /**
-     * Build a message with the message already packed into google.protobuf.Any
-     * 
-     * @param any Google protobuf Any object to be packed into the payload
-     * @return Returns the UMessage with the configured payload.
-     */
-    public UMessage build(Any any) {
-        Objects.requireNonNull(any, "any cannot be null.");
-        this.format = UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY;
-        this.payload = any.toByteString();
-        return build();
-    }
-
-    public UMessage build(UPayloadFormat format, ByteString payload) {
-        Objects.requireNonNull(format, "format cannot be null.");
-        Objects.requireNonNull(payload, "payload cannot be null.");
-        this.format = format;
-        this.payload = payload;
-        return build();
-    }
-
+    
     /**
      * Construct the UMessage from the builder.
      *

@@ -1,0 +1,70 @@
+# Communication Layer APIs (uP-L2 Interface)
+
+The following folder include the client-facing  https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l2[communication layer (uP-L2)] interfaces to implement the publisher/subscriber, notification, and RPC patterns on top of the transport layer (uTransport) API. 
+
+
+## uP-L2 Interfaces
+
+.UPClient Interfaces (uP-L2 Interface)
+[cols="1,3",options="header"]
+|===
+| uP-L2 Interface | Description  
+
+| xref:Publisher.java[*Publisher*] | Producers API to send publish or notification messages
+| xref:Subscriber.java[*Subscriber*] | Consumers API to subscribe or unsubscribe to topics
+| xref:RpcClient.java[*RpcClient*] | Client interface to invoke a method
+| xref:RpcServer.java[*RpcServer*] | Server interface to register a listener for incoming RPC requests and automatically send a response
+| xref:Notifier.java[*Notifier*] | Notification communication pattern APIs to notify and register a listener to receive the notifications
+
+|===
+
+NOTE: For more details about the APIs, please refer to the documentation in the interfaces above
+
+=== How to use the uP-L2 interfaces
+
+The uP-L2 interfaces are designed to be used by uEs (applications and services) that rely on the communication patterns to talk with other uEs. The interfaces only require an implementation of uTransport passed by reference to the various APIs to perform the various communication patterns. The Next section we will provide examples of how to use the uP-L2 interfaces to take advantage of the publisher/subscriber, notification, and RPC patterns.
+
+== Examples
+
+The following examples demonstrate how to use the uP-L2 interfaces to implement the publisher/subscriber, notification, and RPC patterns.
+
+=== Publisher/Subscriber Example
+
+The following example demonstrates how to use the Publisher and Subscriber interfaces to implement the publisher/subscriber pattern.
+
+.Publisher
+[source,java]
+----
+include::../../../../../../test/java/org/eclipse/uprotocol/communication/PublisherExample.java[]
+----
+
+.Subscriber
+[source,java]
+----
+include::../../../../../../test/java/org/eclipse/uprotocol/communication/SubscriberExample.java[]
+----
+
+=== RPC Example
+
+.RpcClient
+[source,java]
+----
+include::../../../../../../test/java/org/eclipse/uprotocol/communication/RpcClientExample.java[]
+----
+
+.RpcServer
+[source,java]
+----
+include::../../../../../../test/java/org/eclipse/uprotocol/communication/RpcServerExample.java[]
+----
+
+
+=== Notification Example
+
+.Notifier
+[source,java]
+----
+include::../../../../../../test/java/org/eclipse/uprotocol/communication/NotifierExample.java[]
+----
+
+

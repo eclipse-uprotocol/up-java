@@ -123,6 +123,10 @@ public class UTransportTest {
         public UUri getSource() {
             return UUri.getDefaultInstance();
         }
+
+        @Override
+        public void close() {
+        }
     }
 
     private class SadUTransport implements UTransport {
@@ -145,6 +149,10 @@ public class UTransportTest {
         @Override
         public UUri getSource() {
             return UUri.getDefaultInstance();
+        }
+        
+        @Override
+        public void close() {
         }
     }
 

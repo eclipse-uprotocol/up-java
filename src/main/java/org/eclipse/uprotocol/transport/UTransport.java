@@ -120,4 +120,11 @@ public interface UTransport {
      * @return UUri containing the source address
      */
     UUri getSource();
+
+
+    /**
+     * Close the connection to the transport that will trigger any registered listeners
+     * to be unregistered.
+     */
+    void close();
 }

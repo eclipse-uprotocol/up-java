@@ -316,5 +316,17 @@ public class UriSerializerTest {
         String serializedUri = UriSerializer.serialize(uri);
         assertEquals("//myAuthority/1/2/3", serializedUri);
     }
-    
+
+    @Test
+    @DisplayName("Test serializing a UUri that has a blank authority")
+    public void test_serializing_a_UUri_that_has_a_blank_authority() {
+        UUri uri = UUri.newBuilder()
+                .setAuthorityName("")
+                .setUeId(1)
+                .setUeVersionMajor(2)
+                .setResourceId(3)
+                .build();
+        String serializedUri = UriSerializer.serialize(uri);
+        assertEquals("/1/2/3", serializedUri);
+    }
 }
