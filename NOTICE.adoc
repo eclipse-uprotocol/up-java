@@ -27,6 +27,7 @@ SPDX-License-Identifier: Apache-2.0
 
 The following are libraries that uProtocol project uses:
 
+* http://cloudevents.io
 * http://protobuf.dev
 
 NOTE: Please refer to link:pom.xml[] for more information of library dependencies

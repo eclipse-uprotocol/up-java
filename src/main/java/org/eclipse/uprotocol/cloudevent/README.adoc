@@ -1,0 +1,38 @@
+= uProtocol CloudEvents
+:toc:
+:sectnums:
+
+
+== Overview
+
+https://github.com/eclipse-uprotocol/up-spec/blob/main/basics/cloudevents.adoc[uProtocol CloudEvents] is a common message envelope that could be used to carry uProtocol messages across the transport. CloudEvents were historically used exclusively in older versions of uProtocol (ex. 1.3.6) and as such are maintained in this project for backwards compatibility support. 
+
+This module contains the following classes:
+
+.uProtocol CloudEvent Interfaces
+[#ce-interfaces, cols="1,3"]
+|===
+|Class |Description
+
+| `*UCloudEvent*`
+|A class that wraps a CloudEvent and provides utility methods to extract uProtocol specific attributes from the CloudEvent
+
+| `*UCloudEventAttributes*`
+|A class that represents the uProtocol specific attributes that are added to the CloudEvent
+
+|`*CloudEventFactory*`
+|Factory class that builds the various types of CloudEvents for uProtocol (publish, notification, request, response)
+
+| `*CloudEventSerializer*`
+| A class that serializes and deserializes CloudEvents to and from protobuf and/or JSON formats used in some transports like MQTT in the past
+
+| `*CloudEventValidator*`
+| Validates that the CloudEvent contains the correct uProtocol information and format for the various messages types (publish, notification, request, response)
+
+|===
+
+
+
+
+
+

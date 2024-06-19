@@ -31,6 +31,7 @@
         <junit.version>4.12</junit.version>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <slf4j.version>2.6.18</slf4j.version>
+        <cloudevents.version>2.4.2</cloudevents.version>
         <protobuf.version>3.21.10</protobuf.version>
         <git.tag.name>main</git.tag.name>
     </properties>
@@ -234,6 +235,7 @@
                 </executions>
                 <configuration>
                     <includes>
+                        <include>**/cloudevent/**</include>
                         <include>**/communication/**</include>
                         <include>**/transport/**</include>
                         <include>**/uri/**</include>
@@ -316,11 +318,20 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>io.cloudevents</groupId>
+                <artifactId>cloudevents-protobuf</artifactId>
+                <version>2.4.2</version>
+            </dependency>
+
+
             <dependency>
                 <groupId>com.google.errorprone</groupId>
                 <artifactId>error_prone_annotations</artifactId>
                 <version>2.11.0</version>
             </dependency>
+
 
             <dependency>
                 <groupId>org.checkerframework</groupId>
@@ -336,6 +347,15 @@
                 <type>pom</type>
             </dependency>
 
+            <!-- CloudEvents Java SDK https://github.com/cloudevents/sdk-java -->
+            <!-- https://github.com/cloudevents/sdk-java/pull/526 bump the version to fix serialization issue -->
+            <dependency>
+                <groupId>io.cloudevents</groupId>
+                <artifactId>cloudevents-bom</artifactId>
+                <version>${cloudevents.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
             <dependency>
                 <groupId>nl.jqno.equalsverifier</groupId>
@@ -369,6 +389,27 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.cloudevents/cloudevents-protobuf -->
+        <dependency>
+            <groupId>io.cloudevents</groupId>
+            <artifactId>cloudevents-protobuf</artifactId>
+            
+        </dependency>
+
+        <!-- CloudEvents support https://cloudevents.github.io/sdk-java/  https://github.com/cloudevents/sdk-java-->
+        <dependency>
+            <groupId>io.cloudevents</groupId>
+            <artifactId>cloudevents-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.cloudevents</groupId>
+            <artifactId>cloudevents-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.cloudevents</groupId>
+            <artifactId>cloudevents-json-jackson</artifactId>
         </dependency>
 
         <dependency>
