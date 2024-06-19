@@ -43,7 +43,7 @@ public abstract class UuidValidator {
         UNKNOWN(new UuidValidator.InvalidValidator()),
         UUIDV6(new UuidValidator.UUIDv6Validator()),
 
-        UPROTOCOL(new UuidValidator.UUIDv8Validator());
+        UPROTOCOL(new UuidValidator.UUIDv7Validator());
 
         private final UuidValidator uuidValidator;
 
@@ -108,13 +108,13 @@ public abstract class UuidValidator {
         }
     }
 
-    private static class UUIDv8Validator extends UuidValidator {
+    private static class UUIDv7Validator extends UuidValidator {
         @Override
         public ValidationResult validateVersion(UUID uuid) {
             final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
             return version.isPresent() && version.get() == UuidUtils.Version.VERSION_UPROTOCOL
                     ? ValidationResult.success()
-                    : ValidationResult.failure(String.format("Invalid UUIDv8 Version"));
+                    : ValidationResult.failure(String.format("Invalid UUIDv7 Version"));
         }
 
         @Override

@@ -191,7 +191,7 @@ class CloudEventValidatorTest {
         final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
         final ValidationResult result = validator.validate(cloudEvent);
         assertFalse(result.isSuccess());
-        assertEquals(result.getMessage(), "Invalid CloudEvent Id [bad]. CloudEvent Id must be of type UUIDv8.");
+        assertEquals(result.getMessage(), "Invalid CloudEvent Id [bad]. CloudEvent Id must be of type UUIDv7.");
     }
 
     @Test

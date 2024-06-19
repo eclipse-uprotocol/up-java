@@ -113,7 +113,7 @@ public abstract class CloudEventValidator {
     public static ValidationResult validateId(CloudEvent cloudEvent) {
         return UCloudEvent.isCloudEventId(cloudEvent) ? ValidationResult.success()
                 : ValidationResult.failure(
-                        String.format("Invalid CloudEvent Id [%s]. CloudEvent Id must be of type UUIDv8.",
+                        String.format("Invalid CloudEvent Id [%s]. CloudEvent Id must be of type UUIDv7.",
                                 cloudEvent.getId()));
     }
 

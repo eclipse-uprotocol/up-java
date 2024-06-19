@@ -49,7 +49,7 @@ public interface UuidUtils {
     }
 
     /**
-     * Verify if version is a formal UUIDv8 uProtocol ID.
+     * Verify if version is a formal UUIDv7 uProtocol ID.
      *
      * @return true if is a uProtocol UUID or false if uuid passed is null
      *         or the UUID is not uProtocol format.
@@ -72,7 +72,7 @@ public interface UuidUtils {
     }
 
     /**
-     * Verify uuid is either v6 or v8
+     * Verify uuid is either v6 or v7
      *
      * @return true if is UUID version 6 or 8
      */
@@ -182,7 +182,7 @@ public interface UuidUtils {
         /**
          * The custom or free-form version proposed by Peabody and Davis.
          */
-        VERSION_UPROTOCOL(8);
+        VERSION_UPROTOCOL(7);
 
         private final int value;
 

@@ -249,14 +249,14 @@ public interface UCloudEvent {
     }
 
     /**
-     * Calculate if a CloudEvent configured with UUIDv8 id and a ttl attribute is
+     * Calculate if a CloudEvent configured with UUIDv7 id and a ttl attribute is
      * expired.<br>
      * The ttl attribute is a configuration of how long this event should live for
      * after it was generated (in milliseconds)
      * 
      * @param cloudEvent The CloudEvent to inspect for being expired.
      * @return Returns true if the CloudEvent was configured with a ttl &gt; 0 and
-     *         UUIDv8 id to compare for expiration.
+     *         UUIDv7 id to compare for expiration.
      */
     static boolean isExpired(CloudEvent cloudEvent) {
         final Optional<Integer> maybeTtl = getTtl(cloudEvent);
@@ -280,7 +280,7 @@ public interface UCloudEvent {
     }
 
     /**
-     * Check if a CloudEvent is a valid UUIDv6 or v8 .
+     * Check if a CloudEvent is a valid UUIDv6 or v7 .
      * 
      * @param cloudEvent The CloudEvent with the id to inspect.
      * @return Returns true if the CloudEvent is valid.
