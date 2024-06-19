@@ -50,7 +50,7 @@ public interface RpcMapper {
             }
 
             if (payload != null) {
-                if (payload.getData().isEmpty()) {
+                if (payload.data().isEmpty()) {
                     return com.google.protobuf.Internal.getDefaultInstance(expectedClazz);
                 } else {
                     Optional<T> result = UPayload.unpack(payload, expectedClazz);
@@ -92,7 +92,7 @@ public interface RpcMapper {
             }
 
             if (payload != null) { 
-                if (payload.getData().isEmpty()) {
+                if (payload.data().isEmpty()) {
                     return RpcResult.success(com.google.protobuf.Internal.getDefaultInstance(expectedClazz));
                 } else {
                     Optional<T> result = UPayload.unpack(payload, expectedClazz);

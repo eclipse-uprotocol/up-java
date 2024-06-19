@@ -21,11 +21,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 
-public class DefaultPublisherTest {
+public class SimplePublisherTest {
     @Test
     @DisplayName("Test sending a simple publish message without a payload")
     public void testSendPublish() {
-        Publisher publisher = new DefaultPublisher(new TestUTransport());
+        Publisher publisher = new SimplePublisher(new TestUTransport());
         UStatus status = publisher.publish(createTopic(), null);
         assertEquals(status.getCode(), UCode.OK);
     }
@@ -34,7 +34,7 @@ public class DefaultPublisherTest {
     @DisplayName("Test sending a simple publish message with a stuffed UPayload that was build with packToAny()")
     public void testSendPublishWithStuffedPayload() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
-        Publisher publisher = new DefaultPublisher(new TestUTransport());
+        Publisher publisher = new SimplePublisher(new TestUTransport());
         UStatus status = publisher.publish(createTopic(), UPayload.packToAny(uri));
         assertEquals(status.getCode(), UCode.OK);
     }

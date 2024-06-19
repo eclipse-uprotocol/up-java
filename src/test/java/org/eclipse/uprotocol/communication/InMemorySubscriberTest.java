@@ -29,13 +29,13 @@ import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 
-public class DefaultSubscriberTest {
+public class InMemorySubscriberTest {
     @Test
     @DisplayName("Test subscribe happy path")
     public void test_subscribe_happy_path() {
         UUri topic = createTopic();
         UTransport transport = new HappySubscribeUTransport();
-        Subscriber subscriber = new DefaultSubscriber(transport, new DefaultRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
         CompletionStage<SubscriptionResponse> response = subscriber.subscribe(topic, new UListener() {
             @Override
             public void onReceive(UMessage message) {
@@ -51,7 +51,7 @@ public class DefaultSubscriberTest {
     public void test_unsubscribe_happy_path() {
         UUri topic = createTopic();
         UTransport transport = new HappyUnSubscribeUTransport();
-        Subscriber subscriber = new DefaultSubscriber(transport, new DefaultRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
         UStatus response = subscriber.unsubscribe(topic, new UListener() {
             @Override
             public void onReceive(UMessage message) {
@@ -74,7 +74,7 @@ public class DefaultSubscriberTest {
             }
         };
         UTransport transport = new HappySubscribeUTransport();
-        Subscriber subscriber = new DefaultSubscriber(transport, new DefaultRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
 
         CompletionStage<SubscriptionResponse> response = subscriber.subscribe(topic, myListener, new CallOptions(100));
         response.toCompletableFuture().join();
@@ -89,7 +89,7 @@ public class DefaultSubscriberTest {
     public void testUnsubscribeWithCommStatusError() {
         UUri topic = createTopic();
         UTransport transport = new CommStatusTransport();
-        Subscriber subscriber = new DefaultSubscriber(transport, new DefaultRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
         
         UStatus response = subscriber.unsubscribe(topic, new UListener() {
             @Override
@@ -107,7 +107,7 @@ public class DefaultSubscriberTest {
     public void testUnsubscribeWithException() {
         UUri topic = createTopic();
         UTransport transport = new TimeoutUTransport();
-        Subscriber subscriber = new DefaultSubscriber(transport, new DefaultRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
 
         UStatus response = subscriber.unsubscribe(topic, new UListener() {
             @Override
@@ -124,7 +124,7 @@ public class DefaultSubscriberTest {
     public void testUnsubscribeWithException2() {
         UUri topic = createTopic();
         UTransport transport = new TimeoutUTransport();
-        Subscriber subscriber = new DefaultSubscriber(transport, new DefaultRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
 
         UStatus response = subscriber.unsubscribe(topic, new UListener() {
             @Override

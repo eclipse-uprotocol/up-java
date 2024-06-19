@@ -28,7 +28,7 @@ import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class DefaultRpcServerTest {
+public class InMemoryRpcServerTest {
     @Test
     @DisplayName("Test registering and unregister a request listener")
     public void test_registering_request_listener() {
@@ -39,7 +39,7 @@ public class DefaultRpcServerTest {
             }
         };
         UUri method = createMethodUri();
-        RpcServer server = new DefaultRpcServer(new TestUTransport());
+        RpcServer server = new InMemoryRpcServer(new TestUTransport());
         assertEquals(server.registerRequestHandler(method, handler).getCode(), UCode.OK);
         assertEquals(server.unregisterRequestHandler(method, handler).getCode(), UCode.OK);
     }
@@ -53,7 +53,7 @@ public class DefaultRpcServerTest {
                 return UPayload.EMPTY;
             }
         };
-        RpcServer server = new DefaultRpcServer(new TestUTransport());
+        RpcServer server = new InMemoryRpcServer(new TestUTransport());
         UStatus status = server.registerRequestHandler(createMethodUri(), handler);
         assertEquals(status.getCode(), UCode.OK);
         status = server.registerRequestHandler(createMethodUri(), handler);
@@ -69,7 +69,7 @@ public class DefaultRpcServerTest {
                 throw new UnsupportedOperationException("Unimplemented method 'handleRequest'");
             }
         };
-        RpcServer server = new DefaultRpcServer(new TestUTransport());
+        RpcServer server = new InMemoryRpcServer(new TestUTransport());
         UStatus status = server.unregisterRequestHandler(createMethodUri(), handler);
         assertEquals(status.getCode(), UCode.NOT_FOUND);
     }
@@ -83,7 +83,7 @@ public class DefaultRpcServerTest {
                 return UPayload.EMPTY;
             }
         };
-        RpcServer server = new DefaultRpcServer(new TestUTransport());
+        RpcServer server = new InMemoryRpcServer(new TestUTransport());
         UUri method = UUri.newBuilder()
             .setAuthorityName("Steven")
             .setUeId(4)
@@ -105,7 +105,7 @@ public class DefaultRpcServerTest {
                 return UPayload.EMPTY;
             }
         };
-        RpcServer server = new DefaultRpcServer(new TestUTransport());
+        RpcServer server = new InMemoryRpcServer(new TestUTransport());
         UUri method = UUri.newBuilder()
             .setAuthorityName("Hartley")
             .setUeId(5)
@@ -128,7 +128,7 @@ public class DefaultRpcServerTest {
                 return UPayload.EMPTY;
             }
         };
-        RpcServer server = new DefaultRpcServer(new TestUTransport());
+        RpcServer server = new InMemoryRpcServer(new TestUTransport());
         UUri method = UUri.newBuilder()
             .setAuthorityName("Hartley")
             .setUeId(4)
@@ -150,7 +150,7 @@ public class DefaultRpcServerTest {
                 return UPayload.EMPTY;
             }
         };
-        RpcServer server = new DefaultRpcServer(new TestUTransport());
+        RpcServer server = new InMemoryRpcServer(new TestUTransport());
         UUri method = UUri.newBuilder()
             .setAuthorityName("Steven")
             .setUeId(4)
@@ -172,7 +172,7 @@ public class DefaultRpcServerTest {
                 return UPayload.EMPTY;
             }
         };
-        RpcServer server = new DefaultRpcServer(new TestUTransport());
+        RpcServer server = new InMemoryRpcServer(new TestUTransport());
         UUri method = UUri.newBuilder()
             .setAuthorityName("Hartley")
             .setUeId(5)
@@ -194,7 +194,7 @@ public class DefaultRpcServerTest {
                 return UPayload.EMPTY;
             }
         };
-        RpcServer server = new DefaultRpcServer(new TestUTransport());
+        RpcServer server = new InMemoryRpcServer(new TestUTransport());
         UUri method = UUri.newBuilder()
             .setAuthorityName("Hartley")
             .setUeId(4)
@@ -217,7 +217,7 @@ public class DefaultRpcServerTest {
                 return UPayload.EMPTY;
             }
         };
-        RpcServer server = new DefaultRpcServer(new ErrorUTransport());
+        RpcServer server = new InMemoryRpcServer(new ErrorUTransport());
         UStatus status = server.registerRequestHandler(createMethodUri(), handler);
         assertEquals(status.getCode(), UCode.FAILED_PRECONDITION);
     }
@@ -245,7 +245,7 @@ public class DefaultRpcServerTest {
             }
         };
 
-        RpcServer server = new DefaultRpcServer(transport);
+        RpcServer server = new InMemoryRpcServer(transport);
 
         UUri method = createMethodUri();
         UUri method2 = UUri.newBuilder(method).setResourceId(69).build();
@@ -281,7 +281,7 @@ public class DefaultRpcServerTest {
             }
         };
 
-        RpcServer server = new DefaultRpcServer(transport);
+        RpcServer server = new InMemoryRpcServer(transport);
 
         UUri method = createMethodUri();
 
@@ -315,7 +315,7 @@ public class DefaultRpcServerTest {
             }
         };
 
-        RpcServer server = new DefaultRpcServer(transport);
+        RpcServer server = new InMemoryRpcServer(transport);
 
         UUri method = createMethodUri();
 

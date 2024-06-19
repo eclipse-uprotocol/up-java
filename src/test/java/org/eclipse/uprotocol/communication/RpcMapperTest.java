@@ -25,7 +25,7 @@ public class RpcMapperTest {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley)").build();
         UPayload payload = UPayload.pack(uri);
 
-        RpcClient rpcClient = new DefaultRpcClient(new TestUTransport());
+        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
         final CompletionStage<UUri> result = RpcMapper.mapResponse(
             rpcClient.invokeMethod(createMethodUri(), payload, null), UUri.class);
         UUri uri1 = result.toCompletableFuture().join();
@@ -37,7 +37,7 @@ public class RpcMapperTest {
     @Test
     @DisplayName("Test RpcMapper mapResponseToResult using HappyPathUTransport when the request is empty")
     public void test_map_response_to_result_with_empty_request() {
-        RpcClient rpcClient = new DefaultRpcClient(new TestUTransport());
+        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
         final RpcResult<UUri> result = RpcMapper.mapResponseToResult(
             rpcClient.invokeMethod(createMethodUri(), null, null), 
                 UUri.class).toCompletableFuture().join();

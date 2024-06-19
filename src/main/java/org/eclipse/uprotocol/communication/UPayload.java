@@ -26,23 +26,20 @@ import org.eclipse.uprotocol.v1.UPayloadFormat;
 /**
  * Wrapper class that stores the payload as {@link UPayloadFormat}.
  */
-public class UPayload {
-
-    private ByteString data;
-    private UPayloadFormat format;
+public record UPayload (ByteString data, UPayloadFormat format) {
 
     // Empty UPayload
-    public static final UPayload EMPTY = new UPayload(null, null);
-    
-    /**
-     * Private constructor for UPayload
-     * @param data payload data
-     * @param format payload format
-     */
-    private UPayload(ByteString data, UPayloadFormat format) {
-        this.data = Optional.ofNullable(data).orElse(ByteString.EMPTY);
-        this.format = Optional.ofNullable(format).orElse(UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED);
+    public static final UPayload EMPTY = new UPayload();
+
+    public UPayload {
+        Objects.requireNonNull(data);
+        Objects.requireNonNull(format);
     }
+
+    public UPayload() {
+        this(ByteString.EMPTY, UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED);
+    }
+    
 
     /**
      * Check if the payload is empty, returns true when what is passed is null or the data is empty.
@@ -52,28 +49,9 @@ public class UPayload {
      */
     public static boolean isEmpty(UPayload payload) {
         return payload == null || 
-            payload.getData().isEmpty() && payload.getFormat() == UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED;
+            payload.data().isEmpty() && payload.format() == UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED;
     }
 
-
-    /**
-     * Get the payload data.
-     * 
-     * @return the payload data
-     */
-    public ByteString getData() {
-        return data;
-    }
-
-    /**
-     * Get the payload format.
-     * 
-     * @return the payload format
-     */
-    public UPayloadFormat getFormat() {
-        return format;
-    }
-    
 
     /**
      * Build a uPayload from {@link google.protobuf.Message} by stuffing the message into an Any.
@@ -82,7 +60,7 @@ public class UPayload {
      * @return the UPayload 
      */
     static UPayload packToAny(Message message) {
-        return message == null ? new UPayload(null, null) :
+        return message == null ? UPayload.EMPTY :
             new UPayload(Any.pack(message).toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY);
     }
 
@@ -93,7 +71,7 @@ public class UPayload {
      * @return the UPayload
      */
     static UPayload pack(Message message) {
-        return message == null ? new UPayload(null, null) : 
+        return message == null ? UPayload.EMPTY : 
             new UPayload(message.toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
     }
 
@@ -121,7 +99,7 @@ public class UPayload {
         if (payload == null) {
             return Optional.empty();
         }
-        return unpack(payload.getData(), payload.getFormat(), clazz);
+        return unpack(payload.data(), payload.format(), clazz);
     }
 
     /**
@@ -157,27 +135,5 @@ public class UPayload {
         } catch (InvalidProtocolBufferException e) {
             return Optional.empty();
         }
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        UPayload uPayload = (UPayload) obj;
-        return Objects.equals(data, uPayload.data) && format == uPayload.format;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(data, format);
-    }
-
-    @Override
-    public String toString() {
-        return "UPayload{" + "data=" + data.toStringUtf8() + ", format=" + format + '}';
     }
 }

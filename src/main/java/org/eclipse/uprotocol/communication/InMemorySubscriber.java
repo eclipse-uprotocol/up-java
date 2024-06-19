@@ -28,7 +28,18 @@ import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
-public class DefaultSubscriber implements Subscriber {
+/**
+ * The following is an example implementation of the {@link Subscriber} interface that
+ * wraps the {@link UTransport} for implementing the Subscriber-side of the pub/sub 
+ * messaging pattern to allow developers to subscribe and unsubscribe to topics. This 
+ * implementation uses the {@link InMemoryRpcClient} to send the subscription request 
+ * to the uSubscription service.
+ * 
+ * *_NOTE:_* Developers are not required to use these APIs, they can implement their own
+ *         or directly use the {@link UTransport} communicate with the uSubscription 
+ *         services and register their publish message listener.
+ */
+public class InMemorySubscriber implements Subscriber {
 
     private final UTransport transport;
     private final RpcClient rpcClient;
@@ -42,7 +53,7 @@ public class DefaultSubscriber implements Subscriber {
      * @param transport the transport to use for sending the notifications
      * @param rpcClient the rpc client to use for sending the RPC requests
      */
-    public DefaultSubscriber (UTransport transport, RpcClient rpcClient) {
+    public InMemorySubscriber (UTransport transport, RpcClient rpcClient) {
         Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
         Objects.requireNonNull(rpcClient, "RpcClient missing");
         this.transport = transport;

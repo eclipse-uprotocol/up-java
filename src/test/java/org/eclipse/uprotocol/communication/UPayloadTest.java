@@ -32,7 +32,6 @@ public class UPayloadTest {
     public void test_building_a_UPayload_calling_pack_passing_null() {
         assertTrue(UPayload.isEmpty(UPayload.pack(null)));
         assertTrue(UPayload.isEmpty(UPayload.packToAny(null)));
-        assertTrue(UPayload.isEmpty(UPayload.pack(null, null)));
     }
 
     @Test
@@ -166,13 +165,4 @@ public class UPayloadTest {
         UPayload payload1 = UPayload.packToAny(uri1);
         assertFalse(payload1.hashCode() == uri1.hashCode());
     }
-
-    @Test
-    @DisplayName("Test toString for an empty payload")
-    public void test_toString_for_an_empty_payload() {
-        UPayload payload = UPayload.EMPTY;
-        assertEquals("UPayload{data=, format=UPAYLOAD_FORMAT_UNSPECIFIED}",
-            payload.toString());
-    }
-
 }

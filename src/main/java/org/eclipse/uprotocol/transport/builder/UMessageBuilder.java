@@ -246,8 +246,8 @@ public class UMessageBuilder {
      */
     public UMessage build(UPayload payload) {
         if (payload != null ) {
-            this.format = payload.getFormat();
-            this.payload = payload.getData();
+            this.format = payload.format();
+            this.payload = payload.data();
         }
         return build();
     }

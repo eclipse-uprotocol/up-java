@@ -26,7 +26,19 @@ import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
-public class DefaultRpcServer implements RpcServer {
+
+/**
+ * The following is an example implementation of the {@link RpcServer} interface that
+ * wraps the {@link UTransport} for implementing the server-side of the RPC pattern
+ * to register handlers for processing RPC requests from clients. This implementation
+ * uses an in-memory map to store the request handlers that needs to be invoked when the
+ * request comes in from the client.
+ * 
+ * *NOTE:* Developers are not required to use these APIs, they can implement their own
+ *         or directly use the {@link UTransport} to register listeners that handle 
+ *         RPC requests and send RPC responses.
+ */
+public class InMemoryRpcServer implements RpcServer {
     // The transport to use for sending the RPC requests
     private final UTransport transport;
 
@@ -42,7 +54,7 @@ public class DefaultRpcServer implements RpcServer {
      * 
      * @param transport the transport to use for sending the RPC requests
      */
-    public DefaultRpcServer (UTransport transport) {
+    public InMemoryRpcServer (UTransport transport) {
         Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
         this.transport = transport;
     }

@@ -21,9 +21,14 @@ import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
- * Default implementation of the {@link Notifier} API that uses the {@link UTransport} interface.
+ * The following is an example implementation of the {@link Notifier} interface that
+ * wraps the {@link UTransport} for implementing the notification pattern to send 
+ * notifications and register to receive notification events.
+ * 
+ * *NOTE:* Developers are not required to use these APIs, they can implement their own
+ *  or directly use the {@link UTransport} to send notifications and register listeners.
  */
-public class DefaultNotifier  implements Notifier {
+public class SimpleNotifier  implements Notifier {
     // The transport to use for sending the RPC requests
     private final UTransport transport;
 
@@ -32,7 +37,7 @@ public class DefaultNotifier  implements Notifier {
      * 
      * @param transport the transport to use for sending the notifications
      */
-    public DefaultNotifier (UTransport transport) {
+    public SimpleNotifier (UTransport transport) {
         Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
         this.transport = transport;
     }

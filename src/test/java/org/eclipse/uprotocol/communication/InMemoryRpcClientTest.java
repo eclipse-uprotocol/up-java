@@ -29,12 +29,12 @@ import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class DefaultRpcClientTest {
+public class InMemoryRpcClientTest {
     @Test
     @DisplayName("Test calling invokeMethod passing UPayload")
     public void testInvokeMethodWithPayload() {
         UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
-        RpcClient rpcClient = new DefaultRpcClient(new TestUTransport());
+        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
         CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
         assertNotNull(response);
         response.toCompletableFuture().join();
@@ -46,7 +46,7 @@ public class DefaultRpcClientTest {
     public void testInvokeMethodWithPayloadAndCallOptions() {
         UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
         CallOptions options = new CallOptions(1000, UPriority.UPRIORITY_CS5);
-        RpcClient rpcClient = new DefaultRpcClient(new TestUTransport());
+        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
         CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, options);
         assertNotNull(response);
         response.toCompletableFuture().join();
@@ -56,7 +56,7 @@ public class DefaultRpcClientTest {
     @Test
     @DisplayName("Test calling invokeMethod passing a Null UPayload")
     public void testInvokeMethodWithNullPayload() {
-        RpcClient rpcClient = new DefaultRpcClient(new TestUTransport());
+        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
         CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), null, CallOptions.DEFAULT);
         assertNotNull(response);
         response.toCompletableFuture().join();
@@ -68,7 +68,7 @@ public class DefaultRpcClientTest {
     public void testInvokeMethodWithTimeoutTransport() {
         final UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
         final CallOptions options = new CallOptions(100, UPriority.UPRIORITY_CS5, "token");
-        RpcClient rpcClient = new DefaultRpcClient(new TimeoutUTransport());
+        RpcClient rpcClient = new InMemoryRpcClient(new TimeoutUTransport());
         final CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, options);
         Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, 
             response.toCompletableFuture()::get);
@@ -80,7 +80,7 @@ public class DefaultRpcClientTest {
     @Test
     @DisplayName("Test calling invokeMethod with MultiInvokeUTransport that will invoke multiple listeners")
     public void testInvokeMethodWithMultiInvokeTransport() {
-        RpcClient rpcClient = new DefaultRpcClient(new TestUTransport());
+        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
         UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
 
         CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
@@ -95,7 +95,7 @@ public class DefaultRpcClientTest {
     @Test
     @DisplayName("Test calling close for DefaultRpcClient when there are multiple response listeners registered")
     public void testCloseWithMultipleListeners() {
-        DefaultRpcClient rpcClient = new DefaultRpcClient(new TestUTransport());
+        InMemoryRpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
         UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
         CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
         assertNotNull(response);
@@ -107,7 +107,7 @@ public class DefaultRpcClientTest {
     @Test
     @DisplayName("Test calling invokeMethod when we use the CommStatusTransport")
     public void testInvokeMethodWithCommStatusTransport() {
-        RpcClient rpcClient = new DefaultRpcClient(new CommStatusTransport());
+        RpcClient rpcClient = new InMemoryRpcClient(new CommStatusTransport());
         UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
         CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
 
@@ -128,7 +128,7 @@ public class DefaultRpcClientTest {
             }
         };
         
-        RpcClient rpcClient = new DefaultRpcClient(transport);
+        RpcClient rpcClient = new InMemoryRpcClient(transport);
         UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
         CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
 

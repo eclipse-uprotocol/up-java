@@ -22,11 +22,11 @@ import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class DefaultNotifierTest {
+public class SimpleNotifierTest {
     @Test
     @DisplayName("Test sending a simple notification")
     public void testSendNotification() {
-        Notifier notifier = new DefaultNotifier(new TestUTransport());
+        Notifier notifier = new SimpleNotifier(new TestUTransport());
         UStatus status = notifier.notify(createTopic(), createDestinationUri(), null);
         assertEquals(status.getCode(), UCode.OK);
     }
@@ -36,7 +36,7 @@ public class DefaultNotifierTest {
     @DisplayName("Test sending a simple notification passing a google.protobuf.Message payload")
     public void testSendNotificationWithPayload() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
-        Notifier notifier = new DefaultNotifier(new TestUTransport());
+        Notifier notifier = new SimpleNotifier(new TestUTransport());
         UStatus status = notifier.notify(createTopic(), createDestinationUri(), UPayload.pack(uri));
         assertEquals(status.getCode(), UCode.OK);
     }
@@ -52,7 +52,7 @@ public class DefaultNotifierTest {
             }
         };
 
-        Notifier notifier = new DefaultNotifier(new TestUTransport());
+        Notifier notifier = new SimpleNotifier(new TestUTransport());
         UStatus status = notifier.registerNotificationListener(createTopic(), listener);
         assertEquals(status.getCode(), UCode.OK);
     }
@@ -68,7 +68,7 @@ public class DefaultNotifierTest {
             }
         };
 
-        Notifier notifier = new DefaultNotifier(new TestUTransport());
+        Notifier notifier = new SimpleNotifier(new TestUTransport());
         UStatus status = notifier.registerNotificationListener(createTopic(), listener);
         assertEquals(status.getCode(), UCode.OK);
 
@@ -86,7 +86,7 @@ public class DefaultNotifierTest {
                 assertNotNull(message);
             }
         };
-        Notifier notifier = new DefaultNotifier(new TestUTransport());
+        Notifier notifier = new SimpleNotifier(new TestUTransport());
         UStatus status = notifier.unregisterNotificationListener(createTopic(), listener);
         assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
     }

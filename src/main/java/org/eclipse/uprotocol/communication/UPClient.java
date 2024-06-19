@@ -37,11 +37,11 @@ public class UPClient implements RpcServer, Subscriber, Notifier, Publisher, Rpc
     private UPClient (UTransport transport) {
         this.transport = transport;
 
-        rpcServer = new DefaultRpcServer(transport);
-        publisher = new DefaultPublisher(transport);
-        notifier = new DefaultNotifier(transport);
-        rpcClient = new DefaultRpcClient(transport);
-        subscriber = new DefaultSubscriber(transport, rpcClient);
+        rpcServer = new InMemoryRpcServer(transport);
+        publisher = new SimplePublisher(transport);
+        notifier = new SimpleNotifier(transport);
+        rpcClient = new InMemoryRpcClient(transport);
+        subscriber = new InMemorySubscriber(transport, rpcClient);
     }
 
 
