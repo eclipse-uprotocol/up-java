@@ -19,7 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
+import org.checkerframework.checker.units.qual.C;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
@@ -92,6 +94,7 @@ public class InMemoryRpcClientTest {
         assertFalse(response.toCompletableFuture().isCompletedExceptionally());
     }
 
+
     @Test
     @DisplayName("Test calling close for DefaultRpcClient when there are multiple response listeners registered")
     public void testCloseWithMultipleListeners() {
@@ -123,8 +126,8 @@ public class InMemoryRpcClientTest {
     public void testInvokeMethodWithErrorTransport() {
         UTransport transport = new TestUTransport() {
             @Override
-            public UStatus send(UMessage message) {
-                return UStatus.newBuilder().setCode(UCode.FAILED_PRECONDITION).build();
+            public CompletionStage<Void> send(UMessage message) {
+                return CompletableFuture.failedFuture( new UStatusException(UCode.FAILED_PRECONDITION, ""));
             }
         };
         
@@ -139,7 +142,6 @@ public class InMemoryRpcClientTest {
             "org.eclipse.uprotocol.communication.UStatusException: ");
     }
 
-   
     private UUri createMethodUri() {
         return UUri.newBuilder()
             .setAuthorityName("hartley")

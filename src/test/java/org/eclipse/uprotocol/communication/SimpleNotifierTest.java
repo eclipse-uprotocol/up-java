@@ -13,11 +13,15 @@
 package org.eclipse.uprotocol.communication;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.concurrent.CompletionStage;
+
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
-import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,8 +31,8 @@ public class SimpleNotifierTest {
     @DisplayName("Test sending a simple notification")
     public void testSendNotification() {
         Notifier notifier = new SimpleNotifier(new TestUTransport());
-        UStatus status = notifier.notify(createTopic(), createDestinationUri(), null);
-        assertEquals(status.getCode(), UCode.OK);
+        assertFalse(notifier.notify(createTopic(), createDestinationUri(), 
+            null).toCompletableFuture().isCompletedExceptionally());
     }
 
 
@@ -37,8 +41,8 @@ public class SimpleNotifierTest {
     public void testSendNotificationWithPayload() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         Notifier notifier = new SimpleNotifier(new TestUTransport());
-        UStatus status = notifier.notify(createTopic(), createDestinationUri(), UPayload.pack(uri));
-        assertEquals(status.getCode(), UCode.OK);
+        assertFalse(notifier.notify(createTopic(), createDestinationUri(), 
+            UPayload.pack(uri)).toCompletableFuture().isCompletedExceptionally());
     }
 
 
@@ -53,8 +57,8 @@ public class SimpleNotifierTest {
         };
 
         Notifier notifier = new SimpleNotifier(new TestUTransport());
-        UStatus status = notifier.registerNotificationListener(createTopic(), listener);
-        assertEquals(status.getCode(), UCode.OK);
+        assertFalse(notifier.registerNotificationListener(
+            createTopic(), listener).toCompletableFuture().isCompletedExceptionally());
     }
 
 
@@ -69,11 +73,11 @@ public class SimpleNotifierTest {
         };
 
         Notifier notifier = new SimpleNotifier(new TestUTransport());
-        UStatus status = notifier.registerNotificationListener(createTopic(), listener);
-        assertEquals(status.getCode(), UCode.OK);
+        assertFalse(notifier.registerNotificationListener(
+            createTopic(), listener).toCompletableFuture().isCompletedExceptionally());
 
-        status = notifier.unregisterNotificationListener(createTopic(), listener);
-        assertEquals(status.getCode(), UCode.OK);
+        assertFalse(notifier.unregisterNotificationListener(
+            createTopic(), listener).toCompletableFuture().isCompletedExceptionally());
     }
 
 
@@ -87,8 +91,13 @@ public class SimpleNotifierTest {
             }
         };
         Notifier notifier = new SimpleNotifier(new TestUTransport());
-        UStatus status = notifier.unregisterNotificationListener(createTopic(), listener);
-        assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
+        CompletionStage<Void> result = notifier.unregisterNotificationListener(createTopic(), listener);
+        assertTrue(result.toCompletableFuture().isCompletedExceptionally());
+        result.exceptionally(e -> {
+            assertTrue(e instanceof UStatusException);
+            assertEquals(((UStatusException) e).getCode(), UCode.INVALID_ARGUMENT);
+            return null;
+        });
     }
 
 

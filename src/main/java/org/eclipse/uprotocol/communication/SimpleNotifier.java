@@ -13,6 +13,7 @@
 package org.eclipse.uprotocol.communication;
 
 import java.util.Objects;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
@@ -52,7 +53,7 @@ public class SimpleNotifier  implements Notifier {
      * @return Returns the {@link UStatus} with the status of the notification.
      */
     @Override
-    public UStatus notify(UUri topic, UUri destination, UPayload payload) {
+    public CompletionStage<Void> notify(UUri topic, UUri destination, UPayload payload) {
         UMessageBuilder builder = UMessageBuilder.notification(topic, destination);
         return transport.send((payload == null) ? builder.build() : 
                 builder.build(payload));
@@ -67,7 +68,7 @@ public class SimpleNotifier  implements Notifier {
      * @return Returns the {@link UStatus} with the status of the listener registration.
      */
     @Override
-    public UStatus registerNotificationListener(UUri topic, UListener listener) {
+    public CompletionStage<Void> registerNotificationListener(UUri topic, UListener listener) {
         return transport.registerListener(topic, transport.getSource(), listener);
     }
 
@@ -80,7 +81,7 @@ public class SimpleNotifier  implements Notifier {
      * @return Returns the {@link UStatus} with the status of the listener that was unregistered.
      */
     @Override
-    public UStatus unregisterNotificationListener(UUri topic, UListener listener) {
+    public CompletionStage<Void> unregisterNotificationListener(UUri topic, UListener listener) {
         return transport.unregisterListener(topic, transport.getSource(), listener);
     }
 }

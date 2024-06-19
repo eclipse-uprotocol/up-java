@@ -13,9 +13,8 @@
  */
 package org.eclipse.uprotocol.communication;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.eclipse.uprotocol.v1.UCode;
-import org.eclipse.uprotocol.v1.UStatus;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,8 +25,9 @@ public class SimplePublisherTest {
     @DisplayName("Test sending a simple publish message without a payload")
     public void testSendPublish() {
         Publisher publisher = new SimplePublisher(new TestUTransport());
-        UStatus status = publisher.publish(createTopic(), null);
-        assertEquals(status.getCode(), UCode.OK);
+        assertFalse(publisher.publish(createTopic(), 
+            null).toCompletableFuture().isCompletedExceptionally());
+
     }
     
     @Test
@@ -35,8 +35,8 @@ public class SimplePublisherTest {
     public void testSendPublishWithStuffedPayload() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         Publisher publisher = new SimplePublisher(new TestUTransport());
-        UStatus status = publisher.publish(createTopic(), UPayload.packToAny(uri));
-        assertEquals(status.getCode(), UCode.OK);
+        assertFalse(publisher.publish(createTopic(), 
+            UPayload.packToAny(uri)).toCompletableFuture().isCompletedExceptionally());
     }
 
    

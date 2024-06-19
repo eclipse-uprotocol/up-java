@@ -31,7 +31,7 @@ public class SubscriberExample {
         UTransport transport = new TestUTransport();
         
         // Subscribe
-        Subscriber subscriber = UPClient.create(transport);
+        Subscriber subscriber = UClient.create(transport);
         assertFalse(subscriber.subscribe(topic, myListener, new CallOptions(100))
             .toCompletableFuture().isCompletedExceptionally());
         

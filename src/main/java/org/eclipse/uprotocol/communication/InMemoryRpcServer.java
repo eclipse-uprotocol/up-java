@@ -14,6 +14,8 @@ package org.eclipse.uprotocol.communication;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
@@ -23,7 +25,6 @@ import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UMessageType;
-import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 
@@ -70,7 +71,7 @@ public class InMemoryRpcServer implements RpcServer {
      * @return Returns the status of registering the RpcListener.
      */
     @Override
-    public UStatus registerRequestHandler(UUri method, RequestHandler handler) {
+    public CompletionStage<Void> registerRequestHandler(UUri method, RequestHandler handler) {
         Objects.requireNonNull(method, "Method URI missing");
         Objects.requireNonNull(handler, "Request listener missing");
         
@@ -78,8 +79,8 @@ public class InMemoryRpcServer implements RpcServer {
         if (!method.getAuthorityName().equals(transport.getSource().getAuthorityName()) ||
             method.getUeId() != transport.getSource().getUeId() ||
             method.getUeVersionMajor() != transport.getSource().getUeVersionMajor()) {
-            throw new UStatusException(UCode.INVALID_ARGUMENT, 
-                "Method URI does not match the transport source URI");
+            return CompletableFuture.failedFuture(new UStatusException(UCode.INVALID_ARGUMENT, 
+                "Method URI does not match the transport source URI"));
         }
         try {
             mRequestsHandlers.compute(method, (key, currentHandler) -> {
@@ -87,18 +88,12 @@ public class InMemoryRpcServer implements RpcServer {
                     throw new UStatusException(UCode.ALREADY_EXISTS, "Handler already registered");
                 }
                 
-                UStatus result = transport.registerListener(UriFactory.ANY, method, mRequestHandler);
-                if (!result.getCode().equals(UCode.OK)) {
-                    throw new UStatusException(result);
-                }
+                transport.registerListener(UriFactory.ANY, method, mRequestHandler).toCompletableFuture().join();
                 return handler;
             });
-            return UStatus.newBuilder().setCode(UCode.OK).build();
+            return CompletableFuture.completedFuture(null);
         } catch (Exception e) {
-            if (e instanceof UStatusException) {
-                return ((UStatusException) e).getStatus();
-            }
-            return UStatus.newBuilder().setCode(UCode.INTERNAL).setMessage(e.getMessage()).build();
+            return CompletableFuture.failedStage(e);
         }
     }
 
@@ -111,7 +106,7 @@ public class InMemoryRpcServer implements RpcServer {
      * @return Returns status of registering the RpcListener.
      */
     @Override
-    public UStatus unregisterRequestHandler(UUri method, RequestHandler handler) {
+    public CompletionStage<Void> unregisterRequestHandler(UUri method, RequestHandler handler) {
         Objects.requireNonNull(method, "Method URI missing");
         Objects.requireNonNull(handler, "Request listener missing");
     
@@ -119,14 +114,16 @@ public class InMemoryRpcServer implements RpcServer {
         if (!method.getAuthorityName().equals(transport.getSource().getAuthorityName()) ||
             method.getUeId() != transport.getSource().getUeId() ||
             method.getUeVersionMajor() != transport.getSource().getUeVersionMajor()) {
-            throw new UStatusException(UCode.INVALID_ARGUMENT, 
-                "Method URI does not match the transport source URI");
+            return CompletableFuture.failedFuture(new UStatusException(UCode.INVALID_ARGUMENT, 
+                "Method URI does not match the transport source URI"));
         }
 
         if (mRequestsHandlers.remove(method, handler)) {
             return transport.unregisterListener(UriFactory.ANY, method, mRequestHandler);
-        } 
-        return UStatus.newBuilder().setCode(UCode.NOT_FOUND).build();
+        }
+
+        return CompletableFuture.failedFuture(
+            new UStatusException(UCode.NOT_FOUND, "Handler not found"));
     }
 
 
@@ -143,7 +140,7 @@ public class InMemoryRpcServer implements RpcServer {
         final UAttributes requestAttributes = request.getAttributes();
         
         // Check if the request is for one that we have registered a handler for, if not ignore it
-        final RequestHandler handler = mRequestsHandlers.remove(requestAttributes.getSink());
+        final RequestHandler handler = mRequestsHandlers.get(requestAttributes.getSink());
         if (handler == null) {
             return;
         }

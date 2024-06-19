@@ -12,14 +12,19 @@
  */
 package org.eclipse.uprotocol.transport;
 
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
+import org.eclipse.uprotocol.communication.UStatusException;
 import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
-import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
@@ -32,67 +37,69 @@ public class UTransportTest {
         UTransport transport = new HappyUTransport();
         UUri uri = UUri.newBuilder().setUeId(1).setUeVersionMajor(1).setResourceId(0x8000).build();
 
-        UStatus status = transport.send(UMessageBuilder.publish(uri).build());
-        assertEquals(status.getCode(), UCode.OK);
+        CompletionStage<Void> result = transport.send(UMessageBuilder.publish(uri).build());
+        assertFalse(result.toCompletableFuture().isCompletedExceptionally());
     }
 
     @Test
     @DisplayName("Test happy path register listener")
     public void test_happy_register_listener() {
         UTransport transport = new HappyUTransport();
-        UStatus status = transport.registerListener(UUri.getDefaultInstance(), new MyListener());
-        assertEquals(status.getCode(), UCode.OK);
+        assertFalse(transport.registerListener(UUri.getDefaultInstance(), 
+        new MyListener()).toCompletableFuture().isCompletedExceptionally());
     }
 
     @Test
     @DisplayName("Test happy path unregister listener")
     public void test_happy_register_unlistener() {
         UTransport transport = new HappyUTransport();
-        UStatus status = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener());
-        assertEquals(status.getCode(), UCode.OK);
-    }
-
-    @Test
-    @DisplayName("Test sending null message")
-    public void test_sending_null_message() {
-        UTransport transport = new HappyUTransport();
-        UStatus status = transport.send(null);
-        assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
-    }
-
-
-    @Test
-    @DisplayName("Test unhappy path send message parts")
-    public void test_unhappy_send_message_parts() {
-        UTransport transport = new SadUTransport();
-
-        UStatus status = transport.send(null);
-
-        assertEquals(status.getCode(), UCode.INTERNAL);
+        assertFalse(transport.unregisterListener(UUri.getDefaultInstance(), 
+        new MyListener()).toCompletableFuture().isCompletedExceptionally());
     }
 
     @Test
     @DisplayName("Test unhappy path send message")
     public void test_unhappy_send_message() {
         UTransport transport = new SadUTransport();
-        UStatus status = transport.send(null);
-        assertEquals(status.getCode(), UCode.INTERNAL);
+        
+        CompletionStage<Void> result = transport.send(null); 
+
+        assertTrue(result.toCompletableFuture().isCompletedExceptionally());
+        result.exceptionally(e -> {
+            assertTrue(e instanceof UStatusException);
+            assertEquals(((UStatusException) e).getCode(), UCode.INTERNAL);
+            return null;
+        });
     }
 
     @Test
     @DisplayName("Test unhappy path register listener")
     public void test_unhappy_register_listener() {
         UTransport transport = new SadUTransport();
-        UStatus status = transport.registerListener(UUri.getDefaultInstance(), new MyListener());
-        assertEquals(status.getCode(), UCode.INTERNAL);
+        CompletionStage<Void> result = transport.registerListener(UUri.getDefaultInstance(), 
+            new MyListener());
+
+        assertTrue(result.toCompletableFuture().isCompletedExceptionally());
+        result.exceptionally(e -> {
+            assertTrue(e instanceof UStatusException);
+            assertEquals(((UStatusException) e).getCode(), UCode.INTERNAL);
+            return null;
+        });
     }
 
     @Test
     @DisplayName("Test unhappy path unregister listener")
     public void test_unhappy_register_unlistener() {
         UTransport transport = new SadUTransport();
-        UStatus status = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener());
-        assertEquals(status.getCode(), UCode.INTERNAL);
+        
+        CompletionStage<Void> result = transport.unregisterListener(UUri.getDefaultInstance(), 
+            new MyListener());
+        assertTrue(result.toCompletableFuture().isCompletedExceptionally());
+        result.exceptionally(e -> {
+            assertTrue(e instanceof UStatusException);
+            assertEquals(((UStatusException) e).getCode(), UCode.INTERNAL);
+            return null;
+        });
     }
 
     final class MyListener implements UListener {
@@ -102,20 +109,20 @@ public class UTransportTest {
 
     private class HappyUTransport implements UTransport {
         @Override
-        public UStatus send(UMessage message) {
-            return UStatus.newBuilder().setCode((message == null) ? UCode.INVALID_ARGUMENT : UCode.OK).build();
+        public CompletionStage<Void> send(UMessage message) {
+            return CompletableFuture.completedFuture(null);
         }
 
 
         @Override
-        public UStatus registerListener(UUri source, UUri sink, UListener listener) {
+        public CompletionStage<Void> registerListener(UUri source, UUri sink, UListener listener) {
             listener.onReceive(null);
-            return UStatus.newBuilder().setCode(UCode.OK).build();
+            return CompletableFuture.completedFuture(null);
         }
 
         @Override
-        public UStatus unregisterListener(UUri source, UUri sink, UListener listener) {
-            return UStatus.newBuilder().setCode(UCode.OK).build();
+        public CompletionStage<Void> unregisterListener(UUri source, UUri sink, UListener listener) {
+            return CompletableFuture.completedStage(null);
         }
 
 
@@ -131,19 +138,19 @@ public class UTransportTest {
 
     private class SadUTransport implements UTransport {
         @Override
-        public UStatus send(UMessage message) {
-            return UStatus.newBuilder().setCode(UCode.INTERNAL).build();
+        public CompletionStage<Void> send(UMessage message) {
+            return CompletableFuture.failedFuture(new UStatusException(UCode.INTERNAL, ""));
         }
 
         @Override
-        public UStatus registerListener(UUri source, UUri sink, UListener listener) {
+        public CompletionStage<Void> registerListener(UUri source, UUri sink, UListener listener) {
             listener.onReceive(null);
-            return UStatus.newBuilder().setCode(UCode.INTERNAL).build();
+            return CompletableFuture.failedFuture(new UStatusException(UCode.INTERNAL, ""));
         }
 
         @Override
-        public UStatus unregisterListener(UUri source, UUri sink, UListener listener) {
-            return UStatus.newBuilder().setCode(UCode.INTERNAL).build();
+        public CompletionStage<Void> unregisterListener(UUri source, UUri sink, UListener listener) {
+            return CompletableFuture.failedFuture(new UStatusException(UCode.INTERNAL, ""));
         }
 
         @Override
@@ -160,15 +167,15 @@ public class UTransportTest {
     @DisplayName("Test happy path registerlistener with source filter only")
     public void test_happy_register_listener_source_filter() {
         UTransport transport = new HappyUTransport();
-        UStatus status = transport.registerListener(UUri.getDefaultInstance(), new MyListener());
-        assertEquals(status.getCode(), UCode.OK);
+        transport.registerListener(UUri.getDefaultInstance(), 
+            new MyListener()).toCompletableFuture().join();
     }
 
     @Test
     @DisplayName("Test happy path unregisterlistener with source filter only")
     public void test_happy_unregister_listener_source_filter() {
         UTransport transport = new HappyUTransport();
-        UStatus status = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener());
-        assertEquals(status.getCode(), UCode.OK);
+        transport.unregisterListener(UUri.getDefaultInstance(), 
+            new MyListener()).toCompletableFuture().join();
     }
 }

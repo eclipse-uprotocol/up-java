@@ -60,10 +60,8 @@ public class InMemoryRpcClient implements RpcClient {
         Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
         this.transport = transport;
    
-        UStatus status = transport.registerListener(UriFactory.ANY, transport.getSource(), mResponseHandler);
-        if (!status.getCode().equals(UCode.OK)) {
-            throw new UStatusException(status.getCode(), "Failed to register listener");
-        }
+        transport.registerListener(UriFactory.ANY, 
+            transport.getSource(), mResponseHandler).toCompletableFuture().join();
     }
 
 
@@ -93,22 +91,26 @@ public class InMemoryRpcClient implements RpcClient {
             
             return mRequests.compute(request.getAttributes().getId(), (requestId, currentRequest) -> {
                 if (currentRequest != null) {
-                    throw new UStatusException(UCode.ABORTED, "Duplicated request found");
+                    throw new UStatusException(UCode.ALREADY_EXISTS, "Duplicated request found");
                 }
                 
-                final UStatus status = transport.send(request);
-                if (status.getCode().equals(UCode.OK)) {
-                    final CompletableFuture<UMessage> responseFuture = new CompletableFuture<UMessage>()
-                        .orTimeout(request.getAttributes().getTtl(), TimeUnit.MILLISECONDS);
-                    
-                    responseFuture.whenComplete((responseMessage, exception) -> {
+                transport.send(request).exceptionallyAsync(exception -> {
+                    final CompletableFuture<UMessage> responseFuture = 
                         mRequests.remove(request.getAttributes().getId());
-                    });
-                        
-                    return responseFuture;
-                } else {
-                    throw new UStatusException(status);
-                }
+                    if (responseFuture != null) {
+                        responseFuture.completeExceptionally(exception);
+                    }
+                    return null;
+                });
+
+                final CompletableFuture<UMessage> responseFuture = new CompletableFuture<UMessage>()
+                    .orTimeout(request.getAttributes().getTtl(), TimeUnit.MILLISECONDS);
+            
+                responseFuture.whenComplete((responseMessage, exception) -> {
+                    mRequests.remove(request.getAttributes().getId());
+                });
+                
+                return responseFuture;
             }).thenApply(responseMessage -> {
                 return UPayload.pack(responseMessage.getPayload(), 
                     responseMessage.getAttributes().getPayloadFormat());
