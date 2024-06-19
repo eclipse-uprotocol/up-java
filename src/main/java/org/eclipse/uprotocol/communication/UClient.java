@@ -23,7 +23,7 @@ import org.eclipse.uprotocol.v1.UUri;
 /**
  * Default implementation of the communication layer that uses the {@link UTransport}.
  */
-public class UPClient implements RpcServer, Subscriber, Notifier, Publisher, RpcClient {
+public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcClient {
     
     // The transport to use for sending the RPC requests
     private final UTransport transport;
@@ -34,7 +34,7 @@ public class UPClient implements RpcServer, Subscriber, Notifier, Publisher, Rpc
     private final RpcClient rpcClient;
     private final Subscriber subscriber;
 
-    private UPClient (UTransport transport) {
+    private UClient (UTransport transport) {
         this.transport = transport;
 
         rpcServer = new InMemoryRpcServer(transport);
@@ -52,46 +52,46 @@ public class UPClient implements RpcServer, Subscriber, Notifier, Publisher, Rpc
 
 
     @Override
-    public UStatus unsubscribe(UUri topic, UListener listener, CallOptions options) {
+    public CompletionStage<UStatus> unsubscribe(UUri topic, UListener listener, CallOptions options) {
         return subscriber.unsubscribe(topic, listener, options);
     }
     
     @Override
-    public UStatus unregisterListener(UUri topic, UListener listener) {
+    public CompletionStage<UStatus> unregisterListener(UUri topic, UListener listener) {
         return subscriber.unregisterListener(topic, listener);
     }
 
     @Override
-    public UStatus notify(UUri topic, UUri destination, UPayload payload) {
+    public CompletionStage<UStatus> notify(UUri topic, UUri destination, UPayload payload) {
         return notifier.notify(topic, destination, payload);
     }
 
     @Override
-    public UStatus registerNotificationListener(UUri topic, UListener listener) {
+    public CompletionStage<UStatus> registerNotificationListener(UUri topic, UListener listener) {
         Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
         return notifier.registerNotificationListener(topic, listener);
     }
 
     @Override
-    public UStatus unregisterNotificationListener(UUri topic, UListener listener) {
+    public CompletionStage<UStatus> unregisterNotificationListener(UUri topic, UListener listener) {
         return notifier.unregisterNotificationListener(topic, listener);
     }
 
 
     @Override
-    public UStatus publish(UUri topic, UPayload payload) {
+    public CompletionStage<UStatus> publish(UUri topic, UPayload payload) {
         return publisher.publish(topic, payload);
     }
 
 
     @Override
-    public UStatus registerRequestHandler(UUri method, RequestHandler handler) {
+    public CompletionStage<UStatus> registerRequestHandler(UUri method, RequestHandler handler) {
         return rpcServer.registerRequestHandler(method, handler);
     }
 
 
     @Override
-    public UStatus unregisterRequestHandler(UUri method, RequestHandler handler) {
+    public CompletionStage<UStatus> unregisterRequestHandler(UUri method, RequestHandler handler) {
         return rpcServer.unregisterRequestHandler(method, handler);
     }
 
@@ -108,8 +108,8 @@ public class UPClient implements RpcServer, Subscriber, Notifier, Publisher, Rpc
      * @param transport The transport to use for sending the RPC requests
      * @return Returns a new instance of the RPC client
      */
-    public static UPClient create(UTransport transport) {
+    public static UClient create(UTransport transport) {
         Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
-        return new UPClient(transport);
+        return new UClient(transport);
     }
 }

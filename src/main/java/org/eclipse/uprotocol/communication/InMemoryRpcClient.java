@@ -17,6 +17,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.CompletionException;
 
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
@@ -60,10 +62,8 @@ public class InMemoryRpcClient implements RpcClient {
         Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
         this.transport = transport;
    
-        UStatus status = transport.registerListener(UriFactory.ANY, transport.getSource(), mResponseHandler);
-        if (!status.getCode().equals(UCode.OK)) {
-            throw new UStatusException(status.getCode(), "Failed to register listener");
-        }
+        transport.registerListener(UriFactory.ANY, 
+            transport.getSource(), mResponseHandler).toCompletableFuture().join();
     }
 
 
@@ -87,35 +87,48 @@ public class InMemoryRpcClient implements RpcClient {
             if (!options.token().isBlank()) {
                 builder.withToken(options.token());
             }
-        
             // Build a request uMessage
             request = builder.build(requestPayload);
             
-            return mRequests.compute(request.getAttributes().getId(), (requestId, currentRequest) -> {
-                if (currentRequest != null) {
-                    throw new UStatusException(UCode.ABORTED, "Duplicated request found");
-                }
-                
-                final UStatus status = transport.send(request);
-                if (status.getCode().equals(UCode.OK)) {
-                    final CompletableFuture<UMessage> responseFuture = new CompletableFuture<UMessage>()
-                        .orTimeout(request.getAttributes().getTtl(), TimeUnit.MILLISECONDS);
-                    
-                    responseFuture.whenComplete((responseMessage, exception) -> {
-                        mRequests.remove(request.getAttributes().getId());
+            // Create the response future and store it in mRequests
+            CompletableFuture<UMessage> responseFuture = new CompletableFuture<UMessage>()
+                    .orTimeout(request.getAttributes().getTtl(), TimeUnit.MILLISECONDS)
+                    .handle((responseMessage, exception) -> {
+                        if (exception != null) {
+                            if (exception instanceof CompletionException) exception = exception.getCause();
+                            if (exception instanceof TimeoutException) {
+                                throw new UStatusException(UCode.DEADLINE_EXCEEDED, "Request timed out");
+                            } else if (exception instanceof UStatusException) {
+                                throw new UStatusException(((UStatusException) exception).getStatus());
+                            } else {
+                                throw new UStatusException(UCode.UNKNOWN, exception.getMessage());
+                            }
+                        }
+                        return responseMessage;
                     });
-                        
-                    return responseFuture;
-                } else {
-                    throw new UStatusException(status);
-                }
-            }).thenApply(responseMessage -> {
-                return UPayload.pack(responseMessage.getPayload(), 
-                    responseMessage.getAttributes().getPayloadFormat());
+
+            responseFuture.whenComplete(
+                    (responseMessage, exception) -> mRequests.remove(request.getAttributes().getId()));
+
+            mRequests.compute(request.getAttributes().getId(), (requestId, currentRequest) -> {
+                if (currentRequest != null)
+                    throw new UStatusException(UCode.ALREADY_EXISTS, "Duplicated request found");
+                return responseFuture;
             });
+
+            // Send the request
+            CompletionStage<UStatus> status = transport.send(request);
+
+            return status.thenApply(s -> {
+                if (s.getCode() != UCode.OK) throw new UStatusException(s);
+                return s;
+            }).thenCompose(s -> responseFuture.thenApply(responseMessage ->
+                    UPayload.pack(responseMessage.getPayload(), responseMessage.getAttributes().getPayloadFormat())
+            ));
+
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
-        }   
+        }
     }
 
     public void close() {

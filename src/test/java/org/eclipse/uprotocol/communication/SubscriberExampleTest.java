@@ -1,5 +1,6 @@
 package org.eclipse.uprotocol.communication;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,7 @@ import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
-public class SubscriberExample {
+public class SubscriberExampleTest {
     @Test
     public void testSubscribe() {
         // Topic to subscribe to
@@ -31,12 +32,14 @@ public class SubscriberExample {
         UTransport transport = new TestUTransport();
         
         // Subscribe
-        Subscriber subscriber = UPClient.create(transport);
+        Subscriber subscriber = UClient.create(transport);
         assertFalse(subscriber.subscribe(topic, myListener, new CallOptions(100))
             .toCompletableFuture().isCompletedExceptionally());
         
         // Unsubscribe
-        assertEquals(subscriber.unsubscribe(topic, myListener, null), 
-            UStatus.newBuilder().setCode(UCode.OK).build());
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.unsubscribe(topic, myListener, null).toCompletableFuture().get(),
+                UStatus.newBuilder().setCode(UCode.OK).build());
+        });
     }
 }

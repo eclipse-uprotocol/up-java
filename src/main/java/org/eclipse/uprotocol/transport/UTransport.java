@@ -12,6 +12,8 @@
  */
 package org.eclipse.uprotocol.transport;
 
+import java.util.concurrent.CompletionStage;
+
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UStatus;
@@ -41,7 +43,7 @@ public interface UTransport {
      * @return Returns {@link UStatus} with {@link UCode} set to the status code
      *         (successful or failure).
      */
-    UStatus send(UMessage message);
+    CompletionStage<UStatus> send(UMessage message);
 
     /**
      * Register {@code UListener} for {@code UUri} source filters to be called when
@@ -56,7 +58,7 @@ public interface UTransport {
      *         registered
      *         correctly, otherwise it returns with the appropriate failure.
      */
-    default UStatus registerListener(UUri sourceFilter, UListener listener) {
+    default CompletionStage<UStatus> registerListener(UUri sourceFilter, UListener listener) {
         return registerListener(sourceFilter, null, listener);
     }
 
@@ -75,7 +77,7 @@ public interface UTransport {
      *         registered
      *         correctly, otherwise it returns with the appropriate failure.
      */
-    UStatus registerListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
+    CompletionStage<UStatus> registerListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
 
     /**
      * Unregister {@code UListener} for {@code UUri} source filters. Messages
@@ -91,7 +93,7 @@ public interface UTransport {
      *         unregistered
      *         correctly, otherwise it returns with the appropriate failure.
      */
-    default UStatus unregisterListener(UUri sourceFilter, UListener listener) {
+    default CompletionStage<UStatus> unregisterListener(UUri sourceFilter, UListener listener) {
         return unregisterListener(sourceFilter, null, listener);
     }
 
@@ -111,7 +113,7 @@ public interface UTransport {
      *         unregistered
      *         correctly, otherwise it returns with the appropriate failure.
      */
-    UStatus unregisterListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
+    CompletionStage<UStatus> unregisterListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
 
     /**
      * Return the source address for the uE (authority, entity, and resource

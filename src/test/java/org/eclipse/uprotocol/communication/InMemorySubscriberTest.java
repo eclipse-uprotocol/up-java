@@ -13,10 +13,13 @@
 package org.eclipse.uprotocol.communication;
 
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.UnsubscribeResponse;
@@ -34,7 +37,7 @@ public class InMemorySubscriberTest {
     @DisplayName("Test subscribe happy path")
     public void test_subscribe_happy_path() {
         UUri topic = createTopic();
-        UTransport transport = new HappySubscribeUTransport();
+        UTransport transport = new TestUTransport();
         Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
         CompletionStage<SubscriptionResponse> response = subscriber.subscribe(topic, new UListener() {
             @Override
@@ -47,20 +50,36 @@ public class InMemorySubscriberTest {
     }
 
     @Test
+    @DisplayName("Test subscribe and then unsubscribe happy path")
+    public void test_subscribe_and_then_unsubscribe_happy_path() {
+        UUri topic = createTopic();
+        UTransport transport = new TestUTransport();
+        UListener listener = new UListener() {
+            @Override
+            public void onReceive(UMessage message) {
+                // Do nothing
+            }
+        };
+        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
+        subscriber.subscribe(topic, listener, null).thenAcceptAsync(response -> {
+            assertFalse(subscriber.unsubscribe(topic, listener, null)
+                .toCompletableFuture().isCompletedExceptionally());
+        });
+    }
+
+    @Test
     @DisplayName("Test unsubscribe happy path")
     public void test_unsubscribe_happy_path() {
         UUri topic = createTopic();
-        UTransport transport = new HappyUnSubscribeUTransport();
+        UTransport transport = new TestUTransport();
         Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
-        UStatus response = subscriber.unsubscribe(topic, new UListener() {
+        assertFalse(subscriber.unsubscribe(topic, new UListener() {
             @Override
             public void onReceive(UMessage message) {
                 // TODO Auto-generated method stub
                 throw new UnsupportedOperationException("Unimplemented method 'onReceive'");
             }
-        }, null);
-        assertEquals(response.getMessage(), "");
-        assertEquals(response.getCode(), UCode.OK );
+        }, null).toCompletableFuture().isCompletedExceptionally());
     }
 
     @Test
@@ -73,14 +92,13 @@ public class InMemorySubscriberTest {
                 // Do nothing
             }
         };
-        UTransport transport = new HappySubscribeUTransport();
+        UTransport transport = new TestUTransport();
         Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
 
-        CompletionStage<SubscriptionResponse> response = subscriber.subscribe(topic, myListener, new CallOptions(100));
-        response.toCompletableFuture().join();
-        assertFalse(response.toCompletableFuture().isCompletedExceptionally());
-        UStatus status = subscriber.unregisterListener(topic, myListener);
-        assertEquals(status.getCode(), UCode.OK);
+        subscriber.subscribe(topic, myListener, new CallOptions(100))
+            .thenAcceptAsync(response -> {
+                assertFalse(subscriber.unregisterListener(topic, myListener).toCompletableFuture().isCompletedExceptionally());
+            });
     }
 
 
@@ -91,15 +109,17 @@ public class InMemorySubscriberTest {
         UTransport transport = new CommStatusTransport();
         Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
         
-        UStatus response = subscriber.unsubscribe(topic, new UListener() {
+        subscriber.unsubscribe(topic, new UListener() {
             @Override
             public void onReceive(UMessage message) {
                 return;
             }
-        }, null);
-        assertEquals(response.getMessage(), "Communication error [FAILED_PRECONDITION]");
-        assertEquals(response.getCode(), UCode.FAILED_PRECONDITION);
-    
+        }, null).exceptionally(e -> {
+            assertTrue(e instanceof UStatusException);
+            assertEquals(((UStatusException) e).getCode(), UCode.FAILED_PRECONDITION);
+            assertEquals(((UStatusException) e).getMessage(), "Communication error [FAILED_PRECONDITION]");
+            return null;
+        });
     }
 
     @Test
@@ -109,14 +129,17 @@ public class InMemorySubscriberTest {
         UTransport transport = new TimeoutUTransport();
         Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
 
-        UStatus response = subscriber.unsubscribe(topic, new UListener() {
+        subscriber.unsubscribe(topic, new UListener() {
             @Override
             public void onReceive(UMessage message) {
                 return;
             }
-        }, new CallOptions(1));
-        assertEquals(response.getMessage(), "Request timed out");
-        assertEquals(response.getCode(), UCode.DEADLINE_EXCEEDED);
+        }, new CallOptions(1)).exceptionally(e -> {
+            assertTrue(e instanceof UStatusException);
+            assertEquals(((UStatusException) e).getCode(), UCode.DEADLINE_EXCEEDED);
+            assertEquals(((UStatusException) e).getMessage(), "Request timed out");
+            return null;
+        });
     }
 
     @Test
@@ -126,14 +149,17 @@ public class InMemorySubscriberTest {
         UTransport transport = new TimeoutUTransport();
         Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
 
-        UStatus response = subscriber.unsubscribe(topic, new UListener() {
+        subscriber.unsubscribe(topic, new UListener() {
             @Override
             public void onReceive(UMessage message) {
                 return;
             }
-        }, new CallOptions(1));
-        assertEquals(response.getMessage(), "Request timed out");
-        assertEquals(response.getCode(), UCode.DEADLINE_EXCEEDED);
+        }, new CallOptions(1)).exceptionally(e -> {
+            assertTrue(e instanceof UStatusException);
+            assertEquals(((UStatusException) e).getCode(), UCode.DEADLINE_EXCEEDED);
+            assertEquals(((UStatusException) e).getMessage(), "Request timed out");
+            return null;
+        });
     }
 
 
@@ -145,28 +171,4 @@ public class InMemorySubscriberTest {
             .setResourceId(0x8000)
             .build();
     }
-
-
-    /**
-     * Test UTransport that will return SubscribeResponse
-     */
-    private class HappySubscribeUTransport extends TestUTransport {
-        @Override
-        public UMessage buildResponse(UMessage request) {
-            return UMessageBuilder.response(request.getAttributes()).build(UPayload.pack(
-                SubscriptionResponse.newBuilder().setTopic(createTopic()).build()));
-        }
-    };
-
-
-    /**
-     * Test UTransport that will return SubscribeResponse
-     */
-    private class HappyUnSubscribeUTransport extends TestUTransport {
-        @Override
-        public UMessage buildResponse(UMessage request) {
-            return UMessageBuilder.response(request.getAttributes()).build(
-                UPayload.pack(UnsubscribeResponse.newBuilder().build()));
-        }
-    };
 }
