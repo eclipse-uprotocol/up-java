@@ -43,5 +43,8 @@ To pull the Library from maven central, setting ${uprotocol.version} to the late
 | link:src/main/java/org/eclipse/uprotocol/transport/README.adoc[`*transport*`] 
 | https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[uP-L1 Transport Layer] interface and data model that wraps communication middlewares like zenoh, mqtt, http, etc... into a thin and simple to use transport interface. This model is used by the communication layer (uP-L2) to send and receive messages and transports are expected to implement the link:src/main/java/org/eclipse/uprotocol/transport/UTransport.java[uTransport] interface.
 
+| link:src/main/java/org/eclipse/uprotocol/cloudevent/README.adoc[`*cloudevent*`] 
+| A representation of uProtocol messages used in older versions of the specifications and kept for backwards compatibility.
+
 |===
 
