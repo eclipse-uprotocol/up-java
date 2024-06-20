@@ -12,14 +12,10 @@
  */
 package org.eclipse.uprotocol.communication;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.concurrent.CompletionStage;
-
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UUri;
@@ -40,33 +36,30 @@ public class UClientTest {
             }
         };
 
-        assertFalse(client.notify(createTopic(), createDestinationUri(), null)
-            .toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> 
+            client.notify(createTopic(), createDestinationUri(), null).toCompletableFuture().get());
         
-        assertFalse(client.publish(createTopic(), null)
-            .toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> 
+            client.publish(createTopic(), null).toCompletableFuture().get());
 
-        assertFalse(client.invokeMethod(createMethodUri(), null, null)
-            .toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() ->
+            client.invokeMethod(createMethodUri(), null, null).toCompletableFuture().get());
 
-        assertFalse(client.subscribe(createTopic(), listener, null)
-            .toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() ->
+            client.subscribe(createTopic(), listener, null).toCompletableFuture().get());
 
-        assertFalse(client.unsubscribe(createTopic(), listener, null)
-            .toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> 
+            client.unsubscribe(createTopic(), listener, null).toCompletableFuture().get());    
 
         // The listener is not registered anymore so it should fail
-        CompletionStage<Void> future = client.unregisterListener(createTopic(), listener);
-        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, 
-            future.toCompletableFuture()::get);
-        assertTrue(future.toCompletableFuture().isCompletedExceptionally());
-        
-        
-        assertFalse(client.registerNotificationListener(createTopic(), listener)
-            .toCompletableFuture().isCompletedExceptionally());
+        assertThrows(java.util.concurrent.ExecutionException.class, 
+            client.unregisterListener(createTopic(), listener).toCompletableFuture()::get);
+                
+        assertDoesNotThrow(() ->
+            client.registerNotificationListener(createTopic(), listener).toCompletableFuture().get());
 
-        assertFalse(client.unregisterNotificationListener(createTopic(), listener)
-            .toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() ->
+            client.unregisterNotificationListener(createTopic(), listener).toCompletableFuture().get());
 
         RequestHandler handler = new RequestHandler() {
             @Override
@@ -76,12 +69,11 @@ public class UClientTest {
             }
         };
 
-        assertFalse(client.registerRequestHandler(createMethodUri(), handler)
-            .toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() ->
+            client.registerRequestHandler(createMethodUri(), handler).toCompletableFuture().get());
         
-        assertFalse(client.unregisterRequestHandler(createMethodUri(), handler)
-            .toCompletableFuture().isCompletedExceptionally());
-        
+        assertDoesNotThrow(() ->
+            client.unregisterRequestHandler(createMethodUri(), handler).toCompletableFuture().get());
     }
 
 
