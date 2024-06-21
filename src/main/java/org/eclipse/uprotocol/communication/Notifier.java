@@ -35,7 +35,7 @@ public interface Notifier {
      * @param payload The payload to send with the notification.
      * @return Returns the {@link UStatus} with the status of the notification.
      */
-    CompletionStage<Void> notify(UUri topic, UUri destination, UPayload payload);
+    CompletionStage<UStatus> notify(UUri topic, UUri destination, UPayload payload);
 
 
     /**
@@ -45,7 +45,7 @@ public interface Notifier {
      * @param listener The listener to be called when a message is received on the topic.
      * @return Returns the {@link UStatus} with the status of the listener registration.
      */
-    CompletionStage<Void> registerNotificationListener(UUri topic, UListener listener);
+    CompletionStage<UStatus> registerNotificationListener(UUri topic, UListener listener);
 
 
     /**
@@ -55,5 +55,5 @@ public interface Notifier {
      * @param listener The listener to be unregistered from the topic.
      * @return Returns the {@link UStatus} with the status of the listener that was unregistered.
      */
-    CompletionStage<Void> unregisterNotificationListener(UUri topic, UListener listener);
+    CompletionStage<UStatus> unregisterNotificationListener(UUri topic, UListener listener);
 }

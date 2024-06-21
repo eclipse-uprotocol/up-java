@@ -14,7 +14,9 @@ package org.eclipse.uprotocol.transport;
 
 import java.util.concurrent.CompletionStage;
 
+import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
+import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
@@ -38,10 +40,10 @@ public interface UTransport {
      * Send a message over the transport.
      * 
      * @param message the {@link UMessage} to be sent.
-     * @return Completes successfully if the message is sent successfully otherwise it 
-     *         completes exceptionally passing a {@link UStatusException}. 
+     * @return Returns {@link UStatus} with {@link UCode} set to the status code
+     *         (successful or failure).
      */
-    CompletionStage<Void> send(UMessage message);
+    CompletionStage<UStatus> send(UMessage message);
 
     /**
      * Register {@code UListener} for {@code UUri} source filters to be called when
@@ -52,10 +54,11 @@ public interface UTransport {
      * @param listener     The {@code UListener} that will be execute when the
      *                     message is
      *                     received on the given {@code UUri}.
-     * @return Completes successfully if the listener was successfully registered, otherwise it 
-     *         completes exceptionally passing a {@link UStatusException}.
+     * @return Returns {@link UStatus} with {@link UCode.OK} if the listener is
+     *         registered
+     *         correctly, otherwise it returns with the appropriate failure.
      */
-    default CompletionStage<Void> registerListener(UUri sourceFilter, UListener listener) {
+    default CompletionStage<UStatus> registerListener(UUri sourceFilter, UListener listener) {
         return registerListener(sourceFilter, null, listener);
     }
 
@@ -70,10 +73,11 @@ public interface UTransport {
      * @param listener     The {@code UListener} that will be execute when the
      *                     message is
      *                     received on the given {@code UUri}.
-     * @return Completes successfully if the listener was successfully registered, otherwise it 
-     *         completes exceptionally passing a {@link UStatusException}.
+     * @return Returns {@link UStatus} with {@link UCode.OK} if the listener is
+     *         registered
+     *         correctly, otherwise it returns with the appropriate failure.
      */
-    CompletionStage<Void> registerListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
+    CompletionStage<UStatus> registerListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
 
     /**
      * Unregister {@code UListener} for {@code UUri} source filters. Messages
@@ -85,10 +89,11 @@ public interface UTransport {
      * @param listener     The {@code UListener} that will no longer want to be
      *                     registered to receive
      *                     messages.
-     * @return Completes successfully if the listener was successfully unregistered, otherwise it 
-     *         completes exceptionally passing a {@link UStatusException}.
+     * @return Returns {@link UStatus} with {@link UCode.OK} if the listener is
+     *         unregistered
+     *         correctly, otherwise it returns with the appropriate failure.
      */
-    default CompletionStage<Void> unregisterListener(UUri sourceFilter, UListener listener) {
+    default CompletionStage<UStatus> unregisterListener(UUri sourceFilter, UListener listener) {
         return unregisterListener(sourceFilter, null, listener);
     }
 
@@ -104,10 +109,11 @@ public interface UTransport {
      * @param listener     The {@code UListener} that will no longer want to be
      *                     registered to receive
      *                     messages.
-     * @return Completes successfully if the listener was successfully unregistered, otherwise it 
-     *         completes exceptionally passing a {@link UStatusException}.
+     * @return Returns {@link UStatus} with {@link UCode.OK} if the listener is
+     *         unregistered
+     *         correctly, otherwise it returns with the appropriate failure.
      */
-    CompletionStage<Void> unregisterListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
+    CompletionStage<UStatus> unregisterListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
 
     /**
      * Return the source address for the uE (authority, entity, and resource

@@ -37,7 +37,7 @@ public class InMemorySubscriberTest {
     @DisplayName("Test subscribe happy path")
     public void test_subscribe_happy_path() {
         UUri topic = createTopic();
-        UTransport transport = new HappyUTransport();
+        UTransport transport = new TestUTransport();
         Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
         CompletionStage<SubscriptionResponse> response = subscriber.subscribe(topic, new UListener() {
             @Override
@@ -53,7 +53,7 @@ public class InMemorySubscriberTest {
     @DisplayName("Test subscribe and then unsubscribe happy path")
     public void test_subscribe_and_then_unsubscribe_happy_path() {
         UUri topic = createTopic();
-        UTransport transport = new HappyUTransport();
+        UTransport transport = new TestUTransport();
         UListener listener = new UListener() {
             @Override
             public void onReceive(UMessage message) {
@@ -71,7 +71,7 @@ public class InMemorySubscriberTest {
     @DisplayName("Test unsubscribe happy path")
     public void test_unsubscribe_happy_path() {
         UUri topic = createTopic();
-        UTransport transport = new HappyUTransport();
+        UTransport transport = new TestUTransport();
         Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
         assertFalse(subscriber.unsubscribe(topic, new UListener() {
             @Override
@@ -92,7 +92,7 @@ public class InMemorySubscriberTest {
                 // Do nothing
             }
         };
-        UTransport transport = new HappyUTransport();
+        UTransport transport = new TestUTransport();
         Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
 
         subscriber.subscribe(topic, myListener, new CallOptions(100))
@@ -171,20 +171,4 @@ public class InMemorySubscriberTest {
             .setResourceId(0x8000)
             .build();
     }
-
-    /**
-     * Test UTransport that will return either a SubscribeResponse or UnsubscribeResponse
-     */
-    private class HappyUTransport extends TestUTransport {
-        @Override
-        public UMessage buildResponse(UMessage request) {
-            if (request.getAttributes().getSink().getResourceId() == 1) {
-                return UMessageBuilder.response(request.getAttributes()).build(
-                    UPayload.pack(SubscriptionResponse.newBuilder().setTopic(createTopic()).build()));
-            } else {
-                return UMessageBuilder.response(request.getAttributes()).build(
-                    UPayload.pack(UnsubscribeResponse.newBuilder().build()));
-            }
-        }
-    };
 }

@@ -53,7 +53,7 @@ public class SimpleNotifier  implements Notifier {
      * @return Returns the {@link UStatus} with the status of the notification.
      */
     @Override
-    public CompletionStage<Void> notify(UUri topic, UUri destination, UPayload payload) {
+    public CompletionStage<UStatus> notify(UUri topic, UUri destination, UPayload payload) {
         UMessageBuilder builder = UMessageBuilder.notification(topic, destination);
         return transport.send((payload == null) ? builder.build() : 
                 builder.build(payload));
@@ -68,7 +68,7 @@ public class SimpleNotifier  implements Notifier {
      * @return Returns the {@link UStatus} with the status of the listener registration.
      */
     @Override
-    public CompletionStage<Void> registerNotificationListener(UUri topic, UListener listener) {
+    public CompletionStage<UStatus> registerNotificationListener(UUri topic, UListener listener) {
         return transport.registerListener(topic, transport.getSource(), listener);
     }
 
@@ -81,7 +81,7 @@ public class SimpleNotifier  implements Notifier {
      * @return Returns the {@link UStatus} with the status of the listener that was unregistered.
      */
     @Override
-    public CompletionStage<Void> unregisterNotificationListener(UUri topic, UListener listener) {
+    public CompletionStage<UStatus> unregisterNotificationListener(UUri topic, UListener listener) {
         return transport.unregisterListener(topic, transport.getSource(), listener);
     }
 }

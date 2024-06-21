@@ -17,6 +17,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.CompletionException;
 
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
@@ -89,31 +91,46 @@ public class InMemoryRpcClient implements RpcClient {
             // Build a request uMessage
             request = builder.build(requestPayload);
             
-            return mRequests.compute(request.getAttributes().getId(), (requestId, currentRequest) -> {
-                if (currentRequest != null) {
-                    throw new UStatusException(UCode.ALREADY_EXISTS, "Duplicated request found");
-                }
-                
-                transport.send(request).exceptionallyAsync(exception -> {
-                    final CompletableFuture<UMessage> responseFuture = 
-                        mRequests.remove(request.getAttributes().getId());
-                    if (responseFuture != null) {
-                        responseFuture.completeExceptionally(exception);
-                    }
-                    return null;
-                });
+            CompletionStage<UStatus> status = transport.send(request);
 
-                final CompletableFuture<UMessage> responseFuture = new CompletableFuture<UMessage>()
-                    .orTimeout(request.getAttributes().getTtl(), TimeUnit.MILLISECONDS);
-            
-                responseFuture.whenComplete((responseMessage, exception) -> {
-                    mRequests.remove(request.getAttributes().getId());
-                });
+            return status.thenApply( s -> {
+                if (s.getCode() != UCode.OK) {
+                    throw new UStatusException(s);
+                }
+                return s;
+            }).thenCompose( s -> {
+                return mRequests.compute(request.getAttributes().getId(), (requestId, currentRequest) -> {
+                    if (currentRequest != null) {
+                        throw new UStatusException(UCode.ALREADY_EXISTS, "Duplicated request found");
+                    }
+                    
+                    final CompletableFuture<UMessage> responseFuture = new CompletableFuture<UMessage>()
+                        .orTimeout(request.getAttributes().getTtl(), TimeUnit.MILLISECONDS)
+                        .handle((responseMessage, exception) -> {
+                            if (exception != null) {
+                                if (exception instanceof CompletionException) {
+                                    exception = exception.getCause();
+                                }
+                                if (exception instanceof TimeoutException) {
+                                    throw new UStatusException(UCode.DEADLINE_EXCEEDED, "Request timed out");
+                                } else if (exception instanceof UStatusException) {
+                                    throw new UStatusException(((UStatusException) exception).getStatus());
+                                } else {
+                                    throw new UStatusException(UCode.UNKNOWN, exception.getMessage());
+                                }
+                            }
+                            return responseMessage;
+                        });
                 
-                return responseFuture;
-            }).thenApply(responseMessage -> {
-                return UPayload.pack(responseMessage.getPayload(), 
-                    responseMessage.getAttributes().getPayloadFormat());
+                    responseFuture.whenComplete((responseMessage, exception) -> {
+                        mRequests.remove(request.getAttributes().getId());
+                    });
+                    
+                    return responseFuture;
+                }).thenApply(responseMessage -> {
+                    return UPayload.pack(responseMessage.getPayload(), 
+                        responseMessage.getAttributes().getPayloadFormat());
+                });
             });
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);

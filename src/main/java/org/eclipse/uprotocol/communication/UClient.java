@@ -17,6 +17,7 @@ import java.util.concurrent.CompletionStage;
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
+import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
@@ -51,46 +52,46 @@ public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcC
 
 
     @Override
-    public CompletionStage<Void> unsubscribe(UUri topic, UListener listener, CallOptions options) {
+    public CompletionStage<UStatus> unsubscribe(UUri topic, UListener listener, CallOptions options) {
         return subscriber.unsubscribe(topic, listener, options);
     }
     
     @Override
-    public CompletionStage<Void> unregisterListener(UUri topic, UListener listener) {
+    public CompletionStage<UStatus> unregisterListener(UUri topic, UListener listener) {
         return subscriber.unregisterListener(topic, listener);
     }
 
     @Override
-    public CompletionStage<Void> notify(UUri topic, UUri destination, UPayload payload) {
+    public CompletionStage<UStatus> notify(UUri topic, UUri destination, UPayload payload) {
         return notifier.notify(topic, destination, payload);
     }
 
     @Override
-    public CompletionStage<Void> registerNotificationListener(UUri topic, UListener listener) {
+    public CompletionStage<UStatus> registerNotificationListener(UUri topic, UListener listener) {
         Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
         return notifier.registerNotificationListener(topic, listener);
     }
 
     @Override
-    public CompletionStage<Void> unregisterNotificationListener(UUri topic, UListener listener) {
+    public CompletionStage<UStatus> unregisterNotificationListener(UUri topic, UListener listener) {
         return notifier.unregisterNotificationListener(topic, listener);
     }
 
 
     @Override
-    public CompletionStage<Void> publish(UUri topic, UPayload payload) {
+    public CompletionStage<UStatus> publish(UUri topic, UPayload payload) {
         return publisher.publish(topic, payload);
     }
 
 
     @Override
-    public CompletionStage<Void> registerRequestHandler(UUri method, RequestHandler handler) {
+    public CompletionStage<UStatus> registerRequestHandler(UUri method, RequestHandler handler) {
         return rpcServer.registerRequestHandler(method, handler);
     }
 
 
     @Override
-    public CompletionStage<Void> unregisterRequestHandler(UUri method, RequestHandler handler) {
+    public CompletionStage<UStatus> unregisterRequestHandler(UUri method, RequestHandler handler) {
         return rpcServer.unregisterRequestHandler(method, handler);
     }
 

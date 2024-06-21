@@ -24,6 +24,7 @@ import org.eclipse.uprotocol.core.usubscription.v3.UnsubscribeResponse;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.uri.factory.UriFactory;
+import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
@@ -107,7 +108,7 @@ public class InMemorySubscriber implements Subscriber {
      * @return Returns {@link UStatus} with the result from the unsubscribe request.
      */
     @Override
-    public CompletionStage<Void> unsubscribe(UUri topic, UListener listener, CallOptions options) {
+    public CompletionStage<UStatus> unsubscribe(UUri topic, UListener listener, CallOptions options) {
         Objects.requireNonNull(topic, "Unsubscribe topic missing");
         Objects.requireNonNull(listener, "listener missing");
 
@@ -119,9 +120,14 @@ public class InMemorySubscriber implements Subscriber {
             unsubscribe, UPayload.pack(unsubscribeRequest), options), UnsubscribeResponse.class)
             .thenApplyAsync(response -> {
                 if (response.isSuccess()) {
-                    transport.unregisterListener(topic, listener).toCompletableFuture().join();
+                    transport.unregisterListener(topic, listener).thenAccept(status -> {
+                        if (status.getCode() != UCode.OK) {
+                            throw new UStatusException(status);
+                        }
+                    });
+                    return UStatus.newBuilder().setCode(UCode.OK).build();
                 }
-                return null;
+                return response.failureValue();
             });
     }
 
@@ -137,7 +143,7 @@ public class InMemorySubscriber implements Subscriber {
      * @return Returns {@link UStatus} with the status of the listener unregister request.
      */
     @Override
-    public CompletionStage<Void> unregisterListener(UUri topic, UListener listener) {
+    public CompletionStage<UStatus> unregisterListener(UUri topic, UListener listener) {
         Objects.requireNonNull(topic, "Unsubscribe topic missing");
         Objects.requireNonNull(listener, "Request listener missing");
         return transport.unregisterListener(topic, listener);

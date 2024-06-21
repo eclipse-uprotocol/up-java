@@ -12,6 +12,7 @@
  */
 package org.eclipse.uprotocol.communication;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,8 +45,14 @@ public class InMemoryRpcServerTest {
         };
         UUri method = createMethodUri();
         RpcServer server = new InMemoryRpcServer(new TestUTransport());
-        assertFalse(server.registerRequestHandler(method, handler).toCompletableFuture().isCompletedExceptionally());
-        assertFalse(server.unregisterRequestHandler(method, handler).toCompletableFuture().isCompletedExceptionally());
+        final CompletionStage<UStatus> result = server.registerRequestHandler(method, handler);
+        assertFalse(result.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> assertEquals(result.toCompletableFuture().get().getCode(), UCode.OK));
+        
+        // second time should return an error
+        final CompletionStage<UStatus> result2 = server.unregisterRequestHandler(method, handler);
+        assertFalse(result2.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> assertEquals(result2.toCompletableFuture().get().getCode(), UCode.OK));
     }
 
     @Test
@@ -60,12 +67,10 @@ public class InMemoryRpcServerTest {
         RpcServer server = new InMemoryRpcServer(new TestUTransport());
         assertFalse(server.registerRequestHandler(createMethodUri(), handler).toCompletableFuture().isCompletedExceptionally());
 
-        CompletionStage<Void> result = server.registerRequestHandler(createMethodUri(), handler);
-        assertTrue(result.toCompletableFuture().isCompletedExceptionally());
-        result.exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getStatus().getCode(), UCode.ALREADY_EXISTS);
-            return null;
+        CompletionStage<UStatus> result = server.registerRequestHandler(createMethodUri(), handler);
+        assertFalse(result.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> {
+            assertEquals(result.toCompletableFuture().get().getCode(), UCode.ALREADY_EXISTS);
         });
     }
 
@@ -79,12 +84,10 @@ public class InMemoryRpcServerTest {
             }
         };
         RpcServer server = new InMemoryRpcServer(new TestUTransport());
-        CompletionStage<Void> result = server.unregisterRequestHandler(createMethodUri(), handler);
-        assertTrue(result.toCompletableFuture().isCompletedExceptionally());
-        result.exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getStatus().getCode(), UCode.NOT_FOUND);
-            return null;
+        CompletionStage<UStatus> result = server.unregisterRequestHandler(createMethodUri(), handler);
+        assertFalse(result.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> {
+            assertEquals(result.toCompletableFuture().get().getCode(), UCode.NOT_FOUND);
         });
     }
 
@@ -103,12 +106,12 @@ public class InMemoryRpcServerTest {
             .setUeId(4)
             .setUeVersionMajor(1)
             .setResourceId(3).build();
-        CompletionStage<Void> status = server.registerRequestHandler(method, handler);
-
-        status.exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getMessage(), "Method URI does not match the transport source URI");
-            return null;
+        CompletionStage<UStatus> status = server.registerRequestHandler(method, handler);
+        assertFalse(status.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> {
+            UStatus result = status.toCompletableFuture().get();
+            assertEquals(result.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(result.getMessage(), "Method URI does not match the transport source URI");
         });
     }
 
@@ -128,15 +131,14 @@ public class InMemoryRpcServerTest {
             .setUeVersionMajor(1)
             .setResourceId(3).build();
         
-        CompletionStage<Void> status = server.registerRequestHandler(method, handler);
-
-        assertTrue(status.toCompletableFuture().isCompletedExceptionally());
-        status.exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getMessage(), "Method URI does not match the transport source URI");
-            return null;
+        CompletionStage<UStatus> status = server.registerRequestHandler(method, handler);
+        assertFalse(status.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> {
+            UStatus result = status.toCompletableFuture().get();
+            assertEquals(result.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(result.getMessage(), "Method URI does not match the transport source URI");
         });
-        }
+    }
 
     @Test
     @DisplayName("Test register request handler where ue_version_major does not " + 
@@ -155,14 +157,14 @@ public class InMemoryRpcServerTest {
             .setUeVersionMajor(2)
             .setResourceId(3).build();
         
-        CompletionStage<Void> status = server.registerRequestHandler(method, handler);
-
-        assertTrue(status.toCompletableFuture().isCompletedExceptionally());
-        status.exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getMessage(), "Method URI does not match the transport source URI");
-            return null;
+        CompletionStage<UStatus> status = server.registerRequestHandler(method, handler);
+        assertFalse(status.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> {
+            UStatus result = status.toCompletableFuture().get();
+            assertEquals(result.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(result.getMessage(), "Method URI does not match the transport source URI");
         });
+
     }
 
     @Test
@@ -181,13 +183,13 @@ public class InMemoryRpcServerTest {
             .setUeVersionMajor(1)
             .setResourceId(3).build();
         
-        CompletionStage<Void> status = server.unregisterRequestHandler(method, handler);
+        CompletionStage<UStatus> status = server.unregisterRequestHandler(method, handler);
 
-        assertTrue(status.toCompletableFuture().isCompletedExceptionally());
-        status.exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getMessage(), "Method URI does not match the transport source URI");
-            return null;
+        assertFalse(status.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> {
+            UStatus result = status.toCompletableFuture().get();
+            assertEquals(result.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(result.getMessage(), "Method URI does not match the transport source URI");
         });
     }
 
@@ -207,13 +209,12 @@ public class InMemoryRpcServerTest {
             .setUeVersionMajor(1)
             .setResourceId(3).build();
         
-        CompletionStage<Void> status = server.unregisterRequestHandler(method, handler);
-
-        assertTrue(status.toCompletableFuture().isCompletedExceptionally());
-        status.exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getMessage(), "Method URI does not match the transport source URI");
-            return null;
+        CompletionStage<UStatus> result = server.unregisterRequestHandler(method, handler);
+        assertFalse(result.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> {
+            UStatus status = result.toCompletableFuture().get();
+            assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(status.getMessage(), "Method URI does not match the transport source URI");
         });
     }
 
@@ -233,13 +234,12 @@ public class InMemoryRpcServerTest {
             .setUeVersionMajor(2)
             .setResourceId(3).build();
         
-        CompletionStage<Void> status = server.unregisterRequestHandler(method, handler);
-
-        assertTrue(status.toCompletableFuture().isCompletedExceptionally());
-        status.exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getMessage(), "Method URI does not match the transport source URI");
-            return null;
+        CompletionStage<UStatus> result = server.unregisterRequestHandler(method, handler);
+        assertFalse(result.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> {
+            UStatus status = result.toCompletableFuture().get();
+            assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(status.getMessage(), "Method URI does not match the transport source URI");
         });
     }
 
@@ -254,12 +254,11 @@ public class InMemoryRpcServerTest {
             }
         };
         RpcServer server = new InMemoryRpcServer(new ErrorUTransport());
-        CompletionStage<Void> status = server.registerRequestHandler(createMethodUri(), handler);
-        assertTrue(status.toCompletableFuture().isCompletedExceptionally());
-        status.exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getCode(), UCode.FAILED_PRECONDITION);
-            return null;
+        CompletionStage<UStatus> result = server.registerRequestHandler(createMethodUri(), handler);
+        assertFalse(result.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> {
+            UStatus status = result.toCompletableFuture().get();
+            assertEquals(status.getCode(), UCode.FAILED_PRECONDITION);
         });
     }
 
@@ -281,14 +280,20 @@ public class InMemoryRpcServerTest {
         UUri method = createMethodUri();
         UUri method2 = UUri.newBuilder(method).setResourceId(69).build();
 
-        server.registerRequestHandler(method, handler).thenApply(status -> {
-            UMessage request = UMessageBuilder.request(transport.getSource(), method, 1000).build();
-            assertFalse(transport.send(request).toCompletableFuture().isCompletedExceptionally());
-            return null;
-        }).thenApplyAsync(v -> {
-            assertFalse(server.registerRequestHandler(method2, handler).toCompletableFuture().isCompletedExceptionally());
-            return null;
-        });
+        server.registerRequestHandler(method, handler)
+            .thenApplyAsync(status -> {
+                UMessage request = UMessageBuilder.request(transport.getSource(), method, 1000).build();
+                assertDoesNotThrow(() -> {
+                    return transport.send(request).toCompletableFuture().get();
+                });
+                return status;
+            })
+            .thenApplyAsync(status -> {
+                assertDoesNotThrow(() -> {
+                    return server.registerRequestHandler(method2, handler).toCompletableFuture().get();
+                });
+                return status;
+            });
     }
 
     @Test
@@ -310,12 +315,12 @@ public class InMemoryRpcServerTest {
 
         server.registerRequestHandler(method, handler).thenApply(status -> {
             UMessage request = UMessageBuilder.request(transport.getSource(), method, 1000).build();
-            transport.send(request).exceptionally(e -> {
-                assertTrue(e instanceof UStatusException);
-                assertEquals(((UStatusException) e).getStatus().getCode(), UCode.FAILED_PRECONDITION);
-                return null;
+            CompletionStage<UStatus> result = transport.send(request);
+            assertFalse(result.toCompletableFuture().isCompletedExceptionally());
+            assertDoesNotThrow(() -> {
+                assertEquals(result.toCompletableFuture().get().getCode(), UCode.FAILED_PRECONDITION);
             });
-            return null;
+            return status;
         });
     }
 
@@ -339,7 +344,14 @@ public class InMemoryRpcServerTest {
             // fake sending a request message that will trigger the handler to be called but since it is 
             // not for the same method as the one registered, it should be ignored and the handler not called
             UMessage request = UMessageBuilder.request(transport.getSource(), method, 1000).build();
-            assertFalse(transport.send(request).toCompletableFuture().isCompletedExceptionally());
+
+            CompletionStage<UStatus> result = transport.send(request);
+            assertFalse(result.toCompletableFuture().isCompletedExceptionally());
+            assertDoesNotThrow(() -> {
+                assertEquals(result.toCompletableFuture().get().getCode(), UCode.INTERNAL);
+                assertEquals(result.toCompletableFuture().get().getMessage(), "Steven it failed!");
+            });
+            
         });
     }
 
@@ -359,10 +371,16 @@ public class InMemoryRpcServerTest {
         UUri method = createMethodUri();
         UUri method2 = UUri.newBuilder(method).setResourceId(69).build();
 
-        server.registerRequestHandler(method, handler).thenApply(status -> {
-            UMessage request = UMessageBuilder.request(transport.getSource(), method2, 1000).build();
-            assertFalse(transport.send(request).toCompletableFuture().isCompletedExceptionally());
-            return null;
+        assertDoesNotThrow(() -> {
+            server.registerRequestHandler(method, handler).thenApplyAsync(result -> {
+                assertEquals(result.getCode(), UCode.OK);
+                UMessage request = UMessageBuilder.request(transport.getSource(), method2, 1000).build();
+                assertDoesNotThrow(() -> {
+                    UStatus status = transport.send(request).toCompletableFuture().get();
+                    assertEquals(status.getCode(), UCode.NOT_FOUND);
+                });
+                return result;
+            });
         });
     }
 
@@ -383,10 +401,13 @@ public class InMemoryRpcServerTest {
 
         UUri method = createMethodUri();
 
-        server.registerRequestHandler(method, handler).thenApply(status -> {
+        server.registerRequestHandler(method, handler).thenAccept(status -> {
             UMessage request = UMessageBuilder.request(transport.getSource(), method, 1000).build();
-            assertFalse(transport.send(request).toCompletableFuture().isCompletedExceptionally());
-            return null;
+            CompletionStage<UStatus> result = transport.send(request);
+            assertFalse(result.toCompletableFuture().isCompletedExceptionally());
+            assertDoesNotThrow(() -> {
+                assertEquals(result.toCompletableFuture().get().getCode(), UCode.OK);
+            });
         });
     }
 

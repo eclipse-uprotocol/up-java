@@ -17,6 +17,7 @@ import java.util.concurrent.CompletionStage;
 
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
+import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
@@ -49,7 +50,7 @@ public class SimplePublisher implements Publisher {
      * @return
      */
     @Override
-    public CompletionStage<Void> publish(UUri topic, UPayload payload) {
+    public CompletionStage<UStatus> publish(UUri topic, UPayload payload) {
         Objects.requireNonNull(topic, "Publish topic missing");
         UMessageBuilder builder = UMessageBuilder.publish(topic);
 

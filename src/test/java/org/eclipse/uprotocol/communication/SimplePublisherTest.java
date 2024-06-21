@@ -13,8 +13,13 @@
  */
 package org.eclipse.uprotocol.communication;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import java.util.concurrent.CompletionStage;
+
+import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,9 +30,8 @@ public class SimplePublisherTest {
     @DisplayName("Test sending a simple publish message without a payload")
     public void testSendPublish() {
         Publisher publisher = new SimplePublisher(new TestUTransport());
-        assertFalse(publisher.publish(createTopic(), 
-            null).toCompletableFuture().isCompletedExceptionally());
-
+        CompletionStage<UStatus> result = publisher.publish(createTopic(), null);
+        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
     }
     
     @Test
@@ -35,8 +39,8 @@ public class SimplePublisherTest {
     public void testSendPublishWithStuffedPayload() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         Publisher publisher = new SimplePublisher(new TestUTransport());
-        assertFalse(publisher.publish(createTopic(), 
-            UPayload.packToAny(uri)).toCompletableFuture().isCompletedExceptionally());
+        CompletionStage<UStatus> result = publisher.publish(createTopic(), UPayload.packToAny(uri));
+        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
     }
 
    
