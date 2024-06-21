@@ -12,6 +12,7 @@
  */
 package org.eclipse.uprotocol.communication;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.v1.UCode;
@@ -35,10 +37,12 @@ public class InMemoryRpcClientTest {
     public void testInvokeMethodWithPayload() {
         UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
         RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
-        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
+        final CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
         assertNotNull(response);
-        response.toCompletableFuture().join();
-        assertFalse(response.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> {
+            UPayload payload1 = response.toCompletableFuture().get();
+            assertTrue(payload.equals(payload1));
+        });
     }
 
     @Test
@@ -49,7 +53,10 @@ public class InMemoryRpcClientTest {
         RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
         CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, options);
         assertNotNull(response);
-        response.toCompletableFuture().join();
+        assertDoesNotThrow(() -> {
+            UPayload result = response.toCompletableFuture().get();
+            assertTrue(result.equals(payload));
+        });
         assertFalse(response.toCompletableFuture().isCompletedExceptionally());
     }
 
@@ -59,7 +66,10 @@ public class InMemoryRpcClientTest {
         RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
         CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), null, CallOptions.DEFAULT);
         assertNotNull(response);
-        response.toCompletableFuture().join();
+        assertDoesNotThrow(() -> {
+            UPayload payload = response.toCompletableFuture().get();
+            assertEquals(payload, UPayload.EMPTY);
+        });
         assertFalse(response.toCompletableFuture().isCompletedExceptionally());
     }
  
@@ -70,10 +80,13 @@ public class InMemoryRpcClientTest {
         final CallOptions options = new CallOptions(100, UPriority.UPRIORITY_CS5, "token");
         RpcClient rpcClient = new InMemoryRpcClient(new TimeoutUTransport());
         final CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, options);
+        
         Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, 
             response.toCompletableFuture()::get);
         assertEquals(exception.getMessage(),
-                "java.util.concurrent.TimeoutException");
+                "org.eclipse.uprotocol.communication.UStatusException: Request timed out");
+        assertEquals(((UStatus) (((UStatusException) exception.getCause())).getStatus()).getCode(),
+            UCode.DEADLINE_EXCEEDED);
     }
 
 
@@ -87,10 +100,20 @@ public class InMemoryRpcClientTest {
         assertNotNull(response);
         CompletionStage<UPayload> response2 = rpcClient.invokeMethod(createMethodUri(), payload, null);
         assertNotNull(response2);
-        response.toCompletableFuture().join();
-        response2.toCompletableFuture().join();
+
+        assertDoesNotThrow(() -> {
+            UPayload result2 = response2.toCompletableFuture().get();
+            assertTrue(payload.equals(result2));
+        });
+        
+        assertDoesNotThrow(() -> {
+            UPayload result1 = response.toCompletableFuture().get();
+            assertTrue(payload.equals(result1));
+        });
+
         assertFalse(response.toCompletableFuture().isCompletedExceptionally());
     }
+
 
     @Test
     @DisplayName("Test calling close for DefaultRpcClient when there are multiple response listeners registered")
@@ -116,6 +139,9 @@ public class InMemoryRpcClientTest {
         assertTrue(response.toCompletableFuture().isCompletedExceptionally());
         assertEquals(exception.getMessage(), 
             "org.eclipse.uprotocol.communication.UStatusException: Communication error [FAILED_PRECONDITION]");
+
+        assertEquals(((UStatus) (((UStatusException) exception.getCause())).getStatus()).getCode(),
+            UCode.FAILED_PRECONDITION);
     }
 
     @Test
@@ -123,8 +149,9 @@ public class InMemoryRpcClientTest {
     public void testInvokeMethodWithErrorTransport() {
         UTransport transport = new TestUTransport() {
             @Override
-            public UStatus send(UMessage message) {
-                return UStatus.newBuilder().setCode(UCode.FAILED_PRECONDITION).build();
+            public CompletionStage<UStatus> send(UMessage message) {
+                return CompletableFuture.completedFuture(
+                    UStatus.newBuilder().setCode(UCode.FAILED_PRECONDITION).build());
             }
         };
         
@@ -137,9 +164,10 @@ public class InMemoryRpcClientTest {
         assertTrue(response.toCompletableFuture().isCompletedExceptionally());
         assertEquals(exception.getMessage(), 
             "org.eclipse.uprotocol.communication.UStatusException: ");
+        assertEquals(((UStatus) (((UStatusException) exception.getCause())).getStatus()).getCode(),
+            UCode.FAILED_PRECONDITION);
     }
 
-   
     private UUri createMethodUri() {
         return UUri.newBuilder()
             .setAuthorityName("hartley")

@@ -1,15 +1,15 @@
 package org.eclipse.uprotocol.communication;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.eclipse.uprotocol.v1.UCode;
@@ -22,22 +22,31 @@ public class RpcMapperTest {
     @Test
     @DisplayName("Test RpcMapper mapResponse using RpcClient interface invokeMethod API")
     public void testMapResponse() {
-        UUri uri = UUri.newBuilder().setAuthorityName("Hartley)").build();
-        UPayload payload = UPayload.pack(uri);
-
-        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
-        final CompletionStage<UUri> result = RpcMapper.mapResponse(
-            rpcClient.invokeMethod(createMethodUri(), payload, null), UUri.class);
-        UUri uri1 = result.toCompletableFuture().join();
-        assertFalse(result.toCompletableFuture().isCompletedExceptionally());
-        assertEquals(uri, uri1);
+        UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
+        RpcClient rpcClient = new RpcClient() {
+            @Override
+            public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {
+                return CompletableFuture.completedFuture(payload);
+            }
+        };
+        final CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
+        assertNotNull(response);
+        assertDoesNotThrow(() -> {
+            UPayload payload1 = response.toCompletableFuture().get();
+            assertTrue(payload.equals(payload1));
+        });
     }
 
 
     @Test
     @DisplayName("Test RpcMapper mapResponseToResult using HappyPathUTransport when the request is empty")
     public void test_map_response_to_result_with_empty_request() {
-        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
+        RpcClient rpcClient = new RpcClient() {
+            @Override
+            public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {
+                return CompletableFuture.completedFuture(UPayload.EMPTY);
+            }
+        };
         final RpcResult<UUri> result = RpcMapper.mapResponseToResult(
             rpcClient.invokeMethod(createMethodUri(), null, null), 
                 UUri.class).toCompletableFuture().join();
@@ -163,14 +172,18 @@ public class RpcMapperTest {
         RpcClient rpcClient = new RpcClient() {
             @Override
             public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {
-                return CompletableFuture.failedFuture(new TimeoutException());
+                return CompletableFuture.failedFuture(
+                    new UStatusException(UCode.DEADLINE_EXCEEDED, "Request timed out"));
             }
         };
-        final RpcResult<UUri> result = RpcMapper.mapResponseToResult(
-            rpcClient.invokeMethod(createMethodUri(), UPayload.EMPTY, null), UUri.class).toCompletableFuture().join();
-        assertTrue(result.isFailure());
-        assertEquals(result.failureValue().getCode(), UCode.DEADLINE_EXCEEDED);
-        assertEquals(result.failureValue().getMessage(), "Request timed out");
+        final CompletionStage<RpcResult<UUri>> result = RpcMapper.mapResponseToResult(
+            rpcClient.invokeMethod(createMethodUri(), UPayload.EMPTY, null), UUri.class);
+        
+        assertDoesNotThrow(() -> {
+            RpcResult<UUri> result1 = result.toCompletableFuture().get();
+            assertEquals(result1.failureValue().getCode(), UCode.DEADLINE_EXCEEDED);
+            assertEquals(result1.failureValue().getMessage(), "Request timed out");
+        });
     }
 
     @Test

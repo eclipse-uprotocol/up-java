@@ -89,8 +89,9 @@ public class InMemorySubscriber implements Subscriber {
         
         return RpcMapper.mapResponse(rpcClient.invokeMethod(
                 subscribe, UPayload.pack(request), options), SubscriptionResponse.class)
-            .toCompletableFuture().whenComplete((response, exception) -> {
-                transport.registerListener(topic, listener);
+            .thenApplyAsync(response -> {
+                transport.registerListener(topic, listener).toCompletableFuture().join();
+                return response;
             });
     }
 
@@ -107,7 +108,7 @@ public class InMemorySubscriber implements Subscriber {
      * @return Returns {@link UStatus} with the result from the unsubscribe request.
      */
     @Override
-    public UStatus unsubscribe(UUri topic, UListener listener, CallOptions options) {
+    public CompletionStage<UStatus> unsubscribe(UUri topic, UListener listener, CallOptions options) {
         Objects.requireNonNull(topic, "Unsubscribe topic missing");
         Objects.requireNonNull(listener, "listener missing");
 
@@ -115,10 +116,19 @@ public class InMemorySubscriber implements Subscriber {
             USubscriptionProto.getDescriptor().getServices().get(0), METHOD_UNSUBSCRIBE);
         final UnsubscribeRequest unsubscribeRequest = UnsubscribeRequest.newBuilder().setTopic(topic).build();
         
-        RpcResult<UnsubscribeResponse> response = RpcMapper.mapResponseToResult(rpcClient.invokeMethod(
+        return RpcMapper.mapResponseToResult(rpcClient.invokeMethod(
             unsubscribe, UPayload.pack(unsubscribeRequest), options), UnsubscribeResponse.class)
-            .toCompletableFuture().join();
-        return response.isSuccess() ? UStatus.newBuilder().setCode(UCode.OK).build() : response.failureValue();
+            .thenApplyAsync(response -> {
+                if (response.isSuccess()) {
+                    transport.unregisterListener(topic, listener).thenAccept(status -> {
+                        if (status.getCode() != UCode.OK) {
+                            throw new UStatusException(status);
+                        }
+                    });
+                    return UStatus.newBuilder().setCode(UCode.OK).build();
+                }
+                return response.failureValue();
+            });
     }
 
 
@@ -133,7 +143,7 @@ public class InMemorySubscriber implements Subscriber {
      * @return Returns {@link UStatus} with the status of the listener unregister request.
      */
     @Override
-    public UStatus unregisterListener(UUri topic, UListener listener) {
+    public CompletionStage<UStatus> unregisterListener(UUri topic, UListener listener) {
         Objects.requireNonNull(topic, "Unsubscribe topic missing");
         Objects.requireNonNull(listener, "Request listener missing");
         return transport.unregisterListener(topic, listener);

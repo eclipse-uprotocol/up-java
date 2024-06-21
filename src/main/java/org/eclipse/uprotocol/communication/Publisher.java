@@ -12,6 +12,8 @@
  */
 package org.eclipse.uprotocol.communication;
 
+import java.util.concurrent.CompletionStage;
+
 import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
@@ -31,5 +33,5 @@ public interface Publisher {
      * @param payload The {@link UPayload} to publish.
      * @return
      */
-    UStatus publish(UUri topic, UPayload payload);
+    CompletionStage<UStatus> publish(UUri topic, UPayload payload);
 }

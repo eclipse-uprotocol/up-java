@@ -12,6 +12,8 @@
  */
 package org.eclipse.uprotocol.communication;
 
+import java.util.concurrent.CompletionStage;
+
 import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
@@ -32,7 +34,7 @@ public interface RpcServer {
      * @param handler The handler that will process the request for the client.
      * @return Returns the status of registering the RpcListener.
      */
-    UStatus registerRequestHandler(UUri method, RequestHandler handler);
+    CompletionStage<UStatus> registerRequestHandler(UUri method, RequestHandler handler);
     
 
     /**
@@ -42,5 +44,5 @@ public interface RpcServer {
      * @param handler The handler for processing requests
      * @return Returns status of registering the RpcListener.
      */
-    UStatus unregisterRequestHandler(UUri method, RequestHandler handler);   
+    CompletionStage<UStatus> unregisterRequestHandler(UUri method, RequestHandler handler);   
 }

@@ -4,7 +4,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionRequest;
+import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse;
+import org.eclipse.uprotocol.core.usubscription.v3.UnsubscribeResponse;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
@@ -16,6 +21,8 @@ import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.validation.ValidationResult;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 /**
  * TestUTransport is a test implementation of the UTransport interface 
  * that can only hold a single listener for testing.
@@ -26,6 +33,24 @@ public class TestUTransport implements UTransport {
     private final UUri mSource;
 
     public UMessage buildResponse(UMessage request) {
+        // If the request is a subscribe or unsubscribe request, return the appropriate response
+        if (request.getAttributes().getSink().getUeId() == 0) {
+            if (request.getAttributes().getSink().getResourceId() == 1) {
+                try {
+                    SubscriptionRequest subscriptionRequest = SubscriptionRequest.parseFrom(request.getPayload());
+                    SubscriptionResponse subResponse = SubscriptionResponse.newBuilder()
+                        .setTopic(subscriptionRequest.getTopic())
+                        .build();
+                    return UMessageBuilder.response(request.getAttributes()).build(UPayload.pack(subResponse));
+                } catch (InvalidProtocolBufferException e) {
+                    return UMessageBuilder.response(request.getAttributes()).build(
+                        UPayload.pack(UnsubscribeResponse.newBuilder().build()));
+                }
+            } else {
+                return UMessageBuilder.response(request.getAttributes()).build(
+                    UPayload.pack(UnsubscribeResponse.newBuilder().build()));
+            }
+        }
         return UMessageBuilder.response(request.getAttributes())
             .build(UPayload.pack(request.getPayload(), request.getAttributes().getPayloadFormat()));
     }
@@ -40,14 +65,14 @@ public class TestUTransport implements UTransport {
     }
 
     @Override
-    public UStatus send(UMessage message) {
+    public CompletionStage<UStatus> send(UMessage message) {
         UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
 
         if ( (message == null) || validator.validate(message.getAttributes()) != ValidationResult.success()) {
-            return UStatus.newBuilder()
+            return CompletableFuture.completedFuture(UStatus.newBuilder()
                 .setCode(UCode.INVALID_ARGUMENT)
                 .setMessage("Invalid message attributes")
-                .build();
+                .build());
         }
 
         if (message.getAttributes().getType() == UMessageType.UMESSAGE_TYPE_REQUEST) {
@@ -63,26 +88,26 @@ public class TestUTransport implements UTransport {
             });
         }        
 
-        return UStatus.newBuilder().setCode(UCode.OK).build();
+        return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
     }
 
     /*
      * Register a listener based on the source and sink URIs. 
      */
     @Override
-    public UStatus registerListener(UUri source, UUri sink, UListener listener) {
+    public CompletionStage<UStatus> registerListener(UUri source, UUri sink, UListener listener) {
         listeners.add(listener);
-        return UStatus.newBuilder().setCode(UCode.OK).build();
+        return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
     }
 
     @Override
-    public UStatus unregisterListener(UUri source, UUri sink, UListener listener) {
+    public CompletionStage<UStatus> unregisterListener(UUri source, UUri sink, UListener listener) {
         final UStatus result = UStatus.newBuilder().setCode(listeners.contains(listener) ? 
-            UCode.OK : UCode.INVALID_ARGUMENT).build();
+            UCode.OK : UCode.NOT_FOUND).build();
         if (listeners.contains(listener)) {
             listeners.remove(listener);
         }
-        return result;
+        return CompletableFuture.completedFuture(result);
     }
 
     @Override
@@ -102,25 +127,25 @@ public class TestUTransport implements UTransport {
  */
 class TimeoutUTransport extends TestUTransport {
     @Override
-    public UStatus send(UMessage message) {
-        return UStatus.newBuilder().setCode(UCode.OK).build();
+    public CompletionStage<UStatus> send(UMessage message) {
+        return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
     }
 };
 
 class ErrorUTransport extends TestUTransport {
     @Override
-    public UStatus send(UMessage message) {
-        return UStatus.newBuilder().setCode(UCode.FAILED_PRECONDITION).build();
+    public CompletionStage<UStatus> send(UMessage message) {
+        return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.FAILED_PRECONDITION).build());
     }
 
     @Override
-    public UStatus registerListener(UUri source, UUri sink, UListener listener) {
-        return UStatus.newBuilder().setCode(UCode.FAILED_PRECONDITION).build();
+    public CompletionStage<UStatus> registerListener(UUri source, UUri sink, UListener listener) {
+        return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.FAILED_PRECONDITION).build());
     }
 
     @Override
-    public UStatus unregisterListener(UUri source, UUri sink, UListener listener) {
-        return UStatus.newBuilder().setCode(UCode.FAILED_PRECONDITION).build();
+    public CompletionStage<UStatus> unregisterListener(UUri source, UUri sink, UListener listener) {
+        return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.FAILED_PRECONDITION).build());
     }
 };
 
@@ -148,7 +173,7 @@ class EchoUTransport extends TestUTransport {
     }
 
     @Override
-    public UStatus send(UMessage message) {
+    public CompletionStage<UStatus> send(UMessage message) {
         UMessage response = buildResponse(message);
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
@@ -159,6 +184,6 @@ class EchoUTransport extends TestUTransport {
                 }
             }
         });
-        return UStatus.newBuilder().setCode(UCode.OK).build();
+        return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
     }
 };

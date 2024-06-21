@@ -25,7 +25,7 @@ public class NotifierExample {
         final UUri destination = UUri.newBuilder()
             .setUeId(3).setUeVersionMajor(1).build();
 
-        Notifier notifier = UPClient.create(transport);
+        Notifier notifier = UClient.create(transport);
         // Send the notification (without payload)
         assertEquals(notifier.notify(topic, destination, null), UCode.OK);
     }
@@ -41,7 +41,7 @@ public class NotifierExample {
                 assertNotNull(message);
             }
         };
-        Notifier notifier = UPClient.create(transport);
+        Notifier notifier = UClient.create(transport);
 
         // Register listener to receive notifications
         assertEquals(notifier.registerNotificationListener(topic, listener),

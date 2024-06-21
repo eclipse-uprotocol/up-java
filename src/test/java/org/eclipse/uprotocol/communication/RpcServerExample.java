@@ -41,7 +41,7 @@ public class RpcServerExample {
         };
 
         // Register the Request handling listener
-        RpcServer server = UPClient.create(transport);
+        RpcServer server = UClient.create(transport);
         assertEquals(server.registerRequestHandler(methodUri, handler), UCode.OK);
 
         // Now unregister the request listener (we are done serving the method)
@@ -63,7 +63,7 @@ public class RpcServerExample {
         };
 
         // Register the Request handling listener
-        RpcServer server = UPClient.create(transport);
+        RpcServer server = UClient.create(transport);
 
         assertEquals(server.registerRequestHandler(methodUri, handler), UCode.OK);
 
