@@ -46,13 +46,19 @@ public class SimplePublisher implements Publisher {
      * Publish a message to a topic passing {@link UPayload} as the payload.
      * 
      * @param topic The topic to publish to.
+     * @param options The {@link CallOptions} for the publish.
      * @param payload The {@link UPayload} to publish.
-     * @return
+     * @return {@link UStatus} with the result for sending the published message
      */
     @Override
-    public CompletionStage<UStatus> publish(UUri topic, UPayload payload) {
+    public CompletionStage<UStatus> publish(UUri topic, CallOptions options, UPayload payload) {
         Objects.requireNonNull(topic, "Publish topic missing");
         UMessageBuilder builder = UMessageBuilder.publish(topic);
+        if (options != null) {
+            builder.withPriority(options.priority());
+            builder.withTtl(options.timeout());
+            builder.withToken(options.token());
+        }
 
         return transport.send(builder.build(payload));
     }

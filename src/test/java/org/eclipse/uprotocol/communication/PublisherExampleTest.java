@@ -19,6 +19,6 @@ public class PublisherExampleTest {
 
         Publisher publisher = UClient.create(transport);
         // Send the publish message
-        assertFalse(publisher.publish(topic, null).toCompletableFuture().isCompletedExceptionally());
+        assertFalse(publisher.publish(topic).toCompletableFuture().isCompletedExceptionally());
     }
 }

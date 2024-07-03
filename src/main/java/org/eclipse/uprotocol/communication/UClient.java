@@ -62,8 +62,8 @@ public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcC
     }
 
     @Override
-    public CompletionStage<UStatus> notify(UUri topic, UUri destination, UPayload payload) {
-        return notifier.notify(topic, destination, payload);
+    public CompletionStage<UStatus> notify(UUri topic, UUri destination, CallOptions options, UPayload payload) {
+        return notifier.notify(topic, destination, options, payload);
     }
 
     @Override
@@ -79,8 +79,8 @@ public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcC
 
 
     @Override
-    public CompletionStage<UStatus> publish(UUri topic, UPayload payload) {
-        return publisher.publish(topic, payload);
+    public CompletionStage<UStatus> publish(UUri topic, CallOptions options, UPayload payload) {
+        return publisher.publish(topic, options, payload);
     }
 
 

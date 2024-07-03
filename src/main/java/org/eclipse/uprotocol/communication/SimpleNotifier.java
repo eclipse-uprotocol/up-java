@@ -49,12 +49,18 @@ public class SimpleNotifier  implements Notifier {
      * 
      * @param topic The topic to send the notification to.
      * @param destination The destination to send the notification to.
+     * @param options Call options for the notification.
      * @param payload The payload to send with the notification.
      * @return Returns the {@link UStatus} with the status of the notification.
      */
     @Override
-    public CompletionStage<UStatus> notify(UUri topic, UUri destination, UPayload payload) {
+    public CompletionStage<UStatus> notify(UUri topic, UUri destination, CallOptions options, UPayload payload) {
         UMessageBuilder builder = UMessageBuilder.notification(topic, destination);
+        if (options != null) {
+            builder.withPriority(options.priority());
+            builder.withTtl(options.timeout());
+            builder.withToken(options.token());
+        }
         return transport.send((payload == null) ? builder.build() : 
                 builder.build(payload));
     }

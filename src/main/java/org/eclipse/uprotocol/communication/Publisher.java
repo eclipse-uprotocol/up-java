@@ -27,11 +27,44 @@ import org.eclipse.uprotocol.v1.UUri;
  */
 public interface Publisher {
     /**
+     * Publish a message to a topic.
+     * 
+     * @param topic The topic to publish to.
+     * @return Returns the {@link UStatus} with the status of the publish.
+     */
+    default CompletionStage<UStatus> publish(UUri topic) {
+        return publish(topic, null, null);
+    }
+
+    /**
+     * Publish a message to a topic with specific {@link CallOptions}
+     * 
+     * @param topic The topic to publish to.
+     * @param options The {@link CallOptions} for the publish.
+     * @return Returns the {@link UStatus} with the status of the publish.
+     */
+    default CompletionStage<UStatus> publish(UUri topic, CallOptions options) {
+        return publish(topic, options, null);
+    }
+
+    /**
      * Publish a message to a topic passing {@link UPayload} as the payload.
      * 
      * @param topic The topic to publish to.
      * @param payload The {@link UPayload} to publish.
-     * @return
+     * @return Returns the {@link UStatus} with the status of the publish.
      */
-    CompletionStage<UStatus> publish(UUri topic, UPayload payload);
+    default CompletionStage<UStatus> publish(UUri topic, UPayload payload) {
+        return publish(topic, null, payload);
+    }
+
+    /**
+     * Publish a message to a topic passing {@link UPayload} as the payload and with specific {@link CallOptions}.
+     * 
+     * @param topic The topic to publish to.
+     * @param options The {@link CallOptions} for the publish.
+     * @param payload The {@link UPayload} to publish.
+     * @return Returns the {@link UStatus} with the status of the publish.
+     */
+    CompletionStage<UStatus> publish(UUri topic, CallOptions options, UPayload payload);
 }

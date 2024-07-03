@@ -30,7 +30,15 @@ public class SimplePublisherTest {
     @DisplayName("Test sending a simple publish message without a payload")
     public void testSendPublish() {
         Publisher publisher = new SimplePublisher(new TestUTransport());
-        CompletionStage<UStatus> result = publisher.publish(createTopic(), null);
+        CompletionStage<UStatus> result = publisher.publish(createTopic());
+        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
+    }
+
+    @Test
+    @DisplayName("Test sending a simple publish message with CallOptions and no payload")
+    public void testSendPublishWithOptions() {
+        Publisher publisher = new SimplePublisher(new TestUTransport());
+        CompletionStage<UStatus> result = publisher.publish(createTopic(), CallOptions.DEFAULT);
         assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
     }
     
@@ -43,6 +51,14 @@ public class SimplePublisherTest {
         assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
     }
 
+    @Test
+    @DisplayName("Test sending a simple publish message with CallOptions and a stuffed UPayload")
+    public void testSendPublishWithPayloadAndOptions() {
+        UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
+        Publisher publisher = new SimplePublisher(new TestUTransport());
+        CompletionStage<UStatus> result = publisher.publish(createTopic(), CallOptions.DEFAULT, UPayload.pack(uri));
+        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
+    }
    
     private UUri createTopic() {
         return UUri.newBuilder()

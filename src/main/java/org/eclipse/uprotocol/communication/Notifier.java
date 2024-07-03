@@ -28,6 +28,29 @@ import org.eclipse.uprotocol.transport.UListener;
 public interface Notifier {
 
     /**
+     * Send a notification to a given topic. <br>
+     * 
+     * @param topic The topic to send the notification to.
+     * @param destination The destination to send the notification to.
+     * @return Returns the {@link UStatus} with the status of the notification.
+     */
+    default CompletionStage<UStatus> notify(UUri topic, UUri destination) {
+        return notify(topic, destination, null, null);
+    }
+
+    /**
+     * Send a notification to a given topic with specific {@link CallOptions}. <br>
+     * 
+     * @param topic The topic to send the notification to.
+     * @param destination The destination to send the notification to.
+     * @param options Call options for the notification.
+     * @return Returns the {@link UStatus} with the status of the notification.
+     */
+    default CompletionStage<UStatus> notify(UUri topic, UUri destination, CallOptions options) {
+        return notify(topic, destination, options, null);
+    }
+
+    /**
      * Send a notification to a given topic passing a payload. <br>
      * 
      * @param topic The topic to send the notification to.
@@ -35,8 +58,20 @@ public interface Notifier {
      * @param payload The payload to send with the notification.
      * @return Returns the {@link UStatus} with the status of the notification.
      */
-    CompletionStage<UStatus> notify(UUri topic, UUri destination, UPayload payload);
+    default CompletionStage<UStatus> notify(UUri topic, UUri destination, UPayload payload) {
+        return notify(topic, destination, null, payload);
+    }
 
+    /**
+     * Send a notification to a given topic passing a payload and with specific {@link CallOptions}. <br>
+     * 
+     * @param topic The topic to send the notification to.
+     * @param destination The destination to send the notification to.
+     * @param payload The payload to send with the notification.
+     * @param options Call options for the notification.
+     * @return Returns the {@link UStatus} with the status of the notification.
+     */
+    CompletionStage<UStatus> notify(UUri topic, UUri destination, CallOptions options, UPayload payload);
 
     /**
      * Register a listener for a notification topic. <br>
@@ -46,7 +81,6 @@ public interface Notifier {
      * @return Returns the {@link UStatus} with the status of the listener registration.
      */
     CompletionStage<UStatus> registerNotificationListener(UUri topic, UListener listener);
-
 
     /**
      * Unregister a listener from a notification topic. <br>
