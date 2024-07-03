@@ -30,7 +30,15 @@ public class SimpleNotifierTest {
     @DisplayName("Test sending a simple notification")
     public void testSendNotification() {
         Notifier notifier = new SimpleNotifier(new TestUTransport());
-        CompletionStage<UStatus> result = notifier.notify(createTopic(), createDestinationUri(), null);
+        CompletionStage<UStatus> result = notifier.notify(createTopic(), createDestinationUri());
+        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
+    }
+
+    @Test
+    @DisplayName("Test sending a simple notification passing CallOptions")
+    public void testSendNotificationWithOptions() {
+        Notifier notifier = new SimpleNotifier(new TestUTransport());
+        CompletionStage<UStatus> result = notifier.notify(createTopic(), createDestinationUri(), CallOptions.DEFAULT);
         assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
     }
 
@@ -42,6 +50,16 @@ public class SimpleNotifierTest {
         Notifier notifier = new SimpleNotifier(new TestUTransport());
         CompletionStage<UStatus> result = notifier.notify(createTopic(), createDestinationUri(), 
             UPayload.pack(uri));
+        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
+    }
+
+    @Test
+    @DisplayName("Test sending a simple notification passing a google.protobuf.Any payload and CallOptions")
+    public void testSendNotificationWithAnyPayloadAndOptions() {
+        UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
+        Notifier notifier = new SimpleNotifier(new TestUTransport());
+        CompletionStage<UStatus> result = notifier.notify(createTopic(), createDestinationUri(), 
+            CallOptions.DEFAULT, UPayload.packToAny(uri));
         assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
     }
 

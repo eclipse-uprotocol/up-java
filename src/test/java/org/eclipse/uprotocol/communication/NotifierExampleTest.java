@@ -30,7 +30,7 @@ public class NotifierExampleTest {
 
         Notifier notifier = UClient.create(transport);
         // Send the notification (without payload)
-        assertEquals(notifier.notify(topic, destination, null)
+        assertEquals(notifier.notify(topic, destination)
             .toCompletableFuture().get().getCode(), UCode.OK);
     }
 

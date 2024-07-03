@@ -14,9 +14,7 @@ package org.eclipse.uprotocol.communication;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
@@ -40,10 +38,10 @@ public class UClientTest {
         };
 
         assertDoesNotThrow(() -> 
-            client.notify(createTopic(), createDestinationUri(), null).toCompletableFuture().get());
+            client.notify(createTopic(), createDestinationUri()).toCompletableFuture().get());
         
         assertDoesNotThrow(() -> 
-            client.publish(createTopic(), null).toCompletableFuture().get());
+            client.publish(createTopic()).toCompletableFuture().get());
 
         assertDoesNotThrow(() ->
             client.invokeMethod(createMethodUri(), null, null).toCompletableFuture().get());
