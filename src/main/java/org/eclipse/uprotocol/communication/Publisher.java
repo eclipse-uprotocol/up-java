@@ -30,8 +30,6 @@ public interface Publisher {
      * Publish a message to a topic.
      * 
      * @param topic The topic to publish to.
-     * @param options The {@link CallOptions} for the publish.
-     * @param payload The {@link UPayload} to publish.
      * @return Returns the {@link UStatus} with the status of the publish.
      */
     default CompletionStage<UStatus> publish(UUri topic) {
