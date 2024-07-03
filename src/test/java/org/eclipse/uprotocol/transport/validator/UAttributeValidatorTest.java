@@ -276,6 +276,20 @@ public class UAttributeValidatorTest {
     }
 
     @Test
+    @DisplayName("Test validatePriority when priority CS0")
+    public void testUAttributeValidatorValidatePriorityIsCS0() {
+        final UMessage message = UMessageBuilder.publish(buildTopicUUri()).build();
+        final UAttributes attributes = UAttributes.newBuilder().
+            mergeFrom(message.getAttributes()).setPriority(UPriority.UPRIORITY_CS0).build();
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        final ValidationResult result = validator.validate(attributes);
+
+        assertTrue(result.isFailure());
+        assertEquals(validator.toString(), "UAttributesValidator.Publish");
+        assertEquals(result.getMessage(), "Invalid UPriority [UPRIORITY_CS0]");
+    }
+
+    @Test
     @DisplayName("Test validateId when id is missing")
     public void testUAttributeValidatorValidateIdMissing() {
         final UMessage message = UMessageBuilder.publish(buildTopicUUri()).build();

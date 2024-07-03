@@ -174,7 +174,7 @@ public abstract class UAttributesValidator {
      *         failure message.
      */
     public ValidationResult validatePriority(UAttributes attributes) {
-        return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS0_VALUE ? ValidationResult.success()
+        return attributes.getPriority().getNumber() >= UPriority.UPRIORITY_CS1_VALUE ? ValidationResult.success()
                 : ValidationResult.failure(
                         String.format("Invalid UPriority [%s]", attributes.getPriority().name()));
     }
