@@ -35,13 +35,13 @@ The following example demonstrates how to use the Publisher and Subscriber inter
 .Publisher
 [source,java]
 ----
-include::../../../../../../test/java/org/eclipse/uprotocol/communication/PublisherExample.java[]
+include::../../../../../../test/java/org/eclipse/uprotocol/communication/PublisherExampleTest.java[]
 ----
 
 .Subscriber
 [source,java]
 ----
-include::../../../../../../test/java/org/eclipse/uprotocol/communication/SubscriberExample.java[]
+include::../../../../../../test/java/org/eclipse/uprotocol/communication/SubscriberExampleTest.java[]
 ----
 
 === RPC Example
@@ -49,13 +49,13 @@ include::../../../../../../test/java/org/eclipse/uprotocol/communication/Subscri
 .RpcClient
 [source,java]
 ----
-include::../../../../../../test/java/org/eclipse/uprotocol/communication/RpcClientExample.java[]
+include::../../../../../../test/java/org/eclipse/uprotocol/communication/RpcClientExampleTest.java[]
 ----
 
 .RpcServer
 [source,java]
 ----
-include::../../../../../../test/java/org/eclipse/uprotocol/communication/RpcServerExample.java[]
+include::../../../../../../test/java/org/eclipse/uprotocol/communication/RpcServerExampleTest.java[]
 ----
 
 
@@ -64,7 +64,7 @@ include::../../../../../../test/java/org/eclipse/uprotocol/communication/RpcServ
 .Notifier
 [source,java]
 ----
-include::../../../../../../test/java/org/eclipse/uprotocol/communication/NotifierExample.java[]
+include::../../../../../../test/java/org/eclipse/uprotocol/communication/NotifierExampleTest.java[]
 ----
 
 

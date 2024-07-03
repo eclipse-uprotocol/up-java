@@ -1,14 +1,12 @@
 package org.eclipse.uprotocol.communication;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import org.eclipse.uprotocol.transport.UTransport;
-import org.eclipse.uprotocol.v1.UCode;
-import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.Test;
 
-public class PublisherExample {
+public class PublisherExampleTest {
     @Test
     public void testSendPublish() {
         // Topic to publish
@@ -19,9 +17,8 @@ public class PublisherExample {
         // Fake transport to use
         UTransport transport = new TestUTransport();
 
-        Publisher publisher = UPClient.create(transport);
+        Publisher publisher = UClient.create(transport);
         // Send the publish message
-        UStatus status = publisher.publish(topic, null);
-        assertEquals(status.getCode(), UCode.OK);
+        assertFalse(publisher.publish(topic, null).toCompletableFuture().isCompletedExceptionally());
     }
 }

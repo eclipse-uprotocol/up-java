@@ -53,7 +53,7 @@ public interface Subscriber {
      * @param options The call options for the subscription.
      * @return Returns {@link UStatus} with the result from the unsubscribe request.
      */
-    UStatus unsubscribe(UUri topic, UListener listener, CallOptions options);
+    CompletionStage<UStatus> unsubscribe(UUri topic, UListener listener, CallOptions options);
 
 
     /**
@@ -66,5 +66,5 @@ public interface Subscriber {
      * @param listener The listener to be called when a message is received on the topic.
      * @return Returns {@link UStatus} with the status of the listener unregister request.
      */
-    UStatus unregisterListener(UUri topic, UListener listener);
+    CompletionStage<UStatus> unregisterListener(UUri topic, UListener listener);
 }

@@ -14,21 +14,23 @@ package org.eclipse.uprotocol.communication;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.concurrent.ExecutionException;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UUri;
 
-public class RpcServerExample {
+public class RpcServerExampleTest {
 
-    private static UUri methodUri = UUri.newBuilder()
-        .setAuthorityName("Hartley").setUeId(1).setUeVersionMajor(1)
-        .setResourceId(1).build();
+    final static TestUTransport transport = new TestUTransport();
+
+    final static UUri methodUri = UUri.newBuilder(transport.getSource()).setResourceId(3).build();
 
     @Test
     @DisplayName("Test APIs where processing the request is successfully")
-    public void test_HappyPath() {
+    public void test_HappyPath() throws InterruptedException, ExecutionException {
         // Create the test transport
         final TestUTransport transport = new TestUTransport();
 
@@ -41,16 +43,18 @@ public class RpcServerExample {
         };
 
         // Register the Request handling listener
-        RpcServer server = UPClient.create(transport);
-        assertEquals(server.registerRequestHandler(methodUri, handler), UCode.OK);
+        RpcServer server = UClient.create(transport);
+        assertEquals(server.registerRequestHandler(methodUri, handler)
+            .toCompletableFuture().get().getCode(), UCode.OK);
 
         // Now unregister the request listener (we are done serving the method)
-        assertEquals(server.unregisterRequestHandler(methodUri, handler), UCode.OK);
+        assertEquals(server.unregisterRequestHandler(methodUri, handler)
+            .toCompletableFuture().get().getCode(), UCode.OK);
     }
 
     @Test
     @DisplayName("Test APIs where processing the request is successfully")
-    public void test_UnHappyPath() {
+    public void test_UnHappyPath() throws InterruptedException, ExecutionException {
         // Create the test transport
         final TestUTransport transport = new TestUTransport();
 
@@ -63,11 +67,13 @@ public class RpcServerExample {
         };
 
         // Register the Request handling listener
-        RpcServer server = UPClient.create(transport);
+        RpcServer server = UClient.create(transport);
 
-        assertEquals(server.registerRequestHandler(methodUri, handler), UCode.OK);
+        assertEquals(server.registerRequestHandler(methodUri, handler)
+            .toCompletableFuture().get().getCode(), UCode.OK);
 
         // Now unregister the request listener (we are done serving the method)
-        assertEquals(server.unregisterRequestHandler(methodUri, handler), UCode.OK);
+        assertEquals(server.unregisterRequestHandler(methodUri, handler)
+            .toCompletableFuture().get().getCode(), UCode.OK);
     }
 }
