@@ -28,7 +28,7 @@ import org.eclipse.uprotocol.transport.UListener;
 public interface Notifier {
 
     /**
-     * Send a notification to a given topic passing a payload. <br>
+     * Send a notification to a given topic. <br>
      * 
      * @param topic The topic to send the notification to.
      * @param destination The destination to send the notification to.
@@ -39,7 +39,7 @@ public interface Notifier {
     }
 
     /**
-     * Send a notification to a given topic passing a payload. <br>
+     * Send a notification to a given topic with specific {@link CallOptions}. <br>
      * 
      * @param topic The topic to send the notification to.
      * @param destination The destination to send the notification to.
@@ -63,7 +63,7 @@ public interface Notifier {
     }
 
     /**
-     * Send a notification to a given topic passing a payload. <br>
+     * Send a notification to a given topic passing a payload and with specific {@link CallOptions}. <br>
      * 
      * @param topic The topic to send the notification to.
      * @param destination The destination to send the notification to.

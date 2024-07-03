@@ -27,7 +27,7 @@ import org.eclipse.uprotocol.v1.UUri;
  */
 public interface Publisher {
     /**
-     * Publish a message to a topic passing {@link UPayload} as the payload.
+     * Publish a message to a topic.
      * 
      * @param topic The topic to publish to.
      * @param options The {@link CallOptions} for the publish.
@@ -39,7 +39,7 @@ public interface Publisher {
     }
 
     /**
-     * Publish a message to a topic passing {@link UPayload} as the payload.
+     * Publish a message to a topic with specific {@link CallOptions}
      * 
      * @param topic The topic to publish to.
      * @param options The {@link CallOptions} for the publish.
@@ -61,7 +61,7 @@ public interface Publisher {
     }
 
     /**
-     * Publish a message to a topic passing {@link UPayload} as the payload.
+     * Publish a message to a topic passing {@link UPayload} as the payload and with specific {@link CallOptions}.
      * 
      * @param topic The topic to publish to.
      * @param options The {@link CallOptions} for the publish.
