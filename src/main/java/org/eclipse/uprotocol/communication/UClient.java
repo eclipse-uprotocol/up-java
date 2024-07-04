@@ -28,11 +28,11 @@ public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcC
     // The transport to use for sending the RPC requests
     private final UTransport transport;
 
-    private final RpcServer rpcServer;
-    private final Publisher publisher;
-    private final Notifier notifier;
-    private final RpcClient rpcClient;
-    private final Subscriber subscriber;
+    private final InMemoryRpcServer rpcServer;
+    private final SimplePublisher publisher;
+    private final SimpleNotifier notifier;
+    private final InMemoryRpcClient rpcClient;
+    private final InMemorySubscriber subscriber;
 
     private UClient (UTransport transport) {
         this.transport = transport;
@@ -41,12 +41,13 @@ public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcC
         publisher = new SimplePublisher(transport);
         notifier = new SimpleNotifier(transport);
         rpcClient = new InMemoryRpcClient(transport);
-        subscriber = new InMemorySubscriber(transport, rpcClient);
+        subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
     }
 
 
     @Override
-    public CompletionStage<SubscriptionResponse> subscribe(UUri topic, UListener listener, CallOptions options) {
+    public CompletionStage<SubscriptionResponse> subscribe(UUri topic, UListener listener, 
+        CallOptions options, SubscriptionChangeHandler handler) {
         return subscriber.subscribe(topic, listener, options);
     }
 
@@ -111,5 +112,12 @@ public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcC
     public static UClient create(UTransport transport) {
         Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
         return new UClient(transport);
+    }
+
+
+    public void close() {
+        rpcClient.close();
+        subscriber.close();
+        transport.close();
     }
 }

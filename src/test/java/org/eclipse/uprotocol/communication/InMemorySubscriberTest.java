@@ -13,8 +13,6 @@
 package org.eclipse.uprotocol.communication;
 
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CompletableFuture;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,13 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse;
-import org.eclipse.uprotocol.core.usubscription.v3.UnsubscribeResponse;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
-import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
-import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 
@@ -38,7 +33,8 @@ public class InMemorySubscriberTest {
     public void test_subscribe_happy_path() {
         UUri topic = createTopic();
         UTransport transport = new TestUTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, 
+            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
         CompletionStage<SubscriptionResponse> response = subscriber.subscribe(topic, new UListener() {
             @Override
             public void onReceive(UMessage message) {
@@ -60,7 +56,9 @@ public class InMemorySubscriberTest {
                 // Do nothing
             }
         };
-        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, 
+            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
+
         subscriber.subscribe(topic, listener, null).thenAcceptAsync(response -> {
             assertFalse(subscriber.unsubscribe(topic, listener, null)
                 .toCompletableFuture().isCompletedExceptionally());
@@ -72,7 +70,9 @@ public class InMemorySubscriberTest {
     public void test_unsubscribe_happy_path() {
         UUri topic = createTopic();
         UTransport transport = new TestUTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, 
+            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
+
         assertFalse(subscriber.unsubscribe(topic, new UListener() {
             @Override
             public void onReceive(UMessage message) {
@@ -93,7 +93,9 @@ public class InMemorySubscriberTest {
             }
         };
         UTransport transport = new TestUTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, 
+            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
+
 
         subscriber.subscribe(topic, myListener, new CallOptions(100))
             .thenAcceptAsync(response -> {
@@ -107,7 +109,9 @@ public class InMemorySubscriberTest {
     public void testUnsubscribeWithCommStatusError() {
         UUri topic = createTopic();
         UTransport transport = new CommStatusTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, 
+            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
+
         
         subscriber.unsubscribe(topic, new UListener() {
             @Override
@@ -127,7 +131,8 @@ public class InMemorySubscriberTest {
     public void testUnsubscribeWithException() {
         UUri topic = createTopic();
         UTransport transport = new TimeoutUTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, 
+            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
 
         subscriber.unsubscribe(topic, new UListener() {
             @Override
@@ -147,7 +152,8 @@ public class InMemorySubscriberTest {
     public void testUnsubscribeWithException2() {
         UUri topic = createTopic();
         UTransport transport = new TimeoutUTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, new InMemoryRpcClient(transport));
+        Subscriber subscriber = new InMemorySubscriber(transport, 
+            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
 
         subscriber.unsubscribe(topic, new UListener() {
             @Override

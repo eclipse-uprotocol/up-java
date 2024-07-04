@@ -77,6 +77,8 @@ public class UClientTest {
         
         assertDoesNotThrow(() ->
             client.unregisterRequestHandler(createMethodUri(), handler).toCompletableFuture().get());
+
+        client.close();
     }
 
 

@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.Test;
-
+import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionStatus;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.v1.UCode;
@@ -33,12 +33,15 @@ public class SubscriberExampleTest {
         
         // Subscribe
         Subscriber subscriber = UClient.create(transport);
-        assertFalse(subscriber.subscribe(topic, myListener, new CallOptions(100))
-            .toCompletableFuture().isCompletedExceptionally());
+        
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, myListener).toCompletableFuture().get().getStatus().getState(),
+                SubscriptionStatus.State.SUBSCRIBED);
+        });
         
         // Unsubscribe
         assertDoesNotThrow(() -> {
-            assertEquals(subscriber.unsubscribe(topic, myListener, null).toCompletableFuture().get(),
+            assertEquals(subscriber.unsubscribe(topic, myListener).toCompletableFuture().get(),
                 UStatus.newBuilder().setCode(UCode.OK).build());
         });
     }
