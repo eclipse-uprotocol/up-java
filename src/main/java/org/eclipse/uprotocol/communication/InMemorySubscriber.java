@@ -113,7 +113,7 @@ public class InMemorySubscriber implements Subscriber {
         
         try {
             // Send the subscription request and handle the response
-            CompletionStage<SubscriptionResponse> subscriptionResponse = RpcMapper.mapResponse(rpcClient.invokeMethod(
+            return RpcMapper.mapResponse(rpcClient.invokeMethod(
                     SUBSCRIBE_METHOD, UPayload.pack(request), options), SubscriptionResponse.class)
                 
                 // Then register the listener to be called when messages are received
@@ -136,17 +136,7 @@ public class InMemorySubscriber implements Subscriber {
                         });
                     }
                     return response;
-                })
-
-                // Then register the listener to be notified of changes to the subscription state (if one was provided)
-                .thenCompose(response -> {
-                    if (handler != null) {
-                        return notifier.registerNotificationListener(topic, mNotificationListener)
-                            .thenApply(status -> response);
-                    }
-                    return CompletableFuture.completedFuture(response);
                 });
-            return subscriptionResponse;
         } catch (UStatusException e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -182,15 +172,7 @@ public class InMemorySubscriber implements Subscriber {
                     return transport.unregisterListener(topic, listener);
                 }
                 return CompletableFuture.completedFuture(response.failureValue());
-            })
-
-            // Then remove the notification listener (if there is one)
-            .thenCompose(status -> {
-                if (mHandlers.remove(topic) != null) {
-                    return notifier.unregisterNotificationListener(topic, mNotificationListener);
-                }
-                return CompletableFuture.completedFuture(status);
-            });            
+            });
     }
 
 
@@ -224,7 +206,9 @@ public class InMemorySubscriber implements Subscriber {
      * @param message The notification message from the USubscription service
      */
     private void handleNotifications(UMessage message) {
-        if (message.getAttributes().getType() != UMessageType.UMESSAGE_TYPE_NOTIFICATION) {
+        // Ignore messages that are not notifications or not from the USubscription service
+        if (message.getAttributes().getType() != UMessageType.UMESSAGE_TYPE_NOTIFICATION ||
+            !message.getAttributes().getSource().equals(NOTIFICATION_TOPIC)) {
             return;
         }
 
@@ -237,14 +221,20 @@ public class InMemorySubscriber implements Subscriber {
             return;
         }
 
-        // Check if we have a handler registered for the subscription change notification, very possible
-        // the client didn't register one (they don't care to receive them)
+        // Check if we have a handler registered for the subscription change notification for the specific 
+        // topic that triggered the subscription change notification. It is very possible that the client
+        // did not register one to begin with (ex/ they don't care to receive them)
         final SubscriptionChangeHandler handler = mHandlers.get(subscriptionUpdate.get().getTopic());
         if (handler == null) {
             return;
         }
 
-        // Handle the subscription change notification
-        handler.handleSubscriptionChange(subscriptionUpdate.get().getTopic(), subscriptionUpdate.get().getStatus());
+        // Public Service Announcement to the client of the subscription change.
+        try {
+            handler.handleSubscriptionChange(subscriptionUpdate.get().getTopic(), subscriptionUpdate.get().getStatus());
+        } catch (Exception e) {
+            // Log the error and continue, nothing we need to do
+            e.printStackTrace();
+        }
     }
 }
