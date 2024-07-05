@@ -5,66 +5,144 @@ The following folder include the client-facing  https://github.com/eclipse-uprot
 
 ## uP-L2 Interfaces
 
-.UPClient Interfaces (uP-L2 Interface)
-[cols="1,3",options="header"]
+.Interfaces (uP-L2 Interface)
+[cols="1,1,3",options="header"]
 |===
-| uP-L2 Interface | Description  
+| uP-L2 Interface | Implementations | Description  
 
-| xref:Publisher.java[*Publisher*] | Producers API to send publish or notification messages
-| xref:Subscriber.java[*Subscriber*] | Consumers API to subscribe or unsubscribe to topics
-| xref:RpcClient.java[*RpcClient*] | Client interface to invoke a method
-| xref:RpcServer.java[*RpcServer*] | Server interface to register a listener for incoming RPC requests and automatically send a response
-| xref:Notifier.java[*Notifier*] | Notification communication pattern APIs to notify and register a listener to receive the notifications
-
+| xref:Publisher.java[*Publisher*] | xref:SimplePublisher.java[SimplePublisher] | Producers API to send publish or notification messages
+| xref:Subscriber.java[*Subscriber*] | xref:InMemorySubscriber.java[InMemorySubscriber] | Consumers API to subscribe or unsubscribe to topics
+| xref:RpcClient.java[*RpcClient*] | xref:InMemoryRpcClient.java[InMemoryRpcClient] | Client interface to invoke a method
+| xref:RpcServer.java[*RpcServer*] | xref:InMemoryRpcServer.java[InMemoryRpcServer]| Server interface to register a listener for incoming RPC requests and automatically send a response
+| xref:Notifier.java[*Notifier*] | xref:SimpleNotifier.java[SimpleNotifier] | Notification communication pattern APIs to notify and register a listener to receive the notifications
+| All | xref:UClient.java[UClient] | Single class that Implements all the interfaces above using the various implementations also from above
 |===
 
-NOTE: For more details about the APIs, please refer to the documentation in the interfaces above
-
-=== How to use the uP-L2 interfaces
-
-The uP-L2 interfaces are designed to be used by uEs (applications and services) that rely on the communication patterns to talk with other uEs. The interfaces only require an implementation of uTransport passed by reference to the various APIs to perform the various communication patterns. The Next section we will provide examples of how to use the uP-L2 interfaces to take advantage of the publisher/subscriber, notification, and RPC patterns.
 
 == Examples
 
-The following examples demonstrate how to use the uP-L2 interfaces to implement the publisher/subscriber, notification, and RPC patterns.
+The uP-L2 interfaces are designed to be used by uEs (applications and services) that rely on the communication patterns to talk with other uEs. The interfaces only require an implementation of uTransport passed by reference to the various APIs to perform the various communication patterns. The Next section we will provide examples of how to use the uP-L2 interfaces to take advantage of the publisher/subscriber, notification, and RPC patterns.
 
-=== Publisher/Subscriber Example
+NOTE: Examples below will be using the `UClient` implementation.
 
-The following example demonstrates how to use the Publisher and Subscriber interfaces to implement the publisher/subscriber pattern.
-
-.Publisher
+=== Publish a Message
 [source,java]
 ----
-include::../../../../../../test/java/org/eclipse/uprotocol/communication/PublisherExampleTest.java[]
+// Topic to publish
+UUri topic = UUri.newBuilder().setUeId(4).setUeVersionMajor(1).setResourceId(0x8000).build();
+Publisher publisher = UClient.create(/* UTransport Instance */);
+
+publisher.publish(topic); // Send the publish message
 ----
 
-.Subscriber
+=== Subscribe and Unsubscribe
 [source,java]
 ----
-include::../../../../../../test/java/org/eclipse/uprotocol/communication/SubscriberExampleTest.java[]
+// Subscription Topic
+UUri topic = UUri.newBuilder().setUeId(4).setUeVersionMajor(1).setResourceId(0x8000).build();
+
+// Listener to process incoming events on the topic
+UListener listener = new UListener() {
+    @Override
+    public void onReceive(UMessage message) {
+        // Handle receiving published messages here
+        // do something
+    }
+};       
+
+// Optional handler that is called whenever the SubscriptionState changes for the subscriber
+// to the specific topic
+SubscriptionChangeHandler handler = new SubscriptionChangeHandler() {
+    @Override
+    public void onSubscriptionChange(UUri topic, SubscriptionStatus status) {
+        // Handle subscription status changes if you're interested like when
+        // the subscription state changes from SUBSCRIBE_PENDING to SUBSCRIBED
+    }
+};
+
+Subscriber subscriber = new UClient.create(/* UTransport Instance */);
+subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler);
+
+// ... do something else
+
+// Unsubscribe from the topic
+subscriber.unsubscribe(topic, listener);
 ----
 
-=== RPC Example
 
-.RpcClient
+=== Invoke a Method using RpcClient
 [source,java]
 ----
-include::../../../../../../test/java/org/eclipse/uprotocol/communication/RpcClientExampleTest.java[]
+// URI of the method to be invoked
+UUri method = UUri.newBuilder().setUeId(4).setUeVersionMajor(1).setResourceId(3).build();
+RpcClient rpcClient = UClient.create(/* UTransport Instance */);
+
+// Invoke command without payload, what is returned is a response 
+// The CompletionStage is completed successfully when the response is received from the server and
+// completed exceptionally if an error occurred where the exception is a UStatusException that contains
+// the UCode and message of the error.
+CompletionStage<UPayload> result = rpcClient.invokeMethod(method, UPayload.EMPTY, CallOptions.DEFAULT);
 ----
 
-.RpcServer
+=== Register and Handle RPC Requests
 [source,java]
 ----
-include::../../../../../../test/java/org/eclipse/uprotocol/communication/RpcServerExampleTest.java[]
+// The method we want to serve
+UUri methodUri = UUri.newBuilder(transport.getSource()).setResourceId(3).build();
+
+// Handler for processing requests 
+RequestHandler handler = new RequestHandler() {
+    @Override
+    public UPayload handleRequest(UMessage request) {
+        // If your processing of the request was successful, you return the response message like
+        // return UPayload.EMPTY;
+        // 
+        // If your processing of the request failed, you can throw a UStatusException passing the
+        // appropriate UCode and message such as:
+        // throw new UStatusException(UCode.FAILED_PRECONDITION, "Failed to process the request");
+        //
+        // For this example, we will return an empty response
+        return UPayload.EMPTY;
+    }
+};
+
+RpcServer server = UClient.create(/* UTransport Instance */);
+// Register the Request handler that will be called when a request is received
+server.registerRequestHandler(methodUri, handler);
 ----
 
 
-=== Notification Example
-
-.Notifier
+=== Send a Notification
 [source,java]
 ----
-include::../../../../../../test/java/org/eclipse/uprotocol/communication/NotifierExampleTest.java[]
+// Notification topic
+UUri topic = UUri.newBuilder()
+    .setUeId(4).setUeVersionMajor(1).setResourceId(0x8000).build();
+// Destination for the notification
+UUri destination = UUri.newBuilder()
+    .setUeId(3).setUeVersionMajor(1).build();
+
+Notifier notifier = UClient.create(/* UTransport Instance */);
+
+// Send the notification (without payload)
+CompletionStage<UStatus> result = notifier.notify(topic, destination);
+/* handle result here */
+----
+
+=== Registering to Receive Notifications
+[source,java]
+----
+UListener listener = new UListener() {
+    @Override
+    public void onReceive(UMessage message) {
+        // Handle receiving notifications here
+        // do something
+    }
+};
+Notifier notifier = UClient.create(/* UTransport Instance */);
+
+// Register listener to receive notifications
+CompletionStage<UStatus> result = notifier.registerNotificationListener(topic, listener);
 ----
 
 

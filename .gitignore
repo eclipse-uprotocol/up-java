@@ -37,6 +37,7 @@ build/
 ### VS Code ###
 .vscode/
 logging/
+.VSCodeCounter
 
 .metals
 .bloop

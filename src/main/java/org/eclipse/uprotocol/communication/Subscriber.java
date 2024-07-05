@@ -35,7 +35,7 @@ public interface Subscriber {
      * 
      * @param topic The topic to subscribe to.
      * @param listener The {@link UListener} that is called when published messages are received.
-     * @return Returns the CompletionStage with the response UMessage or exception with the failure
+     * @return Returns the CompletionStage with {@link SubscriptionResponse} or exception with the failure
      * reason as {@link UStatus}.
      */
     default CompletionStage<SubscriptionResponse> subscribe(UUri topic, UListener listener) {

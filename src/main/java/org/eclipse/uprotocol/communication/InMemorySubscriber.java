@@ -72,6 +72,7 @@ public class InMemorySubscriber implements Subscriber {
      * 
      * @param transport the transport to use for sending the notifications
      * @param rpcClient the rpc client to use for sending the RPC requests
+     * @param notifier the notifier to use for registering the notification listener
      */
     public InMemorySubscriber (UTransport transport, RpcClient rpcClient, Notifier notifier) {
         Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
@@ -98,7 +99,7 @@ public class InMemorySubscriber implements Subscriber {
      * @param listener The listener to be called when a message is received on the topic.
      * @param options The call options for the subscription.
      * @param handler {@link SubscriptionChangeHandler} to handle changes to subscription states.
-     * @return Returns the CompletionStage with the response UMessage or exception with the failure
+     * @return Returns the CompletionStage with {@link SubscriptionResponse} or exception with the failure
      * reason as {@link UStatus}.
      */
     @Override

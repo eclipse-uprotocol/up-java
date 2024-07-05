@@ -84,7 +84,7 @@ public class UTransportTest {
         assertEquals(result.toCompletableFuture().join().getCode(), UCode.INTERNAL);
     }
 
-    final class MyListener implements UListener {
+    class MyListener implements UListener {
         @Override
         public void onReceive(UMessage message) {}
     }
@@ -157,7 +157,7 @@ public class UTransportTest {
     @DisplayName("Test happy path unregisterlistener with source filter only")
     public void test_happy_unregister_listener_source_filter() {
         UTransport transport = new HappyUTransport();
-        CompletionStage<UStatus> result = transport.registerListener(UUri.getDefaultInstance(), new MyListener());
+        CompletionStage<UStatus> result = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener());
         assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
     }
 }
