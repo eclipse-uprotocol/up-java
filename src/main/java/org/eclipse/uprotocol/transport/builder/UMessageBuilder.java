@@ -71,7 +71,7 @@ public class UMessageBuilder {
      */
     public static UMessageBuilder notification(UUri source, UUri sink) {
         Objects.requireNonNull(source, "source cannot be null.");
-        Objects.requireNonNull(sink, "sink cannot be null.");
+        Objects.requireNonNull(sink, "sink cannot be null. for Notification");
 
         return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.UMESSAGE_TYPE_NOTIFICATION).withSink(sink);
@@ -91,7 +91,7 @@ public class UMessageBuilder {
     public static UMessageBuilder request(UUri source, UUri sink, Integer ttl) {
         Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(ttl, "ttl cannot be null.");
-        Objects.requireNonNull(sink, "sink cannot be null.");
+        Objects.requireNonNull(sink, "sink cannot be null. for request");
 
         return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.UMESSAGE_TYPE_REQUEST).withTtl(ttl).withSink(sink);
@@ -109,7 +109,7 @@ public class UMessageBuilder {
      */
     public static UMessageBuilder response(UUri source, UUri sink, UUID reqid) {
         Objects.requireNonNull(source, "source cannot be null.");
-        Objects.requireNonNull(sink, "sink cannot be null.");
+        Objects.requireNonNull(sink, "sink cannot be null for Response.");
         Objects.requireNonNull(reqid, "reqid cannot be null.");
 
         return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),

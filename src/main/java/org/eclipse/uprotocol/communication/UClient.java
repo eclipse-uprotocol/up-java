@@ -48,7 +48,7 @@ public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcC
     @Override
     public CompletionStage<SubscriptionResponse> subscribe(UUri topic, UListener listener, 
         CallOptions options, SubscriptionChangeHandler handler) {
-        return subscriber.subscribe(topic, listener, options);
+        return subscriber.subscribe(topic, listener, options, handler);
     }
 
 

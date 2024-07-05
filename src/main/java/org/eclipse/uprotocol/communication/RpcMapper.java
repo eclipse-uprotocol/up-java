@@ -15,8 +15,6 @@ package org.eclipse.uprotocol.communication;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeoutException;
-
 import com.google.protobuf.Message;
 
 import org.eclipse.uprotocol.v1.UCode;
@@ -79,13 +77,8 @@ public interface RpcMapper {
         return responseFuture.handle((payload, exception) -> {
             // Handling exceptions
             if (exception != null) {
-                if (exception instanceof CompletionException) {
-                    exception = exception.getCause();
-                }
                 if (exception instanceof UStatusException) {
                     return RpcResult.failure(((UStatusException) exception).getStatus());
-                } else if (exception instanceof TimeoutException) {
-                    return RpcResult.failure(UCode.DEADLINE_EXCEEDED, "Request timed out");
                 } else {
                     return RpcResult.failure(UCode.INVALID_ARGUMENT, exception.getMessage());
                 }

@@ -17,9 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.CompletionException;
-
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
@@ -83,54 +80,39 @@ public class InMemoryRpcClient implements RpcClient {
         UMessageBuilder builder = UMessageBuilder.request(transport.getSource(), methodUri, options.timeout());
         UMessage request;
         
-        try {
-            if (!options.token().isBlank()) {
-                builder.withToken(options.token());
-            }
-            // Build a request uMessage
-            request = builder.build(requestPayload);
-            
-            // Create the response future and store it in mRequests
-            CompletableFuture<UMessage> responseFuture = new CompletableFuture<UMessage>()
-                    .orTimeout(request.getAttributes().getTtl(), TimeUnit.MILLISECONDS)
-                    .handle((responseMessage, exception) -> {
-                        if (exception != null) {
-                            if (exception instanceof CompletionException) exception = exception.getCause();
-                            if (exception instanceof TimeoutException) {
-                                throw new UStatusException(UCode.DEADLINE_EXCEEDED, "Request timed out");
-                            } else if (exception instanceof UStatusException) {
-                                throw new UStatusException(((UStatusException) exception).getStatus());
-                            } else {
-                                throw new UStatusException(UCode.UNKNOWN, exception.getMessage());
-                            }
-                        }
-                        return responseMessage;
-                    });
-
-            responseFuture.whenComplete(
-                    (responseMessage, exception) -> mRequests.remove(request.getAttributes().getId()));
-
-            mRequests.compute(request.getAttributes().getId(), (requestId, currentRequest) -> {
-                if (currentRequest != null)
-                    throw new UStatusException(UCode.ALREADY_EXISTS, "Duplicated request found");
-                return responseFuture;
-            });
-
-            // Send the request
-            CompletionStage<UStatus> status = transport.send(request);
-
-            return status.thenApply(s -> {
-                if (s.getCode() != UCode.OK) throw new UStatusException(s);
-                return s;
-            }).thenCompose(s -> responseFuture.thenApply(responseMessage ->
-                    UPayload.pack(responseMessage.getPayload(), responseMessage.getAttributes().getPayloadFormat())
-            ));
-
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
+        if (!options.token().isBlank()) {
+            builder.withToken(options.token());
         }
+        // Build a request uMessage
+        request = builder.build(requestPayload);
+        
+        // Create the response future and store it in mRequests
+        CompletableFuture<UMessage> responseFuture = new CompletableFuture<UMessage>()
+                .orTimeout(request.getAttributes().getTtl(), TimeUnit.MILLISECONDS)
+                .exceptionally(e -> {
+                    throw new UStatusException(UCode.DEADLINE_EXCEEDED, "Request timed out");
+                })
+                .whenComplete((responseMessage, exception) -> mRequests.remove(request.getAttributes().getId()));
+
+        mRequests.compute(request.getAttributes().getId(), (requestId, currentRequest) -> {
+            return responseFuture;
+        });
+
+        // Send the request
+        CompletionStage<UStatus> status = transport.send(request);
+
+        return status.thenApply(s -> {
+            if (s.getCode() != UCode.OK) throw new UStatusException(s);
+            return s;
+        }).thenCompose(s -> responseFuture.thenApply(responseMessage ->
+                UPayload.pack(responseMessage.getPayload(), responseMessage.getAttributes().getPayloadFormat())
+        ));
     }
 
+
+    /**
+     * Close the RPC client and clean up any resources
+     */
     public void close() {
         mRequests.clear();
         transport.unregisterListener(UriFactory.ANY, transport.getSource(), mResponseHandler);

@@ -12,169 +12,702 @@
  */
 package org.eclipse.uprotocol.communication;
 
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executors;
+import java.util.concurrent.CyclicBarrier;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.mockito.Mock;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse;
+import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionStatus;
+import org.eclipse.uprotocol.core.usubscription.v3.Update;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
+import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
+import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
-
+@ExtendWith(MockitoExtension.class)
 public class InMemorySubscriberTest {
-    @Test
-    @DisplayName("Test subscribe happy path")
-    public void test_subscribe_happy_path() {
-        UUri topic = createTopic();
-        UTransport transport = new TestUTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, 
-            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
-        CompletionStage<SubscriptionResponse> response = subscriber.subscribe(topic, new UListener() {
-            @Override
-            public void onReceive(UMessage message) {
-                // Do nothing
-            }
-        }, null);
-        response.toCompletableFuture().join();
-        assertFalse(response.toCompletableFuture().isCompletedExceptionally());
-    }
 
-    @Test
-    @DisplayName("Test subscribe and then unsubscribe happy path")
-    public void test_subscribe_and_then_unsubscribe_happy_path() {
-        UUri topic = createTopic();
-        UTransport transport = new TestUTransport();
-        UListener listener = new UListener() {
-            @Override
-            public void onReceive(UMessage message) {
-                // Do nothing
-            }
-        };
-        Subscriber subscriber = new InMemorySubscriber(transport, 
-            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
+    @Mock
+    private UTransport transport;
 
-        subscriber.subscribe(topic, listener, null).thenAcceptAsync(response -> {
-            assertFalse(subscriber.unsubscribe(topic, listener, null)
-                .toCompletableFuture().isCompletedExceptionally());
-        });
-    }
+    @Mock
+    private InMemoryRpcClient rpcClient;
 
-    @Test
-    @DisplayName("Test unsubscribe happy path")
-    public void test_unsubscribe_happy_path() {
-        UUri topic = createTopic();
-        UTransport transport = new TestUTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, 
-            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
+    @Mock
+    private SimpleNotifier notifier;
 
-        assertFalse(subscriber.unsubscribe(topic, new UListener() {
-            @Override
-            public void onReceive(UMessage message) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'onReceive'");
-            }
-        }, null).toCompletableFuture().isCompletedExceptionally());
-    }
+    private final UUri topic = UUri.newBuilder().setAuthorityName("hartley").setUeId(3)
+        .setUeVersionMajor(1).setResourceId(0x8000).build();
 
-    @Test
-    @DisplayName("Test unregisterListener after we successfully subscribed to a topic")
-    public void testUnregisterListener() {
-        UUri topic = createTopic();
-        UListener myListener = new UListener() {
-            @Override
-            public void onReceive(UMessage message) {
-                // Do nothing
-            }
-        };
-        UTransport transport = new TestUTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, 
-            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
+    private final UUri source = UUri.newBuilder().setAuthorityName("Hartley").setUeId(4)
+        .setUeVersionMajor(1).build();
+    private final UListener listener = new UListener() {
+        @Override
+        public void onReceive(UMessage message) {
+            // Do nothing
+        }
+    };
 
 
-        subscriber.subscribe(topic, myListener, new CallOptions(100))
-            .thenAcceptAsync(response -> {
-                assertFalse(subscriber.unregisterListener(topic, myListener).toCompletableFuture().isCompletedExceptionally());
-            });
+    @BeforeEach
+    public void setup() {
+        rpcClient = mock(InMemoryRpcClient.class);
+        notifier = mock(SimpleNotifier.class);
+        transport = mock(UTransport.class);
     }
 
 
     @Test
-    @DisplayName("Test unsubscribe with commstatus error using the UnHappyUnSubscribeUTransport")
-    public void testUnsubscribeWithCommStatusError() {
-        UUri topic = createTopic();
-        UTransport transport = new CommStatusTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, 
-            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
-
+    @DisplayName("Testing simple mock of RpcClient and notifier happy path")
+    public void test_simple_mock_of_rpcClient_and_notifier() {
         
-        subscriber.unsubscribe(topic, new UListener() {
-            @Override
-            public void onReceive(UMessage message) {
-                return;
-            }
-        }, null).exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getCode(), UCode.FAILED_PRECONDITION);
-            assertEquals(((UStatusException) e).getMessage(), "Communication error [FAILED_PRECONDITION]");
-            return null;
+        final SubscriptionResponse response = SubscriptionResponse.newBuilder()
+        .setTopic(topic)
+        .setStatus(SubscriptionStatus.newBuilder().setState(SubscriptionStatus.State.SUBSCRIBED).build())
+        .build();
+
+        when(transport.registerListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+        
+        when(transport.getSource()).thenReturn(source);
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(response)));
+
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+        
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, listener).toCompletableFuture().get().getStatus().getState(),
+                SubscriptionStatus.State.SUBSCRIBED);
         });
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(1)).registerListener(any(), any());
+        verify(transport, times(1)).getSource();
+    } 
+    
+
+    @Test
+    @DisplayName("Testing simple mock of RpcClient when usubscription returned SUBSCRIBE_PENDING")
+    public void test_simple_mock_of_rpcClient_and_notifier_returned_subscribe_pending() {
+        
+        final SubscriptionResponse response = SubscriptionResponse.newBuilder()
+        .setTopic(topic)
+        .setStatus(SubscriptionStatus.newBuilder().setState(SubscriptionStatus.State.SUBSCRIBE_PENDING).build())
+        .build();
+
+        when(transport.registerListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+        
+        when(transport.getSource()).thenReturn(source);
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(response)));
+
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+        
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, listener).toCompletableFuture().get().getStatus().getState(),
+                SubscriptionStatus.State.SUBSCRIBE_PENDING);
+        });
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(1)).registerListener(any(), any());
+        verify(transport, times(1)).getSource();
+    }
+
+
+    @Test
+    @DisplayName("Testing simple mock of RpcClient and notifier when usubscription returned UNSUBSCRIBED")
+    public void test_simple_mock_when_subscription_service_returns_unsubscribed() {
+        
+        final SubscriptionResponse response = SubscriptionResponse.newBuilder()
+        .setTopic(topic)
+        .setStatus(SubscriptionStatus.newBuilder().setState(SubscriptionStatus.State.UNSUBSCRIBED).build())
+        .build();
+
+        when(transport.getSource()).thenReturn(source);
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(response)));
+
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+        
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, listener).toCompletableFuture().get().getStatus().getState(),
+                SubscriptionStatus.State.UNSUBSCRIBED);
+        });
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(0)).registerListener(any(), any());
+        verify(transport, times(1)).getSource();
+    }
+
+
+
+    @Test
+    @DisplayName("Test subscribe using mock RpcClient and SimplerNotifier when invokemethod return an exception")
+    void test_subscribe_using_mock_RpcClient_and_SimplerNotifier_when_invokemethod_return_an_exception() {
+        when(transport.getSource()).thenReturn(source);
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.failedFuture(
+                    new UStatusException(UCode.PERMISSION_DENIED, "Not permitted")));
+
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+
+        assertThrows(CompletionException.class, () -> {
+            CompletionStage<SubscriptionResponse> response = subscriber.subscribe(topic, listener);
+            assertTrue(response.toCompletableFuture().isCompletedExceptionally());
+            response.handle((r, e) -> {
+                e = e.getCause();
+                assertTrue(e instanceof UStatusException);
+                assertEquals(((UStatusException) e).getCode(), UCode.PERMISSION_DENIED);
+                return null;
+            });
+            response.toCompletableFuture().join();
+        });
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(0)).registerListener(any(), any());
+        verify(transport, times(1)).getSource();
+    }
+
+
+    @Test
+    @DisplayName("Test subscribe using mock RpcClient and SimplerNotifier when" + 
+                 "we pass a subscription change notification handler")
+    void test_subscribe_when_we_pass_a_subscription_change_notification_handler() {
+        when(transport.registerListener(any(UUri.class), any(UListener.class)))
+        .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+    
+        when(transport.getSource()).thenReturn(source);
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
+                .setTopic(topic)
+                .setStatus(SubscriptionStatus.newBuilder().setState(SubscriptionStatus.State.SUBSCRIBED).build())
+                .build())));
+
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+
+        SubscriptionChangeHandler handler = new SubscriptionChangeHandler() {
+            @Override
+            public void handleSubscriptionChange(UUri topic, SubscriptionStatus status) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'handleSubscriptionChange'");
+            }
+        };
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
+                .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBED);
+        });
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(1)).registerListener(any(), any());
+        verify(transport, times(1)).getSource();
+    }
+
+
+    @Test
+    @DisplayName("Test subscribe when we try to subscribe to the same topic twice passing the same" + 
+                  "subscription change handler again")
+    void test_subscribe_when_we_try_to_subscribe_to_the_same_topic_twice() {
+        when(transport.registerListener(any(UUri.class), any(UListener.class)))
+        .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()))
+        .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.ALREADY_EXISTS).build()));
+    
+        when(transport.getSource()).thenReturn(source);
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
+                .setTopic(topic)
+                .setStatus(SubscriptionStatus.newBuilder().setState(SubscriptionStatus.State.SUBSCRIBED).build())
+                .build())));
+
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+
+        SubscriptionChangeHandler handler = new SubscriptionChangeHandler() {
+            @Override
+            public void handleSubscriptionChange(UUri topic, SubscriptionStatus status) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'handleSubscriptionChange'");
+            }
+        };
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
+                .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBED);
+        });
+
+        assertThrows(CompletionException.class, () -> {
+            CompletionStage<SubscriptionResponse> response = subscriber.subscribe(
+                topic, listener, CallOptions.DEFAULT, handler);
+            assertTrue(response.toCompletableFuture().isCompletedExceptionally());
+            response.handle((r, e) -> {
+                e = e.getCause();
+                assertTrue(e instanceof UStatusException);
+                assertEquals(((UStatusException) e).getCode(), UCode.ALREADY_EXISTS);
+                return null;
+            });
+            response.toCompletableFuture().join();
+        });
+
+        verify(rpcClient, times(2)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(2)).registerListener(any(), any());
+        verify(transport, times(2)).getSource();
+    }
+
+
+    @Test
+    @DisplayName("Test unsubscribe using mock RpcClient and SimplerNotifier")
+    void test_unsubscribe_using_mock_RpcClient_and_SimplerNotifier() {
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+        when(transport.unregisterListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(UStatus.newBuilder().setCode(UCode.OK).build())));
+
+        when(notifier.unregisterNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.unsubscribe(topic, listener).toCompletableFuture().get().getCode(), UCode.OK);
+        });
+
+        subscriber.close();
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).unregisterNotificationListener(any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(1)).unregisterListener(any(), any());
+    }
+
+
+    @Test
+    @DisplayName("Test unsubscribe using mock RpcClient and SimplerNotifier when invokemethod return an exception")
+    void test_unsubscribe_using_mock_RpcClient_and_SimplerNotifier_when_invokemethod_return_an_exception() {
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.failedFuture(
+                    new UStatusException(UCode.PERMISSION_DENIED, "Not permitted")));
+
+        when(notifier.unregisterNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+
+        assertDoesNotThrow(() -> {
+            CompletionStage<UStatus> response = subscriber.unsubscribe(topic, listener);
+            assertFalse(response.toCompletableFuture().isCompletedExceptionally());
+            assertEquals(response.toCompletableFuture().get().getCode(), UCode.PERMISSION_DENIED);
+        });
+
+        subscriber.close();
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).unregisterNotificationListener(any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+    }
+
+
+    @Test
+    @DisplayName("Test handling going from SUBSCRIBE_PENDING to SUBSCRIBED state")
+    void test_handling_going_from_subscribe_pending_to_subscribed_state() 
+        throws InterruptedException, BrokenBarrierException {
+
+        // Create a CyclicBarrier with a count of 2 so we synchronize the subscription with the
+        // changes in states for the usubscription service
+        CyclicBarrier barrier = new CyclicBarrier(2);
+
+        when(transport.registerListener(any(UUri.class), any(UListener.class)))
+        .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+    
+        when(transport.getSource()).thenReturn(source);
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
+                .setTopic(topic)
+                .setStatus(SubscriptionStatus.newBuilder().setState(SubscriptionStatus.State.SUBSCRIBE_PENDING).build())
+                .build())));
+
+        // Fake sending the subscription change notification
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenAnswer(invocation -> {
+                Executors.newSingleThreadExecutor().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            barrier.await();
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        Update update = Update.newBuilder().setTopic(topic).setStatus(SubscriptionStatus.newBuilder()
+                            .setState(SubscriptionStatus.State.SUBSCRIBED).build()).build();
+                        UMessage message = UMessageBuilder.notification(topic, source).build(UPayload.pack(update));
+                        invocation.getArgument(1, UListener.class).onReceive(message);
+                    }
+                });
+                return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
+            });
+            
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+
+        SubscriptionChangeHandler handler = new SubscriptionChangeHandler() {
+            @Override
+            public void handleSubscriptionChange(UUri topic, SubscriptionStatus status) {
+                assertEquals(status.getState(), SubscriptionStatus.State.SUBSCRIBED);
+            }
+        };
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
+                .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBE_PENDING);
+        });
+
+        // Wait for a specific time (500ms)
+        Thread.sleep(100);
+        
+        // Release the barrier by calling await() again
+        barrier.await();
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(1)).registerListener(any(), any());
+        verify(transport, times(1)).getSource();
     }
 
     @Test
-    @DisplayName("Test unsubscribe where the invokemethod throws an exception")
-    public void testUnsubscribeWithException() {
-        UUri topic = createTopic();
-        UTransport transport = new TimeoutUTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, 
-            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
+    @DisplayName("Test handling going from SUBSCRIBE_PENDING to SUBSCRIBED state but handler throws exception")
+    void test_handling_going_from_subscribe_pending_to_subscribed_state_but_handler_throws_exception()
+        throws InterruptedException, BrokenBarrierException {
 
-        subscriber.unsubscribe(topic, new UListener() {
+        // Create a CyclicBarrier with a count of 2 so we synchronize the subscription with the
+        // changes in states for the usubscription service
+        CyclicBarrier barrier = new CyclicBarrier(2);
+
+        when(transport.registerListener(any(UUri.class), any(UListener.class)))
+        .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+    
+        when(transport.getSource()).thenReturn(source);
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
+                .setTopic(topic)
+                .setStatus(SubscriptionStatus.newBuilder().setState(SubscriptionStatus.State.SUBSCRIBE_PENDING).build())
+                .build())));
+
+        // Fake sending the subscription change notification
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenAnswer(invocation -> {
+                Executors.newSingleThreadExecutor().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            barrier.await();
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        Update update = Update.newBuilder().setTopic(topic).setStatus(SubscriptionStatus.newBuilder()
+                            .setState(SubscriptionStatus.State.SUBSCRIBED).build()).build();
+                        UMessage message = UMessageBuilder.notification(topic, source).build(UPayload.pack(update));
+                        invocation.getArgument(1, UListener.class).onReceive(message);
+                    }
+                });
+                return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
+            });
+            
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+
+        SubscriptionChangeHandler handler = new SubscriptionChangeHandler() {
             @Override
-            public void onReceive(UMessage message) {
-                return;
+            public void handleSubscriptionChange(UUri topic, SubscriptionStatus status) {
+                throw new UnsupportedOperationException("Throwing exception in the handler");
             }
-        }, new CallOptions(1)).exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getCode(), UCode.DEADLINE_EXCEEDED);
-            assertEquals(((UStatusException) e).getMessage(), "Request timed out");
-            return null;
+        };
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
+                .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBE_PENDING);
         });
+
+        // Wait for a specific time (500ms)
+        Thread.sleep(100);
+        
+        // Release the barrier by calling await() again
+        barrier.await();
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(1)).registerListener(any(), any());
+        verify(transport, times(1)).getSource();
     }
+
 
     @Test
-    @DisplayName("Test unsubscribe where the invokemethod throws an exception")
-    public void testUnsubscribeWithException2() {
-        UUri topic = createTopic();
-        UTransport transport = new TimeoutUTransport();
-        Subscriber subscriber = new InMemorySubscriber(transport, 
-            new InMemoryRpcClient(transport), new SimpleNotifier(transport));
+    @DisplayName("Test notification handling when we pass the wrong message type to the handler")
+    void test_notification_handling_when_we_pass_the_wrong_message_type_to_the_handler() 
+        throws InterruptedException, BrokenBarrierException {
 
-        subscriber.unsubscribe(topic, new UListener() {
+        // Create a CyclicBarrier with a count of 2 so we synchronize the subscription with the
+        // changes in states for the usubscription service
+        CyclicBarrier barrier = new CyclicBarrier(2);
+
+        when(transport.registerListener(any(UUri.class), any(UListener.class)))
+        .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+    
+        when(transport.getSource()).thenReturn(source);
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(UPayload.packToAny(SubscriptionResponse.newBuilder()
+                .setTopic(topic)
+                .setStatus(SubscriptionStatus.newBuilder().setState(SubscriptionStatus.State.SUBSCRIBE_PENDING).build())
+                .build())));
+
+        // Fake sending the subscription change notification
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenAnswer(invocation -> {
+                Executors.newSingleThreadExecutor().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            barrier.await();
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        Update update = Update.newBuilder().setTopic(topic).setStatus(SubscriptionStatus.newBuilder()
+                            .setState(SubscriptionStatus.State.SUBSCRIBED).build()).build();
+                        UMessage message = UMessageBuilder.publish(topic).build(UPayload.pack(update));
+                        invocation.getArgument(1, UListener.class).onReceive(message);
+                    }
+                });
+                return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
+            });
+            
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+
+        SubscriptionChangeHandler handler = new SubscriptionChangeHandler() {
             @Override
-            public void onReceive(UMessage message) {
-                return;
+            public void handleSubscriptionChange(UUri topic, SubscriptionStatus status) {
+                throw new UnsupportedOperationException("This handler should not be called");
             }
-        }, new CallOptions(1)).exceptionally(e -> {
-            assertTrue(e instanceof UStatusException);
-            assertEquals(((UStatusException) e).getCode(), UCode.DEADLINE_EXCEEDED);
-            assertEquals(((UStatusException) e).getMessage(), "Request timed out");
-            return null;
+        };
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
+                .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBE_PENDING);
         });
+
+        // Wait for a specific time (500ms)
+        Thread.sleep(100);
+        
+        // Release the barrier by calling await() again
+        barrier.await();
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(1)).registerListener(any(), any());
+        verify(transport, times(1)).getSource();
     }
 
 
-    private UUri createTopic() {
-        return UUri.newBuilder()
-            .setAuthorityName("hartley")
-            .setUeId(3)
-            .setUeVersionMajor(1)
-            .setResourceId(0x8000)
-            .build();
+    @Test
+    @DisplayName("Test notification handling when we get something other than the Update message")
+    void test_notification_handling_when_we_get_something_other_than_the_update_message() throws InterruptedException, BrokenBarrierException {
+
+        // Create a CyclicBarrier with a count of 2 so we synchronize the subscription with the
+        // changes in states for the usubscription service
+        CyclicBarrier barrier = new CyclicBarrier(2);
+
+        when(transport.registerListener(any(UUri.class), any(UListener.class)))
+        .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+    
+        when(transport.getSource()).thenReturn(source);
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
+                .setTopic(topic)
+                .setStatus(SubscriptionStatus.newBuilder().setState(SubscriptionStatus.State.SUBSCRIBE_PENDING).build())
+                .build())));
+
+        // Fake sending the subscription change notification
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenAnswer(invocation -> {
+                Executors.newSingleThreadExecutor().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            barrier.await();
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        UMessage message = UMessageBuilder.notification(topic, source)
+                            .build(UPayload.packToAny(source));
+                        invocation.getArgument(1, UListener.class).onReceive(message);
+                    }
+                });
+                return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
+            });
+            
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+
+        SubscriptionChangeHandler handler = new SubscriptionChangeHandler() {
+            @Override
+            public void handleSubscriptionChange(UUri topic, SubscriptionStatus status) {
+                throw new UnsupportedOperationException("This handler should not be called");
+            }
+        };
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
+                .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBE_PENDING);
+        });
+
+        // Wait for a specific time (500ms)
+        Thread.sleep(100);
+        
+        // Release the barrier by calling await() again
+        barrier.await();
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(1)).registerListener(any(), any());
+        verify(transport, times(1)).getSource();
+    }
+
+
+    @Test
+    @DisplayName("Test notification handling when we didn't register a notification handler")
+    void test_notification_handling_when_we_didnt_register_a_notification_handler() 
+        throws InterruptedException, BrokenBarrierException {
+
+        // Create a CyclicBarrier with a count of 2 so we synchronize the subscription with the
+        // changes in states for the usubscription service
+        CyclicBarrier barrier = new CyclicBarrier(2);
+
+        when(transport.registerListener(any(UUri.class), any(UListener.class)))
+        .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+    
+        when(transport.getSource()).thenReturn(source);
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
+                .setTopic(topic)
+                .setStatus(SubscriptionStatus.newBuilder().setState(SubscriptionStatus.State.SUBSCRIBE_PENDING).build())
+                .build())));
+
+        // Fake sending the subscription change notification
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenAnswer(invocation -> {
+                Executors.newSingleThreadExecutor().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            barrier.await();
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        Update update = Update.newBuilder().setTopic(topic).setStatus(SubscriptionStatus.newBuilder()
+                            .setState(SubscriptionStatus.State.SUBSCRIBED).build()).build();
+                        UMessage message = UMessageBuilder.notification(topic, source).build(UPayload.pack(update));
+                        invocation.getArgument(1, UListener.class).onReceive(message);
+                    }
+                });
+                return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
+            });
+            
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, listener)
+                .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBE_PENDING);
+        });
+
+        // Wait for a specific time (100ms)
+        Thread.sleep(100);
+        
+        // Release the barrier by calling await() again
+        barrier.await();
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(1)).registerListener(any(), any());
+        verify(transport, times(1)).getSource();
     }
 }

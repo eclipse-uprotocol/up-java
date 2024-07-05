@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriberInfo;
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionRequest;
@@ -105,41 +106,38 @@ public class InMemorySubscriber implements Subscriber {
         SubscriptionChangeHandler handler) {
         Objects.requireNonNull(topic, "Subscribe topic missing");
         Objects.requireNonNull(listener, "Request listener missing");
+        options = Objects.requireNonNullElse(options, CallOptions.DEFAULT);
 
         final SubscriptionRequest request = SubscriptionRequest.newBuilder()
             .setTopic(topic)
             .setSubscriber(SubscriberInfo.newBuilder().setUri(transport.getSource()).build())
             .build();
         
-        try {
-            // Send the subscription request and handle the response
-            return RpcMapper.mapResponse(rpcClient.invokeMethod(
-                    SUBSCRIBE_METHOD, UPayload.pack(request), options), SubscriptionResponse.class)
-                
-                // Then register the listener to be called when messages are received
-                .thenCompose(response -> {
-                    if ( response.getStatus().getState() == SubscriptionStatus.State.SUBSCRIBED ||
-                        response.getStatus().getState() == SubscriptionStatus.State.SUBSCRIBE_PENDING) {
-                        return transport.registerListener(topic, listener).thenApply(status -> response);
-                    }
-                    return CompletableFuture.completedFuture(response);
-                })
+        // Send the subscription request and handle the response
+        return RpcMapper.mapResponse(rpcClient.invokeMethod(
+                SUBSCRIBE_METHOD, UPayload.pack(request), options), SubscriptionResponse.class)
+            
+            // Then register the listener to be called when messages are received
+            .thenCompose(response -> {
+                if ( response.getStatus().getState() == SubscriptionStatus.State.SUBSCRIBED ||
+                    response.getStatus().getState() == SubscriptionStatus.State.SUBSCRIBE_PENDING) {
+                    return transport.registerListener(topic, listener).thenApply(status -> response);
+                }
+                return CompletableFuture.completedFuture(response);
+            })
 
-                // Then Add the handler (if present) to the hashMap
-                .thenApply(response -> {
-                    if (handler != null) {
-                        mHandlers.compute(topic, (key, currentHandler) -> {
-                            if (currentHandler != null) {
-                                throw new UStatusException(UCode.ALREADY_EXISTS, "Handler already registered");
-                            }
-                            return handler;
-                        });
-                    }
-                    return response;
-                });
-        } catch (UStatusException e) {
-            return CompletableFuture.failedFuture(e);
-        }
+            // Then Add the handler (if present) to the hashMap
+            .thenApply(response -> {
+                if (handler != null) {
+                    mHandlers.compute(topic, (key, currentHandler) -> {
+                        if (currentHandler != null) {
+                            throw new UStatusException(UCode.ALREADY_EXISTS, "Handler already registered");
+                        }
+                        return handler;
+                    });
+                }
+                return response;
+            });
     }
 
 
@@ -206,9 +204,8 @@ public class InMemorySubscriber implements Subscriber {
      * @param message The notification message from the USubscription service
      */
     private void handleNotifications(UMessage message) {
-        // Ignore messages that are not notifications or not from the USubscription service
-        if (message.getAttributes().getType() != UMessageType.UMESSAGE_TYPE_NOTIFICATION ||
-            !message.getAttributes().getSource().equals(NOTIFICATION_TOPIC)) {
+        // Ignore messages that are not notifications
+        if (message.getAttributes().getType() != UMessageType.UMESSAGE_TYPE_NOTIFICATION) {
             return;
         }
 
@@ -231,10 +228,10 @@ public class InMemorySubscriber implements Subscriber {
 
         // Public Service Announcement to the client of the subscription change.
         try {
-            handler.handleSubscriptionChange(subscriptionUpdate.get().getTopic(), subscriptionUpdate.get().getStatus());
+            handler.handleSubscriptionChange(subscriptionUpdate.get().getTopic(), 
+                subscriptionUpdate.get().getStatus());
         } catch (Exception e) {
-            // Log the error and continue, nothing we need to do
-            e.printStackTrace();
+            Logger.getGlobal().info(e.getMessage());
         }
     }
 }
