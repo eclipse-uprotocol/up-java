@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionRequest;
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse;
+import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionStatus;
 import org.eclipse.uprotocol.core.usubscription.v3.UnsubscribeResponse;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
@@ -40,6 +41,8 @@ public class TestUTransport implements UTransport {
                     SubscriptionRequest subscriptionRequest = SubscriptionRequest.parseFrom(request.getPayload());
                     SubscriptionResponse subResponse = SubscriptionResponse.newBuilder()
                         .setTopic(subscriptionRequest.getTopic())
+                        .setStatus(SubscriptionStatus.newBuilder()
+                            .setState(SubscriptionStatus.State.SUBSCRIBED).build())
                         .build();
                     return UMessageBuilder.response(request.getAttributes()).build(UPayload.pack(subResponse));
                 } catch (InvalidProtocolBufferException e) {

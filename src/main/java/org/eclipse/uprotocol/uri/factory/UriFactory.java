@@ -60,6 +60,7 @@ public interface UriFactory {
         return builder.build();
     }
 
+
     /**
      * Builds a UEntity for an protobuf generated code Service Descriptor.
      * 

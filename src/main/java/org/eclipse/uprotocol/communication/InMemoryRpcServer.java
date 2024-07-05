@@ -105,12 +105,8 @@ public class InMemoryRpcServer implements RpcServer {
                 return handler;
             });
             return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
-        } catch (Exception e) {
-            if (e instanceof UStatusException statusException) {
-                return CompletableFuture.completedFuture(statusException.getStatus());
-            }
-            return CompletableFuture.completedFuture(
-                UStatus.newBuilder().setCode(UCode.INTERNAL).setMessage(e.getMessage()).build());
+        } catch (UStatusException e) {
+            return CompletableFuture.completedFuture(e.getStatus());
         }
     }
 

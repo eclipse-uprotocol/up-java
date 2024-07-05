@@ -14,8 +14,6 @@
 package org.eclipse.uprotocol.communication;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
 import java.util.concurrent.CompletionStage;
 
 import org.eclipse.uprotocol.v1.UCode;

@@ -46,11 +46,11 @@ public class UClientTest {
         assertDoesNotThrow(() ->
             client.invokeMethod(createMethodUri(), null, null).toCompletableFuture().get());
 
-//        assertDoesNotThrow(() ->
-//            client.subscribe(createTopic(), listener, null).toCompletableFuture().get());
+        assertDoesNotThrow(() ->
+            client.subscribe(createTopic(), listener).toCompletableFuture().get());
 
-//        assertDoesNotThrow(() -> 
-//            client.unsubscribe(createTopic(), listener, null).toCompletableFuture().get());    
+        assertDoesNotThrow(() -> 
+            client.unsubscribe(createTopic(), listener).toCompletableFuture().get());    
 
         // The listener is not registered anymore so it should fail
         assertDoesNotThrow(() -> { 
@@ -77,6 +77,8 @@ public class UClientTest {
         
         assertDoesNotThrow(() ->
             client.unregisterRequestHandler(createMethodUri(), handler).toCompletableFuture().get());
+
+        client.close();
     }
 
 

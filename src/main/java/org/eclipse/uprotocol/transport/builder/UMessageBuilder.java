@@ -109,7 +109,7 @@ public class UMessageBuilder {
      */
     public static UMessageBuilder response(UUri source, UUri sink, UUID reqid) {
         Objects.requireNonNull(source, "source cannot be null.");
-        Objects.requireNonNull(sink, "sink cannot be null.");
+        Objects.requireNonNull(sink, "sink cannot be null for Response.");
         Objects.requireNonNull(reqid, "reqid cannot be null.");
 
         return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),

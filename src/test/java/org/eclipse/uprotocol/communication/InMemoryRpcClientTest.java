@@ -20,9 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.CompletableFuture;
-
 import org.eclipse.uprotocol.transport.UTransport;
+import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
+import org.eclipse.uprotocol.uuid.factory.UuidFactory;
+import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UPriority;
@@ -91,31 +94,6 @@ public class InMemoryRpcClientTest {
 
 
     @Test
-    @DisplayName("Test calling invokeMethod with MultiInvokeUTransport that will invoke multiple listeners")
-    public void testInvokeMethodWithMultiInvokeTransport() {
-        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
-        UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
-
-        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
-        assertNotNull(response);
-        CompletionStage<UPayload> response2 = rpcClient.invokeMethod(createMethodUri(), payload, null);
-        assertNotNull(response2);
-
-        assertDoesNotThrow(() -> {
-            UPayload result2 = response2.toCompletableFuture().get();
-            assertTrue(payload.equals(result2));
-        });
-        
-        assertDoesNotThrow(() -> {
-            UPayload result1 = response.toCompletableFuture().get();
-            assertTrue(payload.equals(result1));
-        });
-
-        assertFalse(response.toCompletableFuture().isCompletedExceptionally());
-    }
-
-
-    @Test
     @DisplayName("Test calling close for DefaultRpcClient when there are multiple response listeners registered")
     public void testCloseWithMultipleListeners() {
         InMemoryRpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
@@ -167,6 +145,55 @@ public class InMemoryRpcClientTest {
         assertEquals(((UStatus) (((UStatusException) exception.getCause())).getStatus()).getCode(),
             UCode.FAILED_PRECONDITION);
     }
+
+
+    @Test
+    @DisplayName("Test calling handleResponse when it gets a response for an unknown request")
+    public void testHandleResponseForUnknownRequest() {
+        UTransport transport = new TestUTransport() {
+            @Override
+            public UMessage buildResponse(UMessage request) {
+                UAttributes attributes = UAttributes.newBuilder(request.getAttributes())
+                    .setId(UuidFactory.Factories.UPROTOCOL.factory().create()).build();
+                return UMessageBuilder.response(attributes).build();
+            }
+        };
+        
+        InMemoryRpcClient rpcClient = new InMemoryRpcClient(transport);
+
+        CallOptions options = new CallOptions(10, UPriority.UPRIORITY_CS5);
+        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), null, options);
+        assertNotNull(response);
+        assertThrows(ExecutionException.class, () -> {
+            UPayload payload = response.toCompletableFuture().get();
+            assertEquals(payload, UPayload.EMPTY);
+        });
+        assertTrue(response.toCompletableFuture().isCompletedExceptionally());
+    }
+
+
+    @Test
+    @DisplayName("Test calling handleResponse when it gets a message that is not a response")
+    public void testHandleResponseForNonResponseMessage() {
+        UTransport transport = new TestUTransport() {
+            @Override
+            public UMessage buildResponse(UMessage request) {
+                return UMessageBuilder.publish(createMethodUri()).build();
+            }
+        };
+        
+        InMemoryRpcClient rpcClient = new InMemoryRpcClient(transport);
+
+        CallOptions options = new CallOptions(10, UPriority.UPRIORITY_CS5);
+        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), null, options);
+        assertNotNull(response);
+        assertThrows(ExecutionException.class, () -> {
+            UPayload payload = response.toCompletableFuture().get();
+            assertEquals(payload, UPayload.EMPTY);
+        });
+        assertTrue(response.toCompletableFuture().isCompletedExceptionally());
+    }
+
 
     private UUri createMethodUri() {
         return UUri.newBuilder()

@@ -15,15 +15,7 @@ package org.eclipse.uprotocol.communication;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Iterator;
-import java.util.concurrent.Executors;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CompletableFuture;
-
-import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
 import org.eclipse.uprotocol.v1.UCode;
@@ -411,7 +403,67 @@ public class InMemoryRpcServerTest {
         });
     }
 
+    @Test
+    @DisplayName("Test registerRequestHandler when passed parameters are null")
+    public void test_registerRequestHandler_null_parameters() {
+        RequestHandler handler = new RequestHandler() {
+            @Override
+            public UPayload handleRequest(UMessage request) {
+                return UPayload.EMPTY;
+            }
+        };
 
+        RpcServer server = new InMemoryRpcServer(new TestUTransport());
+        assertDoesNotThrow(() -> {
+            UStatus status = server.registerRequestHandler(null, null).toCompletableFuture().get();
+            assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(status.getMessage(), "Method URI or handler missing");
+        });
+
+        assertDoesNotThrow(() -> {
+            UStatus status = server.registerRequestHandler(createMethodUri(), null).toCompletableFuture().get();
+            assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(status.getMessage(), "Method URI or handler missing");
+        });
+        
+        assertDoesNotThrow(() -> {
+            UStatus status = server.registerRequestHandler(null, handler).toCompletableFuture().get();
+            assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(status.getMessage(), "Method URI or handler missing");
+        });
+    }
+
+    @Test
+    @DisplayName("Test unregisterRequestHandler when passed parameters are null")
+    public void test_unregisterRequestHandler_null_parameters() {
+        RequestHandler handler = new RequestHandler() {
+            @Override
+            public UPayload handleRequest(UMessage request) {
+                return UPayload.EMPTY;
+            }
+        };
+
+        RpcServer server = new InMemoryRpcServer(new TestUTransport());
+        assertDoesNotThrow(() -> {
+            UStatus status = server.unregisterRequestHandler(null, null).toCompletableFuture().get();
+            assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(status.getMessage(), "Method URI or handler missing");
+        });
+
+        assertDoesNotThrow(() -> {
+            UStatus status = server.unregisterRequestHandler(createMethodUri(), null).toCompletableFuture().get();
+            assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(status.getMessage(), "Method URI or handler missing");
+        });
+        
+        assertDoesNotThrow(() -> {
+            UStatus status = server.unregisterRequestHandler(null, handler).toCompletableFuture().get();
+            assertEquals(status.getCode(), UCode.INVALID_ARGUMENT);
+            assertEquals(status.getMessage(), "Method URI or handler missing");
+        });
+    }
+
+    
     // Helper method to create a UUri that matches that of the default TestUTransport
     private UUri createMethodUri() {
         return UUri.newBuilder()
