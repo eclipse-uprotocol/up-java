@@ -295,17 +295,9 @@ public class InMemorySubscriberTest {
                 .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBED);
         });
 
-        assertThrows(CompletionException.class, () -> {
-            CompletionStage<SubscriptionResponse> response = subscriber.subscribe(
-                topic, listener, CallOptions.DEFAULT, handler);
-            assertTrue(response.toCompletableFuture().isCompletedExceptionally());
-            response.handle((r, e) -> {
-                e = e.getCause();
-                assertTrue(e instanceof UStatusException);
-                assertEquals(((UStatusException) e).getCode(), UCode.ALREADY_EXISTS);
-                return null;
-            });
-            response.toCompletableFuture().join();
+        assertDoesNotThrow(() -> {
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
+                .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBED);
         });
 
         verify(rpcClient, times(2)).invokeMethod(any(), any(), any());
@@ -358,12 +350,16 @@ public class InMemorySubscriberTest {
 
         when(notifier.unregisterNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+        
+        when(transport.unregisterListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
         InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
         assertNotNull(subscriber);
 
         assertDoesNotThrow(() -> {
             CompletionStage<UStatus> response = subscriber.unsubscribe(topic, listener);
+            assertNotNull(response);
             assertFalse(response.toCompletableFuture().isCompletedExceptionally());
             assertEquals(response.toCompletableFuture().get().getCode(), UCode.PERMISSION_DENIED);
         });

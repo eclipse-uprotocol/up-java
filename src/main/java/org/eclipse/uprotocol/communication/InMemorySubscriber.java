@@ -130,12 +130,7 @@ public class InMemorySubscriber implements Subscriber {
             // Then Add the handler (if present) to the hashMap
             .thenApply(response -> {
                 if (handler != null) {
-                    mHandlers.compute(topic, (key, currentHandler) -> {
-                        if (currentHandler != null) {
-                            throw new UStatusException(UCode.ALREADY_EXISTS, "Handler already registered");
-                        }
-                        return handler;
-                    });
+                    mHandlers.computeIfAbsent(topic, k -> handler);
                 }
                 return response;
             });
@@ -160,17 +155,20 @@ public class InMemorySubscriber implements Subscriber {
 
         final UnsubscribeRequest unsubscribeRequest = UnsubscribeRequest.newBuilder().setTopic(topic).build();
         
-        return RpcMapper.mapResponseToResult(
+        CompletionStage<RpcResult<UnsubscribeResponse>> result = RpcMapper.mapResponseToResult(
             // Send the unsubscribe request
-            rpcClient.invokeMethod(UNSUBSCRIBE_METHOD, UPayload.pack(unsubscribeRequest), options), 
-            UnsubscribeResponse.class)
-            
+            rpcClient.invokeMethod(UNSUBSCRIBE_METHOD, UPayload.pack(unsubscribeRequest), options),     
+                UnsubscribeResponse.class)
             // Then unregister the listener
-            .thenCompose(response -> {
+            .whenComplete((response, ex) -> mHandlers.remove(topic));
+
+        // Create a CompletionStage that will handle the response from the unsubscribe request
+        return transport.unregisterListener(topic, listener)
+            .thenCombine(result, (status, response) -> {
                 if (response.isSuccess()) {
-                    return transport.unregisterListener(topic, listener);
+                    return UStatus.newBuilder().setCode(UCode.OK).build();
                 }
-                return CompletableFuture.completedFuture(response.failureValue());
+                return response.failureValue();
             });
     }
 
