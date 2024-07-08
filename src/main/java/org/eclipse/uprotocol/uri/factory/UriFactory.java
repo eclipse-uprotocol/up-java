@@ -22,6 +22,10 @@ import com.google.protobuf.Descriptors.ServiceDescriptor;
  * URI Factory that builds URIs from protos.
  */
 public interface UriFactory {
+    String WILDCARD_AUTHORITY = "*";
+    int WILDCARD_ENTITY_ID = 0xFFFF;
+    int WILDCARD_ENTITY_VERSION = 0xFF;
+    int WILDCARD_RESOURCE_ID = 0xFFFF;
 
     /**
      * Builds a UEntity for an protobuf generated code Service Descriptor.
@@ -68,8 +72,8 @@ public interface UriFactory {
      * @return Returns a UEntity for an protobuf generated code Service Descriptor.
      */
     UUri ANY = UUri.newBuilder()
-            .setAuthorityName("*")
-            .setUeId(0xFFFF)
-            .setUeVersionMajor(0xFF)
-            .setResourceId(0xFFFF).build();
+            .setAuthorityName(WILDCARD_AUTHORITY)
+            .setUeId(WILDCARD_ENTITY_ID)
+            .setUeVersionMajor(WILDCARD_ENTITY_VERSION)
+            .setResourceId(WILDCARD_RESOURCE_ID).build();
 }

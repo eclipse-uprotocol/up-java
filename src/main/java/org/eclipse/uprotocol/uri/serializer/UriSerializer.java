@@ -12,6 +12,7 @@
  */
 package org.eclipse.uprotocol.uri.serializer;
 
+import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UUri;
 
@@ -21,10 +22,7 @@ import org.eclipse.uprotocol.v1.UUri;
  */
 public interface UriSerializer {
 
-    /**
-     * The wildcard id for a field.
-     */
-    int WILDCARD_ID = 0xFFFF;
+
 
     /**
      * Support for serializing {@link UUri} objects into their String format.
@@ -113,12 +111,12 @@ public interface UriSerializer {
         }
 
         // Ensure the major version is less than the wildcard
-        if (builder.getUeVersionMajor() > UriValidator.MAJOR_VERSION_WILDCARD) {
+        if (builder.getUeVersionMajor() > UriFactory.WILDCARD_ENTITY_VERSION) {
             return UUri.getDefaultInstance();
         }
 
         // Ensure the resource id is less than the wildcard
-        if (builder.getResourceId() > WILDCARD_ID) {
+        if (builder.getResourceId() > UriFactory.WILDCARD_ENTITY_ID) {
             return UUri.getDefaultInstance();
         }
 

@@ -13,6 +13,7 @@
 package org.eclipse.uprotocol.uri.validator;
 
 
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -165,5 +166,117 @@ class UriValidatorTest {
             .setUeId(1)
             .setResourceId(0).build();
         assertFalse(UriValidator.isRpcMethod(uri));
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for identical URIs")
+    public void test_Matches_Succeeds_For_Identical_Uris() {
+        UUri patternUri = UriSerializer.deserialize("//authority/A410/3/1003");
+        UUri candidateUri = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertTrue(UriValidator.matches(patternUri, candidateUri));
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with wildcard authority")
+    public void test_Matches_Succeeds_For_Pattern_With_Wildcard_Authority() {
+        UUri patternUri = UriSerializer.deserialize("//*/A410/3/1003");
+        UUri candidateUri = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertTrue(UriValidator.matches(patternUri, candidateUri));
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with wildcard authority and local candidate URI")
+    public void test_Matches_Succeeds_For_Pattern_With_Wildcard_Authority_And_Local_Candidate_Uri() {
+        UUri patternUri = UriSerializer.deserialize("//*/A410/3/1003");
+        UUri candidateUri = UriSerializer.deserialize("/A410/3/1003");
+        assertTrue(UriValidator.matches(patternUri, candidateUri));
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with wildcard entity ID")
+    public void test_Matches_Succeeds_For_Pattern_With_Wildcard_Entity_Id() {
+        UUri patternUri = UriSerializer.deserialize("//authority/FFFF/3/1003");
+        UUri candidateUri = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertTrue(UriValidator.matches(patternUri, candidateUri));
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with matching entity instance")
+    public void test_Matches_Succeeds_For_Pattern_With_Matching_Entity_Instance() {
+        UUri patternUri = UriSerializer.deserialize("//authority/A410/3/1003");
+        UUri candidateUri = UriSerializer.deserialize("//authority/2A410/3/1003");
+        assertTrue(UriValidator.matches(patternUri, candidateUri));
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with wildcard entity version")
+    public void test_Matches_Succeeds_For_Pattern_With_Wildcard_Entity_Version() {
+        UUri patternUri = UriSerializer.deserialize("//authority/A410/FF/1003");
+        UUri candidateUri = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertTrue(UriValidator.matches(patternUri, candidateUri));
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with wildcard resource")
+    public void test_Matches_Succeeds_For_Pattern_With_Wildcard_Resource() {
+        UUri patternUri = UriSerializer.deserialize("//authority/A410/3/FFFF");
+        UUri candidateUri = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertTrue(UriValidator.matches(patternUri, candidateUri));
+    }
+
+    @Test
+    @DisplayName("Matches fails for upper case authority")
+    public void test_Matches_Fail_For_Upper_Case_Authority() {
+        UUri pattern = UriSerializer.deserialize("//Authority/A410/3/1003");
+        UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertFalse(UriValidator.matches(pattern, candidate));
+    }
+
+    @Test
+    @DisplayName("Matches fails for local pattern with authority")
+    public void test_Matches_Fail_For_Local_Pattern_With_Authority() {
+        UUri pattern = UriSerializer.deserialize("/A410/3/1003");
+        UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertFalse(UriValidator.matches(pattern, candidate));
+    }
+
+    @Test
+    @DisplayName("Matches fails for different authority")
+    public void test_Matches_Fail_For_Different_Authority() {
+        UUri pattern = UriSerializer.deserialize("//other/A410/3/1003");
+        UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertFalse(UriValidator.matches(pattern, candidate));
+    }
+
+    @Test
+    @DisplayName("Matches fails for different entity ID")
+    public void test_Matches_Fail_For_Different_Entity_Id() {
+        UUri pattern = UriSerializer.deserialize("//authority/45/3/1003");
+        UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertFalse(UriValidator.matches(pattern, candidate));
+    }
+
+    @Test
+    @DisplayName("Matches fails for different entity instance")
+    public void test_Matches_Fail_For_Different_Entity_Instance() {
+        UUri pattern = UriSerializer.deserialize("//authority/30A410/3/1003");
+        UUri candidate = UriSerializer.deserialize("//authority/2A410/3/1003");
+        assertFalse(UriValidator.matches(pattern, candidate));
+    }
+
+    @Test
+    @DisplayName("Matches fails for different entity version")
+    public void test_Matches_Fail_For_Different_Entity_Version() {
+        UUri pattern = UriSerializer.deserialize("//authority/A410/1/1003");
+        UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertFalse(UriValidator.matches(pattern, candidate));
+    }
+
+    @Test
+    @DisplayName("Matches fails for different resource")
+    public void test_Matches_Fail_For_Different_Resource() {
+        UUri pattern = UriSerializer.deserialize("//authority/A410/3/ABCD");
+        UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertFalse(UriValidator.matches(pattern, candidate));
     }
 }
