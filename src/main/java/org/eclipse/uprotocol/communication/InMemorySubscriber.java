@@ -91,16 +91,21 @@ public class InMemorySubscriber implements Subscriber {
      * Subscribe to a given topic. <br>
      * 
      * The API will return a {@link CompletionStage} with the response {@link SubscriptionResponse} or exception
-     * with the failure if the subscription was not successful. The API will also register the listener to be
-     * called when messages are received and allow the caller to register a listener to be notified of changes
-     * to the subscription state (ex. PENDING to SUBSCRIBED, or SUBSCRIBED to UNSUBSCRIBED, etc...).
+     * with the failure if the subscription was not successful. The optional passed {@link SubscriptionChangeHandler}
+     * is only used to receive notification when {@link SubscriptionStatus.State} changes from SUBSCRIBE_PENDING 
+     * to SUBSCRIBED, this happens when we subscribe to remote topics that the device we are on has not yet
+     * a subscriber who has subscribed to said topic. 
+     * 
+     * NOTE: If you call this API multiple times passing a different handler, {@link UCode}.ALREADY_EXISTS will be
+     * returned.
      * 
      * @param topic The topic to subscribe to.
      * @param listener The listener to be called when a message is received on the topic.
      * @param options The call options for the subscription.
      * @param handler {@link SubscriptionChangeHandler} to handle changes to subscription states.
      * @return Returns the CompletionStage with {@link SubscriptionResponse} or exception with the failure
-     * reason as {@link UStatus}.
+     * reason as {@link UStatus}. {@link UCode}.ALREADY_EXISTS will be returned if you call this API multiple
+     * times passing a different handler. 
      */
     @Override
     public CompletionStage<SubscriptionResponse> subscribe(UUri topic, UListener listener, CallOptions options,
@@ -127,10 +132,13 @@ public class InMemorySubscriber implements Subscriber {
                 return CompletableFuture.completedFuture(response);
             })
 
-            // Then Add the handler (if present) to the hashMap
+            // Then Add the handler (if the client provided one) only if we are in a SUBSCRIBE_PENDING state
+            // so that we can be notified when the subscription state changes to SUBSCRIBED.
             .thenApply(response -> {
-                if (handler != null) {
-                    mHandlers.computeIfAbsent(topic, k -> handler);
+                if  (handler != null && 
+                     response.getStatus().getState() == SubscriptionStatus.State.SUBSCRIBE_PENDING && 
+                     mHandlers.putIfAbsent(topic, handler) != null) {
+                    throw new UStatusException(UCode.ALREADY_EXISTS, "Handler already exists");
                 }
                 return response;
             });
@@ -141,7 +149,9 @@ public class InMemorySubscriber implements Subscriber {
      * Unsubscribe to a given topic. <br>
      * 
      * The subscriber no longer wishes to be subscribed to said topic so we issue a unsubscribe
-     * request to the USubscription service.
+     * request to the USubscription service. The API will return a {@link CompletionStage} with the
+     * {@link UStatus} of the result. If we are unable to unsubscribe to the topic with USubscription
+     * service, the listener and handler (if any) will remain registered.
      * 
      * @param topic The topic to unsubscribe to.
      * @param listener The listener to be called when a message is received on the topic.
@@ -213,25 +223,20 @@ public class InMemorySubscriber implements Subscriber {
         Optional<Update> subscriptionUpdate = UPayload.unpack(
             message.getPayload(), message.getAttributes().getPayloadFormat(), Update.class);
 
-        // We did not receive the expected payload, ignore the message
-        if (!subscriptionUpdate.isPresent()) {
-            return;
-        }
-
-        // Check if we have a handler registered for the subscription change notification for the specific 
-        // topic that triggered the subscription change notification. It is very possible that the client
-        // did not register one to begin with (ex/ they don't care to receive them)
-        final SubscriptionChangeHandler handler = mHandlers.get(subscriptionUpdate.get().getTopic());
-        if (handler == null) {
-            return;
-        }
-
-        // Public Service Announcement to the client of the subscription change.
-        try {
-            handler.handleSubscriptionChange(subscriptionUpdate.get().getTopic(), 
-                subscriptionUpdate.get().getStatus());
-        } catch (Exception e) {
-            Logger.getGlobal().info(e.getMessage());
+        // Check if we got the right subscription change notification
+        if (subscriptionUpdate.isPresent()) {
+            // Check if we have a handler registered for the subscription change notification for the specific 
+            // topic that triggered the subscription change notification. It is very possible that the client
+            // did not register one to begin with (i.e they don't care to receive it)
+            mHandlers.computeIfPresent(subscriptionUpdate.get().getTopic(), (topic, handler) -> {
+                try {
+                    handler.handleSubscriptionChange(subscriptionUpdate.get().getTopic(), 
+                        subscriptionUpdate.get().getStatus());
+                } catch (Exception e) {
+                    Logger.getGlobal().info(e.getMessage());
+                }
+                return handler;
+            });
         }
     }
 }

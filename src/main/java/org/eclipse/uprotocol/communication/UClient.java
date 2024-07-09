@@ -118,6 +118,5 @@ public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcC
     public void close() {
         rpcClient.close();
         subscriber.close();
-        transport.close();
     }
 }
