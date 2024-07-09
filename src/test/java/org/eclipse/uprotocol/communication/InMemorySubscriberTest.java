@@ -41,6 +41,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionStatus;
+import org.eclipse.uprotocol.core.usubscription.v3.UnsubscribeResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.Update;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
@@ -317,7 +318,7 @@ public class InMemorySubscriberTest {
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
-            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(UStatus.newBuilder().setCode(UCode.OK).build())));
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(UnsubscribeResponse.getDefaultInstance())));
 
         when(notifier.unregisterNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
@@ -345,13 +346,44 @@ public class InMemorySubscriberTest {
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
-            .thenReturn(CompletableFuture.failedFuture(
-                    new UStatusException(UCode.PERMISSION_DENIED, "Not permitted")));
+            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(UnsubscribeResponse.getDefaultInstance())));
 
         when(notifier.unregisterNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
         
         when(transport.unregisterListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.ABORTED).build()));    
+
+        InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
+        assertNotNull(subscriber);
+
+        assertDoesNotThrow(() -> {
+            CompletionStage<UStatus> response = subscriber.unsubscribe(topic, listener);
+            assertNotNull(response);
+            assertFalse(response.toCompletableFuture().isCompletedExceptionally());
+            assertEquals(response.toCompletableFuture().get().getCode(), UCode.ABORTED);
+        });
+
+        subscriber.close();
+
+        verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
+        verify(notifier, times(1)).unregisterNotificationListener(any(), any());
+        verify(notifier, times(1)).registerNotificationListener(any(), any());
+        verify(transport, times(1)).unregisterListener(any(), any());
+    }
+
+
+    @Test
+    @DisplayName("Test unsubscribe when invokemethod returned OK but we failed to unregister the listener")
+    void test_unsubscribe_when_invokemethod_returned_OK_but_we_failed_to_unregister_the_listener() {
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
+
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.failedStage(
+                    new UStatusException(UCode.PERMISSION_DENIED, "Not permitted")));
+
+        when(notifier.unregisterNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
         InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);

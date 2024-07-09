@@ -155,21 +155,22 @@ public class InMemorySubscriber implements Subscriber {
 
         final UnsubscribeRequest unsubscribeRequest = UnsubscribeRequest.newBuilder().setTopic(topic).build();
         
-        CompletionStage<RpcResult<UnsubscribeResponse>> result = RpcMapper.mapResponseToResult(
+        return RpcMapper.mapResponseToResult(
             // Send the unsubscribe request
             rpcClient.invokeMethod(UNSUBSCRIBE_METHOD, UPayload.pack(unsubscribeRequest), options),     
                 UnsubscribeResponse.class)
             // Then unregister the listener
-            .whenComplete((response, ex) -> mHandlers.remove(topic));
-
-        // Create a CompletionStage that will handle the response from the unsubscribe request
-        return transport.unregisterListener(topic, listener)
-            .thenCombine(result, (status, response) -> {
+            .thenCompose( response ->  {
                 if (response.isSuccess()) {
-                    return UStatus.newBuilder().setCode(UCode.OK).build();
+                    return transport.unregisterListener(topic, listener);
                 }
-                return response.failureValue();
-            });
+                return CompletableFuture.completedFuture(response.failureValue());
+            })
+            .whenComplete((status, exception) -> {
+                if (status.getCode() == UCode.OK) {
+                    mHandlers.remove(topic);
+                }
+            });       
     }
 
 
