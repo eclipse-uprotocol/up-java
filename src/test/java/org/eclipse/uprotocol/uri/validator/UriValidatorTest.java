@@ -201,9 +201,17 @@ class UriValidatorTest {
     }
 
     @Test
-    @DisplayName("Matches succeeds for pattern with matching entity instance")
-    public void test_Matches_Succeeds_For_Pattern_With_Matching_Entity_Instance() {
+    @DisplayName("Matches succeeds for pattern with similar entity instance")
+    public void test_Matches_Succeeds_For_Pattern_With_Similar_Entity_Instance() {
         UUri patternUri = UriSerializer.deserialize("//authority/A410/3/1003");
+        UUri candidateUri = UriSerializer.deserialize("//authority/2A410/3/1003");
+        assertTrue(UriValidator.matches(patternUri, candidateUri));
+    }
+
+    @Test
+    @DisplayName("Matches succeeds for pattern with identical entity instance")
+    public void test_Matches_Succeeds_For_Pattern_With_Identical_Entity_Instance() {
+        UUri patternUri = UriSerializer.deserialize("//authority/2A410/3/1003");
         UUri candidateUri = UriSerializer.deserialize("//authority/2A410/3/1003");
         assertTrue(UriValidator.matches(patternUri, candidateUri));
     }
