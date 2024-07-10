@@ -92,8 +92,8 @@ public class InMemorySubscriber implements Subscriber {
      * 
      * The API will return a {@link CompletionStage} with the response {@link SubscriptionResponse} or exception
      * with the failure if the subscription was not successful. The optional passed {@link SubscriptionChangeHandler}
-     * is only used to receive notification when {@link SubscriptionStatus.State} changes from SUBSCRIBE_PENDING 
-     * to SUBSCRIBED, this happens when we subscribe to remote topics that the device we are on has not yet
+     * is used to receive notifications of changes to {@link SubscriptionStatus.State} such as SUBSCRIBE_PENDING 
+     * to SUBSCRIBED that occurs when we subscribe to remote topics that the device we are on has not yet
      * a subscriber who has subscribed to said topic. 
      * 
      * NOTE: If you call this API multiple times passing a different handler, {@link UCode}.ALREADY_EXISTS will be
@@ -132,15 +132,17 @@ public class InMemorySubscriber implements Subscriber {
                 return CompletableFuture.completedFuture(response);
             })
 
-            // Then Add the handler (if the client provided one) only if we are in a SUBSCRIBE_PENDING state
-            // so that we can be notified when the subscription state changes to SUBSCRIBED.
-            .thenApply(response -> {
-                if  (handler != null && 
-                     response.getStatus().getState() == SubscriptionStatus.State.SUBSCRIBE_PENDING && 
-                     mHandlers.putIfAbsent(topic, handler) != null) {
-                    throw new UStatusException(UCode.ALREADY_EXISTS, "Handler already exists");
+            // Then Add the handler (if the client provided one) so the client can be notified of 
+            // changes to the subscription state.
+            .whenComplete( (response, exception) -> {
+                if (exception == null && handler != null) {
+                    mHandlers.compute(topic, (k, existingHandler) -> {
+                        if (existingHandler != null && existingHandler != handler) {
+                            throw new UStatusException(UCode.ALREADY_EXISTS, "Handler already registered");
+                        }
+                        return handler;
+                    });
                 }
-                return response;
             });
     }
 
@@ -176,19 +178,16 @@ public class InMemorySubscriber implements Subscriber {
                 }
                 return CompletableFuture.completedFuture(response.failureValue());
             })
-            .whenComplete((status, exception) -> {
-                if (status.getCode() == UCode.OK) {
-                    mHandlers.remove(topic);
-                }
-            });       
+            // Remove the handler regardless if unregisterListener() succeeds or not
+            .whenComplete((status, exception) ->  mHandlers.remove(topic));       
     }
 
 
     /**
-     * Unregister a listener from a topic. <br>
+     * Unregister a listener and remove any registered {@link SubscriptionChangeHandler} for the topic. <br>
      * 
-     * This method will only unregister the listener for a given subscription thus allowing a uE to stay
-     * subscribed even if the listener is removed.
+     * This method is used to remove handlers/listeners without notifying the uSubscription service 
+     * so that we can be persistently subscribed even when the uE is not running.
      * 
      * @param topic The topic to subscribe to.
      * @param listener The listener to be called when a message is received on the topic.
@@ -198,7 +197,8 @@ public class InMemorySubscriber implements Subscriber {
     public CompletionStage<UStatus> unregisterListener(UUri topic, UListener listener) {
         Objects.requireNonNull(topic, "Unsubscribe topic missing");
         Objects.requireNonNull(listener, "Request listener missing");
-        return transport.unregisterListener(topic, listener);
+        return transport.unregisterListener(topic, listener)
+            .whenComplete((status, exception) ->  mHandlers.remove(topic));
     }
 
     public void close() {

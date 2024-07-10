@@ -404,14 +404,11 @@ public class InMemorySubscriberTest {
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
-            .thenReturn(CompletableFuture.completedFuture(UPayload.pack(UnsubscribeResponse.getDefaultInstance())));
+            .thenReturn(CompletableFuture.failedStage(new UStatusException(UCode.CANCELLED, "Operation cancelled")));
 
         when(notifier.unregisterNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
         
-        when(transport.unregisterListener(any(UUri.class), any(UListener.class)))
-            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.ABORTED).build()));    
-
         InMemorySubscriber subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
         assertNotNull(subscriber);
 
@@ -419,7 +416,7 @@ public class InMemorySubscriberTest {
             CompletionStage<UStatus> response = subscriber.unsubscribe(topic, listener);
             assertNotNull(response);
             assertFalse(response.toCompletableFuture().isCompletedExceptionally());
-            assertEquals(response.toCompletableFuture().get().getCode(), UCode.ABORTED);
+            assertEquals(response.toCompletableFuture().get().getCode(), UCode.CANCELLED);
         });
 
         subscriber.close();
@@ -427,7 +424,7 @@ public class InMemorySubscriberTest {
         verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).unregisterNotificationListener(any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
-        verify(transport, times(1)).unregisterListener(any(), any());
+        verify(transport, times(0)).unregisterListener(any(), any());
     }
 
 
