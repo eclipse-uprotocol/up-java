@@ -279,4 +279,51 @@ class UriValidatorTest {
         UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
         assertFalse(UriValidator.matches(pattern, candidate));
     }
+
+    @Test
+    @DisplayName("hasWildcard() for an null UUri")
+    void test_hasWildcard_for_null_UUri() {
+        assertFalse(UriValidator.hasWildcard(null));
+    }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with empty URI")
+    void test_hasWildcard_for_empty_UUri() {
+        assertFalse(UriValidator.hasWildcard(UUri.getDefaultInstance()));
+    }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with wildcard authority")
+    void test_hasWildcard_for_UUri_with_wildcard_authority() {
+        UUri uri = UriSerializer.deserialize("//*/A410/3/1003");
+        assertTrue(UriValidator.hasWildcard(uri));
+    }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with wildcard entity ID")
+    void test_hasWildcard_for_UUri_with_wildcard_entity_id() {
+        UUri uri = UriSerializer.deserialize("//authority/FFFF/3/1003");
+        assertTrue(UriValidator.hasWildcard(uri));
+    }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with wildcard entity version")
+    void test_hasWildcard_for_UUri_with_wildcard_entity_instance() {
+        UUri uri = UriSerializer.deserialize("//authority/A410/FF/1003");
+        assertTrue(UriValidator.hasWildcard(uri));
+    }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with wildcard resource")
+    void test_hasWildcard_for_UUri_with_wildcard_resource() {
+        UUri uri = UriSerializer.deserialize("//authority/A410/3/FFFF");
+        assertTrue(UriValidator.hasWildcard(uri));
+    }
+
+    @Test
+    @DisplayName("hasWildcard() for a UUri with no wildcards")
+    void test_hasWildcard_for_UUri_with_no_wildcards() {
+        UUri uri = UriSerializer.deserialize("//authority/A410/3/1003");
+        assertFalse(UriValidator.hasWildcard(uri));
+    }
 }

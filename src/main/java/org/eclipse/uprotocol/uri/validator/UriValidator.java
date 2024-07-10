@@ -192,6 +192,21 @@ public interface UriValidator {
                 matchesEntity(uriToMatch, candidateUri) &&
                 matchesResource(uriToMatch, candidateUri);
     }
+
+
+    /**
+     * Checks if the URI has a wildcard in any of its fields.
+     *
+     * @param uri The URI to check for wildcards.
+     * @return True if the URI has a wildcard, False otherwise.
+     */
+    static boolean hasWildcard(UUri uri) {
+        return !isEmpty(uri) && 
+                (uri.getAuthorityName().equals(UriFactory.WILDCARD_AUTHORITY) ||
+                uri.getUeId() == UriFactory.WILDCARD_ENTITY_ID ||
+                uri.getUeVersionMajor() == UriFactory.WILDCARD_ENTITY_VERSION ||
+                uri.getResourceId() == UriFactory.WILDCARD_RESOURCE_ID);
+    }
 }
 
 
