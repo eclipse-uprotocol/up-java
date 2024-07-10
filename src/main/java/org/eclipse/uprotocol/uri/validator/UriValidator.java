@@ -203,7 +203,7 @@ public interface UriValidator {
     static boolean hasWildcard(UUri uri) {
         return !isEmpty(uri) && 
                 (uri.getAuthorityName().equals(UriFactory.WILDCARD_AUTHORITY) ||
-               (uri.getUeId() & UriFactory.WILDCARD_ENTITY_ID)== UriFactory.WILDCARD_ENTITY_ID ||
+               (uri.getUeId() & UriFactory.WILDCARD_ENTITY_ID) == UriFactory.WILDCARD_ENTITY_ID ||
                 uri.getUeVersionMajor() == UriFactory.WILDCARD_ENTITY_VERSION ||
                 uri.getResourceId() == UriFactory.WILDCARD_RESOURCE_ID);
     }
