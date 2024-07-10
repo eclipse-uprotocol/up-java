@@ -174,12 +174,13 @@ public class InMemorySubscriber implements Subscriber {
             // Then unregister the listener
             .thenCompose( response ->  {
                 if (response.isSuccess()) {
+                    // Remove the handler only if unsubscribe was successful
+                    mHandlers.remove(topic);
+
                     return transport.unregisterListener(topic, listener);
                 }
                 return CompletableFuture.completedFuture(response.failureValue());
-            })
-            // Remove the handler regardless if unregisterListener() succeeds or not
-            .whenComplete((status, exception) ->  mHandlers.remove(topic));       
+            });
     }
 
 
