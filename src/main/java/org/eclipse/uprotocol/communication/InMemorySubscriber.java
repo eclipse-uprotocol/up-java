@@ -68,7 +68,7 @@ public class InMemorySubscriber implements Subscriber {
     
 
     /**
-     * Constructor for the DefaultSubscriber.
+     * Creates a new subscriber for existing Communication Layer client implementations.
      * 
      * @param transport the transport to use for sending the notifications
      * @param rpcClient the rpc client to use for sending the RPC requests
@@ -88,23 +88,21 @@ public class InMemorySubscriber implements Subscriber {
 
 
     /**
-     * Subscribe to a given topic. <br>
+     * Subscribes to a given topic.
      * 
      * The API will return a {@link CompletionStage} with the response {@link SubscriptionResponse} or exception
      * with the failure if the subscription was not successful. The optional passed {@link SubscriptionChangeHandler}
-     * is used to receive notifications of changes to {@link SubscriptionStatus.State} such as SUBSCRIBE_PENDING 
-     * to SUBSCRIBED that occurs when we subscribe to remote topics that the device we are on has not yet
-     * a subscriber who has subscribed to said topic. 
-     * 
-     * NOTE: If you call this API multiple times passing a different handler, {@link UCode}.ALREADY_EXISTS will be
-     * returned.
+     * is used to receive notifications of changes to the subscription status like a transition from
+     * {@link SubscriptionStatus.State.SUBSCRIBE_PENDING} to {@link SubscriptionStatus.State.SUBSCRIBED} that
+     * occurs when we subscribe to remote topics that the device we are on has not yet a subscriber that has
+     * subscribed to said topic. 
      * 
      * @param topic The topic to subscribe to.
      * @param listener The listener to be called when a message is received on the topic.
      * @param options The call options for the subscription.
      * @param handler {@link SubscriptionChangeHandler} to handle changes to subscription states.
      * @return Returns the CompletionStage with {@link SubscriptionResponse} or exception with the failure
-     * reason as {@link UStatus}. {@link UCode}.ALREADY_EXISTS will be returned if you call this API multiple
+     * reason as {@link UStatus}. {@link UCode.ALREADY_EXISTS} will be returned if you call this API multiple
      * times passing a different handler. 
      */
     @Override
@@ -127,6 +125,13 @@ public class InMemorySubscriber implements Subscriber {
             .thenCompose(response -> {
                 if ( response.getStatus().getState() == SubscriptionStatus.State.SUBSCRIBED ||
                     response.getStatus().getState() == SubscriptionStatus.State.SUBSCRIBE_PENDING) {
+                    // When registering the listener fails, we have end up in a situation where we
+                    // have successfully (logically) subscribed to the topic via the USubscriptio service
+                    // but we have not been able to register the listener with the local transport.
+                    // This means that events might start getting forwarded to the local authority which
+                    // are not being consumed. Apart from this inefficiency, this does not pose a real
+                    // problem and since we return a failed future, the client might be inclined to try
+                    // again and (eventually) succeed in registering the listener as well.
                     return transport.registerListener(topic, listener).thenApply(status -> response);
                 }
                 return CompletableFuture.completedFuture(response);
@@ -148,7 +153,7 @@ public class InMemorySubscriber implements Subscriber {
 
 
     /**
-     * Unsubscribe to a given topic. <br>
+     * Unsubscribes from a given topic.
      * 
      * The subscriber no longer wishes to be subscribed to said topic so we issue a unsubscribe
      * request to the USubscription service. The API will return a {@link CompletionStage} with the
@@ -185,7 +190,7 @@ public class InMemorySubscriber implements Subscriber {
 
 
     /**
-     * Unregister a listener and remove any registered {@link SubscriptionChangeHandler} for the topic. <br>
+     * Unregisters a listener and removes any registered {@link SubscriptionChangeHandler} for the topic.
      * 
      * This method is used to remove handlers/listeners without notifying the uSubscription service 
      * so that we can be persistently subscribed even when the uE is not running.
@@ -210,7 +215,7 @@ public class InMemorySubscriber implements Subscriber {
 
 
     /**
-     * Handle incoming notifications from the USubscription service.
+     * Handles incoming notifications from the USubscription service.
      * 
      * @param message The notification message from the USubscription service
      */
