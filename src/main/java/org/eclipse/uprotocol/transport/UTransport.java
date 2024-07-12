@@ -13,6 +13,7 @@
 package org.eclipse.uprotocol.transport;
 
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
@@ -20,15 +21,11 @@ import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
- * UTransport is the uP-L1 interface that provides a common API for uE
- * developers to send and receive messages.
- * UTransport implementations contain the details for connecting to the
- * underlying transport technology and
- * sending UMessage using the configured technology. For more information please
- * refer to
+ * UTransport is the uP-L1 interface that provides a common API for uE developers to send and receive messages.
+ * UTransport implementations contain the details for connecting to the underlying transport technology and
+ * sending UMessage using the configured technology. For more information please refer to
  * https://github.com/eclipse-uprotocol/up-spec/blob/main/up-l1/README.adoc.
  */
-
 public interface UTransport {
 
     /**
@@ -44,6 +41,7 @@ public interface UTransport {
      *         (successful or failure).
      */
     CompletionStage<UStatus> send(UMessage message);
+
 
     /**
      * Register {@code UListener} for {@code UUri} source filters to be called when
@@ -62,6 +60,7 @@ public interface UTransport {
         return registerListener(sourceFilter, null, listener);
     }
 
+
     /**
      * Register {@code UListener} for {@code UUri} source and sink filters to be
      * called when a message is received.
@@ -79,10 +78,10 @@ public interface UTransport {
      */
     CompletionStage<UStatus> registerListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
 
+
     /**
      * Unregister {@code UListener} for {@code UUri} source filters. Messages
-     * arriving on this topic will
-     * no longer be processed by this listener.
+     * arriving on this topic will no longer be processed by this listener.
      * 
      * @param sourceFilter The UAttributes::source address pattern that the message
      *                     to receive needs to match.
@@ -97,10 +96,10 @@ public interface UTransport {
         return unregisterListener(sourceFilter, null, listener);
     }
 
+
     /**
      * Unregister {@code UListener} for {@code UUri} source and sink filters.
-     * Messages arriving on this topic will
-     * no longer be processed by this listener.
+     * Messages arriving on this topic will no longer be processed by this listener.
      * 
      * @param sourceFilter The UAttributes::source address pattern that the message
      *                     to receive needs to match.
@@ -115,9 +114,10 @@ public interface UTransport {
      */
     CompletionStage<UStatus> unregisterListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
 
+
     /**
-     * Return the source address for the uE (authority, entity, and resource
-     * information)
+     * Return the source address of the uE.
+     * The Source address is passed to the constructor of a given transport
      * 
      * @return UUri containing the source address
      */
@@ -125,8 +125,20 @@ public interface UTransport {
 
 
     /**
+     * Open the connection to the transport that will trigger any registered listeners
+     * to be registered.
+     * 
+     * @return Returns {@link UStatus} with {@link UCode.OK} if the connection is
+     *         opened correctly, otherwise it returns with the appropriate failure.
+     */
+    default CompletionStage<UStatus> open() {
+        return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
+    }
+
+
+    /**
      * Close the connection to the transport that will trigger any registered listeners
      * to be unregistered.
      */
-    void close();
+    default void close() { }
 }
