@@ -59,7 +59,7 @@ public record UPayload (ByteString data, UPayloadFormat format) {
      * @param message the message to pack
      * @return the UPayload 
      */
-    static UPayload packToAny(Message message) {
+    public static UPayload packToAny(Message message) {
         return message == null ? UPayload.EMPTY :
             new UPayload(Any.pack(message).toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY);
     }
@@ -70,7 +70,7 @@ public record UPayload (ByteString data, UPayloadFormat format) {
      * @param message the message to pack
      * @return the UPayload
      */
-    static UPayload pack(Message message) {
+    public static UPayload pack(Message message) {
         return message == null ? UPayload.EMPTY : 
             new UPayload(message.toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
     }
@@ -81,7 +81,7 @@ public record UPayload (ByteString data, UPayloadFormat format) {
      * @param format payload format.
      * @return the UPayload.
      */
-    static UPayload pack(ByteString data, UPayloadFormat format) {
+    public static UPayload pack(ByteString data, UPayloadFormat format) {
         return new UPayload(data, format);
     }
 
@@ -95,7 +95,7 @@ public record UPayload (ByteString data, UPayloadFormat format) {
      * @param clazz the class of the message to unpack
      * @return the unpacked message
      */
-    static <T extends Message> Optional<T> unpack(UPayload payload, Class<T> clazz) {
+    public static <T extends Message> Optional<T> unpack(UPayload payload, Class<T> clazz) {
         if (payload == null) {
             return Optional.empty();
         }
@@ -114,7 +114,7 @@ public record UPayload (ByteString data, UPayloadFormat format) {
      * @return the unpacked message
      */
     @SuppressWarnings("unchecked")
-    static <T extends Message> Optional<T> unpack(ByteString data, UPayloadFormat format, Class<T> clazz) {
+    public static <T extends Message> Optional<T> unpack(ByteString data, UPayloadFormat format, Class<T> clazz) {
         format = Objects.requireNonNullElse(format, UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED);
         if (data == null || data.isEmpty()) {
             return Optional.empty();
