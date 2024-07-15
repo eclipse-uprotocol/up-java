@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
+import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UUri;
 
@@ -32,19 +32,25 @@ public class UriFilterTest {
     @Test
     @DisplayName("Test constructor with null source and sink URIs")
     public void testConstructorWithNullSourceAndSinkURIs() {
-        assertThrows(NullPointerException.class, () -> new UriFilter(null, null));
+        final UriFilter filter = new UriFilter(null, null);
+        assertTrue(filter.source().equals(UriFactory.ANY));
+        assertTrue(filter.sink().equals(UriFactory.ANY));
     }
 
     @Test
     @DisplayName("Test constructor with null source URI")
     public void testConstructorWithNullSourceURI() {
-        assertThrows(NullPointerException.class, () -> new UriFilter(null, UUri.getDefaultInstance()));
+        final UriFilter filter = new UriFilter(null, SINK_URI);
+        assertTrue(filter.source().equals(UriFactory.ANY));
+        assertTrue(filter.sink().equals(SINK_URI));
     }
 
     @Test
     @DisplayName("Test constructor with null sink URI")
     public void testConstructorWithNullSinkURI() {
-        assertThrows(NullPointerException.class, () -> new UriFilter(UUri.getDefaultInstance(), null));
+        final UriFilter filter = new UriFilter(SOURCE_URI, null);
+        assertTrue(filter.source().equals(SOURCE_URI));
+        assertTrue(filter.sink().equals(UriFactory.ANY));
     }
 
     @Test
@@ -109,6 +115,20 @@ public class UriFilterTest {
         UriFilter uriFilter = new UriFilter(SOURCE_URI, SINK_URI);
         assertTrue(SOURCE_URI.equals(uriFilter.source()));
         assertTrue(SINK_URI.equals(uriFilter.sink()));
+    }
+
+    @Test
+    @DisplayName("Test matching when source is UriFactory.ANY and sink is not UriFactory.ANY")
+    public void testMatchingWhenSourceIsUriFactoryAnyAndSinkIsNotUriFactoryAny() {
+        UriFilter uriFilter = new UriFilter(UriFactory.ANY, SINK_URI);
+        assertTrue(uriFilter.matches(UAttributes.newBuilder().setSink(SINK_URI).build()));
+    }
+
+    @Test
+    @DisplayName("Test matching when sink is UriFactory.ANY and source is not UriFactory.ANY")
+    public void testMatchingWhenSinkIsUriFactoryAnyAndSourceIsNotUriFactoryAny() {
+        UriFilter uriFilter = new UriFilter(SOURCE_URI, UriFactory.ANY);
+        assertTrue(uriFilter.matches(UAttributes.newBuilder().setSource(SOURCE_URI).build()));
     }
     
 }

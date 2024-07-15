@@ -12,6 +12,7 @@
  */
 package org.eclipse.uprotocol.uri.validator;
 
+import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UUri;
 
@@ -25,12 +26,14 @@ public record UriFilter(UUri source, UUri sink) {
     /**
      * Constructs a new URI filter with the given source and sink URIs.
      * 
+     * If the source or sink URI is null, it is replaced with the ANY URI.
+     * 
      * @param source The source URI.
      * @param sink The sink URI.
      */
     public UriFilter {
-        Objects.requireNonNull(source);
-        Objects.requireNonNull(sink);
+        source = Objects.requireNonNullElse(source, UriFactory.ANY);
+        sink = Objects.requireNonNullElse(sink, UriFactory.ANY);
     }
     
 
@@ -44,6 +47,13 @@ public record UriFilter(UUri source, UUri sink) {
         if (attributes == null) {
             return false;
         }
-        return UriValidator.matches(source, attributes.getSource()) && UriValidator.matches(sink, attributes.getSink());
+        if (source.equals(UriFactory.ANY)) {
+            return UriValidator.matches(sink, attributes.getSink());
+        } else if (sink.equals(UriFactory.ANY)) {
+            return UriValidator.matches(source, attributes.getSource());
+        } else {
+            return UriValidator.matches(source, attributes.getSource()) &&
+                   UriValidator.matches(sink, attributes.getSink());
+        }
     }
 }
