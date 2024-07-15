@@ -15,6 +15,7 @@ package org.eclipse.uprotocol.transport;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CompletableFuture;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.DisplayName;
@@ -83,6 +84,42 @@ public class UTransportTest {
         
         assertEquals(result.toCompletableFuture().join().getCode(), UCode.INTERNAL);
     }
+
+    @Test
+    @DisplayName("Test happy path calling open() API")
+    public void test_happy_open() {
+        UTransport transport = new HappyUTransport();
+        assertEquals(transport.open().toCompletableFuture().join().getCode(), UCode.OK);
+    }
+
+    @Test
+    @DisplayName("Test default oepn() and close() APIs")
+    public void test_default_open_close() {
+        UTransport transport = new UTransport() {
+            @Override
+            public CompletionStage<UStatus> send(UMessage message) {
+                return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
+            }
+
+            @Override
+            public CompletionStage<UStatus> registerListener(UUri source, UUri sink, UListener listener) {
+                return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
+            }
+
+            @Override
+            public CompletionStage<UStatus> unregisterListener(UUri source, UUri sink, UListener listener) {
+                return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
+            }
+
+            @Override
+            public UUri getSource() {
+                return UUri.getDefaultInstance();
+            }
+        };
+
+        assertDoesNotThrow(() -> transport.close());
+    }
+    
 
     class MyListener implements UListener {
         @Override
