@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.uprotocol.communication;
+package org.eclipse.uprotocol.client.usubscription.v3;
 
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionStatus;
 import org.eclipse.uprotocol.v1.UUri;

@@ -241,6 +241,7 @@
                         <include>**/uri/**</include>
                         <include>**/uuid/**</include>
                         <include>**/validation/**</include>
+                        <include>**/client/**</include>
                     </includes>
                 </configuration>
             </plugin>

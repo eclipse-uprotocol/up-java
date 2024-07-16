@@ -13,12 +13,9 @@
 package org.eclipse.uprotocol.communication;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.eclipse.uprotocol.transport.UListener;
-import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
-import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,18 +43,6 @@ public class UClientTest {
         assertDoesNotThrow(() ->
             client.invokeMethod(createMethodUri(), null, null).toCompletableFuture().get());
 
-        assertDoesNotThrow(() ->
-            client.subscribe(createTopic(), listener).toCompletableFuture().get());
-
-        assertDoesNotThrow(() -> 
-            client.unsubscribe(createTopic(), listener).toCompletableFuture().get());    
-
-        // The listener is not registered anymore so it should fail
-        assertDoesNotThrow(() -> { 
-            UStatus result = client.unregisterListener(createTopic(), listener).toCompletableFuture().get();
-            assertEquals(result.getCode(), UCode.NOT_FOUND);
-        });
-                
         assertDoesNotThrow(() ->
             client.registerNotificationListener(createTopic(), listener).toCompletableFuture().get());
 

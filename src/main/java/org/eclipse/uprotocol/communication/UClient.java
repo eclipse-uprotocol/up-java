@@ -14,7 +14,7 @@ package org.eclipse.uprotocol.communication;
 
 import java.util.Objects;
 import java.util.concurrent.CompletionStage;
-import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse;
+
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.v1.UStatus;
@@ -23,7 +23,7 @@ import org.eclipse.uprotocol.v1.UUri;
 /**
  * Default implementation of the communication layer that uses the {@link UTransport}.
  */
-public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcClient {
+public class UClient implements RpcServer, Notifier, Publisher, RpcClient {
     
     // The transport to use for sending the RPC requests
     private final UTransport transport;
@@ -32,7 +32,6 @@ public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcC
     private final SimplePublisher publisher;
     private final SimpleNotifier notifier;
     private final InMemoryRpcClient rpcClient;
-    private final InMemorySubscriber subscriber;
 
     private UClient (UTransport transport) {
         this.transport = transport;
@@ -41,26 +40,8 @@ public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcC
         publisher = new SimplePublisher(transport);
         notifier = new SimpleNotifier(transport);
         rpcClient = new InMemoryRpcClient(transport);
-        subscriber = new InMemorySubscriber(transport, rpcClient, notifier);
     }
 
-
-    @Override
-    public CompletionStage<SubscriptionResponse> subscribe(UUri topic, UListener listener, 
-        CallOptions options, SubscriptionChangeHandler handler) {
-        return subscriber.subscribe(topic, listener, options, handler);
-    }
-
-
-    @Override
-    public CompletionStage<UStatus> unsubscribe(UUri topic, UListener listener, CallOptions options) {
-        return subscriber.unsubscribe(topic, listener, options);
-    }
-    
-    @Override
-    public CompletionStage<UStatus> unregisterListener(UUri topic, UListener listener) {
-        return subscriber.unregisterListener(topic, listener);
-    }
 
     @Override
     public CompletionStage<UStatus> notify(UUri topic, UUri destination, CallOptions options, UPayload payload) {
@@ -117,6 +98,5 @@ public class UClient implements RpcServer, Subscriber, Notifier, Publisher, RpcC
 
     public void close() {
         rpcClient.close();
-        subscriber.close();
     }
 }
