@@ -18,7 +18,7 @@
     <artifactId>up-java</artifactId>
     <name>Java Library for uProtocol</name>
     <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more</description>
-    <version>0.2.0</version>
+    <version>0.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/eclipse-uprotocol/up-java/</url>    
 
@@ -57,7 +57,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/eclipse-uprotocol/up-java.git</url>
-      <tag>up-java-0.2.0</tag>
+      <tag>HEAD</tag>
     </scm>
 
     <build>
