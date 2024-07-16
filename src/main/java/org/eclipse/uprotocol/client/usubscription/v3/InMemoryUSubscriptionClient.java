@@ -266,19 +266,13 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      * @return {@link CompletionStage} completed successfully if uSubscription service accepts the
      *         request to register the caller to be notified of subscription changes, or 
      *         the CompletionStage completes exceptionally with {@link UStatus} that indicates
-     *         the failure reason. {@link UCode.PERMISSION_DENIED} is returned if the topic ue_id does 
-     *         not equal the callers ue_id. 
+     *         the failure reason.
      */
     @Override
     public CompletionStage<NotificationsResponse> registerForNotifications(UUri topic,
         SubscriptionChangeHandler handler) {
         Objects.requireNonNull(topic, "Topic missing");
         Objects.requireNonNull(handler, "Handler missing");
-        
-        if (topic.getUeId() != transport.getSource().getUeId()) {
-            return CompletableFuture.failedFuture(new UStatusException(UCode.INVALID_ARGUMENT, 
-                "Cannot Register for notifications that do not match your uE id"));
-        }
 
         NotificationsRequest request = NotificationsRequest.newBuilder()
             .setTopic(topic)

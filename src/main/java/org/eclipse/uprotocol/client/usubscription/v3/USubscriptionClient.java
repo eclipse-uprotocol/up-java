@@ -25,8 +25,7 @@ import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
- * The Client-side interface for talking to usubscription service and to 
- * implement the subscriber pattern. 
+ * The Client-side interface for communicating with the USubscription service.
  */
 public interface USubscriptionClient {
 
@@ -34,7 +33,7 @@ public interface USubscriptionClient {
      * Subscribes to a given topic.
      * 
      * The API will return a {@link CompletionStage} with the response {@link SubscriptionResponse} or exception
-     * with the failure if the subscription was not successful. 
+     * with {@link UStatusException} containing the reason for the failure. 
      * 
      * @param topic The topic to subscribe to.
      * @param listener The listener to be called when a message is received on the topic.
@@ -56,7 +55,7 @@ public interface USubscriptionClient {
      * subscribed to said topic. 
      * 
      * @param topic The topic to subscribe to.
-     * @param listener The listener to be called when a message is received on the topic.
+     * @param listener The listener to be called when a messages are received.
      * @param handler {@link SubscriptionChangeHandler} to handle changes to subscription states.
      * @return Returns the CompletionStage with {@link SubscriptionResponse} or exception with the failure
      * reason as {@link UStatus}. {@link UCode.ALREADY_EXISTS} will be returned if you call this API multiple
@@ -80,8 +79,9 @@ public interface USubscriptionClient {
      */
     CompletionStage<UStatus> unsubscribe(UUri topic, UListener listener);
 
+
     /**
-     * Unregisters a listener and removes any registered {@link SubscriptionChangeHandler} for the topic.
+     * Unregister a listener and removes any registered {@link SubscriptionChangeHandler} for the topic.
      * 
      * This method is used to remove handlers/listeners without notifying the uSubscription service 
      * so that we can be persistently subscribed even when the uE is not running.
@@ -97,15 +97,18 @@ public interface USubscriptionClient {
      * Register for Subscription Change Notifications.
      * 
      * This API allows producers to register to receive subscription change notifications for
-     * topics that they produce only.
+     * topics that they produce only. 
+     * 
+     * NOTE: Subscribers are automatically registered to receive notifications when they call
+     * {@code subscribe()} API passing a {@link SubscriptionChangeHandler} so they do not need to
+     * call this API.
      * 
      * @param topic The topic to register for notifications.
      * @param handler The {@link SubscriptionChangeHandler} to handle the subscription changes.
      * @return {@link CompletionStage} completed successfully if uSubscription service accepts the
      *         request to register the caller to be notified of subscription changes, or 
      *         the CompletionStage completes exceptionally with {@link UStatus} that indicates
-     *         the failure reason. {@link UCode.PERMISSION_DENIED} is returned if the topic ue_id does 
-     *         not equal the callers ue_id. 
+     *         the failure reason. 
      */
     CompletionStage<NotificationsResponse> registerForNotifications(UUri topic, SubscriptionChangeHandler handler);
 
@@ -114,26 +117,21 @@ public interface USubscriptionClient {
      * Unregister for subscription change notifications.
      * 
      * @param topic The topic to unregister for notifications.
-     * @param handler The {@link SubscriptionChangeHandler} to handle the subscription changes.
+     * @param handler The {@link SubscriptionChangeHandler} to be unregistered.
      * @return {@link CompletionStage} completed successfully with {@link NotificationResponse} with
      *         the status of the API call to uSubscription service, or completed unsuccessfully with
-     *         {@link UStatus} with the reason for the failure. {@link UCode.PERMISSION_DENIED} is
-     *         returned if the topic ue_id does not equal the callers ue_id. 
+     *         {@link UStatus} with the reason for the failure. 
      */
     CompletionStage<NotificationsResponse> unregisterForNotifications(UUri topic, SubscriptionChangeHandler handler);
 
 
     /**
-     * Fetch subscribers to a given topic.
-     * 
-     * API is used by producers to find out the list of subscribers (their URI) for a a given topic
-     * that I produce.
+     * Fetch the list of subscribers for a given produced topic.
      * 
      * @param topic The topic to fetch the subscribers for.
      * @return {@link CompletionStage} completed successfully with {@link FetchSubscribersResponse} with
      *         the list of subscribers, or completed unsuccessfully with {@link UStatus} with the reason
-     *         for the failure. {@link UCode.PERMISSION_DENIED} is returned if the topic ue_id does 
-     *         not equal the callers ue_id. 
+     *         for the failure. 
      */
     CompletionStage<FetchSubscribersResponse> fetchSubscribers(UUri topic);
 

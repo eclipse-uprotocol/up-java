@@ -955,43 +955,6 @@ public class InMemoryUSubscriptionClientTest {
 
 
     @Test
-    @DisplayName("Test registerNotification() api when passed a topic that doesn't have" + 
-                 "the same ue_id as the transport source ue_id")
-    void test_registerNotification_api_when_passed_a_topic_doesnt_match_transdport_ue_id() {
-        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
-            .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
-
-        when(transport.getSource()).thenReturn(source);
-
-  
-        InMemoryUSubscriptionClient subscriber = new InMemoryUSubscriptionClient(transport, rpcClient, notifier);
-        assertNotNull(subscriber);
-
-        SubscriptionChangeHandler handler = new SubscriptionChangeHandler() {
-            @Override
-            public void handleSubscriptionChange(UUri topic, SubscriptionStatus status) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'handleSubscriptionChange'");
-            }
-        };
-
-        UUri topic = UUri.newBuilder().setAuthorityName("hartley").setUeId(3)
-            .setUeVersionMajor(1).setResourceId(0x8000).build();
-
-        assertThrows(ExecutionException.class, () -> {
-            subscriber.registerForNotifications(topic, handler).handle((r, e) -> {
-                e = e.getCause();
-                assertTrue(e instanceof UStatusException);
-                assertEquals(((UStatusException) e).getCode(), UCode.INVALID_ARGUMENT);
-                assertEquals(e.getMessage(), "Cannot Register for notifications that do not match your uE id");
-                return null;
-            }).toCompletableFuture().get();
-        });
-
-        verify(notifier, times(1)).registerNotificationListener(any(), any());
-    }
-
-    @Test
     @DisplayName("Test registerNotification() api when invokeMethod() throws an exception")
     void test_registerNotification_api_when_invokeMethod_throws_an_exception() {
         when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
@@ -1149,7 +1112,6 @@ public class InMemoryUSubscriptionClientTest {
             subscriber.unregisterForNotifications(topic, handler).toCompletableFuture().get();
         });
 
-        verify(transport, times(4)).getSource();
         verify(notifier, times(1)).registerNotificationListener(any(), any());
     }
 
