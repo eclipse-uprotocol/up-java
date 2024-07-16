@@ -286,7 +286,7 @@ public class InMemoryUSubscriptionClientTest {
             }
         };
         assertDoesNotThrow(() -> {
-            assertEquals(subscriber.subscribe(topic, listener, handler)
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
                 .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBED);
         });
 
@@ -325,12 +325,12 @@ public class InMemoryUSubscriptionClientTest {
             }
         };
         assertDoesNotThrow(() -> {
-            assertEquals(subscriber.subscribe(topic, listener, handler)
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
                 .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBED);
         });
 
         assertDoesNotThrow(() -> {
-            assertEquals(subscriber.subscribe(topic, listener, handler)
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
                 .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBED);
         });
 
@@ -376,12 +376,12 @@ public class InMemoryUSubscriptionClientTest {
             }
         };
         assertDoesNotThrow(() -> {
-            assertEquals(subscriber.subscribe(topic, listener, handler1)
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler1)
                 .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBE_PENDING);
         });
 
         assertThrows( CompletionException.class, () -> {
-            CompletionStage<SubscriptionResponse> response = subscriber.subscribe(topic, listener, handler2);
+            CompletionStage<SubscriptionResponse> response = subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler2);
             
             assertTrue(response.toCompletableFuture().isCompletedExceptionally());
             response.handle((r, e) -> {
@@ -551,7 +551,7 @@ public class InMemoryUSubscriptionClientTest {
             }
         };
         assertDoesNotThrow(() -> {
-            assertEquals(subscriber.subscribe(topic, listener, handler)
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
                 .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBE_PENDING);
         });
 
@@ -619,7 +619,7 @@ public class InMemoryUSubscriptionClientTest {
             }
         };
         assertDoesNotThrow(() -> {
-            assertEquals(subscriber.subscribe(topic, listener, handler)
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
                 .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBE_PENDING);
         });
 
@@ -688,7 +688,7 @@ public class InMemoryUSubscriptionClientTest {
             }
         };
         assertDoesNotThrow(() -> {
-            assertEquals(subscriber.subscribe(topic, listener, handler)
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
                 .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBE_PENDING);
         });
 
@@ -755,7 +755,7 @@ public class InMemoryUSubscriptionClientTest {
             }
         };
         assertDoesNotThrow(() -> {
-            assertEquals(subscriber.subscribe(topic, listener, handler)
+            assertEquals(subscriber.subscribe(topic, listener, CallOptions.DEFAULT, handler)
                 .toCompletableFuture().get().getStatus().getState(), SubscriptionStatus.State.SUBSCRIBE_PENDING);
         });
 
