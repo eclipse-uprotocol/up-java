@@ -1,3 +1,15 @@
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.eclipse.uprotocol.client.usubscription.v3;
 
 import java.util.Objects;
@@ -115,7 +127,7 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      * subscribed to said topic. 
      * 
      * @param topic The topic to subscribe to.
-     * @param listener The listener to be called when a messages are received.
+     * @param listener The listener to be called when messages are received.
      * @param options The {@link CallOptions} to be used for the subscription.
      * @param handler {@link SubscriptionChangeHandler} to handle changes to subscription states.
      * @return Returns the CompletionStage with {@link SubscriptionResponse} or exception with the failure
@@ -178,7 +190,7 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      * service, the listener and handler (if any) will remain registered.
      * 
      * @param topic The topic to unsubscribe to.
-     * @param listener The listener to be called when a message is received on the topic.
+     * @param listener The listener to be called when messages are received.
      * @param options The {@link CallOptions} to be used for the unsubscribe request.
      * @return Returns {@link UStatus} with the result from the unsubscribe request.
      */
@@ -214,7 +226,7 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      * so that we can be persistently subscribed even when the uE is not running.
      * 
      * @param topic The topic to subscribe to.
-     * @param listener The listener to be called when a message is received on the topic.
+     * @param listener The listener to be called when messages are received.
      * @return Returns {@link UStatus} with the status of the listener unregister request.
      */
     @Override
