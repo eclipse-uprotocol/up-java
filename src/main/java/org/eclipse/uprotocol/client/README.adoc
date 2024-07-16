@@ -1,0 +1,17 @@
+# Application Layer APIs (uP-L3 Interface)
+
+The following module includes the client-facing https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l3[Application Layer (uP-L3)] interfaces to communication with USubscription, UDiscovery, and UTwin services.
+
+
+## uP-L3 Interfaces
+
+.Interfaces (uP-L3 Interface)
+[cols="1,1,3",options="header"]
+|===
+| Interface | Implementation(s) | Description  
+
+| xref:usubscription/v3/USubscriptionClient.java[*USubscriptionClient*] | xref:usubscription/v3/InMemoryUSubscriptionClient.java[InMemoryUSubscriptionClient] | Subscription Management APIs to subscribe(), unsubscribe() and fetch information from the subscription database. 
+|===
+
+
+The module includes the interface for the client-facing APIs as well as a simple in-memory implementation that is based on the uP-L2 in-memory implementations. the term in-memory is used to indicate that the data required by the code is cached inside of the object and not persisted to a given database backend, this design is useful for embedded applications (i.e. in the vehicle) however will not scale to the multi-tenanted cloud applications. 

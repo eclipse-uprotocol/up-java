@@ -3,7 +3,9 @@
 
 == Overview
 
-This library implements the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/languages.adoc[uProtocol Language Specific Library Requirements] for Java defined in https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications]. The library is organized into packages that are described in <<sdk-packages>> below. Each package contains a README.adoc file that describes the purpose of the package and how to use it.
+This library implements the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/languages.adoc[uProtocol Language Specific Library Requirements] for Java defined in https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications]. The library is organized into packages that are described in <<sdk-packages>> below and organized by the layers of the protocol.
+
+Each package contains a README.adoc file that describes the purpose of the package and how to use it.
 
 The module contains the factory methods, serializers, and validators for all data types defined in the specifications, and any data models that either haven't or couldn't be defined in up-core-api yet.
 
@@ -25,26 +27,35 @@ To pull the Library from maven central, setting ${uprotocol.version} to the late
 === Using The Library
 
 .SDK Packages
-[#sdk-packages,width=100%,cols="20%,80%",options="header"]
+[#sdk-packages,width=100%,cols="1,2,5",options="header"]
 |===
 
-| Package | Purpose
+| Package | Protocol Layer | Purpose
+
+| xref:src/main/java/org/eclipse/uprotocol/communication/README.adoc[`*client*`]
+| https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l3[Application Layer (uP-L3)]
+| Top level client-facing interfaces to communication with USubscription, UDiscovery, and UTwin services.
 
 | xref:src/main/java/org/eclipse/uprotocol/communication/README.adoc[`*communication*`]
-| Top level client-facing  https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l2[communication layer (uP-L2)] interfaces that applications and services use to implement the publisher/subscriber, notification, and RPC patterns on top of the transport layer (uTransport) API. 
-
-| link:src/main/java/org/eclipse/uprotocol/uri/README.adoc[`*uuri*`]
-| Builders, validators, and serializers for uProtocol addressing scheme (UUri). 
-
-
-| link:src/main/java/org/eclipse/uprotocol/uuid/README.adoc[`*uuid*`] 
-| Identifier used to uniquely identify (and timestamp) messages that are sent
+| https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l2[communication layer (uP-L2)] 
+| Common implementation of communication messaging patterns (publisher, subscriber, Rpcclient, RpcServer, etc..) tha t is build on top of the L1 transport interface (see below)
 
 | link:src/main/java/org/eclipse/uprotocol/transport/README.adoc[`*transport*`] 
-| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[uP-L1 Transport Layer] interface and data model that wraps communication middlewares like zenoh, mqtt, http, etc... into a thin and simple to use transport interface. This model is used by the communication layer (uP-L2) to send and receive messages and transports are expected to implement the link:src/main/java/org/eclipse/uprotocol/transport/UTransport.java[uTransport] interface.
+| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[Transport Layer (uP-L1)] 
+| Interface and data model for how to send() and receive() messages in a common way across various transport technologies (ex. zenoh, mqtt, http, etc...). the interface is implemented by transports (ex. up-transport-android-java), and the interface is then used to build the uProtocol layer 2 communication layer implementation.
+
+| link:src/main/java/org/eclipse/uprotocol/uri/README.adoc[`*uuri*`]
+| Basics 
+| uProtocol addressing scheme (UUri) builders, validators, and serializers. 
+
+
+| link:src/main/java/org/eclipse/uprotocol/uuid/README.adoc[`*uuid*`]
+| Basics
+| uProtocol unique identifier builders, validators, and serializers.
 
 | link:src/main/java/org/eclipse/uprotocol/cloudevent/README.adoc[`*cloudevent*`] 
-| A representation of uProtocol messages used in older versions of the specifications and kept for backwards compatibility.
+| Legacy
+| A representation of uProtocol messages used in older versions of the specifications kept for backwards compatibility.
 
 |===
 
