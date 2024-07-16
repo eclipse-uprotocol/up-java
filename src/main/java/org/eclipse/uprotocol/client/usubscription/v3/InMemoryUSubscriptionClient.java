@@ -8,9 +8,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import org.eclipse.uprotocol.communication.CallOptions;
+import org.eclipse.uprotocol.communication.InMemoryRpcClient;
 import org.eclipse.uprotocol.communication.Notifier;
 import org.eclipse.uprotocol.communication.RpcClient;
 import org.eclipse.uprotocol.communication.RpcMapper;
+import org.eclipse.uprotocol.communication.SimpleNotifier;
 import org.eclipse.uprotocol.communication.UPayload;
 import org.eclipse.uprotocol.communication.UStatusException;
 import org.eclipse.uprotocol.core.usubscription.v3.FetchSubscribersRequest;
@@ -66,14 +68,36 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
 
     // transport Notification listener that will process subscription change notifications
     private final UListener mNotificationListener = this::handleNotifications;
-    
+
 
     /**
-     * Creates a new subscriber for existing Communication Layer client implementations.
+     * Creates a new USubscription client passing only a transport.
+     * 
+     * @param transport the transport to use for sending the notifications
+     */
+    public InMemoryUSubscriptionClient (UTransport transport) {
+        this(transport, CallOptions.DEFAULT);
+    }
+
+    /**
+     * Creates a new USubscription client passing {@link UTransport} and {@link CallOptions}
+     * used to provide additional options for the RPC requests to uSubscription service.
+     * 
+     * @param transport the transport to use for sending the notifications
+     * @param options the call options to use for the RPC requests
+     */
+    public InMemoryUSubscriptionClient (UTransport transport, CallOptions options) {
+        this(transport, new InMemoryRpcClient(transport), new SimpleNotifier(transport), options);
+    }
+
+
+    /**
+     * Creates a new USubscription client passing {@link UTransport}, {@link RpcClient} and {@link Notifier}.
      * 
      * @param transport the transport to use for sending the notifications
      * @param rpcClient the rpc client to use for sending the RPC requests
      * @param notifier the notifier to use for registering the notification listener
+     * @param options the call options to use for the RPC requests
      */
     public InMemoryUSubscriptionClient (UTransport transport, RpcClient rpcClient, Notifier notifier) {
         this(transport, rpcClient, notifier, CallOptions.DEFAULT);
@@ -81,13 +105,15 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
 
 
     /**
-     * Creates a new subscriber for existing Communication Layer client implementations.
+     * Creates a new USubscription client passing {@link UTransport}, {@link CallOptions},
+     * and an implementation of {@link RpcClient} and {@link Notifier}.
      * 
      * @param transport the transport to use for sending the notifications
      * @param rpcClient the rpc client to use for sending the RPC requests
      * @param notifier the notifier to use for registering the notification listener
+     * @param options the call options to use for the RPC requests
      */
-    public InMemoryUSubscriptionClient (UTransport transport, RpcClient rpcClient, 
+    public InMemoryUSubscriptionClient (UTransport transport, RpcClient rpcClient,
         Notifier notifier, CallOptions options) {
         Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
         Objects.requireNonNull(rpcClient, "RpcClient missing");
@@ -264,7 +290,7 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
             // Then Add the handler (if the client provided one) so the client can be notified of 
             // changes to the subscription state.
             .whenComplete( (response, exception) -> {
-                if (exception == null && handler != null) {
+                if (exception == null) {
                     mHandlers.compute(topic, (k, existingHandler) -> {
                         if (existingHandler != null && existingHandler != handler) {
                             throw new UStatusException(UCode.ALREADY_EXISTS, "Handler already registered");

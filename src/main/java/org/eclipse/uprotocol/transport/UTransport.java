@@ -15,6 +15,7 @@ package org.eclipse.uprotocol.transport;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UStatus;
@@ -57,7 +58,7 @@ public interface UTransport {
      *         correctly, otherwise it returns with the appropriate failure.
      */
     default CompletionStage<UStatus> registerListener(UUri sourceFilter, UListener listener) {
-        return registerListener(sourceFilter, null, listener);
+        return registerListener(sourceFilter, UriFactory.ANY, listener);
     }
 
 
@@ -93,7 +94,7 @@ public interface UTransport {
      *         correctly, otherwise it returns with the appropriate failure.
      */
     default CompletionStage<UStatus> unregisterListener(UUri sourceFilter, UListener listener) {
-        return unregisterListener(sourceFilter, null, listener);
+        return unregisterListener(sourceFilter, UriFactory.ANY, listener);
     }
 
 
