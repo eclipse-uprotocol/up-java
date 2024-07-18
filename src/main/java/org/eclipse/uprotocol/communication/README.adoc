@@ -11,7 +11,6 @@ The following folder include the client-facing  https://github.com/eclipse-uprot
 | Interface | Implementation(s) | Description  
 
 | xref:Publisher.java[*Publisher*] | xref:SimplePublisher.java[SimplePublisher] | Producers API to send publish or notification messages
-| xref:Subscriber.java[*Subscriber*] | xref:InMemorySubscriber.java[InMemorySubscriber] | Consumers API to subscribe or unsubscribe to topics
 | xref:RpcClient.java[*RpcClient*] | xref:InMemoryRpcClient.java[InMemoryRpcClient] | Client interface to invoke a method
 | xref:RpcServer.java[*RpcServer*] | xref:InMemoryRpcServer.java[InMemoryRpcServer]| Server interface to register a listener for incoming RPC requests and automatically send a response
 | xref:Notifier.java[*Notifier*] | xref:SimpleNotifier.java[SimpleNotifier] | Notification communication pattern APIs to notify and register a listener to receive the notifications
