@@ -137,7 +137,7 @@ public class InMemoryRpcClient implements RpcClient {
         }
 
         // Check if the response has a commstatus and if it is not OK then complete the future with an exception
-        if (responseAttributes.hasCommstatus()) {
+        if (responseAttributes.hasCommstatus() && responseAttributes.getCommstatus() != UCode.OK) {
             final UCode code = responseAttributes.getCommstatus();
             responseFuture.completeExceptionally(
                 new UStatusException(code, "Communication error [" + code + "]"));
