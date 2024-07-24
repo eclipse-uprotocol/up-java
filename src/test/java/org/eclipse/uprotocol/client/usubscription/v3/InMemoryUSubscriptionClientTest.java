@@ -403,6 +403,8 @@ public class InMemoryUSubscriptionClientTest {
     @Test
     @DisplayName("Test unsubscribe using mock RpcClient and SimplerNotifier")
     void test_unsubscribe_using_mock_RpcClient_and_SimplerNotifier() {
+        when(transport.getSource()).thenReturn(this.source);
+
         when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
@@ -434,6 +436,8 @@ public class InMemoryUSubscriptionClientTest {
     @Test
     @DisplayName("Test unsubscribe using when invokemethod return an exception")
     void test_unsubscribe_when_invokemethod_return_an_exception() {
+        when(transport.getSource()).thenReturn(this.source);
+
         when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
@@ -465,6 +469,8 @@ public class InMemoryUSubscriptionClientTest {
     @Test
     @DisplayName("Test unsubscribe when invokemethod returned OK but we failed to unregister the listener")
     void test_unsubscribe_when_invokemethod_returned_OK_but_we_failed_to_unregister_the_listener() {
+        when(transport.getSource()).thenReturn(this.source);
+
         when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
