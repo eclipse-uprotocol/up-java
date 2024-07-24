@@ -200,8 +200,9 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
         Objects.requireNonNull(listener, "listener missing");
         Objects.requireNonNull(options, "CallOptions missing");
 
-        final UnsubscribeRequest unsubscribeRequest = UnsubscribeRequest.newBuilder().setTopic(topic).build();
-        
+        final UnsubscribeRequest unsubscribeRequest = UnsubscribeRequest.newBuilder().setTopic(topic)
+                .setSubscriber(SubscriberInfo.newBuilder().setUri(transport.getSource()).build()).build();
+
         return RpcMapper.mapResponseToResult(
             // Send the unsubscribe request
             rpcClient.invokeMethod(UNSUBSCRIBE_METHOD, UPayload.pack(unsubscribeRequest), options),     
