@@ -168,6 +168,21 @@ class CommStatusTransport extends TestUTransport {
     }
 };
 
+/**
+ * Test UTransport that will set the commstatus for a success response
+ */
+class CommStatusOkTransport extends TestUTransport {
+    @Override
+    public UMessage buildResponse(UMessage request) {
+        UStatus status = UStatus.newBuilder()
+                .setCode(UCode.OK)
+                .setMessage("No Communication Error")
+                .build();
+        return UMessageBuilder.response(request.getAttributes())
+                .withCommStatus(status.getCode())
+                .build(UPayload.pack(status));
+    }
+}
 
 class EchoUTransport extends TestUTransport {
     @Override

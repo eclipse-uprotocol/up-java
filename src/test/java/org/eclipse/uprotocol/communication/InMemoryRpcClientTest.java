@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.CompletableFuture;
@@ -193,6 +194,22 @@ public class InMemoryRpcClientTest {
         });
         assertTrue(response.toCompletableFuture().isCompletedExceptionally());
     }
+
+    @Test
+    @DisplayName("Test calling invokeMethod when we set comm status to UCode.OK")
+    public void testInvokeMethodWithCommStatusUCodeOKTransport() {
+        RpcClient rpcClient = new InMemoryRpcClient(new CommStatusOkTransport());
+        UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
+        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
+        assertFalse(response.toCompletableFuture().isCompletedExceptionally());
+        assertDoesNotThrow(() -> {
+            Optional<UStatus> unpackedStatus = UPayload.unpack(response.toCompletableFuture().get(), UStatus.class);
+            assertTrue(unpackedStatus.isPresent());
+            assertEquals(UCode.OK, unpackedStatus.get().getCode());
+            assertEquals("No Communication Error", unpackedStatus.get().getMessage());
+        });
+    }
+
 
 
     private UUri createMethodUri() {
