@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import org.eclipse.uprotocol.communication.CallOptions;
-import org.eclipse.uprotocol.communication.InMemoryRpcClient;
 import org.eclipse.uprotocol.communication.RpcClient;
 import org.eclipse.uprotocol.communication.RpcMapper;
 import org.eclipse.uprotocol.communication.UPayload;
@@ -24,7 +23,6 @@ import org.eclipse.uprotocol.communication.UStatusException;
 import org.eclipse.uprotocol.core.utwin.v2.GetLastMessagesRequest;
 import org.eclipse.uprotocol.core.utwin.v2.GetLastMessagesResponse;
 import org.eclipse.uprotocol.core.utwin.v2.UTwinProto;
-import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UStatus;
@@ -34,9 +32,9 @@ import org.eclipse.uprotocol.v1.UUriBatch;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
 
 /**
- * The uTwin client implementation using InMemory up-L2 communication layer implementation.
+ * The uTwin client implementation using the RpcClient uP-L2 communication layer interface.
  */
-public class InMemoryUTwinClient implements UTwinClient {
+public class SimpleUTwinClient implements UTwinClient {
     private final RpcClient rpcClient;
 
     private static final ServiceDescriptor UTWIN = UTwinProto.getDescriptor().getServices().get(0);
@@ -46,21 +44,11 @@ public class InMemoryUTwinClient implements UTwinClient {
 
 
     /**
-     * Create a new instance of the uTwin client using the provided transport.
-     * 
-     * @param transport The transport to use for communication.
-     */
-    public InMemoryUTwinClient(UTransport transport) {
-        this(new InMemoryRpcClient(transport));
-    }
-
-
-    /**
      * Create a new instance of the uTwin client passing in the RPCClient to use for communication.
      * 
      * @param rpcClient The RPC client to use for communication.
      */
-    public InMemoryUTwinClient(RpcClient rpcClient) {
+    public SimpleUTwinClient(RpcClient rpcClient) {
         this.rpcClient = rpcClient;
     }
 
