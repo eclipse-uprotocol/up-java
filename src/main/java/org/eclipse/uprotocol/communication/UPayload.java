@@ -21,6 +21,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
+import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UPayloadFormat;
 
 /**
@@ -31,10 +32,12 @@ public record UPayload (ByteString data, UPayloadFormat format) {
     // Empty UPayload
     public static final UPayload EMPTY = new UPayload();
 
+
     public UPayload {
         Objects.requireNonNull(data);
         Objects.requireNonNull(format);
     }
+
 
     public UPayload() {
         this(ByteString.EMPTY, UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED);
@@ -64,6 +67,7 @@ public record UPayload (ByteString data, UPayloadFormat format) {
             new UPayload(Any.pack(message).toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY);
     }
 
+
     /**
      * Build a uPayload from {@link google.protobuf.Message} using protobuf PayloadFormat.
      * 
@@ -75,6 +79,7 @@ public record UPayload (ByteString data, UPayloadFormat format) {
             new UPayload(message.toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
     }
 
+
     /**
      * Build a UPayload from specific data and passed format
      * @param data payload data.
@@ -84,6 +89,22 @@ public record UPayload (ByteString data, UPayloadFormat format) {
     public static UPayload pack(ByteString data, UPayloadFormat format) {
         return new UPayload(data, format);
     }
+
+
+    /**
+     * Unpack a uMessage into {@link google.protobuf.Message}.
+     * 
+     * @param message the message to unpack
+     * @param clazz the class of the message to unpack
+     * @return the unpacked message
+     */
+    public static <T extends Message> Optional<T> unpack(UMessage message, Class<T> clazz) {
+        if (message == null) {
+            return Optional.empty();
+        }
+        return unpack(message.getPayload(), message.getAttributes().getPayloadFormat(), clazz);
+    }
+
 
     /**
      * Unpack a uPayload into {@link google.protobuf.Message}.<br>
@@ -101,6 +122,7 @@ public record UPayload (ByteString data, UPayloadFormat format) {
         }
         return unpack(payload.data(), payload.format(), clazz);
     }
+
 
     /**
      * Unpack a uPayload into a {@link google.protobuf.Message}.
