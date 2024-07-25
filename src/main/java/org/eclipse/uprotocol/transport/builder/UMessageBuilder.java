@@ -24,7 +24,10 @@ import org.eclipse.uprotocol.v1.UUID;
 import com.google.protobuf.ByteString;
 
 import org.eclipse.uprotocol.communication.UPayload;
+import org.eclipse.uprotocol.transport.validate.UAttributesValidator;
+import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
+import org.eclipse.uprotocol.uuid.validate.UuidValidator;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -57,6 +60,11 @@ public class UMessageBuilder {
      */
     public static UMessageBuilder publish(UUri source) {
         Objects.requireNonNull(source, "source cannot be null.");
+
+        // Validate the source
+        if (!UriValidator.isTopic(source)) {
+            throw new IllegalArgumentException("source must be a topic.");
+        }
         return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.UMESSAGE_TYPE_PUBLISH);
     }
@@ -72,6 +80,11 @@ public class UMessageBuilder {
     public static UMessageBuilder notification(UUri source, UUri sink) {
         Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
+        
+        // Validate the source and sink
+        if (!UriValidator.isTopic(source) || !UriValidator.isRpcResponse(sink)) {
+            throw new IllegalArgumentException("source must be a topic and sink must be a response.");
+        }
 
         return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.UMESSAGE_TYPE_NOTIFICATION).withSink(sink);
@@ -93,6 +106,15 @@ public class UMessageBuilder {
         Objects.requireNonNull(ttl, "ttl cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
 
+        // Validate the source and sink
+        if (!UriValidator.isRpcMethod(sink) || !UriValidator.isRpcResponse(source)) {
+            throw new IllegalArgumentException("source must be an rpc method and sink must be a request.");
+        }
+
+        // Validate the ttl
+        if (ttl <= 0) {
+            throw new IllegalArgumentException("ttl must be greater than 0.");
+        }
         return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.UMESSAGE_TYPE_REQUEST).withTtl(ttl).withSink(sink);
     }
@@ -112,6 +134,15 @@ public class UMessageBuilder {
         Objects.requireNonNull(sink, "sink cannot be null for Response.");
         Objects.requireNonNull(reqid, "reqid cannot be null.");
 
+        // Validate the source and sink
+        if (!UriValidator.isRpcResponse(sink) || !UriValidator.isRpcMethod(source)) {
+            throw new IllegalArgumentException("sink must be a response and source must be an rpc method.");
+        }
+
+        if (UuidValidator.Validators.UPROTOCOL.validator().validate(reqid).getCode() != UCode.OK) {
+            throw new IllegalArgumentException("reqid is not a valid UUID.");
+        }
+
         return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.UMESSAGE_TYPE_RESPONSE).withSink(sink).withReqId(reqid);
     }
@@ -126,6 +157,12 @@ public class UMessageBuilder {
      */
     public static UMessageBuilder response(UAttributes request) {
         Objects.requireNonNull(request, "request cannot be null.");
+
+        // Validate the request
+        if (UAttributesValidator.Validators.REQUEST.validator().validate(request).isFailure()) {
+            throw new IllegalArgumentException("request must contain valid request attributes.");
+        }
+
         return new UMessageBuilder(
                 request.getSink(),
                 UuidFactory.Factories.UPROTOCOL.factory().create(),

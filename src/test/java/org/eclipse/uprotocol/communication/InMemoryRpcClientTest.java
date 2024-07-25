@@ -179,7 +179,8 @@ public class InMemoryRpcClientTest {
         UTransport transport = new TestUTransport() {
             @Override
             public UMessage buildResponse(UMessage request) {
-                return UMessageBuilder.publish(createMethodUri()).build();
+                UUri topic = UUri.newBuilder(getSource()).setResourceId(0x8000).build();
+                return UMessageBuilder.publish(topic).build();
             }
         };
         
