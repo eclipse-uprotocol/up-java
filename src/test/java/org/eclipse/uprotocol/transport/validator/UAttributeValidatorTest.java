@@ -11,6 +11,7 @@ import org.eclipse.uprotocol.v1.UPriority;
 import org.eclipse.uprotocol.v1.UUID;
 import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
 import org.eclipse.uprotocol.transport.validate.UAttributesValidator;
+import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.validation.ValidationResult;
 import org.junit.jupiter.api.DisplayName;
@@ -140,10 +141,17 @@ public class UAttributeValidatorTest {
     @Test
     @DisplayName("Test validation of request message has an invalid sink attribute")
     public void testUAttributeValidatorRequestMissingSink() {
-        UMessage message = UMessageBuilder.request(buildDefaultUUri(), buildDefaultUUri(), 1000).build();
+        UAttributes attributes = UAttributes.newBuilder()
+            .setSource(buildDefaultUUri())
+            .setSink(buildDefaultUUri())
+            .setId(UuidFactory.Factories.UPROTOCOL.factory().create())
+            .setType(UMessageType.UMESSAGE_TYPE_REQUEST)
+            .setPriority(UPriority.UPRIORITY_CS4)
+            .setTtl(1000)
+            .build();
 
-        UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
-        ValidationResult result = validator.validate(message.getAttributes());
+        UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        ValidationResult result = validator.validate(attributes);
         assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Request");
         assertEquals(result.getMessage(), "Invalid Sink Uri");
@@ -253,9 +261,15 @@ public class UAttributeValidatorTest {
     @Test
     @DisplayName("Test notification validation where the sink is NOT the defaultResourceId")
     public void testUAttributeValidatorNotificationDefaultResourceId() {
-        final UMessage message = UMessageBuilder.notification(buildTopicUUri(), buildTopicUUri()).build();
-        final UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
-        final ValidationResult result = validator.validate(message.getAttributes());
+        final UAttributes attributes = UAttributes.newBuilder()
+            .setSource(buildTopicUUri())
+            .setId(UuidFactory.Factories.UPROTOCOL.factory().create())
+            .setSink(buildMethodUUri())
+            .setType(UMessageType.UMESSAGE_TYPE_NOTIFICATION)
+            .setPriority(UPriority.UPRIORITY_CS1)
+            .build();
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        final ValidationResult result = validator.validate(attributes);
 
         assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Notification");
@@ -344,9 +358,15 @@ public class UAttributeValidatorTest {
     @Test
     @DisplayName("Test validateTtl of a request message where ttl is less than 0")
     public void testUAttributeValidatorValidateTtlLessThanZero() {
-        final UMessage message = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), -1).build();
-        final UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
-        final ValidationResult result = validator.validate(message.getAttributes());
+        final UAttributes attributes = UAttributes.newBuilder()
+            .setSource(buildDefaultUUri())
+            .setSink(buildMethodUUri())
+            .setTtl(-1)
+            .setId(UuidFactory.Factories.UPROTOCOL.factory().create())
+            .setType(UMessageType.UMESSAGE_TYPE_REQUEST)
+            .setPriority(UPriority.UPRIORITY_CS4).build();
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        final ValidationResult result = validator.validate(attributes);
 
         assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Request");
@@ -397,10 +417,18 @@ public class UAttributeValidatorTest {
     @Test
     @DisplayName("Test validateSink for a response message where the sink is NOT the defaultResourceId")
     public void testUAttributeValidatorValidateSinkResponseDefaultResourceId() {
-        final UMessage request = UMessageBuilder.request(buildMethodUUri(), buildDefaultUUri(), 1000).build();
-        final UMessage response = UMessageBuilder.response(request.getAttributes()).build();
-        final UAttributesValidator validator = UAttributesValidator.getValidator(response.getAttributes());
-        final ValidationResult result = validator.validate(response.getAttributes());
+        final UAttributes attributes = UAttributes.newBuilder()
+            .setSource(buildMethodUUri())
+            .setSink(buildMethodUUri())
+            .setTtl(1000)
+            .setType(UMessageType.UMESSAGE_TYPE_RESPONSE)
+            .setPriority(UPriority.UPRIORITY_CS4)
+            .setId(UuidFactory.Factories.UPROTOCOL.factory().create())
+            .setReqid(UuidFactory.Factories.UPROTOCOL.factory().create())
+            .build();
+        
+        final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
+        final ValidationResult result = validator.validate(attributes);
 
         assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Response");
