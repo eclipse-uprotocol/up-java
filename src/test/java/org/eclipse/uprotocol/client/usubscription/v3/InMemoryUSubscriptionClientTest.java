@@ -100,7 +100,7 @@ public class InMemoryUSubscriptionClientTest {
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
         assertDoesNotThrow(() -> {
-            InMemoryUSubscriptionClient subscriber = new InMemoryUSubscriptionClient(transport);
+            new InMemoryUSubscriptionClient(transport);
         });
 
         verify(transport, times(2)).getSource();
@@ -112,7 +112,7 @@ public class InMemoryUSubscriptionClientTest {
     @DisplayName("Testing creation of InMemoryUSubscriptionClient passing null for the transport")
     public void test_creation_of_InMemoryUSubscriptionClient_passing_null_for_the_transport() {
         assertThrows(NullPointerException.class, () -> {
-            InMemoryUSubscriptionClient subscriber = new InMemoryUSubscriptionClient(null);
+            new InMemoryUSubscriptionClient(null);
         });
     }
 
@@ -902,15 +902,6 @@ public class InMemoryUSubscriptionClientTest {
 
         InMemoryUSubscriptionClient subscriber = new InMemoryUSubscriptionClient(transport, rpcClient, notifier);
         assertNotNull(subscriber);
-
-        SubscriptionChangeHandler handler = new SubscriptionChangeHandler() {
-            @Override
-            public void handleSubscriptionChange(UUri topic, SubscriptionStatus status) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'handleSubscriptionChange'");
-            }
-        };
-
         UListener listener = new UListener() {
             @Override
             public void onReceive(UMessage message) {
@@ -1113,7 +1104,7 @@ public class InMemoryUSubscriptionClientTest {
 
         assertDoesNotThrow(() -> {
             subscriber.registerForNotifications(topic, handler).toCompletableFuture().get();
-            subscriber.unregisterForNotifications(topic, handler).toCompletableFuture().get();
+            subscriber.unregisterForNotifications(topic).toCompletableFuture().get();
         });
 
         verify(notifier, times(1)).registerNotificationListener(any(), any());
@@ -1129,16 +1120,8 @@ public class InMemoryUSubscriptionClientTest {
         InMemoryUSubscriptionClient subscriber = new InMemoryUSubscriptionClient(transport, rpcClient, notifier);
         assertNotNull(subscriber);
 
-        SubscriptionChangeHandler handler = new SubscriptionChangeHandler() {
-            @Override
-            public void handleSubscriptionChange(UUri topic, SubscriptionStatus status) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'handleSubscriptionChange'");
-            }
-        };
-
-        assertThrows(NullPointerException.class, () -> {
-            subscriber.unregisterForNotifications(null, handler);
+         assertThrows(NullPointerException.class, () -> {
+            subscriber.unregisterForNotifications(null);
         });
 
         verify(notifier, times(1)).registerNotificationListener(any(), any());
@@ -1176,17 +1159,10 @@ public class InMemoryUSubscriptionClientTest {
         InMemoryUSubscriptionClient subscriber = new InMemoryUSubscriptionClient(transport, rpcClient, notifier);
         assertNotNull(subscriber);
 
-        SubscriptionChangeHandler handler = new SubscriptionChangeHandler() {
-            @Override
-            public void handleSubscriptionChange(UUri topic, SubscriptionStatus status) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'handleSubscriptionChange'");
-            }
-        };
         UUri topic = UUri.newBuilder(transport.getSource()).setResourceId(0x8000).build();
 
         assertDoesNotThrow(() -> {
-            CompletionStage<NotificationsResponse> response = subscriber.unregisterForNotifications(topic, handler);
+            CompletionStage<NotificationsResponse> response = subscriber.unregisterForNotifications(topic);
             assertTrue(response.toCompletableFuture().isCompletedExceptionally());
 
             response.handle((r, e) -> {

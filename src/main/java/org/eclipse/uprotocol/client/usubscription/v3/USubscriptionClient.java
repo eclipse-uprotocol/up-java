@@ -177,14 +177,12 @@ public interface USubscriptionClient {
      * Unregister for subscription change notifications.
      * 
      * @param topic The topic to unregister for notifications.
-     * @param handler The {@link SubscriptionChangeHandler} to be unregistered.
      * @return {@link CompletionStage} completed successfully with {@link NotificationResponse} with
      *         the status of the API call to uSubscription service, or completed unsuccessfully with
      *         {@link UStatus} with the reason for the failure. 
      */
-    default CompletionStage<NotificationsResponse> unregisterForNotifications(UUri topic, 
-        SubscriptionChangeHandler handler) {
-        return unregisterForNotifications(topic, handler, CallOptions.DEFAULT);
+    default CompletionStage<NotificationsResponse> unregisterForNotifications(UUri topic) {
+        return unregisterForNotifications(topic, CallOptions.DEFAULT);
     }
 
 
@@ -192,14 +190,12 @@ public interface USubscriptionClient {
      * Unregister for subscription change notifications.
      * 
      * @param topic The topic to unregister for notifications.
-     * @param handler The {@link SubscriptionChangeHandler} to be unregistered.
      * @param options The {@link CallOptions} to be used for the request.
      * @return {@link CompletionStage} completed successfully with {@link NotificationResponse} with
      *         the status of the API call to uSubscription service, or completed unsuccessfully with
      *         {@link UStatus} with the reason for the failure. 
      */
-    CompletionStage<NotificationsResponse> unregisterForNotifications(UUri topic, SubscriptionChangeHandler handler,
-        CallOptions options);
+    CompletionStage<NotificationsResponse> unregisterForNotifications(UUri topic, CallOptions options);
 
 
     /**
