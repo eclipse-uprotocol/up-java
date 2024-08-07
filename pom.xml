@@ -33,7 +33,7 @@
         <slf4j.version>2.6.18</slf4j.version>
         <cloudevents.version>2.4.2</cloudevents.version>
         <protobuf.version>3.21.10</protobuf.version>
-        <up-spec.git.tag.name>v1.6.0-alpha.2</up-spec.git.tag.name>
+        <up-spec.git.tag.name>v1.6.0-alpha.3</up-spec.git.tag.name>
     </properties>
 
     <licenses>
