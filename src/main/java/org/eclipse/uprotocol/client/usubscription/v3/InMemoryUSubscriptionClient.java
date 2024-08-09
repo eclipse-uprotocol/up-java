@@ -295,7 +295,6 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      * Unregister for subscription change notifications.
      * 
      * @param topic The topic to unregister for notifications.
-     * @param handler The {@link SubscriptionChangeHandler} to handle the subscription changes.
      * @param options The {@link CallOptions} to be used for the unregister request.
      * @return {@link CompletionStage} completed successfully with {@link NotificationResponse} with
      *         the status of the API call to uSubscription service, or completed unsuccessfully with
@@ -303,10 +302,8 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      *         returned if the topic ue_id does not equal the callers ue_id. 
      */
     @Override
-    public CompletionStage<NotificationsResponse> unregisterForNotifications(UUri topic,
-        SubscriptionChangeHandler handler, CallOptions options) {
+    public CompletionStage<NotificationsResponse> unregisterForNotifications(UUri topic, CallOptions options) {
         Objects.requireNonNull(topic, "Topic missing");
-        Objects.requireNonNull(handler, "Handler missing");
         Objects.requireNonNull(options, "CallOptions missing");
         
         NotificationsRequest request = NotificationsRequest.newBuilder()
