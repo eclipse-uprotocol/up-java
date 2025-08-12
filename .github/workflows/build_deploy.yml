@@ -34,12 +34,12 @@ jobs:
       with: # configure settings.xml
         distribution: 'temurin'
         java-version: '17'
-        server-id: ossrh
-        server-username: OSSRH_USER
-        server-password: OSSRH_PASSWORD
+        server-id: central
+        server-username: MAVEN_CENTRAL_USER
+        server-password: MAVEN_CENTRAL_PASSWORD
 
-    - name: Build and Publish to OSSRH snapshot repo
+    - name: Build and Publish to Maven Central snapshot repository
       run: mvn clean deploy
       env:
-        OSSRH_USER: ${{ secrets.ORG_OSSRH_USERNAME }}
-        OSSRH_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
+        MAVEN_CENTRAL_USER: ${{ secrets.CENTRAL_SONATYPE_TOKEN_USERNAME }}
+        MAVEN_CENTRAL_PASSWORD: ${{ secrets.CENTRAL_SONATYPE_TOKEN_PASSWORD }}

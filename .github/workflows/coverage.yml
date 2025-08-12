@@ -24,40 +24,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: |
-          git config --global user.name 'eclipse-uprotocol-bot'
-          git config --global user.email 'uprotocol-bot@eclipse.org'
-
       - name: Checkout code
         uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
         with:
             submodules: 'recursive'
 
-      - name: Set up Apache Maven Central
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      - name: Set up Java with Maven
         uses: actions/setup-java@v4
         with: # configure settings.xml
           distribution: 'temurin'
           java-version: '17'
-          server-id: ossrh
-          server-username: OSSRH_USER
-          server-password: OSSRH_PASSWORD
-          gpg-private-key: ${{ secrets.ORG_GPG_PRIVATE_KEY }}
-          gpg-passphrase: GPG_PASSPHRASE
-
 
       - name: Run tests with coverage
         run: |
-          mvn clean test jacoco:report
+          mvn clean verify -Djacoco.skip=false
 
-
-      - name: Extract JaCoCo report
+      - name: Extract overall coverage from JaCoCo report
         run: |
           echo "Extracting coverage percentage from JaCoCo report"
-          INDEX_PATH="target/site/jacoco/index.html"
-          export COVERAGE_PERCENTAGE=$(grep -oP '(?<=<td class="ctr2">).*?(?=%</td>)' $INDEX_PATH | sed 's/ //g')
-          export COVERAGE_PERCENTAGE=$(printf "%.2f" "$COVERAGE_PERCENTAGE")
-          echo "COVERAGE_PERCENTAGE=$COVERAGE_PERCENTAGE" >> $GITHUB_ENV
-          echo "COVERAGE_PERCENTAGE: $COVERAGE_PERCENTAGE"
+          jacoco_report="target/site/jacoco/jacoco.xml"
+          missed=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@missed)" "$jacoco_report")
+          covered=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@covered)" "$jacoco_report")
+          if [ -n "$covered" ] && [ -n "$missed" ]; then
+              total=$((covered + missed))
+              if [ $total -gt 0 ]; then
+                  percentage=$(echo "scale=2; $covered * 100 / $total" | bc -l)
+              else
+                  percentage="0"
+              fi
+          else
+              percentage="N/A"
+          fi
+          echo "COVERAGE_PERCENTAGE=$percentage" >> $GITHUB_ENV
+          echo "COVERAGE_PERCENTAGE: $percentage"
 
 
       - name: Upload JaCoCo Coverage report
