@@ -21,13 +21,6 @@
     <packaging>jar</packaging>
     <url>https://github.com/eclipse-uprotocol/up-java/</url>    
 
-    <properties>
-        <java.version>17</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <protobuf.version>3.25.8</protobuf.version>
-    </properties>
-
     <licenses>
       <license>
         <name>The Apache License, Version 2.0</name>
@@ -53,24 +46,27 @@
         <url>https://github.com/eclipse-uprotocol/up-java</url>
     </scm>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <pluginRepositories>
         <pluginRepository>
             <id>dash-licenses</id>
             <url>https://repo.eclipse.org/content/repositories/dash-licenses-releases/</url>
         </pluginRepository>
     </pluginRepositories>
-   
+
+    <properties>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <protobuf.version>3.25.8</protobuf.version>
+        <mockito.version>5.18.0</mockito.version>
+        <!-- allow dynamic loading of the Mockito Mock agent -->
+        <!-- see https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
+        <argLine>-XX:+EnableDynamicAgentLoading</argLine>
+        <!-- do not determine code coverage by default -->
+        <!-- run mvn with -Djacoco.skip=false to enable -->
+        <jacoco.skip>true</jacoco.skip>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -141,14 +137,14 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.18.0</version>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.18.0</version>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -175,6 +171,13 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.11.2</version>
+                    <configuration>
+                        <doclint>all,-missing,-reference</doclint>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.eclipse.dash</groupId>
@@ -269,8 +272,6 @@
                 <configuration>
                     <!--  allow to use unnamed modules -->
                     <useModulePath>false</useModulePath>
-                    <!-- allow dynamic loading of the Mockito Mock agent -->
-                    <argLine>-XX:+EnableDynamicAgentLoading ${argLine}</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -285,54 +286,12 @@
                 <artifactId>maven-project-info-reports-plugin</artifactId>
                 <version>3.9.0</version>
             </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.13</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <!-- attached to Maven test phase -->
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                        <!-- Exclude specific packages or classes -->
-                        <configuration>
-                            <excludes>
-                                <exclude>org/eclipse/uprotocol/core/**</exclude>
-                                <exclude>org/eclipse/uprotocol/v1/**</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <includes>
-                        <include>**/cloudevent/**</include>
-                        <include>**/communication/**</include>
-                        <include>**/transport/**</include>
-                        <include>**/uri/**</include>
-                        <include>**/uuid/**</include>
-                        <include>**/validation/**</include>
-                        <include>**/client/**</include>
-                    </includes>
-                </configuration>
-            </plugin>
-
-            <plugin>
-               <artifactId>maven-source-plugin</artifactId>
-            </plugin>
+            <!--
+                keep javadoc generation in the default build in order to
+                quickly detect issues with JavaDoc comments
+             -->
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.11.2</version>
-                <configuration>
-                    <doclint>all,-missing,-reference</doclint>
-                </configuration>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -343,27 +302,60 @@
                 </executions>
             </plugin>
             <plugin>
-               <groupId>org.sonatype.plugins</groupId>
-               <artifactId>nexus-staging-maven-plugin</artifactId>
-               <version>1.6.13</version>
-               <extensions>true</extensions>
-               <configuration>
-                 <serverId>ossrh</serverId>
-                 <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                 <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                 <stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
-               </configuration>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.13</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Exclude classes generated from proto3 files -->
+                            <excludes>
+                                <exclude>org/eclipse/uprotocol/core/**</exclude>
+                                <exclude>org/eclipse/uprotocol/v1/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includes>
+                        <include>**/client/**</include>
+                        <include>**/cloudevent/**</include>
+                        <include>**/communication/**</include>
+                        <include>**/transport/**</include>
+                        <include>**/uri/**</include>
+                        <include>**/uuid/**</include>
+                        <include>**/validation/**</include>
+                    </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.8.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.1.1</version>
                 <configuration>
                     <useReleaseProfile>false</useReleaseProfile>
                     <releaseProfiles>release</releaseProfiles>
                     <goals>deploy</goals>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 
@@ -373,9 +365,12 @@
             <build>
                 <plugins>
                     <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.2.8</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>

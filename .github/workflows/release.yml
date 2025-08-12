@@ -40,18 +40,18 @@ jobs:
       with: # configure settings.xml
         distribution: 'temurin'
         java-version: '17'
-        server-id: ossrh
-        server-username: OSSRH_USER
-        server-password: OSSRH_PASSWORD
+        server-id: central
+        server-username: MAVEN_CENTRAL_USER
+        server-password: MAVEN_CENTRAL_PASSWORD
         gpg-private-key: ${{ secrets.ORG_GPG_PRIVATE_KEY }}
         gpg-passphrase: GPG_PASSPHRASE
 
     - name: Stage to Nexus and Release to Maven central
       run: |
-        mvn -B release:clean release:prepare -P release release:perform
+        mvn -B release:clean release:prepare release:perform
       env:
-        OSSRH_USER: ${{ secrets.ORG_OSSRH_USERNAME }}
-        OSSRH_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
+        MAVEN_CENTRAL_USER: ${{ secrets.CENTRAL_SONATYPE_TOKEN_USERNAME }}
+        MAVEN_CENTRAL_PASSWORD: ${{ secrets.CENTRAL_SONATYPE_TOKEN_PASSWORD }}
         GPG_PASSPHRASE: ${{ secrets.ORG_GPG_PASSPHRASE }}
         GH_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
