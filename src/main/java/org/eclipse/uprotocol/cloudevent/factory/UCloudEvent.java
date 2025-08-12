@@ -206,7 +206,7 @@ public interface UCloudEvent {
     }
 
     /**
-     * Extract the timestamp from the UUIDV8 CloudEvent Id, with Unix epoch as the
+     * Extract the timestamp from the UUIDV8 CloudEvent Id.
      * 
      * @param cloudEvent The CloudEvent with the timestamp to extract.
      * @return Return the timestamp from the UUIDV8 CloudEvent Id or an empty
@@ -375,7 +375,7 @@ public interface UCloudEvent {
     }
 
     /**
-     * Get the string representation of the UPriority
+     * Get the string representation of the UPriority.
      * 
      * @param priority
      * @return returns the string representation of the UPriority
@@ -389,12 +389,10 @@ public interface UCloudEvent {
      * 
      * Note: The UMessageType is determined by the type of the CloudEvent.
      * If the CloudEvent type is "pub.v1" and the sink is present, the UMessageType
-     * is assumed to be
-     * UMESSAGE_TYPE_NOTIFICATION, this is because uProtocol CloudEvent definition
-     * did not have an explicit
-     * notification type.
+     * is assumed to be {@link UMessageType#UMESSAGE_TYPE_NOTIFICATION}, this is because
+     * uProtocol CloudEvent definition did not have an explicit notification type.
      * 
-     * @param cloudEvent The CloudEvent containing the data.
+     * @param ceType The CloudEvent type.
      * 
      * @return returns the UMessageType
      */
@@ -408,7 +406,7 @@ public interface UCloudEvent {
     }
 
     /**
-     * Get the UMessage from the cloud event
+     * Get the UMessage from the cloud event.
      * 
      * @param event The CloudEvent containing the data.
      * @return returns the UMessage
@@ -499,7 +497,7 @@ public interface UCloudEvent {
             cloudEventBuilder.withExtension("token", attributes.getToken());
 
         if (attributes.getPriorityValue() > 0)
-            cloudEventBuilder.withExtension("priority", UCloudEvent.getCePriority(attributes.getPriority()));
+            cloudEventBuilder.withExtension("priority", getCePriority(attributes.getPriority()));
 
         if (attributes.hasSink())
             cloudEventBuilder.withExtension("sink",

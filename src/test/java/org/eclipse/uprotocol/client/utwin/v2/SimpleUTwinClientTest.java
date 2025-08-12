@@ -95,8 +95,8 @@ public class SimpleUTwinClientTest {
             response
                 .handle((r, e) -> {
                     assertNotNull(e);
-                    assertEquals(((UStatusException)e).getCode(), UCode.INVALID_ARGUMENT);
-                    assertEquals(((UStatusException)e).getMessage(), "topics must not be empty");
+                    assertEquals(((UStatusException) e).getCode(), UCode.INVALID_ARGUMENT);
+                    assertEquals(((UStatusException) e).getMessage(), "topics must not be empty");
                     return r;
                 })
                 .toCompletableFuture().get();

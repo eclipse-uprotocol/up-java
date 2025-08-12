@@ -40,7 +40,7 @@ public class RpcMapperTest {
 
     @Test
     @DisplayName("Test RpcMapper mapResponseToResult using HappyPathUTransport when the request is empty")
-    public void test_map_response_to_result_with_empty_request() {
+    public void testMapResponseToResultWithEmptyRequest() {
         RpcClient rpcClient = new RpcClient() {
             @Override
             public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {
@@ -56,7 +56,7 @@ public class RpcMapperTest {
 
     @Test
     @DisplayName("Test RpcMapper mapResponse when the future is completed exceptionally")
-    public void test_map_response_with_exception() {
+    public void testMapResponseWithException() {
         RpcClient rpcClient = new RpcClient() {
             @Override
             public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {
@@ -72,7 +72,7 @@ public class RpcMapperTest {
 
     @Test
     @DisplayName("Test RpcMapper mapResponse when the returned payload is empty")
-    public void test_map_response_with_empty_payload() {
+    public void testMapResponseWithEmptyPayload() {
         RpcClient rpcClient = new RpcClient() {
             @Override
             public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {
@@ -87,7 +87,7 @@ public class RpcMapperTest {
 
     @Test
     @DisplayName("Test RpcMapper mapResponse when the returned payload is null")
-    public void test_map_response_with_null_payload() {
+    public void testMapResponseWithNullPayload() {
         RpcClient rpcClient = new RpcClient() {
             @Override
             public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {
@@ -97,7 +97,7 @@ public class RpcMapperTest {
         final CompletionStage<UUri> result = RpcMapper.mapResponse(
             rpcClient.invokeMethod(createMethodUri(), UPayload.EMPTY, null), UUri.class);
  
-        Exception exception = assertThrows(ExecutionException.class,result.toCompletableFuture()::get);
+        Exception exception = assertThrows(ExecutionException.class, result.toCompletableFuture()::get);
         assertEquals(exception.getMessage(), 
             String.format("java.lang.RuntimeException: Unknown payload. Expected [%s]", UUri.class.getName()));
     }
@@ -105,7 +105,7 @@ public class RpcMapperTest {
 
     @Test
     @DisplayName("Test RpcMapper mapResponseToResult when the returned payload is not empty")
-    public void test_map_response_to_result_with_non_empty_payload() {
+    public void testMapResponseToResultWithNonEmptyPayload() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload = UPayload.pack(uri);
         RpcClient rpcClient = new RpcClient() {
@@ -122,7 +122,7 @@ public class RpcMapperTest {
 
     @Test
     @DisplayName("Test RpcMapper mapResponseToResult when the returned payload is null")
-    public void test_map_response_to_result_with_null_payload() {
+    public void testMapResponseToResultWithNullPayload() {
         RpcClient rpcClient = new RpcClient() {
             @Override
             public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {
@@ -136,7 +136,7 @@ public class RpcMapperTest {
 
     @Test
     @DisplayName("Test RpcMapper mapResponseToResult when the returned payload is empty")
-    public void test_map_response_to_result_with_empty_payload() {
+    public void testMapResponseToResultWithEmptyPayload() {
         RpcClient rpcClient = new RpcClient() {
             @Override
             public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {
@@ -151,7 +151,7 @@ public class RpcMapperTest {
 
     @Test
     @DisplayName("Test RpcMapper mapResponseToResult when the future is completed exceptionally")
-    public void test_map_response_to_result_with_exception() {
+    public void testMapResponseToResultWithException() {
         RpcClient rpcClient = new RpcClient() {
             @Override
             public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {
@@ -168,7 +168,7 @@ public class RpcMapperTest {
 
     @Test
     @DisplayName("Test RpcMapper mapResponseToResult when completed exceptionally with a timeout exception")
-    public void test_map_response_to_result_with_timeout_exception() {
+    public void testMapResponseToResultWithTimeoutException() {
         RpcClient rpcClient = new RpcClient() {
             @Override
             public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {
@@ -188,7 +188,7 @@ public class RpcMapperTest {
 
     @Test
     @DisplayName("Test RpcMapper mapResponseToResult when completed with invalid arguments exception")
-    public void test_map_response_to_result_with_invalid_arguments_exception() {
+    public void testMapResponseToResultWithInvalidArgumentsException() {
         RpcClient rpcClient = new RpcClient() {
             @Override
             public CompletionStage<UPayload> invokeMethod(UUri uri, UPayload payload, CallOptions options) {

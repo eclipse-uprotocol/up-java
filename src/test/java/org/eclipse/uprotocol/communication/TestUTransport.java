@@ -1,3 +1,15 @@
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.eclipse.uprotocol.communication;
 
 import java.util.Iterator;
@@ -30,8 +42,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
  */
 public class TestUTransport implements UTransport {
 
-    protected List<UListener> listeners = new CopyOnWriteArrayList<>();
+    private List<UListener> listeners = new CopyOnWriteArrayList<>();
     private final UUri mSource;
+
+    protected List<UListener> getListeners() {
+        return listeners;
+    }
 
     public UMessage buildResponse(UMessage request) {
         // If the request is a subscribe or unsubscribe request, return the appropriate response
@@ -196,7 +212,7 @@ class EchoUTransport extends TestUTransport {
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                for (Iterator<UListener> it = listeners.iterator(); it.hasNext();) {
+                for (Iterator<UListener> it = getListeners().iterator(); it.hasNext();) {
                     UListener listener = it.next();
                     listener.onReceive(response);
                 }

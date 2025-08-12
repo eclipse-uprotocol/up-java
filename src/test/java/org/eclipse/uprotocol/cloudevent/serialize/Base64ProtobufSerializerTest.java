@@ -25,7 +25,7 @@ class Base64ProtobufSerializerTest {
 
     @Test
     @DisplayName("Test deserialize a byte[] to a String")
-    public void test_deserialize_bytes_to_string() {
+    public void testDeserializeBytesToString() {
 
         // build the payload as just another cloud event packed into an Any
         CloudEvent datapayload = CloudEventBuilder.v1()
@@ -42,7 +42,7 @@ class Base64ProtobufSerializerTest {
 
     @Test
     @DisplayName("Test deserialize a byte[] to a String when byte[] is null")
-    public void test_deserialize_bytes_to_string_when_bytes_is_null() {
+    public void testDeserializeBytesToStringWhenBytesIsNull() {
 
         String payload = Base64ProtobufSerializer.deserialize(null);
         assertEquals("", payload);
@@ -50,7 +50,7 @@ class Base64ProtobufSerializerTest {
 
     @Test
     @DisplayName("Test deserialize a byte[] to a String when byte[] is empty")
-    public void test_deserialize_bytes_to_string_when_bytes_is_empty() {
+    public void testDeserializeBytesToStringWhenBytesIsEmpty() {
 
         String payload = Base64ProtobufSerializer.deserialize(new byte[0]);
         assertEquals("", payload);
@@ -58,7 +58,7 @@ class Base64ProtobufSerializerTest {
 
     @Test
     @DisplayName("Test serialize a base64 String to bytes")
-    public void test_serialize_string_into_bytes() {
+    public void testSerializeStringIntoBytes() {
 
         String base64String = "CgVoZWxsbxIQaHR0cDovL2xvY2FsaG9zdBoDMS4wIg1leGFtcGxlLnZlcnR4";
         final byte[] bytes = Base64ProtobufSerializer.serialize(base64String);
@@ -76,7 +76,7 @@ class Base64ProtobufSerializerTest {
 
     @Test
     @DisplayName("Test serialize a base64 String to bytes when string is null")
-    public void test_serialize_string_into_bytes_when_string_is_null() {
+    public void testSerializeStringIntoBytesWhenStringIsNull() {
 
         final byte[] bytes = Base64ProtobufSerializer.serialize(null);
         byte[] ceBytes = new byte[0];
@@ -86,12 +86,11 @@ class Base64ProtobufSerializerTest {
 
     @Test
     @DisplayName("Test serialize a base64 String to bytes when string is empty")
-    public void test_serialize_string_into_bytes_when_string_is_empty() {
+    public void testSerializeStringIntoBytesWhenStringIsEmpty() {
 
         final byte[] bytes = Base64ProtobufSerializer.serialize("");
         byte[] ceBytes = new byte[0];
 
         assertArrayEquals(ceBytes, bytes);
     }
-
 }

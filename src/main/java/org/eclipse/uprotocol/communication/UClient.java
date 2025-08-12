@@ -86,7 +86,8 @@ public class UClient implements RpcServer, Notifier, Publisher, RpcClient {
     
 
     /**
-     * Create a new instance of UPClient
+     * Create a new instance of UPClient.
+     *
      * @param transport The transport to use for sending the RPC requests
      * @return Returns a new instance of the RPC client
      */

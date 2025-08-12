@@ -176,8 +176,6 @@ public class InMemoryRpcServer implements RpcServer {
             responsePayload = null;
             if (e instanceof UStatusException statusException) {
                 code = statusException.getStatus().getCode();
-            } else {
-                code = UCode.INTERNAL;
             }
             responseBuilder.withCommStatus(code);
         }

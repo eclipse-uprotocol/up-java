@@ -15,10 +15,12 @@ package org.eclipse.uprotocol.client.usubscription.v3;
 import java.util.concurrent.CompletionStage;
 
 import org.eclipse.uprotocol.communication.CallOptions;
+import org.eclipse.uprotocol.communication.UStatusException;
 import org.eclipse.uprotocol.core.usubscription.v3.FetchSubscribersResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.FetchSubscriptionsRequest;
 import org.eclipse.uprotocol.core.usubscription.v3.FetchSubscriptionsResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.NotificationsResponse;
+import org.eclipse.uprotocol.core.usubscription.v3.SubscribeAttributes;
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionStatus;
 import org.eclipse.uprotocol.transport.UListener;
@@ -67,7 +69,7 @@ public interface USubscriptionClient {
      * The API will return a {@link CompletionStage} with the response {@link SubscriptionResponse} or exception
      * with the failure if the subscription was not successful. The optional passed {@link SubscriptionChangeHandler}
      * is used to receive notifications of changes to the subscription status like a transition from
-     * {@link SubscriptionStatus.State.SUBSCRIBE_PENDING} to {@link SubscriptionStatus.State.SUBSCRIBED} that
+     * {@link SubscriptionStatus.State#SUBSCRIBE_PENDING} to {@link SubscriptionStatus.State#SUBSCRIBED} that
      * occurs when we subscribe to remote topics that the device we are on has not yet a subscriber that has
      * subscribed to said topic. 
      * 
@@ -76,7 +78,7 @@ public interface USubscriptionClient {
      * @param options The {@link CallOptions} to be used for the subscription.
      * @param handler {@link SubscriptionChangeHandler} to handle changes to subscription states.
      * @return Returns the CompletionStage with {@link SubscriptionResponse} or exception with the failure
-     * reason as {@link UStatus}. {@link UCode.ALREADY_EXISTS} will be returned if you call this API multiple
+     * reason as {@link UStatus}. {@link UCode#ALREADY_EXISTS} will be returned if you call this API multiple
      * times passing a different handler. 
      */
     CompletionStage<SubscriptionResponse> subscribe(UUri topic, UListener listener, CallOptions options,
@@ -177,7 +179,7 @@ public interface USubscriptionClient {
      * Unregister for subscription change notifications.
      * 
      * @param topic The topic to unregister for notifications.
-     * @return {@link CompletionStage} completed successfully with {@link NotificationResponse} with
+     * @return {@link CompletionStage} completed successfully with {@link NotificationsResponse} with
      *         the status of the API call to uSubscription service, or completed unsuccessfully with
      *         {@link UStatus} with the reason for the failure. 
      */
@@ -191,7 +193,7 @@ public interface USubscriptionClient {
      * 
      * @param topic The topic to unregister for notifications.
      * @param options The {@link CallOptions} to be used for the request.
-     * @return {@link CompletionStage} completed successfully with {@link NotificationResponse} with
+     * @return {@link CompletionStage} completed successfully with {@link NotificationsResponse} with
      *         the status of the API call to uSubscription service, or completed unsuccessfully with
      *         {@link UStatus} with the reason for the failure. 
      */
@@ -226,13 +228,13 @@ public interface USubscriptionClient {
     /**
      * Fetch list of Subscriptions for a given topic. 
      * 
-     * API provides more information than {@code fetchSubscribers()} in that it also returns  
+     * API provides more information than {@code #fetchSubscribers(UUri)} in that it also returns  
      * {@link SubscribeAttributes} per subscriber that might be useful to the producer to know.
      * 
-     * @param topic The topic to fetch subscriptions for.
+     * @param request The request containing the topic to fetch subscriptions for.
      * @return {@link CompletionStage} completed successfully with {@link FetchSubscriptionsResponse} that
      *         contains the subscription information per subscriber to the topic or completed unsuccessfully with
-     *      {@link UStatus} with the reason for the failure. {@link UCode.PERMISSION_DENIED} is returned if the
+     *      {@link UStatus} with the reason for the failure. {@link UCode#PERMISSION_DENIED} is returned if the
      *      topic ue_id does not equal the callers ue_id. 
      */
     default CompletionStage<FetchSubscriptionsResponse> fetchSubscriptions(FetchSubscriptionsRequest request) {
@@ -246,14 +248,13 @@ public interface USubscriptionClient {
      * API provides more information than {@code fetchSubscribers()} in that it also returns  
      * {@link SubscribeAttributes} per subscriber that might be useful to the producer to know.
      * 
-     * @param topic The topic to fetch subscriptions for.
+     * @param request The request containing the topic to fetch subscriptions for.
      * @param options The {@link CallOptions} to be used for the request.
      * @return {@link CompletionStage} completed successfully with {@link FetchSubscriptionsResponse} that
      *         contains the subscription information per subscriber to the topic or completed unsuccessfully with
-     *      {@link UStatus} with the reason for the failure. {@link UCode.PERMISSION_DENIED} is returned if the
+     *      {@link UStatus} with the reason for the failure. {@link UCode#PERMISSION_DENIED} is returned if the
      *      topic ue_id does not equal the callers ue_id. 
      */
     CompletionStage<FetchSubscriptionsResponse> fetchSubscriptions(FetchSubscriptionsRequest request, 
         CallOptions options);
-
 }

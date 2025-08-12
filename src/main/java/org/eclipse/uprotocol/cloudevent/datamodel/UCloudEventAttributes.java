@@ -61,7 +61,7 @@ public class UCloudEventAttributes {
 
     /**
      * Static factory method for creating an empty cloud event attributes object, to
-     * avoid working with null<br>
+     * avoid working with null.
      * 
      * @return Returns an empty cloud event attributes that indicates
      *         that there are no added additional attributes to configure.

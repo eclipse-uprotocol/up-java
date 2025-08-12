@@ -36,7 +36,9 @@ class UCloudEventAttributesTest {
                 .withTtl(3)
                 .withToken("someOAuthToken")
                 .build();
-        String expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken'}";
+        String expected = """
+                UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken'}\
+                """;
         assertEquals(expected, uCloudEventAttributes.toString());
     }
 
@@ -50,13 +52,16 @@ class UCloudEventAttributesTest {
                 .withToken("someOAuthToken")
                 .withTraceparent("darthvader")
                 .build();
-        String expected = "UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, token='someOAuthToken', traceparent='darthvader'}";
+        String expected = """
+                UCloudEventAttributes{hash='somehash', priority=UPRIORITY_CS1, ttl=3, \
+                token='someOAuthToken', traceparent='darthvader'}\
+                """;
         assertEquals(expected, uCloudEventAttributes.toString());
     }
     
     @Test
     @DisplayName("Test creating a valid attributes but traceparent is blank")
-    public void test_create_valid_with_blank_traceparent() {
+    public void testCreateValidWithBlankTraceparent() {
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
                 .withPriority(UPriority.UPRIORITY_CS6)
@@ -71,7 +76,7 @@ class UCloudEventAttributesTest {
 
     @Test
     @DisplayName("Test creating a empty attributes with only traceparent")
-    public void test_create_empty_with_only_traceparent() {
+    public void testCreateEmptyWithOnlyTraceparent() {
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withTraceparent("someTraceParent")
                 .build();
@@ -86,7 +91,7 @@ class UCloudEventAttributesTest {
             
     @Test
     @DisplayName("Test creating a valid attributes object")
-    public void test_create_valid() {
+    public void testCreateValid() {
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("somehash")
                 .withPriority(UPriority.UPRIORITY_CS6)
@@ -105,7 +110,7 @@ class UCloudEventAttributesTest {
 
     @Test
     @DisplayName("Test the isEmpty function")
-    public void test_Isempty_function() {
+    public void testIsEmptyFunction() {
         final UCloudEventAttributes uCloudEventAttributes = UCloudEventAttributes.empty();
         assertTrue(uCloudEventAttributes.isEmpty());
         assertTrue(uCloudEventAttributes.hash().isEmpty());
@@ -116,7 +121,7 @@ class UCloudEventAttributesTest {
 
     @Test
     @DisplayName("Test the isEmpty when built with blank strings function")
-    public void test_Isempty_function_when_built_with_blank_strings() {
+    public void testIsEmptyFunctionWhenBuiltWithBlankStrings() {
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("  ")
                 .withToken("  ")
@@ -130,7 +135,7 @@ class UCloudEventAttributesTest {
 
     @Test
     @DisplayName("Test the isEmpty permutations")
-    public void test_Isempty_function_permutations() {
+    public void testIsEmptyFunctionPermutations() {
         final UCloudEventAttributes uCloudEventAttributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
                 .withHash("  ")
                 .withToken("  ")
@@ -158,7 +163,5 @@ class UCloudEventAttributesTest {
                 .withTtl(8)
                 .build();
         assertFalse(uCloudEventAttributes5.isEmpty());
-
     }
-
 }

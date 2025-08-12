@@ -42,7 +42,7 @@ class CloudEventToProtobufSerializerTest {
 
     @Test
     @DisplayName("Test serialize and deserialize a CloudEvent to protobuf")
-    public void test_serialize_and_desirialize_cloud_event_to_protobuf() {
+    public void testSerializeAndDeserializeCloudEventToProtobuf() {
 
         // build the source
         String source = buildUriForTest();
@@ -66,7 +66,8 @@ class CloudEventToProtobufSerializerTest {
 
         final CloudEvent deserialize = serializer.deserialize(bytes);
 
-        // data is not the same type, does not work -> expected data=BytesCloudEventData actual data=io.cloudevents.protobuf.ProtoDataWrapper
+        // data is not the same type, does not work ->
+        // expected data=BytesCloudEventData actual data=io.cloudevents.protobuf.ProtoDataWrapper
         //assertEquals(cloudEvent, deserialize);
 
         assertCloudEventsAreTheSame(cloudEvent, deserialize);
@@ -74,7 +75,7 @@ class CloudEventToProtobufSerializerTest {
 
     @Test
     @DisplayName("Test serialize 2 different cloud events are not the same serialized elements")
-    public void test_serialize_two_different_cloud_event_are_not_the_same() {
+    public void testSerializeTwoDifferentCloudEventAreNotTheSame() {
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -101,7 +102,7 @@ class CloudEventToProtobufSerializerTest {
 
     @Test
     @DisplayName("Test serialize 2 equal cloud events are the same serialized elements")
-    public void test_serialize_two_same_cloud_event_are_the_same() {
+    public void testSerializeTwoSameCloudEventAreTheSame() {
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -126,7 +127,8 @@ class CloudEventToProtobufSerializerTest {
 
     @Test
     @DisplayName("test double serialization Protobuf when creating CloudEvent with factory methods")
-    public void test_double_serialization_protobuf_when_creating_cloud_event_with_factory_methods() throws InvalidProtocolBufferException {
+    public void testDoubleSerializationProtobufWhenCreatingCloudEventWithFactoryMethods()
+            throws InvalidProtocolBufferException {
 
         final CloudEventSerializer serializer = CloudEventSerializers.PROTOBUF.serializer();
 
@@ -173,7 +175,7 @@ class CloudEventToProtobufSerializerTest {
 
     @Test
     @DisplayName("test double serialization Protobuf")
-    public void test_double_serialization_protobuf() throws InvalidProtocolBufferException {
+    public void testDoubleSerializationProtobuf() throws InvalidProtocolBufferException {
 
         final CloudEventSerializer serializer = CloudEventSerializers.PROTOBUF.serializer();
 
@@ -208,7 +210,7 @@ class CloudEventToProtobufSerializerTest {
 
     @Test
     @DisplayName("test double serialization proto to Json")
-    public void test_double_serialization_proto_to_json() {
+    public void testDoubleSerializationProtoToJson() {
 
         final CloudEventSerializer protoSerializer = CloudEventSerializers.PROTOBUF.serializer();
         final CloudEventSerializer jsonSerializer = CloudEventSerializers.JSON.serializer();
@@ -242,7 +244,7 @@ class CloudEventToProtobufSerializerTest {
 
     @Test
     @DisplayName("test double serialization json to proto")
-    public void test_double_serialization_json_to_proto() {
+    public void testDoubleSerializationJsonToProto() {
 
         final CloudEventSerializer protoSerializer = CloudEventSerializers.PROTOBUF.serializer();
         final CloudEventSerializer jsonSerializer = CloudEventSerializers.JSON.serializer();
@@ -314,12 +316,12 @@ class CloudEventToProtobufSerializerTest {
     }
 
     private String buildUriForTest() {
-        UUri Uri = UUri.newBuilder()
+        UUri uri = UUri.newBuilder()
             .setUeId(1)
             .setResourceId(0x8000)
             .build();
-        
-        return UriSerializer.serialize(Uri);
+
+        return UriSerializer.serialize(uri);
     }
 
     private Any buildProtoPayloadForTest() {
@@ -334,5 +336,4 @@ class CloudEventToProtobufSerializerTest {
                 .build();
         return Any.pack(cloudEventProto);
     }
-
 }

@@ -69,7 +69,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test create a v6 Cloudevent and validate it works with this SDK")
-    public void test_create_a_v6_cloudevent_and_validate_it_against_sdk() {
+    public void testCreateAV6CloudeventAndValidateItAgainstSdk() {
 
         // source
         String source = buildUriForTest();
@@ -95,7 +95,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test create an expired v6 Cloudevent to ensure we report the expiration")
-    public void test_create_an_expired_v6_cloudevent() {
+    public void testCreateAnExpiredV6Cloudevent() {
         // source
         String source = buildUriForTest();
         UUID uuid = UuidFactory.Factories.UUIDV6.factory().create(Instant.now().minusSeconds(100));
@@ -109,8 +109,13 @@ class CloudEventValidatorTest {
                 .build();
 
         // build the cloud event
-        final CloudEvent cloudEvent = CloudEventFactory.buildBaseCloudEvent(id, source, protoPayload,
-         attributes).withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH)).build();
+        final CloudEvent cloudEvent = CloudEventFactory.buildBaseCloudEvent(
+            id,
+            source,
+            protoPayload,
+            attributes)
+            .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_PUBLISH))
+            .build();
 
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -140,7 +145,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the getValidator to fath the Response validator for a valid response message")
-    public void test_getValidator_for_valid_response_type_message() {
+    public void testGetvalidatorForValidResponseTypeMessage() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
@@ -155,11 +160,15 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the getValidator to fetch the Request validator for a valid request message")
-    public void test_getValidator_for_valid_request_type_message() {
+    public void testGetvalidatorForValidRequestTypeMessage() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
-        final CloudEvent cloudEvent = CloudEventFactory.request(buildDefaultTopicUriForTest(), buildMethodUriForTest(), null, attributes);
+        final CloudEvent cloudEvent = CloudEventFactory.request(
+            buildDefaultTopicUriForTest(),
+            buildMethodUriForTest(),
+            null,
+            attributes);
         final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
         final ValidationResult result = validator.validate(cloudEvent);
         assertTrue(result.isSuccess());
@@ -168,7 +177,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the getValidator to fetch the Publish validator for a valid publish message")
-    public void test_getValidator_for_valid_publish_type_message() {
+    public void testGetvalidatorForValidPublishTypeMessage() {
         final CloudEvent cloudEvent = buildBaseCloudEventBuilderForTest().build();
         final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
         final ValidationResult result = validator.validate(cloudEvent);
@@ -178,7 +187,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the getValidator to fetch a validator when type is not set")
-    public void test_getValidator_for_invalid_type_message() {
+    public void testGetvalidatorForInvalidTypeMessage() {
         final CloudEvent cloudEvent = buildBaseCloudEventBuilderForTest().withType("").build();
         final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
         assertEquals(validator.toString(), "CloudEventValidator.Publish");
@@ -186,7 +195,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test validateId when the id is invalid")
-    public void test_validateid_when_id_is_invalid() {
+    public void testValidateidWhenIdIsInvalid() {
         final CloudEvent cloudEvent = buildBaseCloudEventBuilderForTest().withId("bad").build();
         final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
         final ValidationResult result = validator.validate(cloudEvent);
@@ -196,11 +205,15 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the getValidator to fetch the Notification validator for a valid notification message")
-    public void test_getValidator_for_valid_notification_type_message() {
+    public void testGetvalidatorForValidNotificationTypeMessage() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
-        final CloudEvent cloudEvent = CloudEventFactory.notification(buildUriForTest(), buildDefaultTopicUriForTest(), null, attributes);
+        final CloudEvent cloudEvent = CloudEventFactory.notification(
+            buildUriForTest(),
+            buildDefaultTopicUriForTest(),
+            null,
+            attributes);
         final CloudEventValidator validator = CloudEventValidator.getValidator(cloudEvent);
         final ValidationResult result = validator.validate(cloudEvent);
         assertTrue(result.isSuccess());
@@ -209,7 +222,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Publish Validator with the wrong specification version of 0.3 in lieu of 1.0")
-    public void test_publish_validator_for_invalid_spec_version() {
+    public void testPublishValidatorForInvalidSpecVersion() {
         // source
         final CloudEvent cloudEvent = CloudEventBuilder.v03()
             .withId(UuidSerializer.serialize(UuidFactory.Factories.UPROTOCOL.factory().create()))
@@ -223,9 +236,10 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Publish Validator when sink is passed")
-    public void test_publish_validator_for_valid_publish_type_message() {
+    public void testPublishValidatorForValidPublishTypeMessage() {
         // source
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withExtension("sink", URI.create(buildUriForTest()));
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
+            .withExtension("sink", URI.create(buildUriForTest()));
         final CloudEvent cloudEvent = builder.build();
 
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
@@ -236,7 +250,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Publish Validator when the source has an invalid source topic")
-    public void test_publish_validator_for_invalid_source_topic() {
+    public void testPublishValidatorForInvalidSourceTopic() {
         // source
         CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withSource(URI.create("invalid-source-topic"));
         final CloudEvent cloudEvent = builder.build();
@@ -249,25 +263,34 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Publish Validator when being used to test the wrong type of CloudEvent type")
-    public void test_publish_validator_for_invalid_type() {
+    public void testPublishValidatorForInvalidType() {
         // source
-        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest().withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_NOTIFICATION));
+        CloudEventBuilder builder = buildBaseCloudEventBuilderForTest()
+            .withType(UCloudEvent.getEventType(UMessageType.UMESSAGE_TYPE_NOTIFICATION));
         final CloudEvent cloudEvent = builder.build();
 
         final CloudEventValidator validator = CloudEventValidator.Validators.PUBLISH.validator();
         final ValidationResult result = validator.validate(cloudEvent);
         assertFalse(result.isSuccess());
-        assertEquals(result.getMessage(), "Invalid CloudEvent type [not.v1]. CloudEvent of type Publish must have a type of 'pub.v1'");
+        assertEquals(
+            result.getMessage(),
+            "Invalid CloudEvent type [not.v1]. CloudEvent of type Publish must have a type of 'pub.v1'"
+        );
     }
 
     @Test
     @DisplayName("Test the Notification Validator with a valid notification message")
-    public void test_notification_validator_for_valid_notification_type_message() {
+    public void testNotificationValidatorForValidNotificationTypeMessage() {
 
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
-        final CloudEvent cloudEvent = CloudEventFactory.notification(buildUriForTest(), buildDefaultTopicUriForTest(), null, attributes);
+        final CloudEvent cloudEvent = CloudEventFactory.notification(
+            buildUriForTest(),
+            buildDefaultTopicUriForTest(),
+            null,
+            attributes
+        );
 
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -276,11 +299,16 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Notification Validator with an invalid sink")
-    public void test_notification_validator_for_invalid_sink() {
+    public void testNotificationValidatorForInvalidSink() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
-        final CloudEvent cloudEvent = CloudEventFactory.notification(buildUriForTest(), "invalid-sink", null, attributes);
+        final CloudEvent cloudEvent = CloudEventFactory.notification(
+            buildUriForTest(),
+            "invalid-sink",
+            null,
+            attributes
+        );
 
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -290,11 +318,16 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Notification Validator with an invalid source")
-    public void test_notification_validator_for_invalid_source() {
+    public void testNotificationValidatorForInvalidSource() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
-        final CloudEvent cloudEvent = CloudEventFactory.notification("invalid-source", buildDefaultTopicUriForTest(), null, attributes);
+        final CloudEvent cloudEvent = CloudEventFactory.notification(
+            "invalid-source",
+            buildDefaultTopicUriForTest(),
+            null,
+            attributes
+        );
 
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -304,7 +337,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Notification Validator when sink is null")
-    public void test_notification_validator_for_null_sink() {
+    public void testNotificationValidatorForNullSink() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
@@ -322,7 +355,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Notification Validator when type is wrong is null")
-    public void test_notification_validator_when_type_is_wrong() {
+    public void testNotificationValidatorWhenTypeIsWrong() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
@@ -336,17 +369,25 @@ class CloudEventValidatorTest {
         final CloudEventValidator validator = CloudEventValidator.Validators.NOTIFICATION.validator();
         final ValidationResult result = validator.validate(cloudEvent);
         assertFalse(result.isSuccess());
-        assertEquals(result.getMessage(), "Invalid CloudEvent type [pub.v1]. CloudEvent of type Notification must have a type of 'not.v1'");
+        assertEquals(
+            result.getMessage(),
+            "Invalid CloudEvent type [pub.v1]. CloudEvent of type Notification must have a type of 'not.v1'"
+        );
     }
 
 
     @Test
     @DisplayName("Test the Request  Validator happy path")
-    public void test_request_validator_for_valid_request_type_message() {
+    public void testRequestValidatorForValidRequestTypeMessage() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
-        final CloudEvent cloudEvent = CloudEventFactory.request(buildDefaultTopicUriForTest(), buildMethodUriForTest(), null, attributes);
+        final CloudEvent cloudEvent = CloudEventFactory.request(
+            buildDefaultTopicUriForTest(),
+            buildMethodUriForTest(),
+            null,
+            attributes
+        );
 
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -355,11 +396,17 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Request Validator with an invalid sink")
-    public void test_request_validator_for_invalid_sink() {
-        UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
-                        UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
-                .build();
-        final CloudEvent cloudEvent = CloudEventFactory.request(buildDefaultTopicUriForTest(), "invalid-sink", null, attributes);
+    public void testRequestValidatorForInvalidSink() {
+        UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder()
+            .withPriority(UPriority.UPRIORITY_CS1)
+            .withTtl(1000) // live for 1 second
+            .build();
+        final CloudEvent cloudEvent = CloudEventFactory.request(
+            buildDefaultTopicUriForTest(),
+            "invalid-sink",
+            null,
+            attributes
+        );
 
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -369,11 +416,16 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Request Validator with an invalid source")
-    public void test_request_validator_for_invalid_source() {
+    public void testRequestValidatorForInvalidSource() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
-        final CloudEvent cloudEvent = CloudEventFactory.request("invalid-source", buildMethodUriForTest(), null, attributes);
+        final CloudEvent cloudEvent = CloudEventFactory.request(
+            "invalid-source",
+            buildMethodUriForTest(),
+            null,
+            attributes
+        );
 
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -383,7 +435,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Request Validator when sink is null")
-    public void test_request_validator_for_null_sink() {
+    public void testRequestValidatorForNullSink() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
@@ -401,7 +453,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Request Validator when type is wrong is null")
-    public void test_request_validator_when_type_is_wrong() {
+    public void testRequestValidatorWhenTypeIsWrong() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
@@ -415,17 +467,24 @@ class CloudEventValidatorTest {
         final CloudEventValidator validator = CloudEventValidator.Validators.REQUEST.validator();
         final ValidationResult result = validator.validate(cloudEvent);
         assertFalse(result.isSuccess());
-        assertEquals(result.getMessage(), "Invalid CloudEvent type [pub.v1]. CloudEvent of type Request must have a type of 'req.v1'");
+        assertEquals(
+            result.getMessage(),
+            "Invalid CloudEvent type [pub.v1]. CloudEvent of type Request must have a type of 'req.v1'"
+        );
     }
 
     @Test
     @DisplayName("Test the Response Validator happy path")
-    public void test_response_validator_for_valid_response_type_message() {
+    public void testResponseValidatorForValidResponseTypeMessage() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
-        final CloudEvent cloudEvent = CloudEventFactory.response(buildDefaultTopicUriForTest(), buildMethodUriForTest(), 
-            UuidSerializer.serialize(UuidFactory.Factories.UPROTOCOL.factory().create()), null, attributes);
+        final CloudEvent cloudEvent = CloudEventFactory.response(
+            buildDefaultTopicUriForTest(),
+            buildMethodUriForTest(),
+            UuidSerializer.serialize(UuidFactory.Factories.UPROTOCOL.factory().create()),
+            null,
+            attributes);
 
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final ValidationResult result = validator.validate(cloudEvent);
@@ -434,7 +493,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Response Validator with an invalid sink")
-    public void test_response_validator_for_invalid_sink() {
+    public void testResponseValidatorForInvalidSink() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
@@ -449,7 +508,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Response Validator with an invalid source")
-    public void test_response_validator_for_invalid_source() {
+    public void testResponseValidatorForInvalidSource() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
@@ -464,7 +523,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Response Validator when sink is null")
-    public void test_response_validator_for_null_sink() {
+    public void testResponseValidatorForNullSink() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
@@ -482,7 +541,7 @@ class CloudEventValidatorTest {
 
     @Test
     @DisplayName("Test the Response Validator when type is wrong is null")
-    public void test_response_validator_when_type_is_wrong() {
+    public void testResponseValidatorWhenTypeIsWrong() {
         UCloudEventAttributes attributes = new UCloudEventAttributes.UCloudEventAttributesBuilder().withPriority(
                         UPriority.UPRIORITY_CS1).withTtl(1000) // live for 1 second
                 .build();
@@ -496,6 +555,9 @@ class CloudEventValidatorTest {
         final CloudEventValidator validator = CloudEventValidator.Validators.RESPONSE.validator();
         final ValidationResult result = validator.validate(cloudEvent);
         assertFalse(result.isSuccess());
-        assertEquals(result.getMessage(), "Invalid CloudEvent type [pub.v1]. CloudEvent of type Response must have a type of 'res.v1'");
+        assertEquals(
+            result.getMessage(),
+            "Invalid CloudEvent type [pub.v1]. CloudEvent of type Response must have a type of 'res.v1'"
+        );
     }
 }

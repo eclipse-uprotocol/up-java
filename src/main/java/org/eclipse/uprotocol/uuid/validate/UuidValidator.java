@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * UUID Validator class that validates UUIDs
+ * A Validator for uProtocol UUIDs.
  */
 public abstract class UuidValidator {
 

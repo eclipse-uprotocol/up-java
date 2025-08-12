@@ -104,7 +104,7 @@ public interface CloudEventFactory {
      *                             service Ex.: :/body.access/1/rpc.UpdateDoor
      * @param requestId            The cloud event id from the original request
      *                             cloud event that this response if for.
-     * @param communicationStatus  A {@link Code} value that indicates of a platform
+     * @param communicationStatus  A code that indicates a platform
      *                             communication error while delivering this
      *                             CloudEvent.
      * @param attributes           Additional attributes such as ttl, hash and
@@ -164,7 +164,9 @@ public interface CloudEventFactory {
     }
 
     /**
-     * @return Returns a UUIDv7 id.
+     * Creates a new uProtocol UUID.
+     *
+     * @return The UUID.
      */
     static String generateCloudEventId() {
         UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();

@@ -37,6 +37,16 @@
         <module name="NestedIfDepth">
             <property name="max" value="3"/>
         </module>
+        <module name="JavadocMethod">
+            <property name="accessModifiers" value="public,protected"/>
+        </module>
+        <module name="JavadocStyle">
+            <property name="checkEmptyJavadoc" value="true" />
+            <property name="scope" value="protected" />
+        </module>
+        <module name="JavadocType">
+            <property name="allowMissingParamTags" value="true" />
+            <property name="scope" value="protected" />
+        </module>
     </module>
 </module>
-

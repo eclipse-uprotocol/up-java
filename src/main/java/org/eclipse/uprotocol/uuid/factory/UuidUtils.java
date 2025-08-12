@@ -20,7 +20,7 @@ import org.eclipse.uprotocol.v1.UUID;
 import java.util.Optional;
 
 /**
- * UUID Utils class that provides utility methods for uProtocol IDs
+ * Utility methods for uProtocol UUIDs.
  */
 public interface UuidUtils {
 
@@ -51,6 +51,7 @@ public interface UuidUtils {
     /**
      * Verify if version is a formal UUIDv7 uProtocol ID.
      *
+     * @param uuid The UUID to check.
      * @return true if is a uProtocol UUID or false if uuid passed is null
      *         or the UUID is not uProtocol format.
      */
@@ -60,8 +61,9 @@ public interface UuidUtils {
     }
 
     /**
-     * Verify if version is UUIDv6
+     * Verify if version is UUIDv6.
      *
+     * @param uuid The UUID to check.
      * @return true if is UUID version 6 or false if uuid is null or not version 6
      */
     static boolean isUuidv6(UUID uuid) {
@@ -72,9 +74,10 @@ public interface UuidUtils {
     }
 
     /**
-     * Verify uuid is either v6 or v7
+     * Verify uuid is either v6 or v7.
      *
-     * @return true if is UUID version 6 or 8
+     * @param uuid The UUID to check.
+     * @return true if is UUID version 6 or 7
      */
     static boolean isUuid(UUID uuid) {
         return isUProtocol(uuid) || isUuidv6(uuid);
@@ -163,7 +166,7 @@ public interface UuidUtils {
     }
 
     /**
-     * UUID Version
+     * The supported UUID versions.
      */
     enum Version {
 
@@ -198,7 +201,7 @@ public interface UuidUtils {
          *         version.
          */
         public static Optional<Version> getVersion(int value) {
-            for (Version version : Version.values()) {
+            for (Version version : values()) {
                 if (version.getValue() == value) {
                     return Optional.of(version);
                 }

@@ -27,12 +27,12 @@ import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
- * Test implementing and using uTransport API
+ * Tests implementing and using uTransport API.
  */
 public class UTransportTest {
     @Test
     @DisplayName("Test happy path send message")
-    public void test_happy_send_message() {
+    public void testHappySendMessage() {
         UTransport transport = new HappyUTransport();
         UUri uri = UUri.newBuilder().setUeId(1).setUeVersionMajor(1).setResourceId(0x8000).build();
 
@@ -43,30 +43,32 @@ public class UTransportTest {
 
     @Test
     @DisplayName("Test happy path register listener")
-    public void test_happy_register_listener() {
+    public void testHappyRegisterListener() {
         UTransport transport = new HappyUTransport();
-        assertFalse(transport.registerListener(UUri.getDefaultInstance(), 
-        new MyListener()).toCompletableFuture().isCompletedExceptionally());
+        assertFalse(transport.registerListener(
+            UUri.getDefaultInstance(), 
+            new MyListener()).toCompletableFuture().isCompletedExceptionally());
     }
 
     @Test
     @DisplayName("Test happy path unregister listener")
-    public void test_happy_register_unlistener() {
+    public void testHappyRegisterUnlistener() {
         UTransport transport = new HappyUTransport();
-        assertFalse(transport.unregisterListener(UUri.getDefaultInstance(), 
-        new MyListener()).toCompletableFuture().isCompletedExceptionally());
+        assertFalse(transport.unregisterListener(
+            UUri.getDefaultInstance(),
+            new MyListener()).toCompletableFuture().isCompletedExceptionally());
     }
 
     @Test
     @DisplayName("Test unhappy path send message")
-    public void test_unhappy_send_message() {
+    public void testUnhappySendMessage() {
         UTransport transport = new SadUTransport();
         assertEquals(transport.send(null).toCompletableFuture().join().getCode(), UCode.INTERNAL);
     }
 
     @Test
     @DisplayName("Test unhappy path register listener")
-    public void test_unhappy_register_listener() {
+    public void testUnhappyRegisterListener() {
         UTransport transport = new SadUTransport();
         CompletionStage<UStatus> result = transport.registerListener(UUri.getDefaultInstance(), 
             new MyListener());
@@ -76,7 +78,7 @@ public class UTransportTest {
 
     @Test
     @DisplayName("Test unhappy path unregister listener")
-    public void test_unhappy_register_unlistener() {
+    public void testUnhappyRegisterUnlistener() {
         UTransport transport = new SadUTransport();
         
         CompletionStage<UStatus> result = transport.unregisterListener(UUri.getDefaultInstance(), 
@@ -87,14 +89,14 @@ public class UTransportTest {
 
     @Test
     @DisplayName("Test happy path calling open() API")
-    public void test_happy_open() {
+    public void testHappyOpen() {
         UTransport transport = new HappyUTransport();
         assertEquals(transport.open().toCompletableFuture().join().getCode(), UCode.OK);
     }
 
     @Test
     @DisplayName("Test default oepn() and close() APIs")
-    public void test_default_open_close() {
+    public void testDefaultOpenClose() {
         UTransport transport = new UTransport() {
             @Override
             public CompletionStage<UStatus> send(UMessage message) {
@@ -123,7 +125,9 @@ public class UTransportTest {
 
     class MyListener implements UListener {
         @Override
-        public void onReceive(UMessage message) {}
+        public void onReceive(UMessage message) {
+            // empty by intention
+        }
     }
 
     private class HappyUTransport implements UTransport {
@@ -184,7 +188,7 @@ public class UTransportTest {
 
     @Test
     @DisplayName("Test happy path registerlistener with source filter only")
-    public void test_happy_register_listener_source_filter() {
+    public void testHappyRegisterListenerSourceFilter() {
         UTransport transport = new HappyUTransport();
         CompletionStage<UStatus> result = transport.registerListener(UUri.getDefaultInstance(), new MyListener());
         assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
@@ -192,7 +196,7 @@ public class UTransportTest {
 
     @Test
     @DisplayName("Test happy path unregisterlistener with source filter only")
-    public void test_happy_unregister_listener_source_filter() {
+    public void testHappyUnregisterListenerSourceFilter() {
         UTransport transport = new HappyUTransport();
         CompletionStage<UStatus> result = transport.unregisterListener(UUri.getDefaultInstance(), new MyListener());
         assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);

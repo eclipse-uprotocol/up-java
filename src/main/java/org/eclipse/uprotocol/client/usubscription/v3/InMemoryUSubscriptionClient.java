@@ -88,7 +88,6 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      * used to provide additional options for the RPC requests to uSubscription service.
      * 
      * @param transport the transport to use for sending the notifications
-     * @param options the call options to use for the RPC requests
      */
     public InMemoryUSubscriptionClient (UTransport transport) {
         this(transport, new InMemoryRpcClient(transport), new SimpleNotifier(transport));
@@ -122,7 +121,7 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      * The API will return a {@link CompletionStage} with the response {@link SubscriptionResponse} or exception
      * with the failure if the subscription was not successful. The optional passed {@link SubscriptionChangeHandler}
      * is used to receive notifications of changes to the subscription status like a transition from
-     * {@link SubscriptionStatus.State.SUBSCRIBE_PENDING} to {@link SubscriptionStatus.State.SUBSCRIBED} that
+     * {@link SubscriptionStatus.State#SUBSCRIBE_PENDING} to {@link SubscriptionStatus.State#SUBSCRIBED} that
      * occurs when we subscribe to remote topics that the device we are on has not yet a subscriber that has
      * subscribed to said topic. 
      * 
@@ -131,7 +130,7 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      * @param options The {@link CallOptions} to be used for the subscription.
      * @param handler {@link SubscriptionChangeHandler} to handle changes to subscription states.
      * @return Returns the CompletionStage with {@link SubscriptionResponse} or exception with the failure
-     * reason as {@link UStatus}. {@link UCode.ALREADY_EXISTS} will be returned if you call this API multiple
+     * reason as {@link UStatus}. {@link UCode#ALREADY_EXISTS} will be returned if you call this API multiple
      * times passing a different handler. 
      */
     @Override
@@ -296,9 +295,9 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      * 
      * @param topic The topic to unregister for notifications.
      * @param options The {@link CallOptions} to be used for the unregister request.
-     * @return {@link CompletionStage} completed successfully with {@link NotificationResponse} with
+     * @return {@link CompletionStage} completed successfully with {@link NotificationsResponse} with
      *         the status of the API call to uSubscription service, or completed unsuccessfully with
-     *         {@link UStatus} with the reason for the failure. {@link UCode.PERMISSION_DENIED} is
+     *         {@link UStatus} with the reason for the failure. {@link UCode#PERMISSION_DENIED} is
      *         returned if the topic ue_id does not equal the callers ue_id. 
      */
     @Override
@@ -342,12 +341,12 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      * 
      * API provides more information than {@code fetchSubscribers()} in that it also returns  
      * {@link SubscribeAttributes} per subscriber that might be useful to the producer to know.
-     * 
-     * @param topic The topic to fetch subscriptions for.
+     *
+     * @param request The request containing the topic to fetch subscriptions for.
      * @param options The {@link CallOptions} to be used for the request.
      * @return {@link CompletionStage} completed successfully with {@link FetchSubscriptionsResponse} that
-     *         contains the subscription information per subscriber to the topic or completed unsuccessfully with
-     *      {@link UStatus} with the reason for the failure. {@link UCode.PERMISSION_DENIED} is returned if the
+     *      contains the subscription information per subscriber to the topic or completed unsuccessfully with
+     *      {@link UStatus} with the reason for the failure. {@link UCode#PERMISSION_DENIED} is returned if the
      *      topic ue_id does not equal the callers ue_id. 
      */
     @Override
