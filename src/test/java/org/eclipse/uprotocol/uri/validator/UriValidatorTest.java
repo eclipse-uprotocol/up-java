@@ -25,19 +25,19 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Test isEmpty with null UUri")
-    public void test_isEmpty_with_null_UUri() {
+    public void testIsemptyWithNullUuri() {
         assertTrue(UriValidator.isEmpty(null));
     }
 
     @Test
     @DisplayName("Test isEmpty with default UUri")
-    public void test_isEmpty_with_default_UUri() {
+    public void testIsemptyWithDefaultUuri() {
         assertTrue(UriValidator.isEmpty(UUri.getDefaultInstance()));
     }
     
     @Test
     @DisplayName("Test isEmpty for non empty UUri")
-    public void test_isEmpty_for_non_empty_UUri() {
+    public void testIsemptyForNonEmptyUuri() {
         UUri uri = UUri.newBuilder()
             .setAuthorityName("myAuthority")
             .setUeId(0)
@@ -48,26 +48,26 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Test isEmpty UUri for empty built UUri")
-    public void test_isEmpty_UUri_for_empty_built_UUri() {
+    public void testIsemptyUuriForEmptyBuiltUuri() {
         UUri uri = UUri.newBuilder().build();
         assertTrue(UriValidator.isEmpty(uri));
     }
 
     @Test
     @DisplayName("Test isRpcMethod with null UUri")
-    public void test_isRpcMethod_with_null_UUri() {
+    public void testIsrpcmethodWithNullUuri() {
         assertTrue(!UriValidator.isRpcMethod(null));
     }
 
     @Test
     @DisplayName("Test isRpcMethod with default UUri")
-    public void test_isRpcMethod_with_default_UUri() {
+    public void testIsrpcmethodWithDefaultUuri() {
         assertFalse(UriValidator.isRpcMethod(UUri.getDefaultInstance()));
     }
 
     @Test
     @DisplayName("Test isRpcMethod with UUri having resourceId less than MIN_TOPIC_ID")
-    public void test_isRpcMethod_with_UUri_having_resourceId_less_than_MIN_TOPIC_ID() {
+    public void testIsrpcmethodWithUuriHavingResourceidLessThanMinTopicId() {
         UUri uri = UUri.newBuilder()
             .setResourceId(0x7FFF).build();
         assertTrue(UriValidator.isRpcMethod(uri));
@@ -75,7 +75,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Test isRpcMethod with UUri having resourceId greater than MIN_TOPIC_ID")
-    public void test_isRpcMethod_with_UUri_having_resourceId_greater_than_MIN_TOPIC_ID() {
+    public void testIsrpcmethodWithUuriHavingResourceidGreaterThanMinTopicId() {
         UUri uri = UUri.newBuilder()
             .setResourceId(0x8000).build();
         assertTrue(!UriValidator.isRpcMethod(uri));
@@ -83,7 +83,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Test isRpcMethod with UUri having resourceId equal to MIN_TOPIC_ID")
-    public void test_isRpcMethod_with_UUri_having_resourceId_equal_to_MIN_TOPIC_ID() {
+    public void testIsrpcmethodWithUuriHavingResourceidEqualToMinTopicId() {
         UUri uri = UUri.newBuilder()
             .setResourceId(0x8000).build();
         assertTrue(!UriValidator.isRpcMethod(uri));
@@ -91,19 +91,19 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Test isRpcResponse with null UUri")
-    public void test_isRpcResponse_with_null_UUri() {
+    public void testIsrpcresponseWithNullUuri() {
         assertTrue(!UriValidator.isRpcResponse(null));
     }
 
     @Test
     @DisplayName("Test isRpcResponse with default UUri")
-    public void test_isRpcResponse_with_default_UUri() {
+    public void testIsrpcresponseWithDefaultUuri() {
         assertTrue(!UriValidator.isRpcResponse(UUri.getDefaultInstance()));
     }
 
     @Test
     @DisplayName("Test isRpcResponse with UUri having resourceId equal to 0")
-    public void test_isRpcResponse_with_UUri_having_resourceId_equal_to_0() {
+    public void testIsrpcresponseWithUuriHavingResourceidEqualTo0() {
         UUri uri = UUri.newBuilder()
             .setAuthorityName("hartley")
             .setUeId(1)
@@ -114,7 +114,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Test isRpcResponse with UUri having resourceId not equal to 0")
-    public void test_isRpcResponse_with_UUri_having_resourceId_not_equal_to_0() {
+    public void testIsrpcresponseWithUuriHavingResourceidNotEqualTo0() {
         UUri uri = UUri.newBuilder()
             .setAuthorityName("hartley")
             .setUeId(1)
@@ -125,7 +125,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Test isRpcResponse with UUri having resourceId less than 0")
-    public void test_isRpcResponse_with_UUri_having_resourceId_less_than_0() {
+    public void testIsrpcresponseWithUuriHavingResourceidLessThan0() {
         UUri uri = UUri.newBuilder()
             .setResourceId(-1).build();
         assertTrue(!UriValidator.isRpcResponse(uri));
@@ -133,19 +133,19 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Test isTopic with null UUri")
-    public void test_isTopic_with_null_UUri() {
+    public void testIstopicWithNullUuri() {
         assertFalse(UriValidator.isTopic(null));
     }
 
     @Test
     @DisplayName("Test isTopic with default UUri")
-    public void test_isTopic_with_default_UUri() {
+    public void testIstopicWithDefaultUuri() {
         assertFalse(UriValidator.isTopic(UUri.getDefaultInstance()));
     }
 
     @Test
     @DisplayName("Test isTopic with UUri having resourceId greater than 0")
-    public void test_isTopic_with_UUri_having_resourceId_greater_than_0() {
+    public void testIstopicWithUuriHavingResourceidGreaterThan0() {
         UUri uri = UUri.newBuilder()
             .setResourceId(1).build();
         assertFalse(UriValidator.isTopic(uri));
@@ -153,7 +153,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Test isTopic with UUri having resourceId greater than 0x8000")
-    public void test_isTopic_with_UUri_having_resourceId_greater_than_0x8000() {
+    public void testIstopicWithUuriHavingResourceidGreaterThan0x8000() {
         UUri uri = UUri.newBuilder()
             .setResourceId(0x8001).build();
         assertTrue(UriValidator.isTopic(uri));
@@ -161,7 +161,7 @@ class UriValidatorTest {
     
     @Test
     @DisplayName("Test isRpcMethod should be false when resourceId is 0")
-    public void test_isRpcMethod_should_be_false_when_resourceId_is_0() {
+    public void testIsrpcmethodShouldBeFalseWhenResourceidIs0() {
         UUri uri = UUri.newBuilder()
             .setUeId(1)
             .setResourceId(0).build();
@@ -170,7 +170,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches succeeds for identical URIs")
-    public void test_Matches_Succeeds_For_Identical_Uris() {
+    public void testMatchesSucceedsForIdenticalUris() {
         UUri patternUri = UriSerializer.deserialize("//authority/A410/3/1003");
         UUri candidateUri = UriSerializer.deserialize("//authority/A410/3/1003");
         assertTrue(UriValidator.matches(patternUri, candidateUri));
@@ -178,7 +178,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches succeeds for pattern with wildcard authority")
-    public void test_Matches_Succeeds_For_Pattern_With_Wildcard_Authority() {
+    public void testMatchesSucceedsForPatternWithWildcardAuthority() {
         UUri patternUri = UriSerializer.deserialize("//*/A410/3/1003");
         UUri candidateUri = UriSerializer.deserialize("//authority/A410/3/1003");
         assertTrue(UriValidator.matches(patternUri, candidateUri));
@@ -186,7 +186,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches succeeds for pattern with wildcard authority and local candidate URI")
-    public void test_Matches_Succeeds_For_Pattern_With_Wildcard_Authority_And_Local_Candidate_Uri() {
+    public void testMatchesSucceedsForPatternWithWildcardAuthorityAndLocalCandidateUri() {
         UUri patternUri = UriSerializer.deserialize("//*/A410/3/1003");
         UUri candidateUri = UriSerializer.deserialize("/A410/3/1003");
         assertTrue(UriValidator.matches(patternUri, candidateUri));
@@ -194,7 +194,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches succeeds for pattern with wildcard entity ID")
-    public void test_Matches_Succeeds_For_Pattern_With_Wildcard_Entity_Id() {
+    public void testMatchesSucceedsForPatternWithWildcardEntityId() {
         UUri patternUri = UriSerializer.deserialize("//authority/FFFF/3/1003");
         UUri candidateUri = UriSerializer.deserialize("//authority/A410/3/1003");
         assertTrue(UriValidator.matches(patternUri, candidateUri));
@@ -202,7 +202,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches succeeds for pattern with similar entity instance")
-    public void test_Matches_Succeeds_For_Pattern_With_Similar_Entity_Instance() {
+    public void testMatchesSucceedsForPatternWithSimilarEntityInstance() {
         UUri patternUri = UriSerializer.deserialize("//authority/A410/3/1003");
         UUri candidateUri = UriSerializer.deserialize("//authority/2A410/3/1003");
         assertTrue(UriValidator.matches(patternUri, candidateUri));
@@ -210,7 +210,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches succeeds for pattern with identical entity instance")
-    public void test_Matches_Succeeds_For_Pattern_With_Identical_Entity_Instance() {
+    public void testMatchesSucceedsForPatternWithIdenticalEntityInstance() {
         UUri patternUri = UriSerializer.deserialize("//authority/2A410/3/1003");
         UUri candidateUri = UriSerializer.deserialize("//authority/2A410/3/1003");
         assertTrue(UriValidator.matches(patternUri, candidateUri));
@@ -218,7 +218,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches succeeds for pattern with wildcard entity version")
-    public void test_Matches_Succeeds_For_Pattern_With_Wildcard_Entity_Version() {
+    public void testMatchesSucceedsForPatternWithWildcardEntityVersion() {
         UUri patternUri = UriSerializer.deserialize("//authority/A410/FF/1003");
         UUri candidateUri = UriSerializer.deserialize("//authority/A410/3/1003");
         assertTrue(UriValidator.matches(patternUri, candidateUri));
@@ -226,7 +226,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches succeeds for pattern with wildcard resource")
-    public void test_Matches_Succeeds_For_Pattern_With_Wildcard_Resource() {
+    public void testMatchesSucceedsForPatternWithWildcardResource() {
         UUri patternUri = UriSerializer.deserialize("//authority/A410/3/FFFF");
         UUri candidateUri = UriSerializer.deserialize("//authority/A410/3/1003");
         assertTrue(UriValidator.matches(patternUri, candidateUri));
@@ -234,7 +234,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches fails for upper case authority")
-    public void test_Matches_Fail_For_Upper_Case_Authority() {
+    public void testMatchesFailForUpperCaseAuthority() {
         UUri pattern = UriSerializer.deserialize("//Authority/A410/3/1003");
         UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
         assertFalse(UriValidator.matches(pattern, candidate));
@@ -242,7 +242,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches fails for local pattern with authority")
-    public void test_Matches_Fail_For_Local_Pattern_With_Authority() {
+    public void testMatchesFailForLocalPatternWithAuthority() {
         UUri pattern = UriSerializer.deserialize("/A410/3/1003");
         UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
         assertFalse(UriValidator.matches(pattern, candidate));
@@ -250,7 +250,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches fails for different authority")
-    public void test_Matches_Fail_For_Different_Authority() {
+    public void testMatchesFailForDifferentAuthority() {
         UUri pattern = UriSerializer.deserialize("//other/A410/3/1003");
         UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
         assertFalse(UriValidator.matches(pattern, candidate));
@@ -258,7 +258,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches fails for different entity ID")
-    public void test_Matches_Fail_For_Different_Entity_Id() {
+    public void testMatchesFailForDifferentEntityId() {
         UUri pattern = UriSerializer.deserialize("//authority/45/3/1003");
         UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
         assertFalse(UriValidator.matches(pattern, candidate));
@@ -266,7 +266,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches fails for different entity instance")
-    public void test_Matches_Fail_For_Different_Entity_Instance() {
+    public void testMatchesFailForDifferentEntityInstance() {
         UUri pattern = UriSerializer.deserialize("//authority/30A410/3/1003");
         UUri candidate = UriSerializer.deserialize("//authority/2A410/3/1003");
         assertFalse(UriValidator.matches(pattern, candidate));
@@ -274,7 +274,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches fails for different entity version")
-    public void test_Matches_Fail_For_Different_Entity_Version() {
+    public void testMatchesFailForDifferentEntityVersion() {
         UUri pattern = UriSerializer.deserialize("//authority/A410/1/1003");
         UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
         assertFalse(UriValidator.matches(pattern, candidate));
@@ -282,7 +282,7 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("Matches fails for different resource")
-    public void test_Matches_Fail_For_Different_Resource() {
+    public void testMatchesFailForDifferentResource() {
         UUri pattern = UriSerializer.deserialize("//authority/A410/3/ABCD");
         UUri candidate = UriSerializer.deserialize("//authority/A410/3/1003");
         assertFalse(UriValidator.matches(pattern, candidate));
@@ -290,47 +290,47 @@ class UriValidatorTest {
 
     @Test
     @DisplayName("hasWildcard() for an null UUri")
-    void test_hasWildcard_for_null_UUri() {
+    void testHaswildcardForNullUuri() {
         assertFalse(UriValidator.hasWildcard(null));
     }
 
     @Test
     @DisplayName("hasWildcard() for a UUri with empty URI")
-    void test_hasWildcard_for_empty_UUri() {
+    void testHaswildcardForEmptyUuri() {
         assertFalse(UriValidator.hasWildcard(UUri.getDefaultInstance()));
     }
 
     @Test
     @DisplayName("hasWildcard() for a UUri with wildcard authority")
-    void test_hasWildcard_for_UUri_with_wildcard_authority() {
+    void testHaswildcardForUuriWithWildcardAuthority() {
         UUri uri = UriSerializer.deserialize("//*/A410/3/1003");
         assertTrue(UriValidator.hasWildcard(uri));
     }
 
     @Test
     @DisplayName("hasWildcard() for a UUri with wildcard entity ID")
-    void test_hasWildcard_for_UUri_with_wildcard_entity_id() {
+    void testHaswildcardForUuriWithWildcardEntityId() {
         UUri uri = UriSerializer.deserialize("//authority/FFFF/3/1003");
         assertTrue(UriValidator.hasWildcard(uri));
     }
 
     @Test
     @DisplayName("hasWildcard() for a UUri with wildcard entity version")
-    void test_hasWildcard_for_UUri_with_wildcard_entity_instance() {
+    void testHaswildcardForUuriWithWildcardEntityInstance() {
         UUri uri = UriSerializer.deserialize("//authority/A410/FF/1003");
         assertTrue(UriValidator.hasWildcard(uri));
     }
 
     @Test
     @DisplayName("hasWildcard() for a UUri with wildcard resource")
-    void test_hasWildcard_for_UUri_with_wildcard_resource() {
+    void testHaswildcardForUuriWithWildcardResource() {
         UUri uri = UriSerializer.deserialize("//authority/A410/3/FFFF");
         assertTrue(UriValidator.hasWildcard(uri));
     }
 
     @Test
     @DisplayName("hasWildcard() for a UUri with no wildcards")
-    void test_hasWildcard_for_UUri_with_no_wildcards() {
+    void testHaswildcardForUuriWithNoWildcards() {
         UUri uri = UriSerializer.deserialize("//authority/A410/3/1003");
         assertFalse(UriValidator.hasWildcard(uri));
     }

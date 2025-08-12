@@ -53,9 +53,8 @@ public interface UTransport {
      * @param listener     The {@code UListener} that will be execute when the
      *                     message is
      *                     received on the given {@code UUri}.
-     * @return Returns {@link UStatus} with {@link UCode.OK} if the listener is
-     *         registered
-     *         correctly, otherwise it returns with the appropriate failure.
+     * @return Returns {@link UStatus} with {@link UCode#OK} if the listener is
+     *         registered correctly, otherwise it returns with the appropriate failure.
      */
     default CompletionStage<UStatus> registerListener(UUri sourceFilter, UListener listener) {
         return registerListener(sourceFilter, UriFactory.ANY, listener);
@@ -73,7 +72,7 @@ public interface UTransport {
      * @param listener     The {@code UListener} that will be execute when the
      *                     message is
      *                     received on the given {@code UUri}.
-     * @return Returns {@link UStatus} with {@link UCode.OK} if the listener is
+     * @return Returns {@link UStatus} with {@link UCode#OK} if the listener is
      *         registered
      *         correctly, otherwise it returns with the appropriate failure.
      */
@@ -89,7 +88,7 @@ public interface UTransport {
      * @param listener     The {@code UListener} that will no longer want to be
      *                     registered to receive
      *                     messages.
-     * @return Returns {@link UStatus} with {@link UCode.OK} if the listener is
+     * @return Returns {@link UStatus} with {@link UCode#OK} if the listener is
      *         unregistered
      *         correctly, otherwise it returns with the appropriate failure.
      */
@@ -109,7 +108,7 @@ public interface UTransport {
      * @param listener     The {@code UListener} that will no longer want to be
      *                     registered to receive
      *                     messages.
-     * @return Returns {@link UStatus} with {@link UCode.OK} if the listener is
+     * @return Returns {@link UStatus} with {@link UCode#OK} if the listener is
      *         unregistered
      *         correctly, otherwise it returns with the appropriate failure.
      */
@@ -129,7 +128,7 @@ public interface UTransport {
      * Open the connection to the transport that will trigger any registered listeners
      * to be registered.
      * 
-     * @return Returns {@link UStatus} with {@link UCode.OK} if the connection is
+     * @return Returns {@link UStatus} with {@link UCode#OK} if the connection is
      *         opened correctly, otherwise it returns with the appropriate failure.
      */
     default CompletionStage<UStatus> open() {

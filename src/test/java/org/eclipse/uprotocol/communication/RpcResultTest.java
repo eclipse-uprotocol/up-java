@@ -22,25 +22,25 @@ import org.eclipse.uprotocol.v1.UStatus;
 class RpcResultTest {
 
     @Test
-    public void test_isSuccess_on_Success() {
+    public void testIsSuccessOnSuccess() {
         RpcResult<Integer> result = RpcResult.success(2);
         assertTrue(result.isSuccess());
     }
 
     @Test
-    public void test_isSuccess_on_Failure() {
+    public void testIsSuccessOnFailure() {
         RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         assertFalse(result.isSuccess());
     }
 
     @Test
-    public void test_isFailure_on_Success() {
+    public void testIsFailureOnSuccess() {
         RpcResult<Integer> result = RpcResult.success(2);
         assertFalse(result.isFailure());
     }
 
     @Test
-    public void test_isFailure_on_Failure() {
+    public void testIsFailureOnFailure() {
         RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         assertTrue(result.isFailure());
     }
@@ -58,39 +58,39 @@ class RpcResultTest {
     }
 
     @Test
-    public void testGetOrElseOnSuccess_() {
+    public void testGetOrElseOnSuccessWithValue() {
         RpcResult<Integer> result = RpcResult.success(2);
         assertEquals(Integer.valueOf(2), result.getOrElse(5));
     }
 
     @Test
-    public void testGetOrElseOnFailure_() {
+    public void testGetOrElseOnFailureWithValue() {
         RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         assertEquals(Integer.valueOf(5), result.getOrElse(5));
     }
 
     @Test
-    public void testSuccessValue_onSuccess() {
+    public void testSuccessValueOnSuccess() {
         RpcResult<Integer> result = RpcResult.success(2);
         assertEquals(Integer.valueOf(2), result.successValue());
     }
 
     @Test
-    public void testSuccessValue_onFailure_() {
+    public void testSuccessValueOnFailure() {
         RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         Exception exception =  assertThrows(IllegalStateException.class, result::successValue);
         assertEquals(exception.getMessage(), "Method successValue() called on a Failure instance");
     }
 
     @Test
-    public void testFailureValue_onSuccess() {
+    public void testFailureValueOnSuccess() {
         RpcResult<Integer> result = RpcResult.success(2);
         Exception exception =  assertThrows(IllegalStateException.class, result::failureValue);
         assertEquals(exception.getMessage(), "Method failureValue() called on a Success instance");
     }
 
     @Test
-    public void testFailureValue_onFailure_() {
+    public void testFailureValueOnFailure() {
         RpcResult<Integer> result = RpcResult.failure(UCode.INVALID_ARGUMENT, "boom");
         final UStatus resultValue = result.failureValue();
         assertEquals(UStatus.newBuilder()
@@ -111,7 +111,7 @@ class RpcResultTest {
     }
 
     @Test
-    public void testMapSuccess_when_function_throws_exception() {
+    public void testMapSuccessWhenFunctionThrowsException() {
         RpcResult<Integer> result = RpcResult.success(2);
         final RpcResult<Integer> mapped = result.map(this::funThatThrowsAnExceptionForMap);
         assertTrue(mapped.isFailure());
@@ -134,7 +134,7 @@ class RpcResultTest {
     }
 
     @Test
-    public void testFlatMapSuccess_when_function_throws_exception() {
+    public void testFlatMapSuccessWhenFunctionThrowsException() {
         RpcResult<Integer> result = RpcResult.success(2);
         final RpcResult<Integer> flatMapped = result.flatMap(this::funThatThrowsAnExceptionForFlatMap);
         assertTrue(flatMapped.isFailure());
@@ -166,7 +166,7 @@ class RpcResultTest {
     }
 
     @Test
-    public void testFilterOnSuccess_that_fails() {
+    public void testFilterOnSuccessThatFails() {
         RpcResult<Integer> result = RpcResult.success(2);
         final RpcResult<Integer> filterResult = result.filter(i -> i > 5);
         assertTrue(filterResult.isFailure());
@@ -176,7 +176,7 @@ class RpcResultTest {
     }
 
     @Test
-    public void testFilterOnSuccess_that_succeeds() {
+    public void testFilterOnSuccessThatSucceeds() {
         RpcResult<Integer> result = RpcResult.success(2);
         final RpcResult<Integer> filterResult = result.filter(i -> i < 5);
         assertTrue(filterResult.isSuccess());
@@ -184,7 +184,7 @@ class RpcResultTest {
     }
 
     @Test
-    public void testFilterOnSuccess__when_function_throws_exception() {
+    public void testFilterOnSuccessWhenFunctionThrowsException() {
         RpcResult<Integer> result = RpcResult.success(2);
         final RpcResult<Integer> filterResult = result.filter(this::predicateThatThrowsAnException);
         assertTrue(filterResult.isFailure());
@@ -217,7 +217,7 @@ class RpcResultTest {
     }
 
     @Test
-    public void testFlattenOnSuccess_with_function_that_fails() {
+    public void testFlattenOnSuccessWithFunctionThatFails() {
         RpcResult<Integer> result = RpcResult.success(2);
         final RpcResult<RpcResult<Integer>> mapped = result.map(this::funThatThrowsAnExceptionForFlatMap);
         final RpcResult<Integer> mappedFlattened = RpcResult.flatten(mapped);

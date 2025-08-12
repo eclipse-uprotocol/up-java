@@ -37,7 +37,7 @@ public interface Publisher {
     }
 
     /**
-     * Publish a message to a topic with specific {@link CallOptions}
+     * Publish a message to a topic with specific {@link CallOptions}.
      * 
      * @param topic The topic to publish to.
      * @param options The {@link CallOptions} for the publish.

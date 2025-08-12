@@ -36,7 +36,7 @@ class CloudEventFactoryTest {
 
     @Test
     @DisplayName("Test create base CloudEvent")
-    public void test_create_base_cloud_event()  {
+    public void testCreateBaseCloudEvent()  {
 
         String source = buildUriForTest();
 
@@ -74,9 +74,9 @@ class CloudEventFactoryTest {
         assertArrayEquals(protoPayload.toByteArray(), Objects.requireNonNull(cloudEvent.getData()).toBytes());
     }
 
-     @Test
+    @Test
     @DisplayName("Test create base CloudEvent with datacontenttype and dataschema")
-    public void test_create_base_cloud_event_with_datacontenttype_and_schema()  {
+    public void testCreateBaseCloudEventWithDataContentTypeAndSchema()  {
 
         String source = buildUriForTest();
 
@@ -120,7 +120,7 @@ class CloudEventFactoryTest {
 
     @Test
     @DisplayName("Test create base CloudEvent without attributes")
-    public void test_create_base_cloud_event_without_attributes()  {
+    public void testCreateBaseCloudEventWithoutAttributes()  {
 
         String source = buildUriForTest();
 
@@ -153,7 +153,7 @@ class CloudEventFactoryTest {
 
     @Test
     @DisplayName("Test create publish CloudEvent")
-    public void test_create_publish_cloud_event() {
+    public void testCreatePublishCloudEvent() {
 
         // source
         String source = buildUriForTest();
@@ -184,7 +184,7 @@ class CloudEventFactoryTest {
 
     @Test
     @DisplayName("Test create notification CloudEvent")
-    public void test_create_notification_cloud_event() {
+    public void testCreateNotificationCloudEvent() {
 
         // source
         String source = buildUriForTest();
@@ -223,7 +223,7 @@ class CloudEventFactoryTest {
 
     @Test
     @DisplayName("Test create request RPC CloudEvent coming from a local USE")
-    public void test_create_request_cloud_event_from_local_use() {
+    public void testCreateRequestCloudEventFromLocalUse() {
 
         // UriPart for the application requesting the RPC
         String applicationUriForRPC = buildUriForTest();
@@ -265,7 +265,7 @@ class CloudEventFactoryTest {
 
     @Test
     @DisplayName("Test create response RPC CloudEvent originating from a local USE")
-    public void test_create_response_cloud_event_originating_from_local_use() {
+    public void testCreateResponseCloudEventOriginatingFromLocalUse() {
 
         // UriPart for the application requesting the RPC
         String applicationUriForRPC = buildUriForTest();
@@ -307,7 +307,7 @@ class CloudEventFactoryTest {
 
     @Test
     @DisplayName("Test create a failed response RPC CloudEvent originating from a local USE")
-    public void test_create_a_failed_response_cloud_event_originating_from_local_use() {
+    public void testCreateFailedResponseCloudEventOriginatingFromLocalUse() {
 
         // UriPart for the application requesting the RPC
         String applicationUriForRPC = buildUriForTest();
@@ -346,7 +346,7 @@ class CloudEventFactoryTest {
 
     @Test
     @DisplayName("Test create a failed response RPC CloudEvent originating from a microRemote USE")
-    public void test_create_a_failed_response_cloud_event_originating_from_remote_use() {
+    public void testCreateFailedResponseCloudEventOriginatingFromRemoteUse() {
 
         // UriPart for the application requesting the RPC
         String applicationUriForRPC = buildUriForTest();
@@ -386,12 +386,12 @@ class CloudEventFactoryTest {
 
     private String buildUriForTest() {
 
-        UUri Uri = UUri.newBuilder()
+        UUri uri = UUri.newBuilder()
             .setUeId(2)
             .setResourceId(0x8001)
             .build();
-        
-        return UriSerializer.serialize(Uri);
+
+        return UriSerializer.serialize(uri);
     }
 
     private Any buildProtoPayloadForTest() {
@@ -404,6 +404,4 @@ class CloudEventFactoryTest {
                 .build();
         return Any.pack(cloudEventProto);
     }
-
-
 }

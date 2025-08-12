@@ -66,10 +66,7 @@ public interface UriFactory {
 
 
     /**
-     * Builds a UEntity for an protobuf generated code Service Descriptor.
-     * 
-     * @param descriptor The protobuf generated code Service Descriptor.
-     * @return Returns a UEntity for an protobuf generated code Service Descriptor.
+     * A uProtocol pattern URI that matches all UUris.
      */
     UUri ANY = UUri.newBuilder()
             .setAuthorityName(WILDCARD_AUTHORITY)

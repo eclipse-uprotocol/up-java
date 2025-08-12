@@ -16,6 +16,7 @@ import java.util.concurrent.CompletionStage;
 
 import org.eclipse.uprotocol.communication.CallOptions;
 import org.eclipse.uprotocol.core.utwin.v2.GetLastMessagesResponse;
+import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUriBatch;
 
 /**

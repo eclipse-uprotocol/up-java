@@ -29,7 +29,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test UUIDv7 Creation")
-    void test_uuidv7_creation() {
+    void testUuidv7Creation() {
         final Instant now = Instant.now();
         final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create(now);
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
@@ -53,7 +53,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test UUIDv7 Creation with null Instant")
-    void test_uuidv7_creation_with_null_instant() {
+    void testUuidv7CreationWithNullInstant() {
         final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create(null);
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
@@ -77,7 +77,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test UUIDv6 creation with Instance")
-    void test_uuidv6_creation_with_instant() {
+    void testUuidv6CreationWithInstant() {
         final Instant now = Instant.now();
         final UUID uuid = UuidFactory.Factories.UUIDV6.factory().create(now);
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
@@ -99,7 +99,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test UUIDv6 creation with null Instant")
-    void test_uuidv6_creation_with_null_instant() {
+    void testUuidv6CreationWithNullInstant() {
         final UUID uuid = UuidFactory.Factories.UUIDV6.factory().create(null);
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
@@ -120,7 +120,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test UUIDUtils for Random UUID")
-    void test_uuidutils_for_random_uuid() {
+    void testUuidutilsForRandomUuid() {
         final java.util.UUID uuid_java = java.util.UUID.randomUUID();
         final UUID uuid = UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
                 .setLsb(uuid_java.getLeastSignificantBits()).build();
@@ -144,7 +144,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test UUIDUtils for empty UUID")
-    void test_uuidutils_for_empty_uuid() {
+    void testUuidutilsForEmptyUuid() {
         final UUID uuid =  UUID.newBuilder().setMsb(0L).setLsb(0L).build();
         final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
@@ -168,7 +168,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test UUIDUtils for a null UUID")
-    void test_uuidutils_for_null_uuid() {
+    void testUuidutilsForNullUuid() {
         assertFalse(UuidUtils.getVersion(null).isPresent());
         assertTrue(UuidSerializer.serialize(null).isBlank());
         assertFalse(UuidUtils.isUuidv6(null));
@@ -179,7 +179,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test UUIDUtils fromString an invalid built UUID")
-    void test_uuidutils_from_invalid_uuid() {
+    void testUuidutilsFromInvalidUuid() {
         final UUID uuid = UUID.newBuilder().setMsb(9 << 12).setLsb(0L).build(); // Invalid UUID type
 
         assertFalse(UuidUtils.getVersion(uuid).isPresent());
@@ -194,7 +194,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test UUIDUtils fromString with invalid string")
-    void test_uuidutils_fromstring_with_invalid_string() {
+    void testUuidutilsFromstringWithInvalidString() {
         final UUID uuid = UuidSerializer.deserialize(null);
         assertTrue(uuid.equals(UUID.getDefaultInstance()));
         final UUID uuid1 = UuidSerializer.deserialize("");
@@ -204,7 +204,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test Create UProtocol UUID in the past")
-    void test_create_uprotocol_uuid_in_the_past() {
+    void testCreateUprotocolUuidInThePast() {
 
         final Instant past = Instant.now().minusSeconds(10);
         final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create(past);
@@ -221,7 +221,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test Create UProtocol UUID with different time values")
-    void test_create_uprotocol_uuid_with_different_time_values() throws InterruptedException {
+    void testCreateUprotocolUuidWithDifferentTimeValues() throws InterruptedException {
 
         final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create();
         Thread.sleep(10);
@@ -242,7 +242,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test Create both UUIDv6 and v7 to compare performance")
-    void test_create_both_uuidv6_and_v7_to_compare_performance() throws InterruptedException {
+    void testCreateBothUuidv6AndV7ToComparePerformance() throws InterruptedException {
         final List<UUID> uuidv6List = new ArrayList<>();
         final List<UUID> uuidv7List = new ArrayList<>();
         final int MAX_COUNT = 10000;
@@ -264,7 +264,7 @@ public class UUIDFactoryTest {
 
     @Test
     @DisplayName("Test Create UUIDv7 with the same time to confirm the UUIDs are not the same")
-    void test_create_uuidv7_with_the_same_time_to_confirm_the_uuids_are_not_the_same() {
+    void testCreateUuidv7WithTheSameTimeToConfirmTheUuidsAreNotTheSame() {
         Instant now = Instant.now();
         final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create(now);
         final UUID uuid1 = UuidFactory.Factories.UPROTOCOL.factory().create(now);

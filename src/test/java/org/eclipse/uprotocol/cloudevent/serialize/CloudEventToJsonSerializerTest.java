@@ -41,7 +41,7 @@ class CloudEventToJsonSerializerTest {
 
     @Test
     @DisplayName("Test serialize a CloudEvent to JSON")
-    public void test_serialize_cloud_event_to_json() {
+    public void testSerializeCloudEventToJson() {
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -60,16 +60,25 @@ class CloudEventToJsonSerializerTest {
 
         final byte[] bytes = serializer.serialize(cloudEvent);
         final String jsonString = new String(bytes, StandardCharsets.UTF_8);
-        final String expected = "{\"specversion\":\"1.0\",\"id\":\"hello\",\"source\":\"/body.access/1/door.front_left\",\"type\":\"pub.v1\"," +
-                "\"datacontenttype\":\"application/x-protobuf\",\"dataschema\":\"type.googleapis.com/io.cloudevents.v1.CloudEvent\"," +
-                "\"priority\":\"CS1\",\"ttl\":3," +
-                "\"data_base64\":\"CjB0eXBlLmdvb2dsZWFwaXMuY29tL2lvLmNsb3VkZXZlbnRzLnYxLkNsb3VkRXZlbnQSPAoFaGVsbG8SEmh0dHA6Ly9leGFtcGxlLmNvbRoDMS4wIgxleGFtcGxlLmRlbW8qCgoDdHRsEgMaATNCAA==\"}";
+        final String expected = """
+                {"specversion":"1.0",\
+                "id":"hello",\
+                "source":"/body.access/1/door.front_left",\
+                "type":"pub.v1",\
+                "datacontenttype":"application/x-protobuf",\
+                "dataschema":"type.googleapis.com/io.cloudevents.v1.CloudEvent",\
+                "priority":"CS1",\
+                "ttl":3,\
+                "data_base64":"CjB0eXBlLmdvb2dsZWFwaXMuY29tL2lvLmNsb3VkZXZlbnRzLn\
+                YxLkNsb3VkRXZlbnQSPAoFaGVsbG8SEmh0dHA6Ly9leGFtcGxlLmNvbRoDMS4wIgx\
+                leGFtcGxlLmRlbW8qCgoDdHRsEgMaATNCAA=="\
+                }""";
         assertEquals(expected, jsonString);
     }
 
     @Test
     @DisplayName("Test serialize and deserialize a CloudEvent to JSON")
-    public void test_serialize_and_desirialize_cloud_event_to_json() {
+    public void testSerializeAndDeserializeCloudEventToJson() {
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -93,7 +102,7 @@ class CloudEventToJsonSerializerTest {
 
     @Test
     @DisplayName("Test serialize 2 different cloud events are not the same serialized elements")
-    public void test_serialize_two_different_cloud_event_are_not_the_same() {
+    public void testSerializeTwoDifferentCloudEventAreNotTheSame() {
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -122,7 +131,7 @@ class CloudEventToJsonSerializerTest {
 
     @Test
     @DisplayName("Test serialize 2 equal cloud events are the same serialized elements")
-    public void test_serialize_two_same_cloud_event_are_the_same() {
+    public void testSerializeTwoSameCloudEventAreTheSame() {
 
         // fake payload
         final Any protoPayload = buildProtoPayloadForTest();
@@ -149,7 +158,8 @@ class CloudEventToJsonSerializerTest {
 
     @Test
     @DisplayName("test double serialization Protobuf when creating CloudEvent with factory methods")
-    public void test_double_serialization_protobuf_when_creating_cloud_event_with_factory_methods() throws InvalidProtocolBufferException {
+    public void testDoubleSerializationProtobufWhenCreatingCloudEventWithFactoryMethods()
+            throws InvalidProtocolBufferException {
 
         final CloudEventSerializer serializer = CloudEventSerializers.JSON.serializer();
 
@@ -195,7 +205,7 @@ class CloudEventToJsonSerializerTest {
 
     @Test
     @DisplayName("test double serialization Json")
-    public void test_double_serialization_json() throws InvalidProtocolBufferException {
+    public void testDoubleSerializationJson() throws InvalidProtocolBufferException {
 
         final CloudEventSerializer serializer = CloudEventSerializers.JSON.serializer();
 
@@ -258,5 +268,4 @@ class CloudEventToJsonSerializerTest {
                 .build();
         return Any.pack(cloudEventProto);
     }
-
 }

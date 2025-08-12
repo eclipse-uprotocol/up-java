@@ -57,31 +57,32 @@ public record UPayload (ByteString data, UPayloadFormat format) {
 
 
     /**
-     * Build a uPayload from {@link google.protobuf.Message} by stuffing the message into an Any.
+     * Build a uPayload from {@link Message} by stuffing the message into an Any.
      * 
      * @param message the message to pack
      * @return the UPayload 
      */
     public static UPayload packToAny(Message message) {
-        return message == null ? UPayload.EMPTY :
+        return message == null ? EMPTY :
             new UPayload(Any.pack(message).toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY);
     }
 
 
     /**
-     * Build a uPayload from {@link google.protobuf.Message} using protobuf PayloadFormat.
+     * Build a uPayload from {@link Message} using protobuf PayloadFormat.
      * 
      * @param message the message to pack
      * @return the UPayload
      */
     public static UPayload pack(Message message) {
-        return message == null ? UPayload.EMPTY : 
+        return message == null ? EMPTY : 
             new UPayload(message.toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
     }
 
 
     /**
-     * Build a UPayload from specific data and passed format
+     * Build a UPayload from specific data and passed format.
+     *
      * @param data payload data.
      * @param format payload format.
      * @return the UPayload.
@@ -92,7 +93,7 @@ public record UPayload (ByteString data, UPayloadFormat format) {
 
 
     /**
-     * Unpack a uMessage into {@link google.protobuf.Message}.
+     * Unpack a uMessage into {@link Message}.
      * 
      * @param message the message to unpack
      * @param clazz the class of the message to unpack
@@ -107,9 +108,10 @@ public record UPayload (ByteString data, UPayloadFormat format) {
 
 
     /**
-     * Unpack a uPayload into {@link google.protobuf.Message}.<br>
-     * <br>
-     * <b>IMPORTANT NOTE:</b> If {@link UPayloadFormat} is not {@link UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY},
+     * Unpack a uPayload into {@link Message}.
+     * <p>
+     * <em>IMPORTANT NOTE:</em> If {@link UPayloadFormat} is not
+     * {@link UPayloadFormat#UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY},
      * there is no guarantee that the parsing to T is correct as we do not have the data schema.
      * 
      * @param payload the payload to unpack
@@ -125,9 +127,9 @@ public record UPayload (ByteString data, UPayloadFormat format) {
 
 
     /**
-     * Unpack a uPayload into a {@link google.protobuf.Message}.
+     * Unpack a uPayload into a {@link Message}.
      * <br>
-     * <b>IMPORTANT NOTE:</b> If {@link UPayloadFormat} is not {@link UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY},
+     * <b>IMPORTANT NOTE:</b> If the format is not {@link UPayloadFormat#UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY},
      * there is no guarantee that the parsing to T is correct as we do not have the data schema.
      * 
      * @param data The serialized UPayload data

@@ -22,7 +22,7 @@ import org.eclipse.uprotocol.v1.UUri;
  */
 public interface SubscriptionChangeHandler {
     /**
-     * Method called to handle/process subscription state changes for a given topic
+     * Method called to handle/process subscription state changes for a given topic.
      * 
      * @param topic The topic that the subscription state changed for.
      * @param status The new status of the subscription.

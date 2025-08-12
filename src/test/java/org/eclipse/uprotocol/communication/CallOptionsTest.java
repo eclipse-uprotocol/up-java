@@ -105,6 +105,7 @@ public class CallOptionsTest {
       
     }
 
+    @SuppressWarnings("unlikely-arg-type")
     @Test
     @DisplayName("Test equals when object passed is not the same type as CallOptions")
     public void testIsEqualsWithDifferentType() {

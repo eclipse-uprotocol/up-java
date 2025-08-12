@@ -167,7 +167,7 @@ public abstract class UAttributesValidator {
     }
 
     /**
-     * Validate the priority value to ensure it is one of the known CS values
+     * Validate the priority value to ensure it is one of the known CS values.
      * 
      * @param attributes Attributes object containing the Priority to validate.
      * @return Returns a {@link ValidationResult} that is success or failed with a

@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 public class InMemoryRpcServerTest {
     @Test
     @DisplayName("Test registering and unregister a request listener")
-    public void test_registering_request_listener() {
+    public void testRegisteringRequestListener() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {
@@ -49,7 +49,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test registering twice the same request handler for the same method")
-    public void test_registering_twice_the_same_request_handler() {
+    public void testRegisteringTwiceTheSameRequestHandler() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {
@@ -57,7 +57,8 @@ public class InMemoryRpcServerTest {
             }
         };
         RpcServer server = new InMemoryRpcServer(new TestUTransport());
-        assertFalse(server.registerRequestHandler(createMethodUri(), handler).toCompletableFuture().isCompletedExceptionally());
+        assertFalse(server.registerRequestHandler(createMethodUri(), handler)
+            .toCompletableFuture().isCompletedExceptionally());
 
         CompletionStage<UStatus> result = server.registerRequestHandler(createMethodUri(), handler);
         assertFalse(result.toCompletableFuture().isCompletedExceptionally());
@@ -68,7 +69,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test unregistering a request handler that wasn't registered already")
-    public void test_unregistering_non_registered_request_handler() {
+    public void testUnregisteringNonRegisteredRequestHandler() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {
@@ -85,7 +86,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test register a request handler where authority does not match the transport source authority")
-    public void test_registering_request_listener_with_wrong_authority() {
+    public void testRegisteringRequestListenerWithWrongAuthority() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {
@@ -109,7 +110,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test register a request handler where ue_id does not match the transport source ue)_id")
-    public void test_registering_request_listener_with_wrong_ue_id() {
+    public void testRegisteringRequestListenerWithWrongUeId() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {
@@ -135,7 +136,7 @@ public class InMemoryRpcServerTest {
     @Test
     @DisplayName("Test register request handler where ue_version_major does not " + 
         "match the transport source ue_version_major")
-    public void test_registering_request_listener_with_wrong_ue_version_major() {
+    public void testRegisteringRequestListenerWithWrongUeVersionMajor() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {
@@ -161,7 +162,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test unregister requesthandler where authority not match the transport source URI")
-    public void test_unregistering_request_handler_with_wrong_authority() {
+    public void testUnregisteringRequestHandlerWithWrongAuthority() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {
@@ -187,7 +188,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test unregister request handler where ue_id does not match the transport source URI")
-    public void test_unregistering_request_handler_with_wrong_ue_id() {
+    public void testUnregisteringRequestHandlerWithWrongUeId() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {
@@ -212,7 +213,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test unregister request handler where ue_version_major does not match the transport source URI")
-    public void test_unregistering_request_handler_with_wrong_ue_version_major() {
+    public void testUnregisteringRequestHandlerWithWrongUeVersionMajor() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {
@@ -238,7 +239,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test register a request handler when we use the ErrorUTransport that returns an error")
-    public void test_registering_request_listener_with_error_transport() {
+    public void testRegisteringRequestListenerWithErrorTransport() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {
@@ -257,7 +258,7 @@ public class InMemoryRpcServerTest {
     @Test
     @DisplayName("Test handleRequests when we have 2 RpcServers and the request is not for the second instance" +
         "this is to test that we pull from mRequestHandlers and remove returns nothing")
-    public void test_handleRequests() {
+    public void testHandlerequests() {
         // test transport that will trigger the handleRequest()
         UTransport transport = new EchoUTransport();
         RequestHandler handler = new RequestHandler() {
@@ -290,7 +291,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test handleRequests the handler triggered an exception")
-    public void test_handleRequests_exception() {
+    public void testHandlerequestsException() {
         // test transport that will trigger the handleRequest()
         UTransport transport = new EchoUTransport();
         RequestHandler handler = new RequestHandler() {
@@ -318,7 +319,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test handleRequests the handler triggered an unknown exception")
-    public void test_handleRequests_unknown_exception() {
+    public void testHandlerequestsUnknownException() {
         // test transport that will trigger the handleRequest()
         UTransport transport = new EchoUTransport();
         RequestHandler handler = new RequestHandler() {
@@ -349,7 +350,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test handleRequests when we receive a request for a method that we do not have a registered handler")
-    public void test_handleRequests_no_handler() {
+    public void testHandlerequestsNoHandler() {
         // test transport that will trigger the handleRequest()
         UTransport transport = new EchoUTransport();
         RequestHandler handler = new RequestHandler() {
@@ -378,7 +379,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test handling a request where the handler returns a payload and completes successfully")
-    public void test_handleRequests_with_payload() {
+    public void testHandlerequestsWithPayload() {
         // test transport that will trigger the handleRequest()
         UTransport transport = new EchoUTransport();
 
@@ -405,7 +406,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test registerRequestHandler when passed parameters are null")
-    public void test_registerRequestHandler_null_parameters() {
+    public void testRegisterrequesthandlerNullParameters() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {
@@ -435,7 +436,7 @@ public class InMemoryRpcServerTest {
 
     @Test
     @DisplayName("Test unregisterRequestHandler when passed parameters are null")
-    public void test_unregisterRequestHandler_null_parameters() {
+    public void testUnregisterrequesthandlerNullParameters() {
         RequestHandler handler = new RequestHandler() {
             @Override
             public UPayload handleRequest(UMessage request) {

@@ -78,7 +78,6 @@ public abstract class UuidFactory {
         }
     }
 
-
     /**
      * The Uuidv7Factory class is an implementation of the UuidFactory class that
      * creates UUIDs based on the UUIDv7 version of the protocol.

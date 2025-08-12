@@ -24,7 +24,6 @@ public interface UListener {
      * Method called to handle/process messages.
      * 
      * @param message Message received.
-     * @return Returns an Ack every time a message is received and processed.
      */
     void onReceive(UMessage message);
 }

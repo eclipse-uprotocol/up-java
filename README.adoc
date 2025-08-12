@@ -3,7 +3,7 @@
 
 == Overview
 
-This library implements the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/languages.adoc[uProtocol Language Specific Library Requirements] for Java defined in https://github.com/eclipse-uprotocol/uprotocol-spec/tree/main[uProtocol Specifications]. The library is organized into packages that are described in <<sdk-packages>> below and organized by the layers of the protocol.
+This is the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.3/languages.adoc[uProtocol v1.6.0-alpha.3 Language Library] for the Java programming language. The library is organized into packages that are described in <<sdk-packages>> below and organized by the layers of the protocol.
 
 Each package contains a README.adoc file that describes the purpose of the package and how to use it.
 
@@ -27,35 +27,55 @@ To pull the Library from maven central, setting ${uprotocol.version} to the late
 === Using The Library
 
 .SDK Packages
-[#sdk-packages,width=100%,cols="1,2,5",options="header"]
+[#sdk-packages,width=100%,cols="1,5,2",options="header"]
 |===
 
-| Package | Protocol Layer | Purpose
+| Package | Purpose | Reference
 
 | xref:src/main/java/org/eclipse/uprotocol/communication/README.adoc[`*client*`]
-| https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l3[Application Layer (uP-L3)]
 | Top level client-facing interfaces to communication with USubscription, UDiscovery, and UTwin services.
+| https://github.com/eclipse-uprotocol/up-spec/tree/v1.6.0-alpha.3/up-l3[Application Layer (uP-L3)]
 
 | xref:src/main/java/org/eclipse/uprotocol/communication/README.adoc[`*communication*`]
-| https://github.com/eclipse-uprotocol/up-spec/tree/main/up-l2[communication layer (uP-L2)] 
-| Common implementation of communication messaging patterns (publisher, subscriber, Rpcclient, RpcServer, etc..) tha t is build on top of the L1 transport interface (see below)
+| Common implementation of communication messaging patterns (publisher, subscriber, RpcClient, RpcServer, etc..) that are built on top of the L1 transport interface (see below).
+| https://github.com/eclipse-uprotocol/up-spec/tree/v1.6.0-alpha.3/up-l2[Communication Layer (uP-L2)] 
 
 | link:src/main/java/org/eclipse/uprotocol/transport/README.adoc[`*transport*`] 
-| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/up-l1/README.adoc[Transport Layer (uP-L1)] 
 | Interface and data model for how to send() and receive() messages in a common way across various transport technologies (ex. zenoh, mqtt, http, etc...). the interface is implemented by transports (ex. up-transport-android-java), and the interface is then used to build the uProtocol layer 2 communication layer implementation.
+| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.3/up-l1/README.adoc[Transport Layer (uP-L1)] 
 
 | link:src/main/java/org/eclipse/uprotocol/uri/README.adoc[`*uuri*`]
-| Basics 
 | uProtocol addressing scheme (UUri) builders, validators, and serializers. 
+| Basics 
 
 
 | link:src/main/java/org/eclipse/uprotocol/uuid/README.adoc[`*uuid*`]
-| Basics
 | uProtocol unique identifier builders, validators, and serializers.
+| Basics
 
 | link:src/main/java/org/eclipse/uprotocol/cloudevent/README.adoc[`*cloudevent*`] 
-| Legacy
 | A representation of uProtocol messages used in older versions of the specifications kept for backwards compatibility.
+| Legacy
 
 |===
 
+=== Building from Source
+
+. Clone the repository:
++
+[source,console]
+----
+git clone --recurse-submodules https://github.com/eclipse-uprotocol/up-java.git
+----
+. Navigate to the project directory:
++
+[source,console]
+----
+cd up-java
+----
+. Build the project using Maven:
++
+[source,console]
+----
+mvn clean install
+----

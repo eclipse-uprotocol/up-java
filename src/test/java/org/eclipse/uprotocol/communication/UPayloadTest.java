@@ -29,7 +29,7 @@ public class UPayloadTest {
     
     @Test
     @DisplayName("Test isEmpty() with null UPayload")
-    public void test_building_a_UPayload_calling_pack_passing_null() {
+    public void testBuildingAUpayloadCallingPackPassingNull() {
         assertTrue(UPayload.isEmpty(UPayload.pack(null)));
         assertTrue(UPayload.isEmpty(UPayload.packToAny(null)));
     }
@@ -37,7 +37,7 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test iEmpty() when we build a valid UPayload that data is empty but format is not")
-    public void test_building_a_UPayload_calling_pack() {
+    public void testBuildingAUpayloadCallingPack() {
         UPayload payload = UPayload.pack(UUri.newBuilder().build());
         assertFalse(UPayload.isEmpty(payload));
     }
@@ -45,7 +45,7 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test iEmpty() when we build a valid UPayload where both data and format are not empty")
-    public void test_building_a_UPayload_calling_packToAny() {
+    public void testBuildingAUpayloadCallingPacktoany() {
         UPayload payload = UPayload.packToAny(UUri.newBuilder().setAuthorityName("Hartley").build());
         assertFalse(UPayload.isEmpty(payload));
     }
@@ -53,30 +53,30 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test iEmpty() when we pass null")
-    public void test_building_a_UPayload_calling_pack_with_null() {
+    public void testBuildingAUpayloadCallingPackWithNull() {
         assertTrue(UPayload.isEmpty(null));
     }
 
 
     @Test
     @DisplayName("Test unpack() passing null")
-    public void test_unpacking_a_UPayload_calling_unpack_with_null() {
-        assertFalse(UPayload.unpack((UMessage)null, UUri.class).isPresent());
-        assertFalse(UPayload.unpack((UPayload)null, UUri.class).isPresent());
+    public void testUnpackingAUpayloadCallingUnpackWithNull() {
+        assertFalse(UPayload.unpack((UMessage) null, UUri.class).isPresent());
+        assertFalse(UPayload.unpack((UPayload) null, UUri.class).isPresent());
         assertFalse(UPayload.unpack(UPayload.pack(null), UUri.class).isPresent());
     }
 
 
     @Test
     @DisplayName("Test unpack() passing null ByteString")
-    public void test_unpack_passing_a_null_bytestring() {
+    public void testUnpackPassingANullBytestring() {
         assertFalse(UPayload.unpack(null, UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, UUri.class).isPresent());
     }
 
 
     @Test
     @DisplayName("Test unpack() passing google.protobuf.Any packed UPayload")
-    public void test_unpack_passing_a_google_protobuf_any_packed_UPayload() {
+    public void testUnpackPassingAGoogleProtobufAnyPackedUpayload() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload = UPayload.packToAny(uri);
         Optional<UUri> unpacked = UPayload.unpack(payload, UUri.class);
@@ -87,7 +87,7 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test unpack() passing an unsupported format in UPayload")
-    public void test_unpack_passing_an_unsupported_format_in_UPayload() {
+    public void testUnpackPassingAnUnsupportedFormatInUpayload() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload = UPayload.pack(uri.toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_JSON);
         Optional<UUri> unpacked = UPayload.unpack(payload, UUri.class);
@@ -98,7 +98,7 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test unpack() to unpack a message of the wrong type")
-    public void test_unpack_to_unpack_a_message_of_the_wrong_type() {
+    public void testUnpackToUnpackAMessageOfTheWrongType() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         Optional<UMessage> unpacked = UPayload.unpack(
             uri.toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, UMessage.class);
@@ -109,7 +109,7 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test equals when they are equal")
-    public void test_equals_when_they_are_equal() {
+    public void testEqualsWhenTheyAreEqual() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload1 = UPayload.packToAny(uri);
         UPayload payload2 = UPayload.packToAny(uri);
@@ -119,7 +119,7 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test equals when they are not equal")
-    public void test_equals_when_they_are_not_equal() {
+    public void testEqualsWhenTheyAreNotEqual() {
         UUri uri1 = UUri.newBuilder().setAuthorityName("Hartley").build();
         UUri uri2 = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload1 = UPayload.packToAny(uri1);
@@ -130,16 +130,17 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test equals when object is null")
-    public void test_equals_when_object_is_null() {
+    public void testEqualsWhenObjectIsNull() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload = UPayload.packToAny(uri);
         assertFalse(payload.equals(null));
     }
 
 
+    @SuppressWarnings("unlikely-arg-type")
     @Test
     @DisplayName("Test equals when object is not an instance of UPayload")
-    public void test_equals_when_object_is_not_an_instance_of_UPayload() {
+    public void testEqualsWhenObjectIsNotAnInstanceOfUpayload() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload = UPayload.packToAny(uri);
         assertFalse(payload.equals(uri));
@@ -148,7 +149,7 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test equals when it is the same object")
-    public void test_equals_when_it_is_the_same_object() {
+    public void testEqualsWhenItIsTheSameObject() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload = UPayload.packToAny(uri);
         assertTrue(payload.equals(payload));
@@ -156,7 +157,7 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test equals when the data is the same but the format is not")
-    public void test_equals_when_the_data_is_the_same_but_the_format_is_not() {
+    public void testEqualsWhenTheDataIsTheSameButTheFormatIsNot() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload1 = UPayload.pack(uri.toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF);
         UPayload payload2 = UPayload.pack(uri.toByteString(), UPayloadFormat.UPAYLOAD_FORMAT_JSON);
@@ -166,7 +167,7 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test hashCode")
-    public void test_hashCode() {
+    public void testHashcode() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload = UPayload.packToAny(uri);
         assertEquals(payload.hashCode(), payload.hashCode());
@@ -175,7 +176,7 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test hashCode when they are not the same objects")
-    public void test_hashCode_when_they_are_not_the_same_objects() {
+    public void testHashcodeWhenTheyAreNotTheSameObjects() {
         UUri uri1 = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload1 = UPayload.packToAny(uri1);
         assertFalse(payload1.hashCode() == uri1.hashCode());
@@ -184,7 +185,7 @@ public class UPayloadTest {
 
     @Test
     @DisplayName("Test unpack passing a valid UMessage")
-    public void test_unpack_passing_a_valid_UMessage() {
+    public void testUnpackPassingAValidUmessage() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload = UPayload.packToAny(uri);
         UMessage message = UMessage.newBuilder().setPayload(payload.data()).build();

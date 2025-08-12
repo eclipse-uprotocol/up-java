@@ -111,7 +111,7 @@ public class InMemoryRpcClient implements RpcClient {
 
 
     /**
-     * Close the RPC client and clean up any resources
+     * Close the RPC client and clean up any resources.
      */
     public void close() {
         mRequests.clear();
@@ -119,7 +119,8 @@ public class InMemoryRpcClient implements RpcClient {
     }
 
     /**
-     * Handle the responses coming back from the server
+     * Handle the responses coming back from the server.
+     *
      * @param response The response message from the server
      */
     private void handleResponses(UMessage response) {

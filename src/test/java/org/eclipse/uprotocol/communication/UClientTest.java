@@ -14,6 +14,8 @@ package org.eclipse.uprotocol.communication;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UUri;
@@ -49,13 +51,7 @@ public class UClientTest {
         assertDoesNotThrow(() ->
             client.unregisterNotificationListener(createTopic(), listener).toCompletableFuture().get());
 
-        RequestHandler handler = new RequestHandler() {
-            @Override
-            public UPayload handleRequest(UMessage message) throws UStatusException {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'handleRequest'");
-            }
-        };
+        RequestHandler handler = mock(RequestHandler.class);
 
         assertDoesNotThrow(() ->
             client.registerRequestHandler(createMethodUri(), handler).toCompletableFuture().get());

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Validates a CloudEvent using UStatus<br>
+ * A base class for implementing validators for specific CloudEvent types.
  */
 public abstract class CloudEventValidator {
 
@@ -127,9 +127,11 @@ public abstract class CloudEventValidator {
     public abstract ValidationResult validateSource(CloudEvent cloudEvent);
 
     /**
-     * 
-     * @param cloudEvent
-     * @return
+     * Validates the type of the CloudEvent. The type must match the expected
+     * type for the specific implementation.
+     *
+     * @param cloudEvent The event to validate.
+     * @return The outcome of the validation.
      */
     public abstract ValidationResult validateType(CloudEvent cloudEvent);
 

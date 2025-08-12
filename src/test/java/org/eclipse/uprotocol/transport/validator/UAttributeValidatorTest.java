@@ -32,7 +32,10 @@ public class UAttributeValidatorTest {
     }
 
     @Test
-    @DisplayName("Test creating a UMessage of type publish then validating it using UAttributeValidator for the happy path")
+    @DisplayName("""
+        Test creating a UMessage of type publish then validating it using \
+        UAttributeValidator for the happy path
+        """)
     public void testUAttributeValidatorHappyPath() {
         UMessage message = UMessageBuilder.publish(buildTopicUUri()).build();
 
@@ -68,7 +71,11 @@ public class UAttributeValidatorTest {
     @DisplayName("Test validation a response message using UAttributeValidator")
     public void testUAttributeValidatorResponse() {
         UMessage request = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), 1000).build();
-        UMessage response = UMessageBuilder.response(buildMethodUUri(),buildDefaultUUri(), request.getAttributes().getId()).build();
+        UMessage response = UMessageBuilder.response(
+            buildMethodUUri(),
+            buildDefaultUUri(),
+            request.getAttributes().getId())
+            .build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(response.getAttributes());
         ValidationResult result = validator.validate(response.getAttributes());
@@ -123,7 +130,11 @@ public class UAttributeValidatorTest {
         ValidationResult result = validator.validate(response.getAttributes());
         assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Request");
-        assertEquals(result.getMessage(), "Wrong Attribute Type [UMESSAGE_TYPE_RESPONSE],Missing TTL,Invalid Sink Uri,Message should not have a reqid");
+        assertEquals(
+            result.getMessage(),
+            """
+            Wrong Attribute Type [UMESSAGE_TYPE_RESPONSE],Missing TTL,Invalid Sink Uri,Message should not have a reqid\
+            """);
     }
 
     @Test
@@ -135,7 +146,11 @@ public class UAttributeValidatorTest {
         ValidationResult result = validator.validate(message.getAttributes());
         assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Response");
-        assertEquals(result.getMessage(), "Wrong Attribute Type [UMESSAGE_TYPE_NOTIFICATION],Invalid UPriority [UPRIORITY_CS1],Missing correlationId");
+        assertEquals(
+            result.getMessage(),
+            """
+            Wrong Attribute Type [UMESSAGE_TYPE_NOTIFICATION],Invalid UPriority [UPRIORITY_CS1],Missing correlationId\
+            """);
     }
 
     @Test
@@ -160,8 +175,12 @@ public class UAttributeValidatorTest {
     @Test
     @DisplayName("Test validation of request message that has a permission level that is less than 0")
     public void testUAttributeValidatorRequestInvalidPermissionLevel() {
-        UMessage message = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), 1000)
-        .withPermissionLevel(-1).build();
+        UMessage message = UMessageBuilder.request(
+            buildDefaultUUri(),
+            buildMethodUUri(),
+            1000)
+            .withPermissionLevel(-1)
+            .build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
         ValidationResult result = validator.validate(message.getAttributes());
@@ -173,8 +192,12 @@ public class UAttributeValidatorTest {
     @Test
     @DisplayName("Test validation of request message that has a permission level that is greater than 0")
     public void testUAttributeValidatorRequestValidPermissionLevel() {
-        UMessage message = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), 1000)
-        .withPermissionLevel(1).build();
+        UMessage message = UMessageBuilder.request(
+            buildDefaultUUri(),
+            buildMethodUUri(),
+            1000)
+            .withPermissionLevel(1)
+            .build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
         ValidationResult result = validator.validate(message.getAttributes());
@@ -249,7 +272,10 @@ public class UAttributeValidatorTest {
     @DisplayName("Test notification validation where the sink the default instance")
     public void testUAttributeValidatorNotificationDefaultSink() {
         final UMessage message = UMessageBuilder.notification(buildTopicUUri(), buildDefaultUUri()).build();
-        final UAttributes attributes = UAttributes.newBuilder().mergeFrom(message.getAttributes()).setSink(UUri.getDefaultInstance()).build();
+        final UAttributes attributes = UAttributes.newBuilder()
+            .mergeFrom(message.getAttributes())
+            .setSink(UUri.getDefaultInstance())
+            .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         final ValidationResult result = validator.validate(attributes);
 
@@ -280,7 +306,10 @@ public class UAttributeValidatorTest {
     @DisplayName("Test validatePriority when priority is less than CS0")
     public void testUAttributeValidatorValidatePriorityLessThanCS0() {
         final UMessage message = UMessageBuilder.publish(buildTopicUUri()).build();
-        final UAttributes attributes = UAttributes.newBuilder().mergeFrom(message.getAttributes()).setPriority(UPriority.UPRIORITY_UNSPECIFIED).build();
+        final UAttributes attributes = UAttributes.newBuilder()
+            .mergeFrom(message.getAttributes())
+            .setPriority(UPriority.UPRIORITY_UNSPECIFIED)
+            .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         final ValidationResult result = validator.validate(attributes);
 
@@ -320,7 +349,10 @@ public class UAttributeValidatorTest {
     @DisplayName("Test validateId when id is the default instance")
     public void testUAttributeValidatorValidateIdDefault() {
         final UMessage message = UMessageBuilder.publish(buildTopicUUri()).build();
-        final UAttributes attributes = UAttributes.newBuilder().mergeFrom(message.getAttributes()).setId(UUID.getDefaultInstance()).build();
+        final UAttributes attributes = UAttributes.newBuilder()
+            .mergeFrom(message.getAttributes())
+            .setId(UUID.getDefaultInstance())
+            .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         final ValidationResult result = validator.validate(attributes);
 
@@ -333,7 +365,10 @@ public class UAttributeValidatorTest {
     @DisplayName("Test publish validateSink when sink is not empty")
     public void testUAttributeValidatorValidateSinkNotEmpty() {
         final UMessage message = UMessageBuilder.publish(buildTopicUUri()).build();
-        final UAttributes attributes = UAttributes.newBuilder().mergeFrom(message.getAttributes()).setSink(buildDefaultUUri()).build();
+        final UAttributes attributes = UAttributes.newBuilder()
+            .mergeFrom(message.getAttributes())
+            .setSink(buildDefaultUUri())
+            .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         final ValidationResult result = validator.validate(attributes);
 
@@ -377,7 +412,10 @@ public class UAttributeValidatorTest {
     @DisplayName("Test validatePriority of a request message where priority is less than CS4")
     public void testUAttributeValidatorValidatePriorityLessThanCS4() {
         final UMessage message = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), 1000).build();
-        final UAttributes attributes = UAttributes.newBuilder().mergeFrom(message.getAttributes()).setPriority(UPriority.UPRIORITY_CS3).build();
+        final UAttributes attributes = UAttributes.newBuilder()
+            .mergeFrom(message.getAttributes())
+            .setPriority(UPriority.UPRIORITY_CS3)
+            .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         final ValidationResult result = validator.validate(attributes);
 
@@ -405,7 +443,10 @@ public class UAttributeValidatorTest {
     public void testUAttributeValidatorValidateSinkResponseDefault() {
         final UMessage request = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), 1000).build();
         final UMessage response = UMessageBuilder.response(request.getAttributes()).build();
-        final UAttributes attributes = UAttributes.newBuilder().mergeFrom(response.getAttributes()).setSink(UUri.getDefaultInstance()).build();
+        final UAttributes attributes = UAttributes.newBuilder()
+            .mergeFrom(response.getAttributes())
+            .setSink(UUri.getDefaultInstance())
+            .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         final ValidationResult result = validator.validate(attributes);
 
@@ -440,7 +481,10 @@ public class UAttributeValidatorTest {
     public void testUAttributeValidatorValidateReqIdMissing() {
         final UMessage request = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), 1000).build();
         final UMessage response = UMessageBuilder.response(request.getAttributes()).build();
-        final UAttributes attributes = UAttributes.newBuilder().mergeFrom(response.getAttributes()).clearReqid().build();
+        final UAttributes attributes = UAttributes.newBuilder()
+            .mergeFrom(response.getAttributes())
+            .clearReqid()
+            .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         final ValidationResult result = validator.validate(attributes);
 
@@ -454,7 +498,10 @@ public class UAttributeValidatorTest {
     public void testUAttributeValidatorValidateReqIdDefault() {
         final UMessage request = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), 1000).build();
         final UMessage response = UMessageBuilder.response(request.getAttributes()).build();
-        final UAttributes attributes = UAttributes.newBuilder().mergeFrom(response.getAttributes()).setReqid(UUID.getDefaultInstance()).build();
+        final UAttributes attributes = UAttributes.newBuilder()
+            .mergeFrom(response.getAttributes())
+            .setReqid(UUID.getDefaultInstance())
+            .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         final ValidationResult result = validator.validate(attributes);
 
@@ -468,7 +515,10 @@ public class UAttributeValidatorTest {
     public void testUAttributeValidatorValidateReqIdInvalid() {
         final UMessage request = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), 1000).build();
         final UMessage response = UMessageBuilder.response(request.getAttributes()).build();
-        final UAttributes attributes = UAttributes.newBuilder().mergeFrom(response.getAttributes()).setReqid(UUID.newBuilder().setLsb(0xbeadbeef).setMsb(0xdeadbeef)).build();
+        final UAttributes attributes = UAttributes.newBuilder()
+            .mergeFrom(response.getAttributes())
+            .setReqid(UUID.newBuilder().setLsb(0xbeadbeef).setMsb(0xdeadbeef))
+            .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
         final ValidationResult result = validator.validate(attributes);
 

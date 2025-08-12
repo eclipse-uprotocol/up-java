@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 public class UUriExamples {
    
     @Test 
-    public void example_UriFactory_FromProto() {
+    public void exampleUrifactoryFromproto() {
         // Fetch the notification topic Uri from the USubscriptionProto generated code
         final UUri uri = UriFactory.fromProto(
             USubscriptionProto.getDescriptor().getServices().get(0), 0);
@@ -26,7 +26,7 @@ public class UUriExamples {
     }
 
     @Test
-    public void example_Serializer_Deserializer() {
+    public void exampleSerializerDeserializer() {
         final UUri uri = UUri.newBuilder()
                 .setUeId(1).setUeVersionMajor(2).setResourceId(3).build();
         final String strUri = UriSerializer.serialize(uri);
@@ -35,7 +35,7 @@ public class UUriExamples {
     }
 
     @Test
-    public void example_UriValidator() {
+    public void exampleUrivalidator() {
         final UUri uri = UUri.newBuilder()
                 .setUeId(1).setUeVersionMajor(2).setResourceId(3).build();
         assertFalse(UriValidator.isEmpty(uri));
