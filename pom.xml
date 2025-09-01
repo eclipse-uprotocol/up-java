@@ -17,7 +17,7 @@
     <artifactId>up-java</artifactId>
     <name>Java Library for uProtocol</name>
     <description>Language specific uProtocol library for building and using UUri, UUID, UAttributes, UTransport, and more</description>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/eclipse-uprotocol/up-java/</url>    
 
@@ -76,36 +76,10 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>io.cloudevents</groupId>
-                <artifactId>cloudevents-bom</artifactId>
-                <version>4.0.1</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-
-        <!-- CloudEvents support https://cloudevents.github.io/sdk-java/
-        https://github.com/cloudevents/sdk-java-->
-        <dependency>
-            <groupId>io.cloudevents</groupId>
-            <artifactId>cloudevents-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.cloudevents</groupId>
-            <artifactId>cloudevents-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.cloudevents</groupId>
-            <artifactId>cloudevents-json-jackson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.cloudevents</groupId>
-            <artifactId>cloudevents-protobuf</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>com.google.protobuf</groupId>
