@@ -20,10 +20,10 @@ import java.util.Objects;
 import java.util.Random;
 
 /**
- * The UuidFactory class is an abstract class that provides a factory method to
- * create UUIDs based on https://www.rfc-editor.org/rfc/rfc9562[rfc9562]. 
- * The UuidFactory class provides two implementations, UUIDv6 (used for older versions)
- * of the protocol), and UUIDv7.
+ * A factory for creating UUIDs based on <a href="https://www.rfc-editor.org/rfc/rfc9562">RFC 9562</a>.
+ * <p>
+ * The factory provides two implementations, UUIDv6 (used for older versions of the protocol),
+ * and UUIDv7.
  */
 public abstract class UuidFactory {
 

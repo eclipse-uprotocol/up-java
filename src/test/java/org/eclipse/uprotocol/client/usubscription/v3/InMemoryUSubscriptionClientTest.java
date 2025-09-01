@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.mockito.Mock;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,11 +74,18 @@ public class InMemoryUSubscriptionClientTest {
     @Mock
     private SubscriptionChangeHandler subscriptionChangeHandler;
 
-    private final UUri topic = UUri.newBuilder().setAuthorityName("hartley").setUeId(3)
-        .setUeVersionMajor(1).setResourceId(0x8000).build();
+    private final UUri topic = UUri.newBuilder()
+        .setAuthorityName("hartley")
+        .setUeId(3)
+        .setUeVersionMajor(1)
+        .setResourceId(0x8000)
+        .build();
 
-    private final UUri source = UUri.newBuilder().setAuthorityName("Hartley").setUeId(4)
-        .setUeVersionMajor(1).build();
+    private final UUri source = UUri.newBuilder()
+        .setAuthorityName("Hartley")
+        .setUeId(4)
+        .setUeVersionMajor(1)
+        .build();
     private final UListener listener = new UListener() {
         @Override
         public void onReceive(UMessage message) {
@@ -132,8 +140,6 @@ public class InMemoryUSubscriptionClientTest {
         when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
         
-        when(transport.getSource()).thenReturn(source);
-
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.completedFuture(UPayload.pack(response)));
 
@@ -152,7 +158,6 @@ public class InMemoryUSubscriptionClientTest {
         verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
         verify(transport, times(1)).registerListener(any(), any());
-        verify(transport, times(1)).getSource();
     } 
     
 
@@ -168,8 +173,6 @@ public class InMemoryUSubscriptionClientTest {
         when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
         
-        when(transport.getSource()).thenReturn(source);
-
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.completedFuture(UPayload.pack(response)));
 
@@ -187,7 +190,6 @@ public class InMemoryUSubscriptionClientTest {
         verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
         verify(transport, times(1)).registerListener(any(), any());
-        verify(transport, times(1)).getSource();
     }
 
 
@@ -199,8 +201,6 @@ public class InMemoryUSubscriptionClientTest {
             .setTopic(topic)
             .setStatus(SubscriptionStatus.newBuilder().setState(SubscriptionStatus.State.UNSUBSCRIBED).build())
             .build();
-
-        when(transport.getSource()).thenReturn(source);
 
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.completedFuture(UPayload.pack(response)));
@@ -219,8 +219,7 @@ public class InMemoryUSubscriptionClientTest {
 
         verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
-        verify(transport, times(0)).registerListener(any(), any());
-        verify(transport, times(1)).getSource();
+        verify(transport, never()).registerListener(any(), any());
     }
 
 
@@ -228,7 +227,6 @@ public class InMemoryUSubscriptionClientTest {
     @Test
     @DisplayName("Test subscribe using mock RpcClient and SimplerNotifier when invokemethod return an exception")
     void testSubscribeUsingMockRpcClientAndSimplerNotifierWhenInvokemethodReturnAnException() {
-        when(transport.getSource()).thenReturn(source);
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.failedFuture(
                     new UStatusException(UCode.PERMISSION_DENIED, "Not permitted")));
@@ -254,7 +252,6 @@ public class InMemoryUSubscriptionClientTest {
         verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
         verify(transport, times(0)).registerListener(any(), any());
-        verify(transport, times(1)).getSource();
     }
 
 
@@ -265,8 +262,6 @@ public class InMemoryUSubscriptionClientTest {
         when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
     
-        when(transport.getSource()).thenReturn(source);
-
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
                 .setTopic(topic)
@@ -287,7 +282,6 @@ public class InMemoryUSubscriptionClientTest {
         verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
         verify(transport, times(1)).registerListener(any(), any());
-        verify(transport, times(1)).getSource();
     }
 
 
@@ -297,8 +291,6 @@ public class InMemoryUSubscriptionClientTest {
         when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
     
-        when(transport.getSource()).thenReturn(source);
-
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
                 .setTopic(topic)
@@ -324,7 +316,6 @@ public class InMemoryUSubscriptionClientTest {
         verify(rpcClient, times(2)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
         verify(transport, times(2)).registerListener(any(), any());
-        verify(transport, times(2)).getSource();
     }
 
 
@@ -334,8 +325,6 @@ public class InMemoryUSubscriptionClientTest {
         when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
     
-        when(transport.getSource()).thenReturn(source);
-
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
                 .setTopic(topic)
@@ -373,15 +362,12 @@ public class InMemoryUSubscriptionClientTest {
         verify(rpcClient, times(2)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
         verify(transport, times(2)).registerListener(any(), any());
-        verify(transport, times(2)).getSource();
     }
 
 
     @Test
     @DisplayName("Test unsubscribe using mock RpcClient and SimplerNotifier")
     void testUnsubscribeUsingMockRpcClientAndSimplerNotifier() {
-        when(transport.getSource()).thenReturn(this.source);
-
         when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
@@ -413,8 +399,6 @@ public class InMemoryUSubscriptionClientTest {
     @Test
     @DisplayName("Test unsubscribe using when invokemethod return an exception")
     void testUnsubscribeWhenInvokemethodReturnAnException() {
-        when(transport.getSource()).thenReturn(this.source);
-
         when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
@@ -446,8 +430,6 @@ public class InMemoryUSubscriptionClientTest {
     @Test
     @DisplayName("Test unsubscribe when invokemethod returned OK but we failed to unregister the listener")
     void testUnsubscribeWhenInvokemethodReturnedOkButWeFailedToUnregisterTheListener() {
-        when(transport.getSource()).thenReturn(this.source);
-
         when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
@@ -494,8 +476,6 @@ public class InMemoryUSubscriptionClientTest {
         when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
     
-        when(transport.getSource()).thenReturn(source);
-
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
                 .setTopic(topic)
@@ -547,7 +527,6 @@ public class InMemoryUSubscriptionClientTest {
         verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
         verify(transport, times(1)).registerListener(any(), any());
-        verify(transport, times(1)).getSource();
     }
 
     @Test
@@ -562,8 +541,6 @@ public class InMemoryUSubscriptionClientTest {
         when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
     
-        when(transport.getSource()).thenReturn(source);
-
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
                 .setTopic(topic)
@@ -615,7 +592,6 @@ public class InMemoryUSubscriptionClientTest {
         verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
         verify(transport, times(1)).registerListener(any(), any());
-        verify(transport, times(1)).getSource();
     }
 
 
@@ -631,8 +607,6 @@ public class InMemoryUSubscriptionClientTest {
         when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
     
-        when(transport.getSource()).thenReturn(source);
-
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.completedFuture(UPayload.packToAny(SubscriptionResponse.newBuilder()
                 .setTopic(topic)
@@ -684,7 +658,6 @@ public class InMemoryUSubscriptionClientTest {
         verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
         verify(transport, times(1)).registerListener(any(), any());
-        verify(transport, times(1)).getSource();
     }
 
 
@@ -700,8 +673,6 @@ public class InMemoryUSubscriptionClientTest {
         when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
     
-        when(transport.getSource()).thenReturn(source);
-
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
                 .setTopic(topic)
@@ -752,7 +723,6 @@ public class InMemoryUSubscriptionClientTest {
         verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
         verify(transport, times(1)).registerListener(any(), any());
-        verify(transport, times(1)).getSource();
     }
 
 
@@ -768,8 +738,6 @@ public class InMemoryUSubscriptionClientTest {
         when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
     
-        when(transport.getSource()).thenReturn(source);
-
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.completedFuture(UPayload.pack(SubscriptionResponse.newBuilder()
                 .setTopic(topic)
@@ -815,7 +783,6 @@ public class InMemoryUSubscriptionClientTest {
         verify(rpcClient, times(1)).invokeMethod(any(), any(), any());
         verify(notifier, times(1)).registerNotificationListener(any(), any());
         verify(transport, times(1)).registerListener(any(), any());
-        verify(transport, times(1)).getSource();
     }
 
 
@@ -857,8 +824,6 @@ public class InMemoryUSubscriptionClientTest {
     void testUnregisterListenerApiForTheHappyPath() {
         when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
-
-        when(transport.getSource()).thenReturn(source);
 
         when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
@@ -1073,15 +1038,13 @@ public class InMemoryUSubscriptionClientTest {
         when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build()));
 
-        when(transport.getSource()).thenReturn(source);
-
         when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
             .thenReturn(CompletableFuture.failedFuture(new UStatusException(UCode.NOT_FOUND, "Not found")));
 
         InMemoryUSubscriptionClient subscriber = new InMemoryUSubscriptionClient(transport, rpcClient, notifier);
         assertNotNull(subscriber);
 
-        UUri topic = UUri.newBuilder(transport.getSource()).setResourceId(0x8000).build();
+        UUri topic = UUri.newBuilder(source).setResourceId(0x8000).build();
 
         assertDoesNotThrow(() -> {
             CompletionStage<NotificationsResponse> response = subscriber.unregisterForNotifications(topic);
@@ -1096,7 +1059,7 @@ public class InMemoryUSubscriptionClientTest {
             }).toCompletableFuture().join();
         });
 
-        verify(transport, times(2)).getSource();
+        verify(transport, never()).getSource();
         verify(notifier, times(1)).registerNotificationListener(any(), any());
     }
 
