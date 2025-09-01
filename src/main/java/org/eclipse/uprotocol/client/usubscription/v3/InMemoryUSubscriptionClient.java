@@ -34,7 +34,6 @@ import org.eclipse.uprotocol.core.usubscription.v3.FetchSubscriptionsResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.NotificationsRequest;
 import org.eclipse.uprotocol.core.usubscription.v3.NotificationsResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.SubscribeAttributes;
-import org.eclipse.uprotocol.core.usubscription.v3.SubscriberInfo;
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionRequest;
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionResponse;
 import org.eclipse.uprotocol.core.usubscription.v3.SubscriptionStatus;
@@ -134,7 +133,10 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
      * times passing a different handler. 
      */
     @Override
-    public CompletionStage<SubscriptionResponse> subscribe(UUri topic, UListener listener, CallOptions options,
+    public CompletionStage<SubscriptionResponse> subscribe(
+        UUri topic,
+        UListener listener,
+        CallOptions options,
         SubscriptionChangeHandler handler) {
         Objects.requireNonNull(topic, "Subscribe topic missing");
         Objects.requireNonNull(listener, "Request listener missing");
@@ -142,7 +144,6 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
 
         final SubscriptionRequest request = SubscriptionRequest.newBuilder()
             .setTopic(topic)
-            .setSubscriber(SubscriberInfo.newBuilder().setUri(transport.getSource()).build())
             .build();
         
         // Send the subscription request and handle the response
@@ -199,8 +200,9 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
         Objects.requireNonNull(listener, "listener missing");
         Objects.requireNonNull(options, "CallOptions missing");
 
-        final UnsubscribeRequest unsubscribeRequest = UnsubscribeRequest.newBuilder().setTopic(topic)
-                .setSubscriber(SubscriberInfo.newBuilder().setUri(transport.getSource()).build()).build();
+        final UnsubscribeRequest unsubscribeRequest = UnsubscribeRequest.newBuilder()
+            .setTopic(topic)
+            .build();
 
         return RpcMapper.mapResponseToResult(
             // Send the unsubscribe request
@@ -270,7 +272,6 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
 
         NotificationsRequest request = NotificationsRequest.newBuilder()
             .setTopic(topic)
-            .setSubscriber(SubscriberInfo.newBuilder().setUri(transport.getSource()).build())
             .build();
 
         return RpcMapper.mapResponse(rpcClient.invokeMethod(REGISTER_NOTIFICATIONS_METHOD,
@@ -307,7 +308,6 @@ public class InMemoryUSubscriptionClient implements USubscriptionClient {
         
         NotificationsRequest request = NotificationsRequest.newBuilder()
             .setTopic(topic)
-            .setSubscriber(SubscriberInfo.newBuilder().setUri(transport.getSource()).build())
             .build();
 
         return RpcMapper.mapResponse(rpcClient.invokeMethod(UNREGISTER_NOTIFICATIONS_METHOD, 
