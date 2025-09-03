@@ -1,0 +1,79 @@
+# ********************************************************************************
+#  Copyright (c) 2025 Contributors to the Eclipse Foundation
+#
+#  See the NOTICE file(s) distributed with this work for additional
+#  information regarding copyright ownership.
+#
+#  This program and the accompanying materials are made available under the
+#  terms of the Apache License Version 2.0 which is available at
+#  https://www.apache.org/licenses/LICENSE-2.0
+#
+#  SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************/
+
+# Verifies that this library can be built using the uProtocol Core API from up-spec's main branch.
+# Also performs requirements tracing using OpenFastTrace. The job fails if any of the two
+# activities fail.
+
+name: Latest uP Spec Compatibility
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  RUST_TOOLCHAIN: ${{ vars.RUST_TOOLCHAIN || 'stable' }}
+  RUSTFLAGS: -Dwarnings
+  CARGO_TERM_COLOR: always
+
+jobs:
+  requirements-tracing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - name: Fast-Forward to HEAD revision of uProtocol Spec main branch
+        run: |
+          cd "${{ github.workspace }}/up-spec"
+          echo "Switching to up-spec/main branch ..."
+          git checkout main
+          echo "fast-forwarding to HEAD revision ..."
+          git pull
+          git status
+          cd "${{ github.workspace }}"
+
+      - name: "Determine OpenFastTrace file patterns from .env file"
+        uses: xom9ikk/dotenv@v2.3.0
+        with:
+          mode: "oft-latest"
+          load-mode: strict
+
+      # run OpenFastTrace first because the action will always succeed and produce
+      # a tracing report
+      - name: Run OpenFastTrace
+        id: run-oft
+        uses: eclipse-uprotocol/ci-cd/.github/actions/run-oft@main
+        with:
+          file-patterns: "${{ env.OFT_FILE_PATTERNS }}"
+          tags: "${{ env.OFT_TAGS_}}"
+
+      # now try to build and run the tests which may fail if incompatible changes
+      # have been introduced into the uProtocol Core API
+      - name: Build and Test with Maven
+        run: mvn -B verify
+
+      # This step will only be run if the tests in the previous step have succeeded.
+      # In that case, we use the exit code produced by the OFT run as the job's
+      # overall outcome. This means that the job fails if the tests run successfully
+      # but some of the requirements from up-spec are not covered.
+      - name: Determine exit status
+        env:
+          OFT_EXIT_CODE: ${{ steps.run-oft.outputs.oft-exit-code }}
+        run: |
+          exit $OFT_EXIT_CODE
