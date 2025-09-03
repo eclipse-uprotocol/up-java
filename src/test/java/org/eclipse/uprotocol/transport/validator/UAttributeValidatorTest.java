@@ -1,5 +1,18 @@
+/**
+ * SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.eclipse.uprotocol.transport.validator;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,7 +26,7 @@ import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
 import org.eclipse.uprotocol.transport.validate.UAttributesValidator;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 import org.eclipse.uprotocol.v1.UUri;
-import org.eclipse.uprotocol.validation.ValidationResult;
+import org.eclipse.uprotocol.validation.ValidationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -40,8 +53,7 @@ public class UAttributeValidatorTest {
         UMessage message = UMessageBuilder.publish(buildTopicUUri()).build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
-        ValidationResult result = validator.validate(message.getAttributes());
-        assertTrue(result.isSuccess());
+        validator.validate(message.getAttributes());
         assertEquals(validator.toString(), "UAttributesValidator.Publish");
     }
 
@@ -51,8 +63,7 @@ public class UAttributeValidatorTest {
         UMessage message = UMessageBuilder.notification(buildTopicUUri(), buildDefaultUUri()).build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
-        ValidationResult result = validator.validate(message.getAttributes());
-        assertTrue(result.isSuccess());
+        validator.validate(message.getAttributes());
         assertEquals(validator.toString(), "UAttributesValidator.Notification");
     }
 
@@ -62,8 +73,7 @@ public class UAttributeValidatorTest {
         UMessage message = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), 1000).build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
-        ValidationResult result = validator.validate(message.getAttributes());
-        assertTrue(result.isSuccess());
+        validator.validate(message.getAttributes());
         assertEquals(validator.toString(), "UAttributesValidator.Request");
     }
 
@@ -78,10 +88,8 @@ public class UAttributeValidatorTest {
             .build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(response.getAttributes());
-        ValidationResult result = validator.validate(response.getAttributes());
-        assertTrue(result.isSuccess());
+        validator.validate(response.getAttributes());
         assertEquals(validator.toString(), "UAttributesValidator.Response");
-        assertEquals(result.getMessage(), "");
     }
 
     @Test
@@ -91,8 +99,7 @@ public class UAttributeValidatorTest {
         UMessage response = UMessageBuilder.response(request.getAttributes()).build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(response.getAttributes());
-        ValidationResult result = validator.validate(response.getAttributes());
-        assertTrue(result.isSuccess());
+        validator.validate(response.getAttributes());
         assertEquals(validator.toString(), "UAttributesValidator.Response");
     }
 
@@ -102,10 +109,13 @@ public class UAttributeValidatorTest {
         UMessage message = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), 1000).build();
 
         UAttributesValidator validator = UAttributesValidator.Validators.PUBLISH.validator();
-        ValidationResult result = validator.validate(message.getAttributes());
-        assertTrue(result.isFailure());
+        ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(message.getAttributes()));
         assertEquals(validator.toString(), "UAttributesValidator.Publish");
-        assertEquals(result.getMessage(), "Wrong Attribute Type [UMESSAGE_TYPE_REQUEST],Sink should not be present");
+        assertEquals(
+            result.getMessage(),
+            "Wrong Attribute Type [UMESSAGE_TYPE_REQUEST],Sink should not be present");
     }
 
     @Test
@@ -114,8 +124,9 @@ public class UAttributeValidatorTest {
         UMessage message = UMessageBuilder.publish(buildTopicUUri()).build();
 
         UAttributesValidator validator = UAttributesValidator.Validators.NOTIFICATION.validator();
-        ValidationResult result = validator.validate(message.getAttributes());
-        assertTrue(result.isFailure());
+        ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(message.getAttributes()));
         assertEquals(validator.toString(), "UAttributesValidator.Notification");
         assertEquals(result.getMessage(), "Wrong Attribute Type [UMESSAGE_TYPE_PUBLISH],Missing Sink");
     }
@@ -127,8 +138,9 @@ public class UAttributeValidatorTest {
         UMessage response = UMessageBuilder.response(request.getAttributes()).build();
 
         UAttributesValidator validator = UAttributesValidator.Validators.REQUEST.validator();
-        ValidationResult result = validator.validate(response.getAttributes());
-        assertTrue(result.isFailure());
+        ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(response.getAttributes()));
         assertEquals(validator.toString(), "UAttributesValidator.Request");
         assertEquals(
             result.getMessage(),
@@ -143,8 +155,9 @@ public class UAttributeValidatorTest {
         UMessage message = UMessageBuilder.notification(buildTopicUUri(), buildDefaultUUri()).build();
 
         UAttributesValidator validator = UAttributesValidator.Validators.RESPONSE.validator();
-        ValidationResult result = validator.validate(message.getAttributes());
-        assertTrue(result.isFailure());
+        ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(message.getAttributes()));
         assertEquals(validator.toString(), "UAttributesValidator.Response");
         assertEquals(
             result.getMessage(),
@@ -166,8 +179,9 @@ public class UAttributeValidatorTest {
             .build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        ValidationResult result = validator.validate(attributes);
-        assertTrue(result.isFailure());
+        ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
         assertEquals(validator.toString(), "UAttributesValidator.Request");
         assertEquals(result.getMessage(), "Invalid Sink Uri");
     }
@@ -183,8 +197,9 @@ public class UAttributeValidatorTest {
             .build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
-        ValidationResult result = validator.validate(message.getAttributes());
-        assertTrue(result.isFailure());
+        ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(message.getAttributes()));
         assertEquals(validator.toString(), "UAttributesValidator.Request");
         assertEquals(result.getMessage(), "Invalid Permission Level");
     }
@@ -200,8 +215,7 @@ public class UAttributeValidatorTest {
             .build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
-        ValidationResult result = validator.validate(message.getAttributes());
-        assertTrue(result.isSuccess());
+        validator.validate(message.getAttributes());
         assertFalse(validator.isExpired(message.getAttributes()));
         assertEquals(validator.toString(), "UAttributesValidator.Request");
     }
@@ -212,8 +226,9 @@ public class UAttributeValidatorTest {
         UMessage message = UMessageBuilder.publish(buildTopicUUri()).withTtl(-1).build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
-        ValidationResult result = validator.validate(message.getAttributes());
-        assertTrue(result.isFailure());
+        ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(message.getAttributes()));
         assertFalse(validator.isExpired(message.getAttributes()));
         assertEquals(validator.toString(), "UAttributesValidator.Publish");
         assertEquals(result.getMessage(), "Invalid TTL [-1]");
@@ -249,8 +264,9 @@ public class UAttributeValidatorTest {
             .build();
 
         UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        ValidationResult result = validator.validate(attributes);
-        assertTrue(result.isFailure());
+        ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
         assertEquals(validator.toString(), "UAttributesValidator.Publish");
         assertEquals(result.getMessage(), "Message should not have a reqid");
     }
@@ -261,9 +277,10 @@ public class UAttributeValidatorTest {
         final UMessage message = UMessageBuilder.notification(buildTopicUUri(), buildDefaultUUri()).build();
         final UAttributes attributes = UAttributes.newBuilder().mergeFrom(message.getAttributes()).clearSink().build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Notification");
         assertEquals(result.getMessage(), "Missing Sink");
     }
@@ -277,9 +294,10 @@ public class UAttributeValidatorTest {
             .setSink(UUri.getDefaultInstance())
             .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Notification");
         assertEquals(result.getMessage(), "Missing Sink");
     }
@@ -295,9 +313,10 @@ public class UAttributeValidatorTest {
             .setPriority(UPriority.UPRIORITY_CS1)
             .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Notification");
         assertEquals(result.getMessage(), "Invalid Sink Uri");
     }
@@ -311,9 +330,10 @@ public class UAttributeValidatorTest {
             .setPriority(UPriority.UPRIORITY_UNSPECIFIED)
             .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Publish");
         assertEquals(result.getMessage(), "Invalid UPriority [UPRIORITY_UNSPECIFIED]");
     }
@@ -325,9 +345,10 @@ public class UAttributeValidatorTest {
         final UAttributes attributes = UAttributes.newBuilder().
             mergeFrom(message.getAttributes()).setPriority(UPriority.UPRIORITY_CS0).build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Publish");
         assertEquals(result.getMessage(), "Invalid UPriority [UPRIORITY_CS0]");
     }
@@ -338,9 +359,10 @@ public class UAttributeValidatorTest {
         final UMessage message = UMessageBuilder.publish(buildTopicUUri()).build();
         final UAttributes attributes = UAttributes.newBuilder().mergeFrom(message.getAttributes()).clearId().build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Publish");
         assertEquals(result.getMessage(), "Missing id");
     }
@@ -354,9 +376,10 @@ public class UAttributeValidatorTest {
             .setId(UUID.getDefaultInstance())
             .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Publish");
         assertEquals(result.getMessage(), "Attributes must contain valid uProtocol UUID in id property");
     }
@@ -370,9 +393,10 @@ public class UAttributeValidatorTest {
             .setSink(buildDefaultUUri())
             .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Publish");
         assertEquals(result.getMessage(), "Sink should not be present");
     }
@@ -383,9 +407,10 @@ public class UAttributeValidatorTest {
         final UMessage message = UMessageBuilder.request(buildDefaultUUri(), buildMethodUUri(), 1000).build();
         final UAttributes attributes = UAttributes.newBuilder().mergeFrom(message.getAttributes()).clearSink().build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Request");
         assertEquals(result.getMessage(), "Missing Sink");
     }
@@ -401,9 +426,10 @@ public class UAttributeValidatorTest {
             .setType(UMessageType.UMESSAGE_TYPE_REQUEST)
             .setPriority(UPriority.UPRIORITY_CS4).build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Request");
         assertEquals(result.getMessage(), "Invalid TTL [-1]");
     }
@@ -417,9 +443,10 @@ public class UAttributeValidatorTest {
             .setPriority(UPriority.UPRIORITY_CS3)
             .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Request");
         assertEquals(result.getMessage(), "Invalid UPriority [UPRIORITY_CS3]");
     }
@@ -431,9 +458,10 @@ public class UAttributeValidatorTest {
         final UMessage response = UMessageBuilder.response(request.getAttributes()).build();
         final UAttributes attributes = UAttributes.newBuilder().mergeFrom(response.getAttributes()).clearSink().build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Response");
         assertEquals(result.getMessage(), "Missing Sink");
     }
@@ -448,9 +476,10 @@ public class UAttributeValidatorTest {
             .setSink(UUri.getDefaultInstance())
             .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Response");
         assertEquals(result.getMessage(), "Missing Sink");
     }
@@ -469,9 +498,10 @@ public class UAttributeValidatorTest {
             .build();
         
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Response");
         assertEquals(result.getMessage(), "Invalid Sink Uri");
     }
@@ -486,9 +516,10 @@ public class UAttributeValidatorTest {
             .clearReqid()
             .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Response");
         assertEquals(result.getMessage(), "Missing correlationId");
     }
@@ -503,9 +534,10 @@ public class UAttributeValidatorTest {
             .setReqid(UUID.getDefaultInstance())
             .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Response");
         assertEquals(result.getMessage(), "Missing correlationId");
     }
@@ -520,9 +552,10 @@ public class UAttributeValidatorTest {
             .setReqid(UUID.newBuilder().setLsb(0xbeadbeef).setMsb(0xdeadbeef))
             .build();
         final UAttributesValidator validator = UAttributesValidator.getValidator(attributes);
-        final ValidationResult result = validator.validate(attributes);
+        final ValidationException result = assertThrows(
+            ValidationException.class,
+            () -> validator.validate(attributes));
 
-        assertTrue(result.isFailure());
         assertEquals(validator.toString(), "UAttributesValidator.Response");
         assertEquals(result.getMessage(), "Invalid correlation UUID");
     }
