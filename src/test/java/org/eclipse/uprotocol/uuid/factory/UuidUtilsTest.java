@@ -15,16 +15,85 @@ package org.eclipse.uprotocol.uuid.factory;
 import org.eclipse.uprotocol.v1.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Instant;
+import java.util.stream.Stream;
 
-public class UuidUtilsTest {
+class UuidUtilsTest {
     private static final int DELTA = 30;
     private static final int DELAY_MS = 100;
     private static final int TTL = 10000;
 
+    private static Stream<Arguments> provideUuidsForIsUuidv6() {
+        return Stream.of(
+            Arguments.of(UUID.newBuilder()
+                .setMsb(0x0000000000006000L)
+                .setLsb(0xA000000000000000L)
+                .build(), true),
+            Arguments.of(UUID.newBuilder()
+                .setMsb(0x0000000000007000L)
+                .setLsb(0xA000000000000000L)
+                .build(), false),
+            Arguments.of(UUID.newBuilder()
+                .setMsb(0x0000000000006000L)
+                .setLsb(0xC000000000000000L)
+                .build(), false),
+            Arguments.of(UUID.newBuilder()
+                .setMsb(0x0000000000007000L)
+                .setLsb(0xC000000000000000L)
+                .build(), false),
+            Arguments.of(null, false)
+        );
+    }
+
+    @ParameterizedTest(name = "Test isUuidv6 {index} - {0}")
+    @MethodSource("provideUuidsForIsUuidv6")
+    void testIsUuidv6(UUID uuid, boolean expected) {
+        assertEquals(expected, UuidUtils.isUuidv6(uuid));
+    }
+
+    private static Stream<Arguments> provideUuidsForIsUProtocol() {
+        return Stream.of(
+            Arguments.of(UUID.newBuilder()
+                .setMsb(0x0000000000006000L)
+                .setLsb(0xA000000000000000L)
+                .build(), false),
+            Arguments.of(UUID.newBuilder()
+                .setMsb(0x0000000000007000L)
+                .setLsb(0xA000000000000000L)
+                .build(), true),
+            Arguments.of(UUID.newBuilder()
+                .setMsb(0x0000000000006000L)
+                .setLsb(0xC000000000000000L)
+                .build(), false),
+            Arguments.of(UUID.newBuilder()
+                .setMsb(0x0000000000007000L)
+                .setLsb(0xC000000000000000L)
+                .build(), false),
+            Arguments.of(null, false)
+        );
+    }
+
+    @ParameterizedTest(name = "Test isUProtocol {index} - {0}")
+    @MethodSource("provideUuidsForIsUProtocol")
+    void testIsUProtocol(UUID uuid, boolean expected) {
+        assertEquals(expected, UuidUtils.isUProtocol(uuid));
+    }
+
+    @Test
+    void testIsRfc9562Variant() {
+        // variant 0b10 (RFC9562)
+        UUID id = UUID.newBuilder().setLsb(0xA000000000000000L).build();
+        assertTrue(UuidUtils.isRfc9562Variant(id));
+        // variant 0b11 (Reserved. Microsoft Corporation backward compatibility.)
+        id = UUID.newBuilder().setLsb(0xC000000000000000L).build();
+        assertFalse(UuidUtils.isRfc9562Variant(id));
+    }
 
     @Test
     public void testGetElapsedTime() throws InterruptedException {
@@ -97,6 +166,4 @@ public class UuidUtilsTest {
         final UUID id = UuidFactory.Factories.UPROTOCOL.factory().create(now);
         assertTrue(UuidUtils.getElapsedTime(id).isEmpty());
     }
-    
-
 }
