@@ -14,13 +14,11 @@ package org.eclipse.uprotocol.uuid.validate;
 
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.v1.UUID;
-import org.eclipse.uprotocol.v1.UStatus;
-import org.eclipse.uprotocol.v1.UCode;
-import org.eclipse.uprotocol.validation.ValidationResult;
+import org.eclipse.uprotocol.validation.ValidationException;
+import org.eclipse.uprotocol.validation.ValidationUtils;
 
+import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A Validator for uProtocol UUIDs.
@@ -53,48 +51,63 @@ public abstract class UuidValidator {
         }
     }
 
-    public UStatus validate(UUID uuid) {
-        final String errorMessage = Stream.of(
-                validateVersion(uuid),
-                validateTime(uuid))
-                .filter(ValidationResult::isFailure)
-            .map(ValidationResult::getMessage)
-            .collect(Collectors.joining(","));
-        return errorMessage.isBlank() ? ValidationResult.success().toStatus()
-                : UStatus.newBuilder().setCode(UCode.INVALID_ARGUMENT).setMessage(errorMessage).build();
+    /**
+     * Checks if a UUID is valid according to the specific variant/version of the UUID.
+     *
+     * @param uuid The UUID to validate.
+     * @throws NullPointerException if the UUID is null.
+     * @throws ValidationException if the UUID is invalid.
+     */
+    public void validate(UUID uuid) {
+        Objects.requireNonNull(uuid);
+        final var errors = ValidationUtils.collectErrors(uuid,
+            this::validateVersion,
+            this::validateTime
+        );
+        if (!errors.isEmpty()) {
+            throw new ValidationException(errors);
+        }
     }
 
-    public abstract ValidationResult validateVersion(UUID uuid);
+    /**
+     * Validates the version of the UUID.
+     *
+     * @param uuid The UUID to check.
+     * @throws ValidationException if the UUID is invalid.
+     */
+    public abstract void validateVersion(UUID uuid);
 
-    public ValidationResult validateTime(UUID uuid) {
+    public void validateTime(UUID uuid) {
         final Optional<Long> time = UuidUtils.getTime(uuid);
-        return time.isPresent() && (time.get() > 0) ? ValidationResult.success()
-                : ValidationResult.failure(String.format("Invalid UUID Time"));
+        if (time.isPresent() && (time.get() > 0)) {
+            return;
+        }
+        throw new ValidationException("Invalid UUID Time");
     }
 
     private static class InvalidValidator extends UuidValidator {
 
         @Override
-        public ValidationResult validateVersion(UUID uuid) {
-            return ValidationResult.failure(String.format("Invalid UUID Version"));
+        public void validateVersion(UUID uuid) {
+            throw new ValidationException("Invalid UUID Version");
         }
     }
 
     private static class UUIDv6Validator extends UuidValidator {
         @Override
-        public ValidationResult validateVersion(UUID uuid) {
-            return UuidUtils.isUuidv6(uuid)
-                    ? ValidationResult.success()
-                    : ValidationResult.failure(String.format("Not a UUIDv6 Version"));
+        public void validateVersion(UUID uuid) {
+            if (!UuidUtils.isUuidv6(uuid)) {
+                throw new ValidationException("Not a UUIDv6 Version");
+            }
         }
     }
 
     private static class UUIDv7Validator extends UuidValidator {
         @Override
-        public ValidationResult validateVersion(UUID uuid) {
-            return UuidUtils.isUProtocol(uuid)
-                    ? ValidationResult.success()
-                    : ValidationResult.failure(String.format("Invalid UUIDv7 Version"));
+        public void validateVersion(UUID uuid) {
+            if (!UuidUtils.isUProtocol(uuid)) {
+                throw new ValidationException("Invalid UUIDv7 Version");
+            }
         }
     }
 }

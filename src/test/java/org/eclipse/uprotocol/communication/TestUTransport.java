@@ -32,7 +32,7 @@ import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
-import org.eclipse.uprotocol.validation.ValidationResult;
+import org.eclipse.uprotocol.validation.ValidationException;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -85,9 +85,16 @@ public class TestUTransport implements UTransport {
 
     @Override
     public CompletionStage<UStatus> send(UMessage message) {
+        if (message == null) {
+            return CompletableFuture.completedFuture(UStatus.newBuilder()
+                .setCode(UCode.INVALID_ARGUMENT)
+                .setMessage("Message cannot be null")
+                .build());
+        }
         UAttributesValidator validator = UAttributesValidator.getValidator(message.getAttributes());
-
-        if ( (message == null) || validator.validate(message.getAttributes()) != ValidationResult.success()) {
+        try {
+            validator.validate(message.getAttributes());
+        } catch (ValidationException e) {
             return CompletableFuture.completedFuture(UStatus.newBuilder()
                 .setCode(UCode.INVALID_ARGUMENT)
                 .setMessage("Invalid message attributes")

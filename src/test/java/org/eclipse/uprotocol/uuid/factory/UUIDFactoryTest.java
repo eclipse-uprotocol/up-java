@@ -253,7 +253,4 @@ public class UUIDFactoryTest {
         assertNotEquals(uuid, uuid1);
         assertEquals(UuidUtils.getTime(uuid1).get(), UuidUtils.getTime(uuid).get());
     }
-
-
 }
-

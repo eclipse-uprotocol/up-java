@@ -13,6 +13,7 @@
 package org.eclipse.uprotocol.transport.builder;
 
 import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.validation.ValidationException;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UCode;
@@ -139,8 +140,10 @@ public class UMessageBuilder {
             throw new IllegalArgumentException("sink must be a response and source must be an rpc method.");
         }
 
-        if (UuidValidator.Validators.UPROTOCOL.validator().validate(reqid).getCode() != UCode.OK) {
-            throw new IllegalArgumentException("reqid is not a valid UUID.");
+        try {
+            UuidValidator.Validators.UPROTOCOL.validator().validate(reqid);
+        } catch (ValidationException e) {
+            throw new IllegalArgumentException("reqid is not a valid UUID.", e);
         }
 
         return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
@@ -159,8 +162,10 @@ public class UMessageBuilder {
         Objects.requireNonNull(request, "request cannot be null.");
 
         // Validate the request
-        if (UAttributesValidator.Validators.REQUEST.validator().validate(request).isFailure()) {
-            throw new IllegalArgumentException("request must contain valid request attributes.");
+        try {
+            UAttributesValidator.Validators.REQUEST.validator().validate(request);
+        } catch (ValidationException e) {
+            throw new IllegalArgumentException("request is not a valid request attributes.", e);
         }
 
         return new UMessageBuilder(
