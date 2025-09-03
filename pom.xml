@@ -58,7 +58,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <protobuf.version>3.25.8</protobuf.version>
-        <mockito.version>5.18.0</mockito.version>
         <!-- allow dynamic loading of the Mockito Mock agent -->
         <!-- see https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
         <argLine>-XX:+EnableDynamicAgentLoading</argLine>
@@ -73,6 +72,20 @@
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-bom</artifactId>
                 <version>${protobuf.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>5.13.4</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-bom</artifactId>
+                <version>5.19.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -103,22 +116,37 @@
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.13.4</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.truth</groupId>
+            <artifactId>truth</artifactId>
+            <version>[1.4.4,)</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

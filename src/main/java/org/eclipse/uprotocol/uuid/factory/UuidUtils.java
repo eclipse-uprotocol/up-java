@@ -12,7 +12,6 @@
  */
 package org.eclipse.uprotocol.uuid.factory;
 
-import com.github.f4b6a3.uuid.enums.UuidVariant;
 import com.github.f4b6a3.uuid.util.UuidTime;
 import com.github.f4b6a3.uuid.util.UuidUtil;
 import org.eclipse.uprotocol.v1.UUID;
@@ -22,55 +21,66 @@ import java.util.Optional;
 /**
  * Utility methods for uProtocol UUIDs.
  */
-public interface UuidUtils {
+public final class UuidUtils {
 
-    /**
-     * Fetch the UUID version.
-     *
-     * @param uuid The UUID to fetch the version from.
-     * @return the UUID version from the UUID object or Optional.empty() if the uuid
-     *         is null.
-     */
-    static Optional<Version> getVersion(UUID uuid) {
+    private static final int VARIANT_RFC_9562 = 0b10;
+    private static final int VERSION_UUIDV6 = 6;
+    private static final int VERSION_UPROTOCOL = 7;
+
+    private UuidUtils() {
+        // Utility class
+    }
+
+    private static byte getVersion(UUID uuid) {
         // Version is bits masked by 0x000000000000F000 in MS long
-        return uuid == null ? Optional.empty() : Version.getVersion((int) ((uuid.getMsb() >> 12) & 0x0f));
+        return (byte) ((uuid.getMsb() >> 12) & 0x0f);
     }
 
     /**
-     * Fetch the Variant from the passed UUID.
-     *
-     * @param uuid The UUID to fetch the variant from.
-     * @return UUID variant or Empty if uuid is null.
-     */
-    static Optional<Integer> getVariant(UUID uuid) {
-        return uuid == null ? Optional.empty()
-                : Optional.of(
-                        (int) ((uuid.getLsb() >>> (64 - (uuid.getLsb() >>> 62))) & (uuid.getLsb() >> 63)));
-    }
-
-    /**
-     * Verify if version is a formal UUIDv7 uProtocol ID.
+     * Checks if a UUID is in the RFC 9562 variant.
      *
      * @param uuid The UUID to check.
-     * @return true if is a uProtocol UUID or false if uuid passed is null
-     *         or the UUID is not uProtocol format.
+     * @return {@code true} if the UUID is in the RFC 9562 variant, {@code false} if uuid is {@code null}.
      */
-    static boolean isUProtocol(UUID uuid) {
-        final Optional<Version> version = getVersion(uuid);
-        return uuid != null && version.isPresent() && version.get() == Version.VERSION_UPROTOCOL;
+    public static boolean isRfc9562Variant(UUID uuid) {
+        return Optional.ofNullable(uuid)
+            .map(id -> (byte) (id.getLsb() >>> 62))
+            .map(variant -> variant == VARIANT_RFC_9562)
+            .orElse(false);
     }
 
     /**
-     * Verify if version is UUIDv6.
+     * Checks if a UUID is a uProtocol UUID.
      *
      * @param uuid The UUID to check.
-     * @return true if is UUID version 6 or false if uuid is null or not version 6
+     * @return {@code true} if is a uProtocol UUID or {@code false} if uuid is {@code null}
+     *         or is not a v7 UUID.
+     * @see <a href="https://www.rfc-editor.org/rfc/rfc9562.html">RFC 9562</a>
+     * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/basics/uuid.adoc">
+     * uProtocol UUID specification</a>
      */
-    static boolean isUuidv6(UUID uuid) {
-        final Optional<Version> version = getVersion(uuid);
-        final Optional<Integer> variant = getVariant(uuid);
-        return uuid != null && version.isPresent() && version.get() == Version.VERSION_TIME_ORDERED
-                && variant.get() == UuidVariant.VARIANT_RFC_4122.getValue();
+    public static boolean isUProtocol(UUID uuid) {
+        return Optional.ofNullable(uuid)
+                .filter(UuidUtils::isRfc9562Variant)
+                .map(UuidUtils::getVersion)
+                .map(version -> version == VERSION_UPROTOCOL)
+                .orElse(false);
+    }
+
+    /**
+     * Checks if a UUID is a v6 UUID.
+     *
+     * @param uuid The UUID to check.
+     * @return {@code true} if is a v6 UUID or {@code false} if uuid is {@code null}
+     *         or is not a v6 UUID.
+     * @see <a href="https://www.rfc-editor.org/rfc/rfc9562.html">RFC 9562</a>
+     */
+    public static boolean isUuidv6(UUID uuid) {
+        return Optional.ofNullable(uuid)
+                .filter(UuidUtils::isRfc9562Variant)
+                .map(UuidUtils::getVersion)
+                .map(version -> version == VERSION_UUIDV6)
+                .orElse(false);
     }
 
     /**
@@ -79,41 +89,39 @@ public interface UuidUtils {
      * @param uuid The UUID to check.
      * @return true if is UUID version 6 or 7
      */
-    static boolean isUuid(UUID uuid) {
+    public static boolean isUuid(UUID uuid) {
         return isUProtocol(uuid) || isUuidv6(uuid);
     }
 
     /**
-     * Return the number of milliseconds since unix epoch from a passed UUID.
+     * Gets the number of milliseconds since unix epoch contained in a UUID.
      *
-     * @param uuid passed uuid to fetch the time.
-     * @return number of milliseconds since unix epoch or empty if uuid is null.
+     * @param uuid The UUID.
+     * @return The number of milliseconds, or empty if uuid is null or does not contain
+     * a timestamp.
      */
-    static Optional<Long> getTime(UUID uuid) {
-        Long time = null;
-        Optional<Version> version = getVersion(uuid);
-        if (uuid == null || version.isEmpty()) {
+    public static Optional<Long> getTime(UUID uuid) {
+        if (uuid == null) {
             return Optional.empty();
         }
 
-        switch (version.get()) {
+        final var version = getVersion(uuid);
+
+        switch (version) {
             case VERSION_UPROTOCOL:
-                time = uuid.getMsb() >> 16;
-                break;
-            case VERSION_TIME_ORDERED:
+                return Optional.of(uuid.getMsb() >> 16);
+            case VERSION_UUIDV6:
                 // convert Ticks to Millis
                 try {
                     java.util.UUID uuidJava = new java.util.UUID(uuid.getMsb(), uuid.getLsb());
-                    time = UuidTime.toUnixTimestamp(UuidUtil.getTimestamp(uuidJava)) / UuidTime.TICKS_PER_MILLI;
+                    return Optional.of(UuidTime.toUnixTimestamp(
+                        UuidUtil.getTimestamp(uuidJava)) / UuidTime.TICKS_PER_MILLI);
                 } catch (IllegalArgumentException e) {
                     return Optional.empty();
                 }
-                break;
             default:
-                break;
+                return Optional.empty();
         }
-
-        return Optional.ofNullable(time);
     }
 
     /**
@@ -123,7 +131,7 @@ public interface UuidUtils {
      * @return An Optional containing the elapsed time in milliseconds,
      *         or an empty Optional if the creation time cannot be determined.
      */
-    static Optional<Long> getElapsedTime(UUID id) {
+    public static Optional<Long> getElapsedTime(UUID id) {
         final long creationTime = getTime(id).orElse(-1L);
         if (creationTime < 0) {
             return Optional.empty();
@@ -144,7 +152,7 @@ public interface UuidUtils {
      *         or an empty Optional if the UUID is null, TTL is non-positive, or the
      *         creation time cannot be determined.
      */
-    static Optional<Long> getRemainingTime(UUID id, int ttl) {
+    public static Optional<Long> getRemainingTime(UUID id, int ttl) {
         if (id == null || ttl <= 0) {
             return Optional.empty();
         }
@@ -161,56 +169,7 @@ public interface UuidUtils {
      *         is non-positive or creation time
      *         cannot be determined.
      */
-    static boolean isExpired(UUID id, int ttl) {
+    public static boolean isExpired(UUID id, int ttl) {
         return ttl > 0 && getRemainingTime(id, ttl).isEmpty();
-    }
-
-    /**
-     * The supported UUID versions.
-     */
-    enum Version {
-
-        /**
-         * An unknown version.
-         */
-        VERSION_UNKNOWN(0),
-        /**
-         * The randomly or pseudo-randomly generated version specified in RFC-4122.
-         */
-        VERSION_RANDOM_BASED(4),
-        /**
-         * The time-ordered version with gregorian epoch proposed by Peabody and Davis.
-         */
-        VERSION_TIME_ORDERED(6),
-        /**
-         * The custom or free-form version proposed by Peabody and Davis.
-         */
-        VERSION_UPROTOCOL(7);
-
-        private final int value;
-
-        Version(int value) {
-            this.value = value;
-        }
-
-        /**
-         * Get the Version from the passed integer representation of the version.
-         *
-         * @param value The integer representation of the version.
-         * @return The Version object or Optional.empty() if the value is not a valid
-         *         version.
-         */
-        public static Optional<Version> getVersion(int value) {
-            for (Version version : values()) {
-                if (version.getValue() == value) {
-                    return Optional.of(version);
-                }
-            }
-            return Optional.empty();
-        }
-
-        public int getValue() {
-            return this.value;
-        }
     }
 }

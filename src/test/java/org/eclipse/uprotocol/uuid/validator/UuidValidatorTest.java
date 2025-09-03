@@ -50,7 +50,7 @@ public class UuidValidatorTest {
         final UUID uuid = UUID.newBuilder().setMsb(0L).setLsb(0L).build();
         final UStatus status = UuidValidator.getValidator(uuid).validate(uuid);
         assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
-        assertEquals("Invalid UUID Version,Invalid UUID Variant,Invalid UUID Time", status.getMessage());
+        assertEquals("Invalid UUID Version,Invalid UUID Time", status.getMessage());
     }
 
     @Test
@@ -117,7 +117,7 @@ public class UuidValidatorTest {
         final UuidValidator validator = UuidValidator.getValidator(uuid);
         assertNotNull(validator);
         final UStatus status = validator.validate(uuid);
-        assertEquals("Invalid UUID Version,Invalid UUID Variant,Invalid UUID Time", status.getMessage());
+        assertEquals("Invalid UUID Version,Invalid UUID Time", status.getMessage());
         assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
     }
 
@@ -129,7 +129,7 @@ public class UuidValidatorTest {
         final UuidValidator validator = UuidValidator.Validators.UUIDV6.validator();
         assertNotNull(validator);
         final UStatus status = validator.validate(uuid);
-        assertEquals("Not a UUIDv6 Version,Invalid UUIDv6 variant,Invalid UUID Time", status.getMessage());
+        assertEquals("Not a UUIDv6 Version,Invalid UUID Time", status.getMessage());
         assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
     }
 
@@ -140,7 +140,7 @@ public class UuidValidatorTest {
         final UuidValidator validator = UuidValidator.Validators.UUIDV6.validator();
         assertNotNull(validator);
         final UStatus status = validator.validate(null);
-        assertEquals("Not a UUIDv6 Version,Invalid UUIDv6 variant,Invalid UUID Time", status.getMessage());
+        assertEquals("Not a UUIDv6 Version,Invalid UUID Time", status.getMessage());
         assertEquals(UCode.INVALID_ARGUMENT, status.getCode());
     }
 

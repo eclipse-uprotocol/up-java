@@ -32,7 +32,6 @@ public class UUIDFactoryTest {
     void testUuidv7Creation() {
         final Instant now = Instant.now();
         final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create(now);
-        final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
         final String uuidString = UuidSerializer.serialize(uuid);
 
@@ -40,7 +39,6 @@ public class UUIDFactoryTest {
         assertTrue(UuidUtils.isUProtocol(uuid));
         assertTrue(UuidUtils.isUuid(uuid));
         assertFalse(UuidUtils.isUuidv6(uuid));
-        assertTrue(version.isPresent());
         assertTrue(time.isPresent());
         assertEquals(time.get(), now.toEpochMilli());
 
@@ -55,7 +53,6 @@ public class UUIDFactoryTest {
     @DisplayName("Test UUIDv7 Creation with null Instant")
     void testUuidv7CreationWithNullInstant() {
         final UUID uuid = UuidFactory.Factories.UPROTOCOL.factory().create(null);
-        final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
         final String uuidString = UuidSerializer.serialize(uuid);
 
@@ -63,7 +60,6 @@ public class UUIDFactoryTest {
         assertTrue(UuidUtils.isUProtocol(uuid));
         assertTrue(UuidUtils.isUuid(uuid));
         assertFalse(UuidUtils.isUuidv6(uuid));
-        assertTrue(version.isPresent());
         assertTrue(time.isPresent());
         assertFalse(uuidString.isBlank());
 
@@ -80,7 +76,6 @@ public class UUIDFactoryTest {
     void testUuidv6CreationWithInstant() {
         final Instant now = Instant.now();
         final UUID uuid = UuidFactory.Factories.UUIDV6.factory().create(now);
-        final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
         final String uuidString = UuidSerializer.serialize(uuid);
 
@@ -88,7 +83,6 @@ public class UUIDFactoryTest {
         assertTrue(UuidUtils.isUuidv6(uuid));
         assertTrue(UuidUtils.isUuid(uuid));
         assertFalse(UuidUtils.isUProtocol(uuid));
-        assertTrue(version.isPresent());
         assertTrue(time.isPresent());
         assertEquals(time.get(), now.toEpochMilli());
         assertFalse(uuidString.isBlank());
@@ -101,7 +95,6 @@ public class UUIDFactoryTest {
     @DisplayName("Test UUIDv6 creation with null Instant")
     void testUuidv6CreationWithNullInstant() {
         final UUID uuid = UuidFactory.Factories.UUIDV6.factory().create(null);
-        final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
         final String uuidString = UuidSerializer.serialize(uuid);
 
@@ -109,7 +102,6 @@ public class UUIDFactoryTest {
         assertTrue(UuidUtils.isUuidv6(uuid));
         assertFalse(UuidUtils.isUProtocol(uuid));
         assertTrue(UuidUtils.isUuid(uuid));
-        assertTrue(version.isPresent());
         assertTrue(time.isPresent());
         assertFalse(uuidString.isBlank());
 
@@ -124,7 +116,6 @@ public class UUIDFactoryTest {
         final java.util.UUID uuid_java = java.util.UUID.randomUUID();
         final UUID uuid = UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
                 .setLsb(uuid_java.getLeastSignificantBits()).build();
-        final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
         final String uuidString = UuidSerializer.serialize(uuid);
 
@@ -132,7 +123,6 @@ public class UUIDFactoryTest {
         assertFalse(UuidUtils.isUuidv6(uuid));
         assertFalse(UuidUtils.isUProtocol(uuid));
         assertFalse(UuidUtils.isUuid(uuid));
-        assertTrue(version.isPresent());
         assertFalse(time.isPresent());
         assertFalse(uuidString.isBlank());
 
@@ -146,20 +136,14 @@ public class UUIDFactoryTest {
     @DisplayName("Test UUIDUtils for empty UUID")
     void testUuidutilsForEmptyUuid() {
         final UUID uuid =  UUID.newBuilder().setMsb(0L).setLsb(0L).build();
-        final Optional<UuidUtils.Version> version = UuidUtils.getVersion(uuid);
         final Optional<Long> time = UuidUtils.getTime(uuid);
         final String uuidString = UuidSerializer.serialize(uuid);
 
         assertNotNull(uuid);
         assertFalse(UuidUtils.isUuidv6(uuid));
         assertFalse(UuidUtils.isUProtocol(uuid));
-        assertTrue(version.isPresent());
-        assertEquals(version.get(), UuidUtils.Version.VERSION_UNKNOWN);
         assertFalse(time.isPresent());
         assertFalse(uuidString.isBlank());
-        assertFalse(UuidUtils.isUuidv6(null));
-        assertFalse(UuidUtils.isUProtocol(null));
-        assertFalse(UuidUtils.isUuid(null));
 
         final UUID uuid2 = UuidSerializer.deserialize(uuidString);
         assertTrue(uuid2.equals(UUID.getDefaultInstance()));
@@ -169,7 +153,6 @@ public class UUIDFactoryTest {
     @Test
     @DisplayName("Test UUIDUtils for a null UUID")
     void testUuidutilsForNullUuid() {
-        assertFalse(UuidUtils.getVersion(null).isPresent());
         assertTrue(UuidSerializer.serialize(null).isBlank());
         assertFalse(UuidUtils.isUuidv6(null));
         assertFalse(UuidUtils.isUProtocol(null));
@@ -182,7 +165,6 @@ public class UUIDFactoryTest {
     void testUuidutilsFromInvalidUuid() {
         final UUID uuid = UUID.newBuilder().setMsb(9 << 12).setLsb(0L).build(); // Invalid UUID type
 
-        assertFalse(UuidUtils.getVersion(uuid).isPresent());
         assertFalse(UuidUtils.getTime(uuid).isPresent());
         assertFalse(UuidSerializer.serialize(uuid).isBlank());
         assertFalse(UuidUtils.isUuidv6(uuid));
