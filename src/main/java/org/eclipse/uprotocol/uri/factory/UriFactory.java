@@ -19,13 +19,27 @@ import com.google.protobuf.DescriptorProtos.ServiceOptions;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
 
 /**
- * URI Factory that builds URIs from protos.
+ * A factory for uProtocol URIs.
  */
-public interface UriFactory {
-    String WILDCARD_AUTHORITY = "*";
-    int WILDCARD_ENTITY_ID = 0xFFFF;
-    int WILDCARD_ENTITY_VERSION = 0xFF;
-    int WILDCARD_RESOURCE_ID = 0xFFFF;
+public final class UriFactory {
+
+    public static final String WILDCARD_AUTHORITY = "*";
+    public static final int WILDCARD_ENTITY_ID = 0xFFFF;
+    public static final int WILDCARD_ENTITY_VERSION = 0xFF;
+    public static final int WILDCARD_RESOURCE_ID = 0xFFFF;
+
+    /**
+     * A uProtocol pattern URI that matches all UUris.
+     */
+    public static final UUri ANY = UUri.newBuilder()
+            .setAuthorityName(WILDCARD_AUTHORITY)
+            .setUeId(WILDCARD_ENTITY_ID)
+            .setUeVersionMajor(WILDCARD_ENTITY_VERSION)
+            .setResourceId(WILDCARD_RESOURCE_ID).build();
+
+    private UriFactory() {
+        // Prevent instantiation
+    }
 
     /**
      * Builds a UEntity for an protobuf generated code Service Descriptor.
@@ -34,7 +48,7 @@ public interface UriFactory {
      * @param resourceId The resource id.
      * @return Returns a UEntity for an protobuf generated code Service Descriptor.
      */
-    static UUri fromProto(ServiceDescriptor descriptor, int resourceId) {
+    public static UUri fromProto(ServiceDescriptor descriptor, int resourceId) {
         return fromProto(descriptor, resourceId, null);
     }
 
@@ -46,7 +60,7 @@ public interface UriFactory {
      * @param authorityName The authority name.
      * @return Returns a UEntity for an protobuf generated code Service Descriptor.
      */
-    static UUri fromProto(ServiceDescriptor descriptor, int resourceId, String authorityName) {
+    public static UUri fromProto(ServiceDescriptor descriptor, int resourceId, String authorityName) {
         if (descriptor == null) {
             return UUri.getDefaultInstance();
         }
@@ -63,14 +77,4 @@ public interface UriFactory {
         }
         return builder.build();
     }
-
-
-    /**
-     * A uProtocol pattern URI that matches all UUris.
-     */
-    UUri ANY = UUri.newBuilder()
-            .setAuthorityName(WILDCARD_AUTHORITY)
-            .setUeId(WILDCARD_ENTITY_ID)
-            .setUeVersionMajor(WILDCARD_ENTITY_VERSION)
-            .setResourceId(WILDCARD_RESOURCE_ID).build();
 }

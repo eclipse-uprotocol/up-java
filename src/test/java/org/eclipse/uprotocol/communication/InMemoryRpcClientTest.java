@@ -12,212 +12,209 @@
  */
 package org.eclipse.uprotocol.communication;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Optional;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import java.util.concurrent.CompletableFuture;
-import org.eclipse.uprotocol.transport.UTransport;
+
 import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
+import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
-import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
+import org.eclipse.uprotocol.v1.UPayloadFormat;
 import org.eclipse.uprotocol.v1.UPriority;
-import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-public class InMemoryRpcClientTest {
-    @Test
-    @DisplayName("Test calling invokeMethod passing UPayload")
-    public void testInvokeMethodWithPayload() {
-        UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
-        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
-        final CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
-        assertNotNull(response);
-        assertDoesNotThrow(() -> {
-            UPayload payload1 = response.toCompletableFuture().get();
-            assertTrue(payload.equals(payload1));
-        });
+import com.google.common.truth.Truth;
+import com.google.protobuf.ByteString;
+
+class InMemoryRpcClientTest extends CommunicationLayerClientTestBase {
+
+    private static void assertMessageHasOptions(CallOptions options, UMessage message) {
+        Optional.ofNullable(options.timeout())
+            .ifPresent(timeout -> assertEquals(timeout, message.getAttributes().getTtl()));
+        Optional.ofNullable(options.priority())
+            .ifPresent(priority -> assertEquals(priority, message.getAttributes().getPriority()));
+        Optional.ofNullable(options.token())
+            .ifPresent(token -> assertEquals(token, message.getAttributes().getToken()));
     }
 
-    @Test
-    @DisplayName("Test calling invokeMethod passing a UPaylod and calloptions")
-    public void testInvokeMethodWithPayloadAndCallOptions() {
-        UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
-        CallOptions options = new CallOptions(1000, UPriority.UPRIORITY_CS5);
-        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
-        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, options);
-        assertNotNull(response);
-        assertDoesNotThrow(() -> {
-            UPayload result = response.toCompletableFuture().get();
-            assertTrue(result.equals(payload));
-        });
-        assertFalse(response.toCompletableFuture().isCompletedExceptionally());
+    private static Stream<Arguments> callOptionsAndPayloadProvider() {
+        return Stream.of(
+            Arguments.of(CallOptions.DEFAULT, UPayload.EMPTY, UCode.OK),
+            Arguments.of(
+                new CallOptions(3000, UPriority.UPRIORITY_CS4, null),
+                UPayload.packToAny(UUri.newBuilder().build()),
+                UCode.OK),
+            Arguments.of(
+                new CallOptions(4000, UPriority.UPRIORITY_CS5, ""),
+                UPayload.pack(UUri.newBuilder().build()),
+                UCode.OK),
+            Arguments.of(
+                new CallOptions(5000, UPriority.UPRIORITY_CS6, "my-token"),
+                UPayload.pack(ByteString.copyFromUtf8("hello"), UPayloadFormat.UPAYLOAD_FORMAT_TEXT),
+                (UCode) null)
+        );
     }
 
-    @Test
-    @DisplayName("Test calling invokeMethod passing a Null UPayload")
-    public void testInvokeMethodWithNullPayload() {
-        RpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
-        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), null, CallOptions.DEFAULT);
-        assertNotNull(response);
-        assertDoesNotThrow(() -> {
-            UPayload payload = response.toCompletableFuture().get();
-            assertEquals(payload, UPayload.EMPTY);
-        });
-        assertFalse(response.toCompletableFuture().isCompletedExceptionally());
+    @ParameterizedTest(name = "Test successful RPC, sending and receiving a payload: {index} - {arguments}")
+    @MethodSource("callOptionsAndPayloadProvider")
+    void testInvokeMethodWithPayloadSucceeds(CallOptions options, UPayload payload, UCode responseStatus) {
+        RpcClient rpcClient = new InMemoryRpcClient(transport, uriProvider);
+
+        var response = rpcClient.invokeMethod(METHOD_URI, payload, options);
+        verify(transport).registerListener(any(UUri.class), any(UUri.class), responseListener.capture());
+        verify(transport).send(requestMessage.capture());
+        assertEquals(payload.data(), requestMessage.getValue().getPayload());
+        assertMessageHasOptions(options, requestMessage.getValue());
+
+        var requestAttributes = requestMessage.getValue().getAttributes();
+        var responseMessageBuilder = UMessageBuilder.response(requestAttributes);
+        Optional.ofNullable(responseStatus)
+            .ifPresent(status -> responseMessageBuilder.withCommStatus(status));
+        var responseMessage = responseMessageBuilder.build(payload);
+        responseListener.getValue().onReceive(responseMessage);
+
+        var receivedPayload = assertDoesNotThrow(() -> response.toCompletableFuture().get());
+        assertEquals(payload, receivedPayload);
     }
  
     @Test
-    @DisplayName("Test calling invokeMethod with TimeoutUTransport that will timeout the request")
-    public void testInvokeMethodWithTimeoutTransport() {
+    @DisplayName("Test running into timeout when invoking method")
+    void testInvokeMethodFailsForTimeout() {
         final UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
         final CallOptions options = new CallOptions(100, UPriority.UPRIORITY_CS5, "token");
-        RpcClient rpcClient = new InMemoryRpcClient(new TimeoutUTransport());
-        final CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, options);
-        
-        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, 
-            response.toCompletableFuture()::get);
-        assertEquals(exception.getMessage(),
-                "org.eclipse.uprotocol.communication.UStatusException: Request timed out");
-        assertEquals(((UStatus) (((UStatusException) exception.getCause())).getStatus()).getCode(),
-            UCode.DEADLINE_EXCEEDED);
+
+        RpcClient rpcClient = new InMemoryRpcClient(transport, uriProvider);
+        var exception = assertThrows(ExecutionException.class, () -> {
+            rpcClient.invokeMethod(METHOD_URI, payload, options).toCompletableFuture().get();
+        });
+        Truth.assertThat(exception).hasCauseThat().isInstanceOf(UStatusException.class);
+        assertEquals(
+            UCode.DEADLINE_EXCEEDED,
+            ((UStatusException) exception.getCause()).getStatus().getCode()
+        );
     }
 
+    @Test
+    @DisplayName("Test invoking method fails for transport error")
+    void testInvokeMethodFailsForTransportError() {
+        when(transport.send(any(UMessage.class)))
+            .thenReturn(CompletableFuture.failedFuture(
+                new UStatusException(UCode.UNAVAILABLE, "transport not ready")));
+        RpcClient rpcClient = new InMemoryRpcClient(transport, uriProvider);
+        var exception = assertThrows(ExecutionException.class, () -> {
+            rpcClient.invokeMethod(METHOD_URI, UPayload.EMPTY, CallOptions.DEFAULT).toCompletableFuture().get();
+        });
+        verify(transport).send(requestMessage.capture());
+        assertEquals(UPayload.EMPTY.data(), requestMessage.getValue().getPayload());
+        assertMessageHasOptions(CallOptions.DEFAULT, requestMessage.getValue());
+
+        Truth.assertThat(exception).hasCauseThat().isInstanceOf(UStatusException.class);
+        assertEquals(
+            UCode.UNAVAILABLE,
+            ((UStatusException) exception.getCause()).getStatus().getCode()
+        );
+    }
 
     @Test
-    @DisplayName("Test calling close for DefaultRpcClient when there are multiple response listeners registered")
-    public void testCloseWithMultipleListeners() {
-        InMemoryRpcClient rpcClient = new InMemoryRpcClient(new TestUTransport());
-        UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
-        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
-        assertNotNull(response);
-        CompletionStage<UPayload> response2 = rpcClient.invokeMethod(createMethodUri(), payload, null);
-        assertNotNull(response2);
+    @DisplayName("Test unsuccessful RPC, with service returning error")
+    void testInvokeMethodFailsForErroneousServiceInvocation() {
+        RpcClient rpcClient = new InMemoryRpcClient(transport, uriProvider);
+        var response = rpcClient.invokeMethod(METHOD_URI, UPayload.EMPTY, CallOptions.DEFAULT);
+        verify(transport).registerListener(any(UUri.class), any(UUri.class), responseListener.capture());
+        verify(transport).send(requestMessage.capture());
+        assertEquals(UPayload.EMPTY.data(), requestMessage.getValue().getPayload());
+        assertMessageHasOptions(CallOptions.DEFAULT, requestMessage.getValue());
+
+        var requestAttributes = requestMessage.getValue().getAttributes();
+        var responseMessage = UMessageBuilder.response(requestAttributes)
+            .withCommStatus(UCode.RESOURCE_EXHAUSTED)
+            .build();
+        responseListener.getValue().onReceive(responseMessage);
+
+        var exception = assertThrows(ExecutionException.class, () -> response.toCompletableFuture().get());
+        Truth.assertThat(exception).hasCauseThat().isInstanceOf(UStatusException.class);
+        assertEquals(
+            UCode.RESOURCE_EXHAUSTED,
+            ((UStatusException) exception.getCause()).getStatus().getCode()
+        );
+    }
+
+    static Stream<Arguments> unexpectedMessageHandlerProvider() {
+        return Stream.of(
+            Arguments.of((Consumer<UMessage>) null),
+            Arguments.of(mock(Consumer.class))
+        );
+    }
+
+    @ParameterizedTest(name = "Test client handles unexpected incoming messages: {index} - {arguments}")
+    @MethodSource("unexpectedMessageHandlerProvider")
+    void testHandleUnexpectedResponse(Consumer<UMessage> unexpectedMessageHandler) {
+        var rpcClient = new InMemoryRpcClient(transport, uriProvider);
+        Optional.ofNullable(unexpectedMessageHandler).ifPresent(rpcClient::setUnexpectedMessageHandler);
+        verify(transport).registerListener(any(UUri.class), any(UUri.class), responseListener.capture());
+
+        // send an arbitrary request
+        rpcClient.invokeMethod(METHOD_URI, UPayload.EMPTY, CallOptions.DEFAULT);
+        verify(transport).send(requestMessage.capture());
+
+        // create unsolicited response message
+        final var reqId = UuidFactory.Factories.UPROTOCOL.factory().create();
+        assertNotEquals(reqId, requestMessage.getValue().getAttributes().getId());
+        var responseMessage = UMessageBuilder.response(
+                METHOD_URI,
+                TRANSPORT_SOURCE,
+                reqId)
+            .build();
+        responseListener.getValue().onReceive(responseMessage);
+
+        if (unexpectedMessageHandler != null) {
+            // assert that the unexpected response is handled correctly
+            verify(unexpectedMessageHandler).accept(responseMessage);
+        }
+
+        // create unsolicited notification message
+        var notificationMessage = UMessageBuilder.notification(
+                UUri.newBuilder()
+                    .setAuthorityName("hartley")
+                    .setUeId(10)
+                    .setUeVersionMajor(1)
+                    .setResourceId(0x9100)
+                    .build(),
+                TRANSPORT_SOURCE)
+            .build();
+        responseListener.getValue().onReceive(notificationMessage);
+
+        if (unexpectedMessageHandler != null) {
+            // assert that the unexpected notification is handled correctly
+            verify(unexpectedMessageHandler).accept(notificationMessage);
+        }
+    }
+
+    @Test
+    @DisplayName("Test close() unregisters the response listener from the transport")
+    void testCloseUnregistersResponseListenerFromTransport() {
+        InMemoryRpcClient rpcClient = new InMemoryRpcClient(transport, uriProvider);
+        verify(transport).registerListener(eq(UriFactory.ANY), eq(TRANSPORT_SOURCE), responseListener.capture());
         rpcClient.close();
-    }
-
-    @Test
-    @DisplayName("Test calling invokeMethod when we use the CommStatusTransport")
-    public void testInvokeMethodWithCommStatusTransport() {
-        RpcClient rpcClient = new InMemoryRpcClient(new CommStatusTransport());
-        UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
-        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
-
-        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, 
-            response.toCompletableFuture()::get);
-        assertTrue(response.toCompletableFuture().isCompletedExceptionally());
-        assertEquals(exception.getMessage(), 
-            "org.eclipse.uprotocol.communication.UStatusException: Communication error [FAILED_PRECONDITION]");
-
-        assertEquals(((UStatus) (((UStatusException) exception.getCause())).getStatus()).getCode(),
-            UCode.FAILED_PRECONDITION);
-    }
-
-    @Test
-    @DisplayName("Test calling invokeMethod when we use the ErrorUTransport that fails the transport send()")
-    public void testInvokeMethodWithErrorTransport() {
-        UTransport transport = new TestUTransport() {
-            @Override
-            public CompletionStage<UStatus> send(UMessage message) {
-                return CompletableFuture.completedFuture(
-                    UStatus.newBuilder().setCode(UCode.FAILED_PRECONDITION).build());
-            }
-        };
-        
-        RpcClient rpcClient = new InMemoryRpcClient(transport);
-        UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
-        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
-
-        Exception exception = assertThrows(java.util.concurrent.ExecutionException.class, 
-            response.toCompletableFuture()::get);
-        assertTrue(response.toCompletableFuture().isCompletedExceptionally());
-        assertEquals(exception.getMessage(), 
-            "org.eclipse.uprotocol.communication.UStatusException: ");
-        assertEquals(((UStatus) (((UStatusException) exception.getCause())).getStatus()).getCode(),
-            UCode.FAILED_PRECONDITION);
-    }
-
-
-    @Test
-    @DisplayName("Test calling handleResponse when it gets a response for an unknown request")
-    public void testHandleResponseForUnknownRequest() {
-        UTransport transport = new TestUTransport() {
-            @Override
-            public UMessage buildResponse(UMessage request) {
-                UAttributes attributes = UAttributes.newBuilder(request.getAttributes())
-                    .setId(UuidFactory.Factories.UPROTOCOL.factory().create()).build();
-                return UMessageBuilder.response(attributes).build();
-            }
-        };
-        
-        InMemoryRpcClient rpcClient = new InMemoryRpcClient(transport);
-
-        CallOptions options = new CallOptions(10, UPriority.UPRIORITY_CS5);
-        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), null, options);
-        assertNotNull(response);
-        assertThrows(ExecutionException.class, () -> {
-            UPayload payload = response.toCompletableFuture().get();
-            assertEquals(payload, UPayload.EMPTY);
-        });
-        assertTrue(response.toCompletableFuture().isCompletedExceptionally());
-    }
-
-
-    @Test
-    @DisplayName("Test calling handleResponse when it gets a message that is not a response")
-    public void testHandleResponseForNonResponseMessage() {
-        UTransport transport = new TestUTransport() {
-            @Override
-            public UMessage buildResponse(UMessage request) {
-                UUri topic = UUri.newBuilder(getSource()).setResourceId(0x8000).build();
-                return UMessageBuilder.publish(topic).build();
-            }
-        };
-        
-        InMemoryRpcClient rpcClient = new InMemoryRpcClient(transport);
-
-        CallOptions options = new CallOptions(10, UPriority.UPRIORITY_CS5);
-        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), null, options);
-        assertNotNull(response);
-        assertThrows(ExecutionException.class, () -> {
-            UPayload payload = response.toCompletableFuture().get();
-            assertEquals(payload, UPayload.EMPTY);
-        });
-        assertTrue(response.toCompletableFuture().isCompletedExceptionally());
-    }
-
-    @Test
-    @DisplayName("Test calling invokeMethod when we set comm status to UCode.OK")
-    public void testInvokeMethodWithCommStatusUCodeOKTransport() {
-        RpcClient rpcClient = new InMemoryRpcClient(new CommStatusOkTransport());
-        UPayload payload = UPayload.packToAny(UUri.newBuilder().build());
-        CompletionStage<UPayload> response = rpcClient.invokeMethod(createMethodUri(), payload, null);
-        assertFalse(response.toCompletableFuture().isCompletedExceptionally());
-        assertDoesNotThrow(() -> {
-            Optional<UStatus> unpackedStatus = UPayload.unpack(response.toCompletableFuture().get(), UStatus.class);
-            assertTrue(unpackedStatus.isPresent());
-            assertEquals(UCode.OK, unpackedStatus.get().getCode());
-            assertEquals("No Communication Error", unpackedStatus.get().getMessage());
-        });
-    }
-
-
-
-    private UUri createMethodUri() {
-        return UUri.newBuilder()
-            .setAuthorityName("hartley")
-            .setUeId(10)
-            .setUeVersionMajor(1)
-            .setResourceId(3).build();
+        verify(transport).unregisterListener(eq(UriFactory.ANY), eq(TRANSPORT_SOURCE), eq(responseListener.getValue()));
     }
 }

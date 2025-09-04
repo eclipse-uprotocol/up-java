@@ -12,81 +12,131 @@
  */
 package org.eclipse.uprotocol.communication;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.util.concurrent.CompletableFuture;
+
+import org.eclipse.uprotocol.transport.StaticUriProvider;
 import org.eclipse.uprotocol.transport.UListener;
-import org.eclipse.uprotocol.v1.UMessage;
+import org.eclipse.uprotocol.transport.UTransport;
+import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.v1.UUri;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class UClientTest {
-    
-    // Main functionality is tested in the various individual implementations
-    @Test
-    @DisplayName("Test happy path for all APIs")
-    public void test() {
-        UClient client = UClient.create(new TestUTransport());
-        UListener listener = new UListener() {
-            @Override
-            public void onReceive(UMessage message) {
-                assertNotNull(message);
-            }
-        };
-
-        assertDoesNotThrow(() -> 
-            client.notify(createTopic(), createDestinationUri()).toCompletableFuture().get());
-        
-        assertDoesNotThrow(() -> 
-            client.publish(createTopic()).toCompletableFuture().get());
-
-        assertDoesNotThrow(() ->
-            client.invokeMethod(createMethodUri(), null, null).toCompletableFuture().get());
-
-        assertDoesNotThrow(() ->
-            client.registerNotificationListener(createTopic(), listener).toCompletableFuture().get());
-
-        assertDoesNotThrow(() ->
-            client.unregisterNotificationListener(createTopic(), listener).toCompletableFuture().get());
-
-        RequestHandler handler = mock(RequestHandler.class);
-
-        assertDoesNotThrow(() ->
-            client.registerRequestHandler(createMethodUri(), handler).toCompletableFuture().get());
-        
-        assertDoesNotThrow(() ->
-            client.unregisterRequestHandler(createMethodUri(), handler).toCompletableFuture().get());
-
-        client.close();
-    }
-
-
-   
-    private UUri createTopic() {
-        return UUri.newBuilder()
-            .setAuthorityName("Hartley")
-            .setUeId(4)
-            .setUeVersionMajor(1)
+class UClientTest {
+    private static final UUri TRANSPORT_SOURCE = UUri.newBuilder()
+            .setAuthorityName("my-vehicle")
+            .setUeId(0xa1)
+            .setUeVersionMajor(0x01)
+            .setResourceId(0x0000)
+            .build();
+    private static final UUri TOPIC_URI = UUri.newBuilder(TRANSPORT_SOURCE)
             .setResourceId(0x8000)
             .build();
-    }
-
-
-    private UUri createDestinationUri() {
-        return UUri.newBuilder()
-            .setUeId(4)
-            .setUeVersionMajor(1)
+    private static final UUri DESTINATION_URI = UUri.newBuilder()
+            .setAuthorityName("other-vehicle")
+            .setUeId(0x2bbbb)
+            .setUeVersionMajor(0x02)
             .build();
+    private static final UUri METHOD_URI = UUri.newBuilder(DESTINATION_URI)
+            .setResourceId(3)
+            .build();
+
+    private RpcClient rpcClient;
+    private RpcServer rpcServer;
+    private Publisher publisher;
+    private Notifier notifier;
+
+    @BeforeEach
+    void setUp() {
+        rpcClient = mock(RpcClient.class);
+        rpcServer = mock(RpcServer.class);
+        publisher = mock(Publisher.class);
+        notifier = mock(Notifier.class);
     }
 
+    @Test
+    void testFactoryMethod() {
+        var transport = mock(UTransport.class);
+        when(transport.registerListener(any(UUri.class), any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(null));
+        var uriProvider = StaticUriProvider.of(TRANSPORT_SOURCE);
+        UClient.create(transport, uriProvider);
+        verify(transport).registerListener(any(UUri.class), eq(TRANSPORT_SOURCE), any(UListener.class));
+    }
 
-    private UUri createMethodUri() {
-        return UUri.newBuilder()
-            .setAuthorityName("Hartley")
-            .setUeId(4)
-            .setUeVersionMajor(1)
-            .setResourceId(3).build();
+    @Test
+    void testPublisher() {
+        when(publisher.publish(anyInt(), any(CallOptions.class), any(UPayload.class)))
+            .thenReturn(CompletableFuture.completedFuture(null));
+        var client = new UClient(rpcClient, rpcServer, publisher, notifier);
+        client.publish(TOPIC_URI.getResourceId()).toCompletableFuture().join();
+        verify(publisher).publish(eq(TOPIC_URI.getResourceId()), any(CallOptions.class), any(UPayload.class));
+    }
+
+    @Test
+    void testNotifier() {
+        when(notifier.notify(anyInt(), any(UUri.class), any(CallOptions.class), any(UPayload.class)))
+            .thenReturn(CompletableFuture.completedFuture(null));
+        var client = new UClient(rpcClient, rpcServer, publisher, notifier);
+        client.notify(TOPIC_URI.getResourceId(), DESTINATION_URI).toCompletableFuture().join();
+        verify(notifier).notify(
+            eq(TOPIC_URI.getResourceId()),
+            eq(DESTINATION_URI),
+            any(CallOptions.class),
+            any(UPayload.class));
+
+        when(notifier.registerNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(null));
+        when(notifier.unregisterNotificationListener(any(UUri.class), any(UListener.class)))
+            .thenReturn(CompletableFuture.completedFuture(null));
+        final var listener = mock(UListener.class);
+        client = new UClient(rpcClient, rpcServer, publisher, notifier);
+        client.registerNotificationListener(TOPIC_URI, listener).toCompletableFuture().join();
+        verify(notifier).registerNotificationListener(TOPIC_URI, listener);
+        client.unregisterNotificationListener(TOPIC_URI, listener).toCompletableFuture().join();
+        verify(notifier).unregisterNotificationListener(TOPIC_URI, listener);
+    }
+
+    @Test
+    void testRpcClient() {
+        when(rpcClient.invokeMethod(any(UUri.class), any(UPayload.class), any(CallOptions.class)))
+            .thenReturn(CompletableFuture.completedFuture(null));
+        var client = new UClient(rpcClient, rpcServer, publisher, notifier);
+        client.invokeMethod(METHOD_URI, UPayload.EMPTY, CallOptions.DEFAULT).toCompletableFuture().join();
+        verify(rpcClient).invokeMethod(eq(METHOD_URI), eq(UPayload.EMPTY), eq(CallOptions.DEFAULT));
+    }
+
+    @Test
+    void testRpcServer() {
+        when(rpcServer.registerRequestHandler(any(UUri.class), anyInt(), any(RequestHandler.class)))
+            .thenReturn(CompletableFuture.completedFuture(null));
+        when(rpcServer.unregisterRequestHandler(any(UUri.class), anyInt(), any(RequestHandler.class)))
+            .thenReturn(CompletableFuture.completedFuture(null));
+        final var handler = mock(RequestHandler.class);
+        var client = new UClient(rpcClient, rpcServer, publisher, notifier);
+        client.registerRequestHandler(
+            UriFactory.ANY,
+            METHOD_URI.getResourceId(),
+            handler).toCompletableFuture().join();
+        verify(rpcServer).registerRequestHandler(
+            eq(UriFactory.ANY),
+            eq(METHOD_URI.getResourceId()),
+            eq(handler));
+
+        client.unregisterRequestHandler(
+            UriFactory.ANY,
+            METHOD_URI.getResourceId(),
+            handler).toCompletableFuture().join();
+        verify(rpcServer).unregisterRequestHandler(
+            eq(UriFactory.ANY),
+            eq(METHOD_URI.getResourceId()),
+            eq(handler));
     }
 }

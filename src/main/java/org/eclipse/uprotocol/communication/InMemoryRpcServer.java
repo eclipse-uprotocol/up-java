@@ -12,21 +12,29 @@
  */
 package org.eclipse.uprotocol.communication;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.uprotocol.transport.LocalUriProvider;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
 import org.eclipse.uprotocol.uri.factory.UriFactory;
+import org.eclipse.uprotocol.uri.serializer.UriSerializer;
+import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -35,152 +43,161 @@ import org.eclipse.uprotocol.v1.UUri;
  * to register handlers for processing RPC requests from clients. This implementation
  * uses an in-memory map to store the request handlers that needs to be invoked when the
  * request comes in from the client.
- * 
- * *NOTE:* Developers are not required to use these APIs, they can implement their own
- *         or directly use the {@link UTransport} to register listeners that handle 
- *         RPC requests and send RPC responses.
+ * <p>
+ * <em>NOTE:</em> Developers are not required to use these APIs, they can implement their own
+ *                or directly use a {@link UTransport} to register listeners that handle 
+ *                RPC requests and send RPC responses.
  */
-public class InMemoryRpcServer implements RpcServer {
-    // The transport to use for sending the RPC requests
-    private final UTransport transport;
+public class InMemoryRpcServer extends AbstractCommunicationLayerClient implements RpcServer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryRpcServer.class);
+
+    protected static final String REQUEST_HANDLER_ERROR_MESSAGE = "Failed to handle RPC request";
 
     // Map to store the request handlers so we can handle the right request on the server side
-    private final ConcurrentHashMap<UUri, RequestHandler> mRequestsHandlers = new ConcurrentHashMap<>();
+    private final Map<UUri, RequestHandler> mRequestsHandlers = new ConcurrentHashMap<>();
 
     // Generic listener to handle all RPC request messages
-    private final UListener mRequestHandler = this::handleRequests;
+    private final UListener mRequestHandler = this::handleRequest;
 
+    private Consumer<UMessage> unexpectedMessageHandler;
+    private Consumer<Throwable> sendResponseErrorHandler;
 
     /**
-     * Constructor for the DefaultRpcServer.
-     * 
-     * @param transport the transport to use for sending the RPC requests
+     * Creates a new server for a transport.
+     *
+     * @param transport The transport to use for receiving RPC requests and
+     *                  sending RPC responses.
+     * @param uriProvider The URI provider to use for generating local resource URIs.
+     * @throws NullPointerException if transport is {@code null}.
      */
-    public InMemoryRpcServer (UTransport transport) {
-        Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
-        this.transport = transport;
+    public InMemoryRpcServer (UTransport transport, LocalUriProvider uriProvider) {
+        super(transport, uriProvider);
     }
 
+    /**
+     * Sets the handler to invoke when an unexpected message is received.
+     *
+     * @param handler The handler to invoke when an unexpected message is received.
+     */
+    void setUnexpectedMessageHandler(Consumer<UMessage> handler) {
+        this.unexpectedMessageHandler = handler;
+    }
 
     /**
-     * Register a handler that will be invoked when when requests come in from clients for the given method.
+     * Sets the handler to invoke when sending an RPC response fails.
      *
-     * <p>Note: Only one handler is allowed to be registered per method URI.
-     *
-     * @param method Uri for the method to register the listener for.
-     * @param handler The handler that will process the request for the client.
-     * @return Returns the status of registering the RpcListener.
+     * @param handler The handler to invoke when sending an RPC response fails.
      */
+    void setSendErrorHandler(Consumer<Throwable> handler) {
+        this.sendResponseErrorHandler = handler;
+    }
+
     @Override
-    public CompletionStage<UStatus> registerRequestHandler(UUri method, RequestHandler handler) {
-        if (method == null || handler == null) {
-            return CompletableFuture.completedFuture(
-                UStatus.newBuilder()
-                    .setCode(UCode.INVALID_ARGUMENT)
-                    .setMessage("Method URI or handler missing")
-                    .build());
+    public CompletionStage<Void> registerRequestHandler(UUri originFilter, int resourceId, RequestHandler handler) {
+        Objects.requireNonNull(originFilter, "Origin filter must not be null");
+        Objects.requireNonNull(handler, "Request handler must not be null");
+
+        // create the method URI for where we want to register the listener
+        final var method = UUri.newBuilder(getUriProvider().getSource())
+            .setResourceId(resourceId)
+            .build();
+        if (!UriValidator.isRpcMethod(method)) {
+            return CompletableFuture.failedFuture(new UStatusException(
+                UCode.INVALID_ARGUMENT, "Resource ID must be an RPC method ID"));
         }
-        
-        // Ensure the method URI matches the transport source URI 
-        if (!method.getAuthorityName().equals(transport.getSource().getAuthorityName()) ||
-            method.getUeId() != transport.getSource().getUeId() ||
-            method.getUeVersionMajor() != transport.getSource().getUeVersionMajor()) {
-            return CompletableFuture.completedFuture(
-                UStatus.newBuilder()
-                    .setCode(UCode.INVALID_ARGUMENT)
-                    .setMessage("Method URI does not match the transport source URI")
-                    .build());
-        }
-        try {
-            mRequestsHandlers.compute(method, (key, currentHandler) -> {
-                if (currentHandler != null) {
-                    throw new UStatusException(UCode.ALREADY_EXISTS, "Handler already registered");
-                }
-                
-                UStatus status = transport.registerListener(UriFactory.ANY, method, mRequestHandler)
-                    .toCompletableFuture().join();
-                if (status.getCode() != UCode.OK) {
-                    throw new UStatusException(status);
-                }
-                return handler;
-            });
-            return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
-        } catch (UStatusException e) {
-            return CompletableFuture.completedFuture(e.getStatus());
+
+        synchronized (mRequestsHandlers) {
+            if (mRequestsHandlers.containsKey(method)) {
+                return CompletableFuture.failedFuture(new UStatusException(
+                    UCode.ALREADY_EXISTS, "Handler already registered"));
+            }
+            return getTransport().registerListener(UriFactory.ANY, method, mRequestHandler)
+                .whenComplete((ok, throwable) -> {
+                    if (throwable != null) {
+                        mRequestsHandlers.remove(method);
+                    } else {
+                        mRequestsHandlers.put(method, handler);
+                    }
+                });
         }
     }
 
-
-    /**
-     * Unregister a handler that will be invoked when when requests come in from clients for the given method.
-     * 
-     * @param method Resolved UUri for where the listener was registered to receive messages from.
-     * @param handler The handler for processing requests
-     * @return Returns status of registering the RpcListener.
-     */
     @Override
-    public CompletionStage<UStatus> unregisterRequestHandler(UUri method, RequestHandler handler) {
-        if (method == null || handler == null) {
-            return CompletableFuture.completedFuture(
-                UStatus.newBuilder()
-                    .setCode(UCode.INVALID_ARGUMENT)
-                    .setMessage("Method URI or handler missing")
-                    .build());
-        }
-    
-        // Ensure the method URI matches the transport source URI 
-        if (!method.getAuthorityName().equals(transport.getSource().getAuthorityName()) ||
-            method.getUeId() != transport.getSource().getUeId() ||
-            method.getUeVersionMajor() != transport.getSource().getUeVersionMajor()) {
-            return CompletableFuture.completedFuture(
-                UStatus.newBuilder()
-                    .setCode(UCode.INVALID_ARGUMENT)
-                    .setMessage("Method URI does not match the transport source URI")
-                    .build());
+    public CompletionStage<Void> unregisterRequestHandler(
+            UUri originFilter,
+            int resourceId,
+            RequestHandler handler) {
+        Objects.requireNonNull(originFilter, "Origin filter must not be null");
+        Objects.requireNonNull(handler, "Request handler must not be null");
+
+        final var method = UUri.newBuilder(getUriProvider().getSource())
+            .setResourceId(resourceId)
+            .build();
+        if (!UriValidator.isRpcMethod(method)) {
+            return CompletableFuture.failedFuture(new UStatusException(
+                UCode.INVALID_ARGUMENT, "Resource ID must be an RPC method ID"));
         }
 
         if (mRequestsHandlers.remove(method, handler)) {
-            return transport.unregisterListener(UriFactory.ANY, method, mRequestHandler);
+            return getTransport().unregisterListener(UriFactory.ANY, method, mRequestHandler);
+        } else {
+            return CompletableFuture.failedFuture(new UStatusException(
+                UCode.NOT_FOUND, "Handler not found"));
         }
-
-        return CompletableFuture.completedFuture(
-            UStatus.newBuilder().setCode(UCode.NOT_FOUND).setMessage("Handler not found").build());
     }
-
 
     /**
      * Generic incoming handler to process RPC requests from clients
      * @param request The request message from clients
      */
-    private void handleRequests(UMessage request) {
+    private void handleRequest(UMessage request) {
+        final UAttributes requestAttributes = request.getAttributes();
+
         // Only handle request messages, ignore all other messages like notifications
-        if (request.getAttributes().getType() != UMessageType.UMESSAGE_TYPE_REQUEST) {
+        if (requestAttributes.getType() != UMessageType.UMESSAGE_TYPE_REQUEST) {
+            Optional.ofNullable(unexpectedMessageHandler).ifPresent(handler -> handler.accept(request));
             return;
         }
-    
-        final UAttributes requestAttributes = request.getAttributes();
-        
+
         // Check if the request is for one that we have registered a handler for, if not ignore it
-        final RequestHandler handler = mRequestsHandlers.get(requestAttributes.getSink());
-        if (handler == null) {
+        final var requestHandler = mRequestsHandlers.get(requestAttributes.getSink());
+        if (requestHandler == null) {
+            Optional.ofNullable(unexpectedMessageHandler).ifPresent(handler -> handler.accept(request));
             return;
         }
 
         UPayload responsePayload;
-        UMessageBuilder responseBuilder = UMessageBuilder.response(request.getAttributes());
+        final UMessageBuilder responseBuilder = UMessageBuilder.response(request.getAttributes());
 
         try {
-            responsePayload = handler.handleRequest(request);
+            responsePayload = requestHandler.handleRequest(request);
+        } catch (UStatusException e) {
+            responseBuilder.withCommStatus(e.getStatus().getCode());
+            responsePayload = UPayload.pack(e.getStatus());
         } catch (Exception e) {
-            UCode code = UCode.INTERNAL;
-            responsePayload = null;
-            if (e instanceof UStatusException statusException) {
-                code = statusException.getStatus().getCode();
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("""
+                    RPC RequestHandler threw unexpected exception while processing RPC request \
+                    [source: {}, sink: {}]: {}""",
+                    UriSerializer.serialize(request.getAttributes().getSource()),
+                    UriSerializer.serialize(request.getAttributes().getSink()),
+                    e.getMessage());
             }
-            responseBuilder.withCommStatus(code);
+
+            final var status = UStatus.newBuilder()
+                .setCode(UCode.INTERNAL)
+                .setMessage(REQUEST_HANDLER_ERROR_MESSAGE)
+                .build();
+            responseBuilder.withCommStatus(status.getCode());
+            responsePayload = UPayload.pack(status);
         }
         
-        // TODO: Handle error sending the response
-        transport.send(responseBuilder.build(responsePayload));
+        final var responseMessage = responseBuilder.build(responsePayload);
+        getTransport().send(responseMessage)
+            .whenComplete((ok, t) -> {
+                if (t != null) {
+                    Optional.ofNullable(sendResponseErrorHandler).ifPresent(handler -> handler.accept(t));
+                }
+            });
     }
 }

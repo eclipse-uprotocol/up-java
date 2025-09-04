@@ -14,24 +14,26 @@ package org.eclipse.uprotocol.communication;
 
 import java.util.concurrent.CompletionStage;
 import org.eclipse.uprotocol.v1.UUri;
-import org.eclipse.uprotocol.v1.UStatus;
 
 
 /**
- * Communication Layer (uP-L2) RPC Client Interface.<BR> 
- * 
- * clients use this API to invoke a method (send a request and wait for a reply).
+ * A client for performing Remote Procedure Calls (RPC) on (other) uEntities.
+ *
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l2/api.adoc">
+ * Communication Layer API specification</a>
  */
 public interface RpcClient {
     /**
-     * API for clients to invoke a method (send an RPC request) and receive the response (the returned 
-     * {@link CompletionStage} {@link UPayload}. <br>
+     * Invokes a method on a service.
      * 
-     * @param methodUri The method URI to be invoked.
-     * @param requestPayload The request message to be sent to the server.
-     * @param options RPC method invocation call options, see {@link CallOptions}
-     * @return Returns the CompletionStage with the response payload or exception with the failure
-     *         reason as {@link UStatus}.
+     * @param methodUri The method to be invoked.
+     * @param requestPayload The payload to include in the RPC request message to be sent
+     * to the server. Use {@link UPayload#EMPTY} if no payload is required.
+     * @param options RPC method invocation call options. Use {@link CallOptions#DEFAULT} for default options.
+     * @return The outcome of the method invocation. The stage will either succeed with the
+     * response payload, or it will be failed with a {@link UStatusException} if the method invocation
+     * did not succeed.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
     CompletionStage<UPayload> invokeMethod(UUri methodUri, UPayload requestPayload, CallOptions options);
 }

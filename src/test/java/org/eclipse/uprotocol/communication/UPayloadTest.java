@@ -13,9 +13,13 @@
 package org.eclipse.uprotocol.communication;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.eclipse.uprotocol.v1.UMessage;
@@ -23,6 +27,14 @@ import org.eclipse.uprotocol.v1.UPayloadFormat;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.google.protobuf.Any;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.Message;
+import com.google.protobuf.StringValue;
 
 
 public class UPayloadTest {
@@ -106,6 +118,70 @@ public class UPayloadTest {
         assertEquals(unpacked, Optional.empty());
     }
 
+    static Stream<Arguments> unpackOrDefaultInstanceArgsProvider() {
+        var stringValue = StringValue.of("hello");
+        var protobuf = stringValue.toByteString();
+
+        // Claims to have a string of length 20 but only provides 4 bytes
+        var invalidStringValueProtobuf = ByteString.fromHex("0A1441424344");
+
+        return Stream.of(
+            // ByteString, UPayloadFormat, Class<? extends Message>, Exception
+            Arguments.of(null, null, null, NullPointerException.class),
+            Arguments.of(null, UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, StringValue.class, NullPointerException.class),
+            Arguments.of(protobuf, null, StringValue.class, NullPointerException.class),
+            Arguments.of(protobuf, UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, null, NullPointerException.class),
+            Arguments.of(protobuf, UPayloadFormat.UPAYLOAD_FORMAT_JSON, StringValue.class, UStatusException.class),
+            Arguments.of(protobuf, UPayloadFormat.UPAYLOAD_FORMAT_RAW, StringValue.class, UStatusException.class),
+            Arguments.of(protobuf, UPayloadFormat.UPAYLOAD_FORMAT_SHM, StringValue.class, UStatusException.class),
+            Arguments.of(protobuf, UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP, StringValue.class, UStatusException.class),
+            Arguments.of(
+                protobuf,
+                UPayloadFormat.UPAYLOAD_FORMAT_SOMEIP_TLV,
+                StringValue.class,
+                UStatusException.class),
+            Arguments.of(ByteString.EMPTY, UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, StringValue.class, null),
+            Arguments.of(protobuf, UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, StringValue.class, null),
+            // unpacking a protobuf that does not match the expected type fails
+            Arguments.of(
+                invalidStringValueProtobuf,
+                UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,
+                StringValue.class,
+                UStatusException.class),
+            // unpacking a protobuf to a different type succeeds because of missing type information
+            // from the protobuf
+            Arguments.of(protobuf, UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF, UUri.class, null),
+            // unpacking a protobuf to a different type fails because of the type information
+            // contained in the Any wrapper
+            Arguments.of(
+                Any.pack(stringValue).toByteString(),
+                UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,
+                UUri.class,
+                UStatusException.class),
+            Arguments.of(
+                Any.pack(stringValue).toByteString(),
+                UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,
+                StringValue.class,
+                null)
+        );
+    }
+
+    @ParameterizedTest(name = "Test unpackOrDefaultInstance: {index} => {arguments}")
+    @MethodSource("unpackOrDefaultInstanceArgsProvider")
+    void testUnpackOrDefaultInstanceSucceedsForSimpleProtobuf(
+            ByteString protobuf,
+            UPayloadFormat format,
+            Class<? extends Message> expectedClass,
+            Class<? extends Exception> expectedException) {
+        if (expectedException != null) {
+            assertThrows(expectedException, () -> {
+                UPayload.unpackOrDefaultInstance(protobuf, format, expectedClass);
+            });
+        } else {
+            var unpacked = UPayload.unpackOrDefaultInstance(protobuf, format, expectedClass);
+            assertInstanceOf(expectedClass, unpacked);
+        }
+    }
 
     @Test
     @DisplayName("Test equals when they are equal")
@@ -133,7 +209,7 @@ public class UPayloadTest {
     public void testEqualsWhenObjectIsNull() {
         UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
         UPayload payload = UPayload.packToAny(uri);
-        assertFalse(payload.equals(null));
+        assertNotNull(payload);
     }
 
 

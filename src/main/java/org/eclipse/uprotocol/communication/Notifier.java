@@ -14,80 +14,109 @@ package org.eclipse.uprotocol.communication;
 
 import java.util.concurrent.CompletionStage;
 
-import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 import org.eclipse.uprotocol.transport.UListener;
 
 /**
- * Communication Layer (uP-L2) Notification Interface.<br>
- * 
- * Notifier is an interface that provides the APIs to send notifications (to a client) or 
- * register/unregister listeners to receive the notifications.
+ * A client for sending Notification messages to a uEntity.
+ *
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l2/api.adoc">
+ * Communication Layer API Specifications</a>
  */
 public interface Notifier {
 
     /**
-     * Send a notification to a given topic. <br>
-     * 
-     * @param topic The topic to send the notification to.
-     * @param destination The destination to send the notification to.
-     * @return Returns the {@link UStatus} with the status of the notification.
+     * Sends a notification to a uEntity.
+     * <p>
+     * This default implementation invokes {@link #notify(int, UUri, CallOptions, UPayload)} with the
+     * given resource ID, destination, {@link CallOptions#DEFAULT default options} and an
+     * {@link UPayload#EMPTY empty payload}.
+     *
+     * @param resourceId The (local) resource identifier representing the origin of the notification.
+     * @param destination A URI representing the uEntity that the notification should be sent to.
+     * @return The outcome of the operation. The stage will be failed with a {@link UStatusException}
+     * if the notification could not be sent.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    default CompletionStage<UStatus> notify(UUri topic, UUri destination) {
-        return notify(topic, destination, null, null);
+    default CompletionStage<Void> notify(int resourceId, UUri destination) {
+        return notify(resourceId, destination, CallOptions.DEFAULT, UPayload.EMPTY);
     }
 
     /**
-     * Send a notification to a given topic with specific {@link CallOptions}. <br>
-     * 
-     * @param topic The topic to send the notification to.
+     * Sends a notification to a uEntity.
+     * <p>
+     * This default implementation invokes {@link #notify(int, UUri, CallOptions, UPayload)} with the
+     * given resource ID, destination, options and an {@link UPayload#EMPTY empty payload}.
+     *
+     * @param resourceId The (local) resource identifier representing the origin of the notification.
      * @param destination The destination to send the notification to.
-     * @param options Call options for the notification.
-     * @return Returns the {@link UStatus} with the status of the notification.
+     * @param options Options to include in the notification message. {@link CallOptions#DEFAULT} can
+     * be used for default options.
+     * @return The outcome of the operation. The stage will be failed with a {@link UStatusException}
+     * if the notification could not be sent.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    default CompletionStage<UStatus> notify(UUri topic, UUri destination, CallOptions options) {
-        return notify(topic, destination, options, null);
+    default CompletionStage<Void> notify(int resourceId, UUri destination, CallOptions options) {
+        return notify(resourceId, destination, options, UPayload.EMPTY);
     }
 
     /**
-     * Send a notification to a given topic passing a payload. <br>
-     * 
-     * @param topic The topic to send the notification to.
+     * Sends a notification to a uEntity.
+     * <p>
+     * This default implementation invokes {@link #notify(int, UUri, CallOptions, UPayload)} with the
+     * given resource ID, destination, payload and {@link CallOptions#DEFAULT default options}.
+     *
+     * @param resourceId The (local) resource identifier representing the origin of the notification.
      * @param destination The destination to send the notification to.
-     * @param payload The payload to send with the notification.
-     * @return Returns the {@link UStatus} with the status of the notification.
+     * @param payload The payload to include in the notification message. {@link UPayload#EMPTY}
+     * can be used if the notification has no payload.
+     * @return The outcome of the operation. The stage will be failed with a {@link UStatusException}
+     * if the notification could not be sent.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    default CompletionStage<UStatus> notify(UUri topic, UUri destination, UPayload payload) {
-        return notify(topic, destination, null, payload);
+    default CompletionStage<Void> notify(int resourceId, UUri destination, UPayload payload) {
+        return notify(resourceId, destination, CallOptions.DEFAULT, payload);
     }
 
     /**
-     * Send a notification to a given topic passing a payload and with specific {@link CallOptions}. <br>
-     * 
-     * @param topic The topic to send the notification to.
-     * @param destination The destination to send the notification to.
-     * @param payload The payload to send with the notification.
-     * @param options Call options for the notification.
-     * @return Returns the {@link UStatus} with the status of the notification.
+     * Sends a notification to a uEntity.
+     *
+     * @param resourceId The (local) resource identifier representing the origin of the notification.
+     * @param destination A URI representing the uEntity that the notification should be sent to.
+     * @param options Options to include in the notification message. {@link CallOptions#DEFAULT} can
+     * be used for default options.
+     * @param payload The payload to include in the notification message. {@link UPayload#EMPTY}
+     * can be used if the notification has no payload.
+     * @return The outcome of the operation. The stage will be failed with a {@link UStatusException}
+     * if the notification could not be sent.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    CompletionStage<UStatus> notify(UUri topic, UUri destination, CallOptions options, UPayload payload);
+    CompletionStage<Void> notify(int resourceId, UUri destination, CallOptions options, UPayload payload);
 
     /**
-     * Register a listener for a notification topic. <br>
-     * 
-     * @param topic The topic to register the listener to.
-     * @param listener The listener to be called when a message is received on the topic.
-     * @return Returns the {@link UStatus} with the status of the listener registration.
+     * Starts listening to a notification topic.
+     * <p>
+     * More than one handler can be registered for the same topic.
+     * The same handler can be registered for multiple topics.
+     *
+     * @param topic The topic to listen to. The topic must not contain any wildcards.
+     * @param listener The handler to invoke for each notification that has been sent on the topic.
+     * @return The outcome of the operation. The stage will be failed with a {@link UStatusException}
+     * if the listener could not be registered.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    CompletionStage<UStatus> registerNotificationListener(UUri topic, UListener listener);
+    CompletionStage<Void> registerNotificationListener(UUri topic, UListener listener);
 
     /**
-     * Unregister a listener from a notification topic. <br>
-     * 
-     * @param topic The topic to unregister the listener from.
-     * @param listener The listener to be unregistered from the topic.
-     * @return Returns the {@link UStatus} with the status of the listener that was unregistered.
+     * Unregisters a previously {@link #registerNotificationListener(UUri, UListener) registered handler}
+     * for listening to notifications.
+     *
+     * @param topic The topic that the handler had been registered for.
+     * @param listener The listener to unregister.
+     * @return The outcome of the operation. The stage will be failed with a {@link UStatusException}
+     * if the listener could not be unregistered.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    CompletionStage<UStatus> unregisterNotificationListener(UUri topic, UListener listener);
+    CompletionStage<Void> unregisterNotificationListener(UUri topic, UListener listener);
 }

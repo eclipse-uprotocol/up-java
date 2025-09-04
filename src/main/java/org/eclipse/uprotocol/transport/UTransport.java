@@ -13,132 +13,100 @@
 package org.eclipse.uprotocol.transport;
 
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.uprotocol.communication.UStatusException;
 import org.eclipse.uprotocol.uri.factory.UriFactory;
-import org.eclipse.uprotocol.v1.UCode;
+import org.eclipse.uprotocol.v1.UAttributes;
 import org.eclipse.uprotocol.v1.UMessage;
-import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
  * UTransport is the uP-L1 interface that provides a common API for uE developers to send and receive messages.
+ * <p>
  * UTransport implementations contain the details for connecting to the underlying transport technology and
- * sending UMessage using the configured technology. For more information please refer to
- * https://github.com/eclipse-uprotocol/up-spec/blob/main/up-l1/README.adoc.
+ * sending UMessage using the configured technology.
+ *
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l1/README.adoc">
+ * uProtocol Transport Layer specification</a>
  */
 public interface UTransport {
+    /**
+     * Sends a message using this transport's message exchange mechanism.
+     *
+     * @param message The message to send. The <em>type</em>, <em>source</em> and <em>sink</em> properties of the
+     *                {@link UAttributes} contained in the message determine the addressing semantics.
+     * @return The outcome of the operation. The stage will be completed with a {@link UStatusException} if
+     * the message could not be sent.
+     */
+    CompletionStage<Void> send(UMessage message);
 
     /**
-     * Error message for null transport.
+     * Registers a listener to be called for messages.
+     * <p>
+     * The listener will be invoked for each message that matches the given source filter pattern
+     * according to the rules defined by the
+     * <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/basics/uri.adoc">UUri
+     * specification</a>.
+     * <p>
+     * This default implementation invokes {@link #registerListener(UUri, UUri, UListener)} with the
+     * given source filter and a sink filter of {@link UriFactory#ANY}.
+     *
+     * @param sourceFilter The <em>source</em> address pattern that messages need to match.
+     * @param listener     The listener to invoke. The listener can be unregistered again
+     * using {@link #unregisterListener(UUri, UUri, UListener)}.
+     * @return The outcome of the operation. The stage will be completed with a {@link UStatusException} if
+     * the listener could not be registered.
      */
-    String TRANSPORT_NULL_ERROR = "Transport cannot be null";
-
-    /**
-     * Send a message over the transport.
-     * 
-     * @param message the {@link UMessage} to be sent.
-     * @return Returns {@link UStatus} with {@link UCode} set to the status code
-     *         (successful or failure).
-     */
-    CompletionStage<UStatus> send(UMessage message);
-
-
-    /**
-     * Register {@code UListener} for {@code UUri} source filters to be called when
-     * a message is received.
-     * 
-     * @param sourceFilter The UAttributes::source address pattern that the message
-     *                     to receive needs to match.
-     * @param listener     The {@code UListener} that will be execute when the
-     *                     message is
-     *                     received on the given {@code UUri}.
-     * @return Returns {@link UStatus} with {@link UCode#OK} if the listener is
-     *         registered correctly, otherwise it returns with the appropriate failure.
-     */
-    default CompletionStage<UStatus> registerListener(UUri sourceFilter, UListener listener) {
+    default CompletionStage<Void> registerListener(UUri sourceFilter, UListener listener) {
         return registerListener(sourceFilter, UriFactory.ANY, listener);
     }
 
+    /**
+     * Registers a listener to be called for messages.
+     * <p>
+     * The listener will be invoked for each message that matches the given source and sink filter patterns
+     * according to the rules defined by the
+     * <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/basics/uri.adoc">UUri
+     * specification</a>.
+     *
+     * @param sourceFilter The <em>source</em> address pattern that messages need to match.
+     * @param sinkFilter   The <em>sink</em> address pattern that messages need to match.
+     * @param listener     The listener to invoke. The listener can be unregistered again
+     * using {@link #unregisterListener(UUri, UUri, UListener)}.
+     * @return The outcome of the operation. The stage will be completed with a {@link UStatusException} if
+     * the listener could not be registered.
+     */
+    CompletionStage<Void> registerListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
 
     /**
-     * Register {@code UListener} for {@code UUri} source and sink filters to be
-     * called when a message is received.
-     * 
-     * @param sourceFilter The UAttributes::source address pattern that the message
-     *                     to receive needs to match.
-     * @param sinkFilter   The UAttributes::sink address pattern that the message to
-     *                     receive needs to match.
-     * @param listener     The {@code UListener} that will be execute when the
-     *                     message is
-     *                     received on the given {@code UUri}.
-     * @return Returns {@link UStatus} with {@link UCode#OK} if the listener is
-     *         registered
-     *         correctly, otherwise it returns with the appropriate failure.
+     * Unregisters a message listener.
+     * <p>
+     * The listener will no longer be called for any (matching) messages after this function has
+     * returned successfully.
+     * <p>
+     * This default implementation invokes {@link #unregisterListener(UUri, UUri, UListener)} with the
+     * given source filter and a sink filter of {@link UriFactory#ANY}.
+     *
+     * @param sourceFilter The <em>source</em> address pattern that the listener had been registered for.
+     * @param listener      The listener to unregister.
+     * @return The outcome of the operation. The stage will be completed with a {@link UStatusException} if
+     * the listener could not be unregistered.
      */
-    CompletionStage<UStatus> registerListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
-
-
-    /**
-     * Unregister {@code UListener} for {@code UUri} source filters. Messages
-     * arriving on this topic will no longer be processed by this listener.
-     * 
-     * @param sourceFilter The UAttributes::source address pattern that the message
-     *                     to receive needs to match.
-     * @param listener     The {@code UListener} that will no longer want to be
-     *                     registered to receive
-     *                     messages.
-     * @return Returns {@link UStatus} with {@link UCode#OK} if the listener is
-     *         unregistered
-     *         correctly, otherwise it returns with the appropriate failure.
-     */
-    default CompletionStage<UStatus> unregisterListener(UUri sourceFilter, UListener listener) {
+    default CompletionStage<Void> unregisterListener(UUri sourceFilter, UListener listener) {
         return unregisterListener(sourceFilter, UriFactory.ANY, listener);
     }
 
-
     /**
-     * Unregister {@code UListener} for {@code UUri} source and sink filters.
-     * Messages arriving on this topic will no longer be processed by this listener.
-     * 
-     * @param sourceFilter The UAttributes::source address pattern that the message
-     *                     to receive needs to match.
-     * @param sinkFilter   The UAttributes::sink address pattern that the message to
-     *                     receive needs to match.
-     * @param listener     The {@code UListener} that will no longer want to be
-     *                     registered to receive
-     *                     messages.
-     * @return Returns {@link UStatus} with {@link UCode#OK} if the listener is
-     *         unregistered
-     *         correctly, otherwise it returns with the appropriate failure.
+     * Unregisters a message listener.
+     * <p>
+     * The listener will no longer be called for any (matching) messages after this function has
+     * returned successfully.
+     *
+     * @param sourceFilter The <em>source</em> address pattern that the listener had been registered for.
+     * @param sinkFilter   The <em>sink</em> address pattern that the listener had been registered for.
+     * @param listener      The listener to unregister.
+     * @return The outcome of the operation. The stage will be completed with a {@link UStatusException} if
+     * the listener could not be unregistered.
      */
-    CompletionStage<UStatus> unregisterListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
-
-
-    /**
-     * Return the source address of the uE.
-     * The Source address is passed to the constructor of a given transport
-     * 
-     * @return UUri containing the source address
-     */
-    UUri getSource();
-
-
-    /**
-     * Open the connection to the transport that will trigger any registered listeners
-     * to be registered.
-     * 
-     * @return Returns {@link UStatus} with {@link UCode#OK} if the connection is
-     *         opened correctly, otherwise it returns with the appropriate failure.
-     */
-    default CompletionStage<UStatus> open() {
-        return CompletableFuture.completedFuture(UStatus.newBuilder().setCode(UCode.OK).build());
-    }
-
-
-    /**
-     * Close the connection to the transport that will trigger any registered listeners
-     * to be unregistered.
-     */
-    default void close() { }
+    CompletionStage<Void> unregisterListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
 }

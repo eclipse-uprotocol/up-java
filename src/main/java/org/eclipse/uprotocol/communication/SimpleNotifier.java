@@ -13,81 +13,61 @@
 package org.eclipse.uprotocol.communication;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import org.eclipse.uprotocol.transport.LocalUriProvider;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
-import org.eclipse.uprotocol.v1.UStatus;
+import org.eclipse.uprotocol.uri.validator.UriValidator;
+import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
- * The following is an example implementation of the {@link Notifier} interface that
- * wraps the {@link UTransport} for implementing the notification pattern to send 
- * notifications and register to receive notification events.
- * 
- * *NOTE:* Developers are not required to use these APIs, they can implement their own
- *  or directly use the {@link UTransport} to send notifications and register listeners.
+ * A Notifier that uses the uProtocol Transport Layer API to send and receive
+ * notifications to/from (other) uEntities.
+ * <p>
+ * <em>NOTE:</em> Developers are not required to use these APIs, they can implement
+ * their own or directly use the {@link UTransport} to send notifications and register
+ * listeners.
  */
-public class SimpleNotifier  implements Notifier {
-    // The transport to use for sending the RPC requests
-    private final UTransport transport;
+public class SimpleNotifier extends AbstractCommunicationLayerClient implements Notifier {
 
     /**
-     * Constructor for the DefaultNotifier.
+     * Creates a new notifier for a transport.
      * 
-     * @param transport the transport to use for sending the notifications
+     * @param transport The transport to use for sending the notifications.
+     * @param uriProvider The helper to use for creating local resource URIs.
      */
-    public SimpleNotifier (UTransport transport) {
-        Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
-        this.transport = transport;
+    public SimpleNotifier (UTransport transport, LocalUriProvider uriProvider) {
+        super(transport, uriProvider);
     }
 
-
-    /**
-     * Send a notification to a given topic. <br>
-     * 
-     * @param topic The topic to send the notification to.
-     * @param destination The destination to send the notification to.
-     * @param options Call options for the notification.
-     * @param payload The payload to send with the notification.
-     * @return Returns the {@link UStatus} with the status of the notification.
-     */
     @Override
-    public CompletionStage<UStatus> notify(UUri topic, UUri destination, CallOptions options, UPayload payload) {
-        UMessageBuilder builder = UMessageBuilder.notification(topic, destination);
-        if (options != null) {
-            builder.withPriority(options.priority());
-            builder.withTtl(options.timeout());
-            builder.withToken(options.token());
+    public CompletionStage<Void> notify(int resourceId, UUri destination, CallOptions options, UPayload payload) {
+        Objects.requireNonNull(destination);
+        Objects.requireNonNull(options);
+        Objects.requireNonNull(payload);
+        final var topic = getUriProvider().getResource(resourceId);
+        if (!UriValidator.isTopic(topic)) {
+            return CompletableFuture.failedFuture(new UStatusException(
+                UCode.INVALID_ARGUMENT,
+                "Resource ID does not map to a valid topic URI"));
         }
-        return transport.send((payload == null) ? builder.build() : 
-                builder.build(payload));
+        UMessageBuilder builder = UMessageBuilder.notification(topic, destination);
+        options.applyToMessage(builder);
+        return getTransport().send(builder.build(payload));
     }
 
 
-    /**
-     * Register a listener for a notification topic. <br>
-     * 
-     * @param topic The topic to register the listener to.
-     * @param listener The listener to be called when a message is received on the topic.
-     * @return Returns the {@link UStatus} with the status of the listener registration.
-     */
     @Override
-    public CompletionStage<UStatus> registerNotificationListener(UUri topic, UListener listener) {
-        return transport.registerListener(topic, transport.getSource(), listener);
+    public CompletionStage<Void> registerNotificationListener(UUri topic, UListener listener) {
+        return getTransport().registerListener(topic, getUriProvider().getSource(), listener);
     }
 
-
-    /**
-     * Unregister a listener from a notification topic. <br>
-     * 
-     * @param topic The topic to unregister the listener from.
-     * @param listener The listener to be unregistered from the topic.
-     * @return Returns the {@link UStatus} with the status of the listener that was unregistered.
-     */
     @Override
-    public CompletionStage<UStatus> unregisterNotificationListener(UUri topic, UListener listener) {
-        return transport.unregisterListener(topic, transport.getSource(), listener);
+    public CompletionStage<Void> unregisterNotificationListener(UUri topic, UListener listener) {
+        return getTransport().unregisterListener(topic, getUriProvider().getSource(), listener);
     }
 }

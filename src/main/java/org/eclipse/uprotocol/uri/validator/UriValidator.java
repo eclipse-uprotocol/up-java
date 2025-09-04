@@ -30,6 +30,35 @@ public interface UriValidator {
      */
     int DEFAULT_RESOURCE_ID = 0;
 
+    /**
+     * Validates a UUri against the uProtocol specification.
+     *
+     * @param uuri The UUri to validate.
+     * @throws NullPointerException if the UUri is null.
+     * @throws IllegalArgumentException if the UUri does not comply with the UUri specification.
+     */
+    static void validate(UUri uuri) {
+        if (uuri == null) {
+            throw new NullPointerException("URI cannot be null");
+        }
+
+        if (uuri.getAuthorityName().length() > 128) {
+            throw new IllegalArgumentException("Authority name exceeds maximum length of 128 characters");
+        }
+
+        // no need to check uEntity ID which is of Java primitive type (signed) int but actually represents
+        // an unsigned 32 bit integer, thus any value is valid
+
+        if ((uuri.getUeVersionMajor() & 0xFFFF_FF00) != 0) {
+            throw new IllegalArgumentException("uEntity version major must be in range [0, 0x%X]"
+                .formatted(UriFactory.WILDCARD_ENTITY_VERSION));
+        }
+
+        if ((uuri.getResourceId() & 0xFFFF_0000) != 0) {
+            throw new IllegalArgumentException("uEntity resource ID must be in range [0, 0x%X]"
+                .formatted(UriFactory.WILDCARD_RESOURCE_ID));
+        }
+    }
 
     /**
      * Indicates that this URI is an empty as it does not contain authority, entity,

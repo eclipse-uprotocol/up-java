@@ -18,7 +18,7 @@ import org.eclipse.uprotocol.v1.UUri;
 
 
 public class RpcMapperTest {
- 
+
     @Test
     @DisplayName("Test RpcMapper mapResponse using RpcClient interface invokeMethod API")
     public void testMapResponse() {

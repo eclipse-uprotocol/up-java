@@ -13,53 +13,45 @@
 package org.eclipse.uprotocol.communication;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import org.eclipse.uprotocol.transport.LocalUriProvider;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
-import org.eclipse.uprotocol.v1.UStatus;
-import org.eclipse.uprotocol.v1.UUri;
+import org.eclipse.uprotocol.uri.validator.UriValidator;
+import org.eclipse.uprotocol.v1.UCode;
 
 /**
- * The following is an example implementation of the {@link Publisher} interface that
- * wraps the {@link UTransport} for implementing the notification pattern to send 
- * notifications.
- * 
- * *NOTE:* Developers are not required to use these APIs, they can implement their own
+ * A Publisher that uses the uProtocol Transport Layer API for publishing events to topics.
+ * <p>
+ * <em>NOTE:</em> Developers are not required to use these APIs, they can implement their own
  *  or directly use the {@link UTransport} to send notifications and register listeners.
  */
-public class SimplePublisher implements Publisher {
-    // The transport to use for sending the RPC requests
-    private final UTransport transport;
+public class SimplePublisher extends AbstractCommunicationLayerClient implements Publisher {
 
     /**
-     * Constructor for the DefaultPublisher.
-     * 
+     * Creates a new publisher for a transport.
+     *
      * @param transport the transport to use for sending the notifications
+     * @param uriProvider the URI provider to use for creating local resource URIs
      */
-    public SimplePublisher (UTransport transport) {
-        Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
-        this.transport = transport;
+    public SimplePublisher(UTransport transport, LocalUriProvider uriProvider) {
+        super(transport, uriProvider);
     }
 
-    /**
-     * Publish a message to a topic passing {@link UPayload} as the payload.
-     * 
-     * @param topic The topic to publish to.
-     * @param options The {@link CallOptions} for the publish.
-     * @param payload The {@link UPayload} to publish.
-     * @return {@link UStatus} with the result for sending the published message
-     */
     @Override
-    public CompletionStage<UStatus> publish(UUri topic, CallOptions options, UPayload payload) {
-        Objects.requireNonNull(topic, "Publish topic missing");
-        UMessageBuilder builder = UMessageBuilder.publish(topic);
-        if (options != null) {
-            builder.withPriority(options.priority());
-            builder.withTtl(options.timeout());
-            builder.withToken(options.token());
+    public CompletionStage<Void> publish(int resourceId, CallOptions options, UPayload payload) {
+        Objects.requireNonNull(options);
+        Objects.requireNonNull(payload);
+        final var topic = getUriProvider().getResource(resourceId);
+        if (!UriValidator.isTopic(topic)) {
+            return CompletableFuture.failedFuture(new UStatusException(
+                UCode.INVALID_ARGUMENT,
+                "Resource ID does not map to a valid topic URI"));
         }
-
-        return transport.send(builder.build(payload));
+        UMessageBuilder builder = UMessageBuilder.publish(topic);
+        options.applyToMessage(builder);
+        return getTransport().send(builder.build(payload));
     }
 }

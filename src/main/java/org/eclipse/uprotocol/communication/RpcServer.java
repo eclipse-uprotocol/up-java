@@ -14,35 +14,43 @@ package org.eclipse.uprotocol.communication;
 
 import java.util.concurrent.CompletionStage;
 
-import org.eclipse.uprotocol.v1.UStatus;
+import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.v1.UUri;
 
 
 /**
- * Communication Layer (uP-L2) Rpc Server interface.<br>
- * 
- * This interface provides APIs that services can call to register handlers for 
- * incoming requests for given methods.
+ * A server for exposing Remote Procedure Call (RPC) endpoints.
+ *
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l2/api.adoc">
+ * Communication Layer API specification</a>
  */
 public interface RpcServer {
     /**
-     * Register a handler that will be invoked when when requests come in from clients for the given method.
+     * Registers an endpoint for RPC requests.
+     * <p>
+     * Note that only a single endpoint can be registered for a given resource ID.
+     * However, the same request handler can be registered for multiple endpoints.
      *
-     * <p>Note: Only one handler is allowed to be registered per method URI.
-     *
-     * @param method Uri for the method to register the listener for.
-     * @param handler The handler that will process the request for the client.
-     * @return Returns the status of registering the RpcListener.
+     * @param originFilter A pattern defining origin addresses to accept requests from. Use {@link UriFactory#ANY}
+     * to match all origin addresses.
+     * @param resourceId The resource identifier of the (local) method to accept requests for.
+     * @param handler The handler to invoke for each incoming request that originates from a
+     * source matching the origin filter.
+     * @return The outcome of the registration. The stage will be completed with a {@link UStatusException} if
+     * registration has failed.
+     * @throws NullPointerException if any of the parameters is {@code null}.
      */
-    CompletionStage<UStatus> registerRequestHandler(UUri method, RequestHandler handler);
-    
+    CompletionStage<Void> registerRequestHandler(UUri originFilter, int resourceId, RequestHandler handler);
 
     /**
-     * Unregister a handler that will be invoked when when requests come in from clients for the given method.
+     * Deregisters a previously {@link #registerRequestHandler(UUri, int, RequestHandler) registered endpoint}.
      * 
-     * @param method Resolved UUri for where the listener was registered to receive messages from.
-     * @param handler The handler for processing requests
-     * @return Returns status of registering the RpcListener.
+     * @param originFilter The origin pattern that the endpoint had been registered for.
+     * @param resourceId The (local) resource identifier that the endpoint had been registered for.
+     * @param handler The handler to unregister.
+     * @return The outcome of the registration. The stage will be completed with a {@link UStatusException} if
+     * registration has failed.
+     * @throws NullPointerException if any of the parameters is {@code null}.
      */
-    CompletionStage<UStatus> unregisterRequestHandler(UUri method, RequestHandler handler);   
+    CompletionStage<Void> unregisterRequestHandler(UUri originFilter, int resourceId, RequestHandler handler);
 }

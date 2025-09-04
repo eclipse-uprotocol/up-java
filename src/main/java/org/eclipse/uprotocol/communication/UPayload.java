@@ -21,6 +21,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
+import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
 import org.eclipse.uprotocol.v1.UPayloadFormat;
 
@@ -106,18 +107,19 @@ public record UPayload (ByteString data, UPayloadFormat format) {
         return unpack(message.getPayload(), message.getAttributes().getPayloadFormat(), clazz);
     }
 
-
     /**
-     * Unpack a uPayload into {@link Message}.
+     * Unpacks a protobuf from a message payload into a Java type.
      * <p>
      * <em>IMPORTANT NOTE:</em> If {@link UPayloadFormat} is not
      * {@link UPayloadFormat#UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY},
      * there is no guarantee that the parsing to T is correct as we do not have the data schema.
      * 
-     * @param payload the payload to unpack
-     * @param clazz the class of the message to unpack
-     * @return the unpacked message
+     * @param payload The payload to unpack.
+     * @param clazz The Java type to unpack the payload to.
+     * @return The unpacked type instance.
+     * @deprecated Use {@link #unpackOrDefaultInstance(UPayload, Class)} instead.
      */
+    @Deprecated(forRemoval = true)
     public static <T extends Message> Optional<T> unpack(UPayload payload, Class<T> clazz) {
         if (payload == null) {
             return Optional.empty();
@@ -125,20 +127,42 @@ public record UPayload (ByteString data, UPayloadFormat format) {
         return unpack(payload.data(), payload.format(), clazz);
     }
 
+    /**
+     * Unpacks a protobuf from a message payload into a Java type.
+     * 
+     * @param payload The payload to unpack.
+     * @param expectedType The Java type to unpack the protobuf to.
+     * @return An instance of the expected type. The instance will be the default instance if the
+     * given protobuf is empty and the payload format is {@link UPayloadFormat#UPAYLOAD_FORMAT_PROTOBUF}.
+     * <p>
+     * <em>IMPORTANT NOTE:</em> If <em>format</em> is not
+     * {@link UPayloadFormat#UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY} then there is no guarantee
+     * that the returned instance's fields contain proper values because in the absence of a data schema
+     * it is unclear, if the protobuf actually represents an instance of the expected type.
+     * @throws NullPointerException if any of the arguments are {@code null}.
+     * @throws UStatusException if the protobuf cannot be unpacked to the expected type.
+     */
+    public static <T extends Message> T unpackOrDefaultInstance(UPayload payload, Class<T> expectedType) {
+        return unpackOrDefaultInstance(payload.data(), payload.format(), expectedType);
+    }
 
     /**
-     * Unpack a uPayload into a {@link Message}.
+     * Unpacks a protobuf into a Java type.
      * <br>
      * <b>IMPORTANT NOTE:</b> If the format is not {@link UPayloadFormat#UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY},
      * there is no guarantee that the parsing to T is correct as we do not have the data schema.
      * 
-     * @param data The serialized UPayload data
-     * @param format The serialization format of the payload
-     * @param clazz the class of the message to unpack
-     * @return the unpacked message
+     * @param data The protobuf to unpack.
+     * @param format The serialization format of the protobuf.
+     * @param clazz The Java type to unpack the protobuf to.
+     * @return The unpacked type instance.
+     * @throws NullPointerException if clazz is {@code null}.
+     * @deprecated Use {@link #unpackOrDefaultInstance(ByteString, UPayloadFormat, Class)} instead.
      */
+    @Deprecated(forRemoval = true)
     @SuppressWarnings("unchecked")
     public static <T extends Message> Optional<T> unpack(ByteString data, UPayloadFormat format, Class<T> clazz) {
+        Objects.requireNonNull(clazz, "clazz must not be null");
         format = Objects.requireNonNullElse(format, UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED);
         if (data == null || data.isEmpty()) {
             return Optional.empty();
@@ -158,6 +182,59 @@ public record UPayload (ByteString data, UPayloadFormat format) {
             }
         } catch (InvalidProtocolBufferException e) {
             return Optional.empty();
+        }
+    }
+
+    /**
+     * Unpacks a protobuf to a Java type.
+     * 
+     * @param protobuf The protobuf to unpack.
+     * @param format The serialization format of the protobuf.
+     * @param expectedType The Java type to unpack the protobuf to.
+     * @return An instance of the expected type. The instance will be the default instance if the
+     * given protobuf is empty and the payload format is {@link UPayloadFormat#UPAYLOAD_FORMAT_PROTOBUF}.
+     * <p>
+     * <em>IMPORTANT NOTE:</em> If <em>format</em> is not
+     * {@link UPayloadFormat#UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY} then there is no guarantee
+     * that the returned instance's fields contain proper values because in the absence of a data schema
+     * it is unclear, if the protobuf actually represents an instance of the expected type.
+     * @throws NullPointerException if any of the arguments are {@code null}.
+     * @throws UStatusException if the protobuf cannot be unpacked to the expected type.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Message> T unpackOrDefaultInstance(
+            ByteString protobuf,
+            UPayloadFormat format,
+            Class<T> expectedType) {
+        Objects.requireNonNull(protobuf, "data must not be null");
+        Objects.requireNonNull(format, "format must not be null");
+        Objects.requireNonNull(expectedType, "expectedType must not be null");
+        switch (format) {
+            case UPAYLOAD_FORMAT_UNSPECIFIED: // Default is WRAPPED_IN_ANY
+            case UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY :
+                try {
+                    return Any.parseFrom(protobuf).unpack(expectedType);
+                } catch (InvalidProtocolBufferException e) {
+                    throw new UStatusException(UCode.INVALID_ARGUMENT, "Failed to unpack Any", e);
+                }
+
+            case UPAYLOAD_FORMAT_PROTOBUF:
+                T defaultInstance = com.google.protobuf.Internal.getDefaultInstance(expectedType);
+                if (protobuf.isEmpty()) {
+                    // this can happen when trying to unpack a proto message that has no fields
+                    // and is therefore encoded as an empty byte array
+                    return defaultInstance;
+                } else {
+                    try {
+                        return (T) defaultInstance.getParserForType().parseFrom(protobuf);
+                    } catch (InvalidProtocolBufferException e) {
+                        throw new UStatusException(UCode.INVALID_ARGUMENT, "Failed to unpack protobuf", e);
+                    }
+                }
+
+            default:
+                throw new UStatusException(
+                    UCode.INVALID_ARGUMENT, "Unsupported payload format");
         }
     }
 }
