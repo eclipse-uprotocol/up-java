@@ -24,6 +24,7 @@ import org.eclipse.uprotocol.v1.UStatus;
  * or a failure with the UStatus returned by the failed call.
  * @param <T> The type of the successful RPC call.
  */
+@Deprecated(forRemoval = true)
 public abstract class RpcResult<T> {
 
     private RpcResult() {
@@ -31,8 +32,8 @@ public abstract class RpcResult<T> {
 
     public abstract boolean isSuccess();
     public abstract boolean isFailure();
-    public abstract T getOrElse(final T defaultValue);
-    public abstract T getOrElse(final Supplier<T> defaultValue);
+    public abstract T getOrElse(T defaultValue);
+    public abstract T getOrElse(Supplier<T> defaultValue);
 
     public abstract <U> RpcResult<U> map(Function<T, U> f);
 
@@ -44,7 +45,7 @@ public abstract class RpcResult<T> {
 
     public abstract T successValue();
 
-    private static class Success<T> extends RpcResult<T> {
+    private static final class Success<T> extends RpcResult<T> {
 
         private final T value;
 
@@ -118,7 +119,7 @@ public abstract class RpcResult<T> {
         }
     }
 
-    private static class Failure<T> extends RpcResult<T> {
+    private static final class Failure<T> extends RpcResult<T> {
 
         private final UStatus value;
 

@@ -15,89 +15,92 @@ package org.eclipse.uprotocol.communication;
 import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 
+import org.eclipse.uprotocol.transport.LocalUriProvider;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
-import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
- * Default implementation of the communication layer that uses the {@link UTransport}.
+ * A client for Communication Layer APIs.
  */
-public class UClient implements RpcServer, Notifier, Publisher, RpcClient {
-    
-    // The transport to use for sending the RPC requests
-    private final UTransport transport;
+public final class UClient implements RpcServer, Notifier, Publisher, RpcClient {
 
-    private final InMemoryRpcServer rpcServer;
-    private final SimplePublisher publisher;
-    private final SimpleNotifier notifier;
-    private final InMemoryRpcClient rpcClient;
+    private final RpcServer rpcServer;
+    private final Publisher publisher;
+    private final Notifier notifier;
+    private final RpcClient rpcClient;
 
-    private UClient (UTransport transport) {
-        this.transport = transport;
-
-        rpcServer = new InMemoryRpcServer(transport);
-        publisher = new SimplePublisher(transport);
-        notifier = new SimpleNotifier(transport);
-        rpcClient = new InMemoryRpcClient(transport);
-    }
-
-
-    @Override
-    public CompletionStage<UStatus> notify(UUri topic, UUri destination, CallOptions options, UPayload payload) {
-        return notifier.notify(topic, destination, options, payload);
+    /**
+     * Creates a new client.
+     *
+     * @param rpcClient The RPC client to use.
+     * @param rpcServer The RPC server to use.
+     * @param publisher The publisher to use.
+     * @param notifier The notifier to use.
+     * @throws NullPointerException if any of the arguments are {@code null}.
+     */
+    public UClient(RpcClient rpcClient, RpcServer rpcServer, Publisher publisher, Notifier notifier) {
+        this.rpcClient = Objects.requireNonNull(rpcClient);
+        this.rpcServer = Objects.requireNonNull(rpcServer);
+        this.publisher = Objects.requireNonNull(publisher);
+        this.notifier = Objects.requireNonNull(notifier);
     }
 
     @Override
-    public CompletionStage<UStatus> registerNotificationListener(UUri topic, UListener listener) {
-        Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
+    public CompletionStage<Void> notify(int resourceId, UUri destination, CallOptions options, UPayload payload) {
+        return notifier.notify(resourceId, destination, options, payload);
+    }
+
+    @Override
+    public CompletionStage<Void> registerNotificationListener(UUri topic, UListener listener) {
         return notifier.registerNotificationListener(topic, listener);
     }
 
     @Override
-    public CompletionStage<UStatus> unregisterNotificationListener(UUri topic, UListener listener) {
+    public CompletionStage<Void> unregisterNotificationListener(UUri topic, UListener listener) {
         return notifier.unregisterNotificationListener(topic, listener);
     }
 
 
     @Override
-    public CompletionStage<UStatus> publish(UUri topic, CallOptions options, UPayload payload) {
-        return publisher.publish(topic, options, payload);
+    public CompletionStage<Void> publish(int resourceId, CallOptions options, UPayload payload) {
+        return publisher.publish(resourceId, options, payload);
     }
 
 
     @Override
-    public CompletionStage<UStatus> registerRequestHandler(UUri method, RequestHandler handler) {
-        return rpcServer.registerRequestHandler(method, handler);
+    public CompletionStage<Void> registerRequestHandler(UUri originFilter, int resourceId, RequestHandler handler) {
+        return rpcServer.registerRequestHandler(originFilter, resourceId, handler);
     }
-
 
     @Override
-    public CompletionStage<UStatus> unregisterRequestHandler(UUri method, RequestHandler handler) {
-        return rpcServer.unregisterRequestHandler(method, handler);
+    public CompletionStage<Void> unregisterRequestHandler(UUri originFilter, int resourceId,
+            RequestHandler handler) {
+        return rpcServer.unregisterRequestHandler(originFilter, resourceId, handler);
     }
 
- 
 
     @Override
     public CompletionStage<UPayload> invokeMethod(UUri methodUri, UPayload requestPayload, CallOptions options) {
         return rpcClient.invokeMethod(methodUri, requestPayload, options);
     }
-    
 
     /**
-     * Create a new instance of UPClient.
+     * Creates a new client for a transport implementation.
      *
-     * @param transport The transport to use for sending the RPC requests
+     * @param transport The transport to use for sending and receiving messages.
+     * @param uriProvider The helper to use for creating local resource URIs.
      * @return Returns a new instance of the RPC client
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    public static UClient create(UTransport transport) {
-        Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
-        return new UClient(transport);
-    }
-
-
-    public void close() {
-        rpcClient.close();
+    public static UClient create(UTransport transport, LocalUriProvider uriProvider) {
+        Objects.requireNonNull(transport);
+        Objects.requireNonNull(uriProvider);
+        return new UClient(
+            new InMemoryRpcClient(transport, uriProvider),
+            new InMemoryRpcServer(transport, uriProvider),
+            new SimplePublisher(transport, uriProvider),
+            new SimpleNotifier(transport, uriProvider)
+        );
     }
 }

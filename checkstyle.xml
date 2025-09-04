@@ -33,7 +33,9 @@
         <module name="RightCurly"/>
 
         <!-- Miscellaneous -->
-        <module name="VisibilityModifier"/>
+        <module name="VisibilityModifier">
+            <property name="protectedAllowed" value="true"/>
+        </module>
         <module name="NestedIfDepth">
             <property name="max" value="3"/>
         </module>

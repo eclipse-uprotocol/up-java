@@ -12,11 +12,17 @@
  */
 package org.eclipse.uprotocol.communication;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
+import org.eclipse.uprotocol.transport.LocalUriProvider;
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
@@ -39,52 +45,58 @@ import org.eclipse.uprotocol.v1.UUri;
  *         or directly use the {@link UTransport} to send RPC requests and register listeners that
  *         handle the RPC responses.
  */
-public class InMemoryRpcClient implements RpcClient {
-    // The transport to use for sending the RPC requests
-    private final UTransport transport;
-
+public class InMemoryRpcClient extends AbstractCommunicationLayerClient implements RpcClient {
     // Map to store the futures that needs to be completed when the response comes in
-    private final ConcurrentHashMap<UUID, CompletableFuture<UMessage>> mRequests = new ConcurrentHashMap<>();
+    private final Map<UUID, CompletableFuture<UMessage>> mRequests = new ConcurrentHashMap<>();
 
     // Generic listener to handle all RPC response messages
-    private final UListener mResponseHandler = this::handleResponses;
+    private final UListener mResponseHandler = this::handleResponse;
 
-    
+    private Consumer<UMessage> unexpectedMessageHandler;
+
     /**
-     * Constructor for the DefaultRpcClient.
-     * 
-     * @param transport the transport to use for sending the RPC requests
+     * Creates a client for a transport.
+     *
+     * @param transport The transport to use for sending the RPC requests.
+     * @param uriProvider The helper for creating URIs that represent local resources.
+     * @throws NullPointerException if any of the arguments are {@code null}.
+     * @throws CompletionException if registration of the response listener fails.
      */
-    public InMemoryRpcClient (UTransport transport) {
-        Objects.requireNonNull(transport, UTransport.TRANSPORT_NULL_ERROR);
-        this.transport = transport;
-   
-        transport.registerListener(UriFactory.ANY, 
-            transport.getSource(), mResponseHandler).toCompletableFuture().join();
+    public InMemoryRpcClient(UTransport transport, LocalUriProvider uriProvider) {
+        super(transport, uriProvider);
+
+        getTransport().registerListener(
+                UriFactory.ANY,
+                getUriProvider().getSource(),
+                mResponseHandler)
+            .toCompletableFuture().join();
     }
 
-
     /**
-     * Invoke a method (send an RPC request) and receive the response 
-     * (the returned {@link CompletionStage} {@link UPayload}. <br>
-     * 
-     * @param methodUri The method URI to be invoked.
-     * @param requestPayload The request message to be sent to the server.
-     * @param options RPC method invocation call options, see {@link CallOptions}
-     * @return Returns the CompletionStage with the response payload or exception with the failure
-     *         reason as {@link UStatus}.
+     * Sets a handler to be invoked for unexpected inbound messages.
+     *
+     * @param unexpectedResponseHandler A handler to invoke for incoming messages that cannot
+     * be processed, either because they are no RPC response messages or because they contain
+     * an unknown request ID.
      */
+    void setUnexpectedMessageHandler(Consumer<UMessage> handler) {
+        this.unexpectedMessageHandler = handler;
+    }
+
     @Override
     public CompletionStage<UPayload> invokeMethod(UUri methodUri, UPayload requestPayload, CallOptions options) {
-        options = Objects.requireNonNullElse(options, CallOptions.DEFAULT);
-        UMessageBuilder builder = UMessageBuilder.request(transport.getSource(), methodUri, options.timeout());
-        UMessage request;
-        
-        if (!options.token().isBlank()) {
-            builder.withToken(options.token());
-        }
-        // Build a request uMessage
-        request = builder.build(requestPayload);
+        Objects.requireNonNull(methodUri, "Method URI cannot be null");
+        Objects.requireNonNull(requestPayload, "Request payload cannot be null");
+        Objects.requireNonNull(options, "Call options cannot be null");
+
+        UMessageBuilder builder = UMessageBuilder.request(getUriProvider().getSource(), methodUri, options.timeout());
+        Optional.ofNullable(options.priority()).ifPresent(priority -> builder.withPriority(priority));
+        Optional.ofNullable(options.token())
+            .filter(s -> !s.isBlank())
+            .ifPresent(token -> builder.withToken(token));
+
+        // Build the request message
+        final UMessage request = builder.build(requestPayload);
         
         // Create the response future and store it in mRequests
         CompletableFuture<UMessage> responseFuture = new CompletableFuture<UMessage>()
@@ -99,51 +111,48 @@ public class InMemoryRpcClient implements RpcClient {
         });
 
         // Send the request
-        CompletionStage<UStatus> status = transport.send(request);
-
-        return status.thenApply(s -> {
-            if (s.getCode() != UCode.OK) throw new UStatusException(s);
-            return s;
-        }).thenCompose(s -> responseFuture.thenApply(responseMessage ->
-                UPayload.pack(responseMessage.getPayload(), responseMessage.getAttributes().getPayloadFormat())
-        ));
+        return getTransport().send(request)
+            .thenCompose(s -> responseFuture)
+            .thenApply(responseMessage -> UPayload.pack(
+                responseMessage.getPayload(),
+                responseMessage.getAttributes().getPayloadFormat())
+            );
     }
-
 
     /**
      * Close the RPC client and clean up any resources.
      */
     public void close() {
         mRequests.clear();
-        transport.unregisterListener(UriFactory.ANY, transport.getSource(), mResponseHandler);
+        getTransport().unregisterListener(UriFactory.ANY, getUriProvider().getSource(), mResponseHandler);
     }
 
-    /**
-     * Handle the responses coming back from the server.
-     *
-     * @param response The response message from the server
-     */
-    private void handleResponses(UMessage response) {
-        // Only handle responses messages, ignore all other messages like notifications
-        if (response.getAttributes().getType() != UMessageType.UMESSAGE_TYPE_RESPONSE) {
+    private void handleResponse(UMessage message) {
+        // Only handle responses messages
+        if (message.getAttributes().getType() != UMessageType.UMESSAGE_TYPE_RESPONSE) {
+            Optional.ofNullable(unexpectedMessageHandler).ifPresent(handler -> handler.accept(message));
             return;
         }
         
-        final UAttributes responseAttributes = response.getAttributes();
+        final UAttributes responseAttributes = message.getAttributes();
         
         // Check if the response is for a request we made, if not then ignore it
         final CompletableFuture<UMessage> responseFuture = mRequests.remove(responseAttributes.getReqid());
         if (responseFuture == null) {
+            Optional.ofNullable(unexpectedMessageHandler).ifPresent(handler -> handler.accept(message));
             return;
         }
 
         // Check if the response has a commstatus and if it is not OK then complete the future with an exception
         if (responseAttributes.hasCommstatus() && responseAttributes.getCommstatus() != UCode.OK) {
-            final UCode code = responseAttributes.getCommstatus();
-            responseFuture.completeExceptionally(
-                new UStatusException(code, "Communication error [" + code + "]"));
-            return;
+            // first, try to extract error details from payload
+            final var exception = UPayload.unpack(message, UStatus.class)
+                .map(UStatusException::new)
+                // fall back to a generic error based on commstatus
+                .orElseGet(() -> new UStatusException(responseAttributes.getCommstatus(), "Communication error"));
+            responseFuture.completeExceptionally(exception);
+        } else {
+            responseFuture.complete(message); 
         }
-        responseFuture.complete(response); 
     }
 }

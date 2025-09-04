@@ -15,15 +15,24 @@ package org.eclipse.uprotocol.transport;
 import org.eclipse.uprotocol.v1.UMessage;
 
 /**
- * For any implementation that defines some kind of callback or function that
- * will be called to handle incoming messages.
+ * A handler for processing uProtocol messages.
+ *
+ * Implementations contain the details for what should occur when a message is received.
+ *
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l1/README.adoc">
+ * uProtocol Transport Layer specification</a>
  */
+/// for details. */
 public interface UListener {
 
     /**
-     * Method called to handle/process messages.
-     * 
-     * @param message Message received.
+     * Performs some action on receipt of a message.
+     * <p>
+     * This function is expected to return almost immediately. If it does not, it could potentially
+     * block processing of succeeding messages. Long-running operations for processing a message should
+     * therefore be run on a separate thread.
+     *
+     * @param message The message to process.
      */
     void onReceive(UMessage message);
 }

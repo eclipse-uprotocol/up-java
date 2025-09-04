@@ -12,107 +12,119 @@
  */
 package org.eclipse.uprotocol.communication;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import java.util.concurrent.CompletionStage;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import org.eclipse.uprotocol.transport.UListener;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessage;
-import org.eclipse.uprotocol.v1.UStatus;
 import org.eclipse.uprotocol.v1.UUri;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class SimpleNotifierTest {
+class SimpleNotifierTest extends CommunicationLayerClientTestBase {
+
+    private Notifier notifier;
+    private CallOptions options;
+
+    @BeforeEach
+    void createNotifier() {
+        notifier = new SimpleNotifier(transport, uriProvider);
+        options = CallOptions.DEFAULT;
+    }
+
+    private void assertNotificationAttributes(UMessage message) {
+        assertEquals(TOPIC_URI, message.getAttributes().getSource());
+        assertEquals(DESTINATION_URI, message.getAttributes().getSink());
+        assertEquals(options.priority(), message.getAttributes().getPriority());
+        assertEquals(options.timeout(), message.getAttributes().getTtl());
+        assertFalse(message.getAttributes().hasToken());
+    }
+
     @Test
     @DisplayName("Test sending a simple notification")
-    public void testSendNotification() {
-        Notifier notifier = new SimpleNotifier(new TestUTransport());
-        CompletionStage<UStatus> result = notifier.notify(createTopic(), createDestinationUri());
-        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
+    void testSendNotification() {
+        notifier.notify(TOPIC_URI.getResourceId(), DESTINATION_URI).toCompletableFuture().join();
+        verify(transport).send(requestMessage.capture());
+        assertNotificationAttributes(requestMessage.getValue());
     }
 
     @Test
     @DisplayName("Test sending a simple notification passing CallOptions")
-    public void testSendNotificationWithOptions() {
-        Notifier notifier = new SimpleNotifier(new TestUTransport());
-        CompletionStage<UStatus> result = notifier.notify(createTopic(), createDestinationUri(), CallOptions.DEFAULT);
-        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
+    void testSendNotificationWithOptions() {
+        notifier.notify(TOPIC_URI.getResourceId(), DESTINATION_URI, options).toCompletableFuture().join();
+        verify(transport).send(requestMessage.capture());
+        assertNotificationAttributes(requestMessage.getValue());
     }
-
 
     @Test
     @DisplayName("Test sending a simple notification passing a google.protobuf.Message payload")
-    public void testSendNotificationWithPayload() {
-        UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
-        Notifier notifier = new SimpleNotifier(new TestUTransport());
-        CompletionStage<UStatus> result = notifier.notify(createTopic(), createDestinationUri(), 
-            UPayload.pack(uri));
-        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
+    void testSendNotificationWithPayload() {
+        final var payload = UPayload.pack(UUri.newBuilder().setAuthorityName("Hartley").build());
+        notifier.notify(TOPIC_URI.getResourceId(), DESTINATION_URI, payload).toCompletableFuture().join();
+        verify(transport).send(requestMessage.capture());
+        assertNotificationAttributes(requestMessage.getValue());
+        assertEquals(payload.data(), requestMessage.getValue().getPayload());
     }
 
     @Test
     @DisplayName("Test sending a simple notification passing a google.protobuf.Any payload and CallOptions")
-    public void testSendNotificationWithAnyPayloadAndOptions() {
-        UUri uri = UUri.newBuilder().setAuthorityName("Hartley").build();
-        Notifier notifier = new SimpleNotifier(new TestUTransport());
-        CompletionStage<UStatus> result = notifier.notify(createTopic(), createDestinationUri(), 
-            CallOptions.DEFAULT, UPayload.packToAny(uri));
-        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
+    void testSendNotificationWithAnyPayloadAndOptions() {
+        final var payload = UPayload.pack(UUri.newBuilder().setAuthorityName("Hartley").build());
+        notifier.notify(TOPIC_URI.getResourceId(), DESTINATION_URI, options, payload).toCompletableFuture().join();
+        verify(transport).send(requestMessage.capture());
+        assertNotificationAttributes(requestMessage.getValue());
+        assertEquals(payload.data(), requestMessage.getValue().getPayload());
     }
 
+    @Test
+    void testSendNotificationWithInvalidTopic() {
+        var exception = assertThrows(
+            CompletionException.class,
+            () ->
+            notifier.notify(0x5000, TOPIC_URI).toCompletableFuture().join()
+        );
+        assertEquals(UCode.INVALID_ARGUMENT, ((UStatusException) exception.getCause()).getCode());
+    }
 
     @Test
     @DisplayName("Test registering and unregistering a listener for a notification topic")
-    public void testRegisterListener() {
-        UListener listener = new UListener() {
-            @Override
-            public void onReceive(UMessage message) {
-                assertNotNull(message);
-            }
-        };
-
-        Notifier notifier = new SimpleNotifier(new TestUTransport());
-        CompletionStage<UStatus> result = notifier.registerNotificationListener(createTopic(), listener);
-        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
-
-        result = notifier.unregisterNotificationListener(createTopic(), listener);
-        assertEquals(result.toCompletableFuture().join().getCode(), UCode.OK);
+    void testRegisterListener() {
+        final var listener = mock(UListener.class);
+        notifier.registerNotificationListener(TOPIC_URI, listener).toCompletableFuture().join();
+        verify(transport).registerListener(
+            TOPIC_URI,
+            TRANSPORT_SOURCE,
+            listener);
+        notifier.unregisterNotificationListener(TOPIC_URI, listener).toCompletableFuture().join();
+        verify(transport).unregisterListener(
+            TOPIC_URI,
+            TRANSPORT_SOURCE,
+            listener);
     }
-
 
     @Test
     @DisplayName("Test unregistering a listener that was not registered")
-    public void testUnregisterListenerNotRegistered() {
-        UListener listener = new UListener() {
-            @Override
-            public void onReceive(UMessage message) {
-                assertNotNull(message);
-            }
-        };
-        Notifier notifier = new SimpleNotifier(new TestUTransport());
-        CompletionStage<UStatus> result = notifier.unregisterNotificationListener(createTopic(), listener);
-        assertFalse(result.toCompletableFuture().isCompletedExceptionally());
-        assertEquals(result.toCompletableFuture().join().getCode(), UCode.NOT_FOUND);
-    }
-
-
-    private UUri createTopic() {
-        return UUri.newBuilder()
-            .setAuthorityName("hartley")
-            .setUeId(3)
-            .setUeVersionMajor(1)
-            .setResourceId(0x8000)
-            .build();
-    }
-
-
-    private UUri createDestinationUri() {
-        return UUri.newBuilder()
-            .setUeId(4)
-            .setUeVersionMajor(1)
-            .build();
+    void testUnregisterListenerNotRegistered() {
+        final var listener = mock(UListener.class);
+        when(transport.unregisterListener(TOPIC_URI, TRANSPORT_SOURCE, listener))
+            .thenReturn(CompletableFuture.failedFuture(
+                new UStatusException(UCode.NOT_FOUND, "no such listener")));
+        final var exception = assertThrows(CompletionException.class, () -> {
+            notifier.unregisterNotificationListener(TOPIC_URI, listener).toCompletableFuture().join();
+        });
+        verify(transport).unregisterListener(
+            TOPIC_URI,
+            TRANSPORT_SOURCE,
+            listener);
+        assertEquals(UCode.NOT_FOUND, ((UStatusException) exception.getCause()).getCode());
     }
 }

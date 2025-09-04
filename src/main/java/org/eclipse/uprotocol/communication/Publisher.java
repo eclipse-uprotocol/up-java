@@ -14,57 +14,72 @@ package org.eclipse.uprotocol.communication;
 
 import java.util.concurrent.CompletionStage;
 
-import org.eclipse.uprotocol.v1.UStatus;
-import org.eclipse.uprotocol.v1.UUri;
-
 /**
- * uP-L2 interface and data models for Java.<BR>
- * 
- * uP-L1 interfaces implements the core uProtocol across various the communication middlewares
- * and programming languages while uP-L2 API are the client-facing APIs that wrap the transport
- * functionality into easy to use, language specific, APIs to do the most common functionality
- * of the protocol (subscribe, publish, notify, invoke a Method, or handle RPC requests).
+ * A client for publishing messages to a topic.
+ *
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l2/api.adoc">
+ * Communication Layer API Specifications</a>
  */
 public interface Publisher {
     /**
-     * Publish a message to a topic.
-     * 
-     * @param topic The topic to publish to.
-     * @return Returns the {@link UStatus} with the status of the publish.
+     * Publishes a message to a topic.
+     * <p>
+     * This default implementation invokes {@link #publish(int, CallOptions, UPayload)} with the
+     * given resource ID, {@link CallOptions#DEFAULT default options} and an
+     * {@link UPayload#EMPTY empty payload}.
+
+     * @param resourceId The (local) resource ID of the topic to publish to.
+     * @return The outcome of the operation. The stage will be failed with a {@link UStatusException}
+     * if the message could not be published.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    default CompletionStage<UStatus> publish(UUri topic) {
-        return publish(topic, null, null);
+    default CompletionStage<Void> publish(int resourceId) {
+        return publish(resourceId, CallOptions.DEFAULT, UPayload.EMPTY);
     }
 
     /**
-     * Publish a message to a topic with specific {@link CallOptions}.
+     * Publishes a message to a topic.
+     * <p>
+     * This default implementation invokes {@link #publish(int, CallOptions, UPayload)} with the
+     * given resource ID, options and an {@link UPayload#EMPTY empty payload}.
      * 
-     * @param topic The topic to publish to.
+     * @param resourceId The (local) resource ID of the topic to publish to.
      * @param options The {@link CallOptions} for the publish.
-     * @return Returns the {@link UStatus} with the status of the publish.
+     * @return The outcome of the operation. The stage will be failed with a {@link UStatusException}
+     * if the message could not be published.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    default CompletionStage<UStatus> publish(UUri topic, CallOptions options) {
-        return publish(topic, options, null);
+    default CompletionStage<Void> publish(int resourceId, CallOptions options) {
+        return publish(resourceId, options, UPayload.EMPTY);
     }
 
     /**
-     * Publish a message to a topic passing {@link UPayload} as the payload.
-     * 
-     * @param topic The topic to publish to.
+     * Publishes a message to a topic.
+     * <p>
+     * This default implementation invokes {@link #publish(int, CallOptions, UPayload)} with the
+     * given resource ID, payload and {@link CallOptions#DEFAULT default options}.
+     *
+     * @param resourceId The (local) resource ID of the topic to publish to.
      * @param payload The {@link UPayload} to publish.
-     * @return Returns the {@link UStatus} with the status of the publish.
+     * @return The outcome of the operation. The stage will be failed with a {@link UStatusException}
+     * if the message could not be published.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    default CompletionStage<UStatus> publish(UUri topic, UPayload payload) {
-        return publish(topic, null, payload);
+    default CompletionStage<Void> publish(int resourceId, UPayload payload) {
+        return publish(resourceId, CallOptions.DEFAULT, payload);
     }
 
     /**
-     * Publish a message to a topic passing {@link UPayload} as the payload and with specific {@link CallOptions}.
-     * 
-     * @param topic The topic to publish to.
-     * @param options The {@link CallOptions} for the publish.
-     * @param payload The {@link UPayload} to publish.
-     * @return Returns the {@link UStatus} with the status of the publish.
+     * Publishes a message to a topic.
+     *
+     * @param resourceId The (local) resource ID of the topic to publish to.
+     * @param options Options to include in the published message. {@link CallOptions#DEFAULT} can
+     * be used for default options.
+     * @param payload Payload to include in the published message. {@link UPayload#EMPTY}
+     * can be used if the message has no payload.
+     * @return The outcome of the operation. The stage will be failed with a {@link UStatusException}
+     * if the message could not be published.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    CompletionStage<UStatus> publish(UUri topic, CallOptions options, UPayload payload);
+    CompletionStage<Void> publish(int resourceId, CallOptions options, UPayload payload);
 }

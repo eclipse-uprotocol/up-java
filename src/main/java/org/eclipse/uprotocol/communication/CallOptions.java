@@ -13,7 +13,9 @@
 package org.eclipse.uprotocol.communication;
 
 import java.util.Objects;
+import java.util.Optional;
 
+import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
 import org.eclipse.uprotocol.v1.UPriority;
 
 /**
@@ -23,7 +25,7 @@ public record CallOptions (Integer timeout, UPriority priority, String token) {
     public static final int TIMEOUT_DEFAULT = 10000; // Default timeout of 10 seconds
  
     // Default instance.
-    public static final CallOptions DEFAULT = new CallOptions(TIMEOUT_DEFAULT, UPriority.UPRIORITY_CS4, "");
+    public static final CallOptions DEFAULT = new CallOptions(TIMEOUT_DEFAULT, UPriority.UPRIORITY_CS4, null);
 
     /**
      * Check to ensure CallOptions is not null.
@@ -31,7 +33,6 @@ public record CallOptions (Integer timeout, UPriority priority, String token) {
     public CallOptions {
         Objects.requireNonNull(timeout);
         Objects.requireNonNull(priority);
-        Objects.requireNonNull(token);
     }
 
     /**
@@ -41,7 +42,7 @@ public record CallOptions (Integer timeout, UPriority priority, String token) {
      * @param priority The priority of the method invocation.
      */
     public CallOptions(Integer timeout, UPriority priority) {
-        this(timeout, priority, "");
+        this(timeout, priority, null);
     }
 
     /**
@@ -50,13 +51,24 @@ public record CallOptions (Integer timeout, UPriority priority, String token) {
      * @param timeout The timeout for the method invocation.
      */
     public CallOptions(Integer timeout) {
-        this(timeout, UPriority.UPRIORITY_CS4, "");
+        this(timeout, UPriority.UPRIORITY_CS4, null);
     }
 
     /**
      * Constructor for CallOptions.
      */
     public CallOptions() {
-        this(TIMEOUT_DEFAULT, UPriority.UPRIORITY_CS4, "");
+        this(TIMEOUT_DEFAULT, UPriority.UPRIORITY_CS4, null);
+    }
+
+    /**
+     * Adds these call options to a message.
+     *
+     * @param builder The message builder.
+     */
+    public void applyToMessage(UMessageBuilder builder) {
+        Optional.ofNullable(this.priority()).ifPresent(builder::withPriority);
+        Optional.ofNullable(this.timeout()).ifPresent(builder::withTtl);
+        Optional.ofNullable(this.token()).ifPresent(builder::withToken);
     }
 }

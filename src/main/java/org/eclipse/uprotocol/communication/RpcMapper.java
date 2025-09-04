@@ -23,7 +23,10 @@ import org.eclipse.uprotocol.v1.UCode;
  * RPC Wrapper is an interface that provides static methods to be able to wrap an RPC request with 
  * an RPC Response (uP-L2). APIs that return Message assumes that the payload is either protobuf serialized 
  * UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY) or UPAYLOAD_FORMAT_PROTOBUF.
+ *
+ * @deprecated Use the methods for unpacking payload provided by {@link UPayload} instead.
  */
+@Deprecated(forRemoval = true)
 public interface RpcMapper {
 
     /**
@@ -70,7 +73,9 @@ public interface RpcMapper {
      * @return Returns a CompletionStage containing an RpcResult containing the declared expected
      *         return type T, or a Status containing any errors.
      * @param <T> The declared expected return type of the RPC method.
-     */
+    * @deprecated Use the methods for unpacking payload provided by {@link UPayload} instead.
+    */
+    @Deprecated(forRemoval = true)
     static <T extends Message> CompletionStage<RpcResult<T>> mapResponseToResult(
             CompletionStage<UPayload> responseFuture, Class<T> expectedClazz) {
 
@@ -99,6 +104,4 @@ public interface RpcMapper {
             return RpcResult.failure(exception.getMessage(), exception);
         });
     }
-
-
 }
