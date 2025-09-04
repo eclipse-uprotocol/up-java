@@ -44,12 +44,12 @@ public interface UriSerializer {
         }
 
         sb.append("/");
-        sb.append(Integer.toHexString(uri.getUeId()));
-        sb.append("/");
-        sb.append(Integer.toHexString(uri.getUeVersionMajor()));
-        sb.append("/");
-        sb.append(Integer.toHexString(uri.getResourceId()));
-        return sb.toString().replaceAll("/+$", "");
+        final var pathSegments = String.format("%X/%X/%X",
+                uri.getUeId(),
+                uri.getUeVersionMajor(),
+                uri.getResourceId());
+        sb.append(pathSegments);
+        return sb.toString();
     }
 
     /**
