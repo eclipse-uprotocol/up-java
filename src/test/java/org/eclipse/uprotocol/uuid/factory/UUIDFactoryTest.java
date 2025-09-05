@@ -17,10 +17,7 @@ import org.eclipse.uprotocol.v1.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -113,9 +110,9 @@ public class UUIDFactoryTest {
     @Test
     @DisplayName("Test UUIDUtils for Random UUID")
     void testUuidutilsForRandomUuid() {
-        final java.util.UUID uuid_java = java.util.UUID.randomUUID();
-        final UUID uuid = UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
-                .setLsb(uuid_java.getLeastSignificantBits()).build();
+        final var uuidJava = java.util.UUID.randomUUID();
+        final UUID uuid = UUID.newBuilder().setMsb(uuidJava.getMostSignificantBits())
+                .setLsb(uuidJava.getLeastSignificantBits()).build();
         final Optional<Long> time = UuidUtils.getTime(uuid);
         final String uuidString = UuidSerializer.serialize(uuid);
 
@@ -220,28 +217,6 @@ public class UUIDFactoryTest {
         assertTrue(time.isPresent());
         assertNotEquals(time.get(), time1.get());
 
-    }
-
-    @Test
-    @DisplayName("Test Create both UUIDv6 and v7 to compare performance")
-    void testCreateBothUuidv6AndV7ToComparePerformance() throws InterruptedException {
-        final List<UUID> uuidv6List = new ArrayList<>();
-        final List<UUID> uuidv7List = new ArrayList<>();
-        final int MAX_COUNT = 10000;
-
-        Instant start = Instant.now();
-        for (int i = 0; i < MAX_COUNT; i++) {
-            uuidv7List.add(UuidFactory.Factories.UPROTOCOL.factory().create());
-        }
-        final Duration v7Diff = Duration.between(start, Instant.now());
-
-        start = Instant.now();
-        for (int i = 0; i < MAX_COUNT; i++) {
-            uuidv6List.add(UuidFactory.Factories.UUIDV6.factory().create());
-        }
-        final Duration v6Diff = Duration.between(start, Instant.now());
-        System.out.println(
-                "UUIDv7:[" + v7Diff.toNanos() / MAX_COUNT + "ns]" + " UUIDv6:[" + v6Diff.toNanos() / MAX_COUNT + "ns]");
     }
 
     @Test

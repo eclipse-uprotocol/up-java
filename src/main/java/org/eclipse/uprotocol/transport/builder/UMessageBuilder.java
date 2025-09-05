@@ -25,10 +25,9 @@ import org.eclipse.uprotocol.v1.UUID;
 import com.google.protobuf.ByteString;
 
 import org.eclipse.uprotocol.communication.UPayload;
-import org.eclipse.uprotocol.transport.validate.UAttributesValidator;
-import org.eclipse.uprotocol.uri.validator.UriValidator;
+import org.eclipse.uprotocol.transport.validator.UAttributesValidator;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
-import org.eclipse.uprotocol.uuid.validate.UuidValidator;
+import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -36,11 +35,12 @@ import java.util.Optional;
 /**
  * Builder for easy construction of the UAttributes object.
  */
-public class UMessageBuilder {
+public final class UMessageBuilder {
 
     private final UUri source;
-    private final UUID id;
     private final UMessageType type;
+
+    private UUID id;
     private UPriority priority;
     private Integer ttl;
     private String token;
@@ -54,109 +54,132 @@ public class UMessageBuilder {
     private ByteString payload;
 
     /**
-     * Construct a UMessageBuilder for a publish message.
-     * 
-     * @param source The topic the message is published to (a.k.a Source address).
-     * @return Returns the UMessageBuilder with the configured priority.
+     * Gets a builder for a publish message.
+     *
+     * A publish message is used to notify all interested consumers of an event that has occurred.
+     * Consumers usually indicate their interest by <em>subscribing</em> to a particular topic.
+     *
+     * @param source The topic to publish the message to.
+     * @return The builder.
+     * @throws NullPointerException if the source is {@code null}.
      */
     public static UMessageBuilder publish(UUri source) {
         Objects.requireNonNull(source, "source cannot be null.");
 
-        // Validate the source
-        if (!UriValidator.isTopic(source)) {
-            throw new IllegalArgumentException("source must be a topic.");
-        }
-        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
-                UMessageType.UMESSAGE_TYPE_PUBLISH);
+        return new UMessageBuilder(
+            source,
+            UuidFactory.Factories.UPROTOCOL.factory().create(),
+            UMessageType.UMESSAGE_TYPE_PUBLISH);
     }
 
     /**
-     * Construct a UMessageBuilder for a notification message.
-     * 
-     * @param source The topic the message is published to (a.k.a Source address).
-     * @param sink   The destination address for the notification (who will receive
-     *               the notification).
-     * @return Returns the UMessageBuilder with the configured priority and sink.
+     * Gets a builder for a notification message.
+     *
+     * A notification is used to inform a specific consumer about an event that has occurred.
+     *
+     * @param source The component that the notification originates from.
+     * @param sink   The URI identifying the destination to send the notification to.
+     * @return The builder.
+     * @throws NullPointerException if the source or sink is {@code null}.
      */
     public static UMessageBuilder notification(UUri source, UUri sink) {
         Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
-        
-        // Validate the source and sink
-        if (!UriValidator.isTopic(source) || !UriValidator.isRpcResponse(sink)) {
-            throw new IllegalArgumentException("source must be a topic and sink must be a response.");
-        }
 
-        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
-                UMessageType.UMESSAGE_TYPE_NOTIFICATION).withSink(sink);
+        return new UMessageBuilder(
+                source,
+                UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UMessageType.UMESSAGE_TYPE_NOTIFICATION)
+            .withSink(sink);
     }
 
     /**
-     * Construct a UMessageBuilder for a request message.
-     * 
-     * @param source Source address for the message (address of the client sending
-     *               the request message).
-     * @param sink   The method that is being requested (a.k.a. destination
-     *               address).
-     * @param ttl    The time to live in milliseconds.
-     * @return Returns the UMessageBuilder with the configured priority, sink and
-     *         ttl.
+     * Gets a builder for an RPC request message.
+     * <p>
+     * A request message is used to invoke a service's method with some input data, expecting
+     * the service to reply with a response message which is correlated by means of its
+     * {@link UAttributes#getReqid() request ID}.
+     * <p>
+     * The builder will be initialized with {@link UPriority#UPRIORITY_CS4}.
+     *
+     * @param source The URI that the sender of the request expects the response message at.
+     * @param sink   The URI identifying the method to invoke.
+     * @param ttl    The number of milliseconds after which the request should no longer be processed
+     * by the target service.
+     * @return The builder.
+     * @throws NullPointerException if the source or sink is {@code null}.
+     * @throws IllegalArgumentException if the ttl is less than or equal to 0.
      */
-    public static UMessageBuilder request(UUri source, UUri sink, Integer ttl) {
+    public static UMessageBuilder request(UUri source, UUri sink, int ttl) {
         Objects.requireNonNull(source, "source cannot be null.");
-        Objects.requireNonNull(ttl, "ttl cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
 
-        // Validate the source and sink
-        if (!UriValidator.isRpcMethod(sink) || !UriValidator.isRpcResponse(source)) {
-            throw new IllegalArgumentException("source must be an rpc method and sink must be a request.");
-        }
-
-        // Validate the ttl
         if (ttl <= 0) {
             throw new IllegalArgumentException("ttl must be greater than 0.");
         }
-        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
-                UMessageType.UMESSAGE_TYPE_REQUEST).withTtl(ttl).withSink(sink);
+        return new UMessageBuilder(
+                source,
+                UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UMessageType.UMESSAGE_TYPE_REQUEST)
+            .withSink(sink)
+            .withTtl(ttl)
+            .withPriority(UPriority.UPRIORITY_CS4);
     }
 
     /**
-     * Construct a UMessageBuilder for a response message.
-     * 
-     * @param source The source address of the method that was requested
-     * @param sink   The destination of the client thatsend the request.
-     * @param reqid  The original request UUID used to correlate the response to the
-     *               request.
-     * @return Returns the UMessageBuilder with the configured priority, sink and
-     *         reqid.
+     * Gets a builder for an RPC response message.
+     * <p>
+     * A response message is used to send the outcome of processing a request message
+     * to the original sender of the request message.
+     * <p>
+     * The builder will be initialized with {@link UPriority#UPRIORITY_CS4}.
+     *
+     * # Arguments
+     *
+     * * `reply_to_address` - The URI that the sender of the request expects to receive the response message at.
+     * * `request_id` - The identifier of the request that this is the response to.
+     * * `invoked_method` - The URI identifying the method that has been invoked and which the created message is
+     *   the outcome of.
+     *
+     * @param source The URI identifying the method that has been invoked and which the created message is
+     *   the outcome of.
+     * @param sink   The URI that the sender of the request expects to receive the response message at.
+     * @param reqid  The identifier of the request that this is the response to.
+     * @return The builder.
+     * @throws NullPointerException if any of the parameters are {@code null}.
      */
     public static UMessageBuilder response(UUri source, UUri sink, UUID reqid) {
         Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null for Response.");
         Objects.requireNonNull(reqid, "reqid cannot be null.");
 
-        // Validate the source and sink
-        if (!UriValidator.isRpcResponse(sink) || !UriValidator.isRpcMethod(source)) {
-            throw new IllegalArgumentException("sink must be a response and source must be an rpc method.");
-        }
-
-        try {
-            UuidValidator.Validators.UPROTOCOL.validator().validate(reqid);
-        } catch (ValidationException e) {
-            throw new IllegalArgumentException("reqid is not a valid UUID.", e);
-        }
-
-        return new UMessageBuilder(source, UuidFactory.Factories.UPROTOCOL.factory().create(),
-                UMessageType.UMESSAGE_TYPE_RESPONSE).withSink(sink).withReqId(reqid);
+        return new UMessageBuilder(
+                source,
+                UuidFactory.Factories.UPROTOCOL.factory().create(),
+                UMessageType.UMESSAGE_TYPE_RESPONSE)
+            .withSink(sink)
+            .withReqId(reqid)
+            .withPriority(UPriority.UPRIORITY_CS4);
     }
 
     /**
-     * Construct a UMessageBuilder for a response message using an existing request.
+     * Gets a builder for creating an RPC response message in reply to a request.
+     * <p>
+     * A response message is used to send the outcome of processing a request message
+     * to the original sender of the request message.
+     * <p>
+     * The builder will be initialized with values from the given request attributes.
+     *
+     * # Arguments
+     *
+     * * `request_attributes` - The attributes from the request message. The response message
+     *   builder will be initialized with the corresponding attribute values.
      * 
-     * @param request The original request {@code UAttributes} used to correlate the
-     *                response to the request.
-     * @return Returns the UMessageBuilder with the configured source, sink,
-     *         priority, and reqid.
+     * @param request The attributes from the request message. The response message
+     *   builder will be initialized with the corresponding attribute values.
+     * @return The builder.
+     * @throws NullPointerException if request is {@code null}.
+     * @throws IllegalArgumentException if the request does not contain valid request attributes.
      */
     public static UMessageBuilder response(UAttributes request) {
         Objects.requireNonNull(request, "request cannot be null.");
@@ -172,14 +195,14 @@ public class UMessageBuilder {
                 request.getSink(),
                 UuidFactory.Factories.UPROTOCOL.factory().create(),
                 UMessageType.UMESSAGE_TYPE_RESPONSE)
-                .withPriority(request.getPriority())
-                .withSink(request.getSource())
-                .withReqId(request.getId());
+            .withPriority(request.getPriority())
+            .withSink(request.getSource())
+            .withReqId(request.getId())
+            .withTtl(request.getTtl());
     }
 
     /**
-     * Construct the UMessageBuilder with the configurations that are required for
-     * every payload transport.
+     * Creates a builder for attribute values required for all types of messages.
      *
      * @param source Source address of the message.
      * @param id     Unique identifier for the message.
@@ -193,88 +216,135 @@ public class UMessageBuilder {
     }
 
     /**
-     * Add the time to live in milliseconds.
+     * Sets the message's identifier.
      *
-     * @param ttl the time to live in milliseconds.
-     * @return Returns the UMessageBuilder with the configured ttl.
+     * Every message must have an identifier. If this method is not used, an identifier will be
+     * generated and set on the message when one of the <em>build</em> methods is invoked.
+     *
+     * @param id The custom message ID.
+     * @return The builder with the custom message ID.
+     * @throws NullPointerException if the id is {@code null}.
+     * @throws IllegalArgumentException if the id is not a {@link UuidUtils#isUProtocol(UUID) valid uProtocol UUID}.
      */
-    public UMessageBuilder withTtl(Integer ttl) {
+    public UMessageBuilder withMessageId(UUID id) {
+        Objects.requireNonNull(id, "id cannot be null.");
+        if (!UuidUtils.isUProtocol(id)) {
+            throw new IllegalArgumentException("id must be a valid uProtocol UUID.");
+        }
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Sets the message's time-to-live.
+     *
+     * @param ttl The time-to-live in milliseconds.
+     * @return The builder with the configured ttl.
+     * @throws IllegalArgumentException if the ttl is negative.
+     */
+    public UMessageBuilder withTtl(int ttl) {
+        if (ttl < 0) {
+            throw new IllegalArgumentException("TTL must be a non-negative integer.");
+        }
         this.ttl = ttl;
         return this;
     }
 
     /**
-     * Add the authorization token used for TAP.
+     * Sets the message's authorization token used for TAP.
      *
-     * @param token the authorization token used for TAP.
-     * @return Returns the UMessageBuilder with the configured token.
+     * @param token The token.
+     * @return The builder with the configured token.
+     * @throws NullPointerException if the token is {@code null}.
+     * @throws IllegalStateException if the message is not an RPC request message.
      */
     public UMessageBuilder withToken(String token) {
+        // [impl->dsn~up-attributes-request-token~1]
+        Objects.requireNonNull(token, "token cannot be null.");
+        if (this.type != UMessageType.UMESSAGE_TYPE_REQUEST) {
+            throw new IllegalStateException("Token can only be set for RPC request messages.");
+        }
         this.token = token;
         return this;
     }
 
     /**
-     * Add the priority of the message.
-     * 
-     * @param priority the priority of the message.
-     * @return Returns the UMessageBuilder with the configured priority.
+     * Sets the priority of the message.
+     * <p>
+     * If not set explicitly, the priority will be {@link UPriority#UPRIORITY_UNSPECIFIED}.
+     *
+     * @param priority The priority to be used for sending the message.
+     * @return The builder with the configured priority.
+     * @throws NullPointerException if the priority is {@code null}.
+     * @throws IllegalArgumentException if the builder is used for creating an RPC message
+     * but the priority is less than {@link UPriority#UPRIORITY_CS4}.
      */
     public UMessageBuilder withPriority(UPriority priority) {
+        // [impl->dsn~up-attributes-request-priority~1]
+        Objects.requireNonNull(priority, "priority cannot be null.");
+        if (priority.getNumber() < UPriority.UPRIORITY_CS4_VALUE &&
+            (this.type == UMessageType.UMESSAGE_TYPE_REQUEST || this.type == UMessageType.UMESSAGE_TYPE_RESPONSE)) {
+            throw new IllegalArgumentException("priority must be at least CS4 for RPC messages");
+        }
         this.priority = priority;
         return this;
     }
 
     /**
-     * Add the permission level of the message.
+     * Sets the message's permission level.
      *
-     * @param plevel the permission level of the message.
-     * @return Returns the UMessageBuilder with the configured plevel.
+     * @param plevel The level.
+     * @return The builder with the configured permission level.
+     * @throws IllegalArgumentException if the permission level is less than 0.
+     * @throws IllegalStateException if the message is not an RPC request message.
      */
-    public UMessageBuilder withPermissionLevel(Integer plevel) {
+    public UMessageBuilder withPermissionLevel(int plevel) {
+        // [impl->dsn~up-attributes-permission-level~1]
+        if (plevel < 0) {
+            throw new IllegalArgumentException("Permission level must be greater than or equal to 0.");
+        }
+        if (this.type != UMessageType.UMESSAGE_TYPE_REQUEST) {
+            throw new IllegalStateException("Permission level can only be set for RPC request messages.");
+        }
         this.plevel = plevel;
         return this;
     }
 
     /**
-     * Add the traceprent.
+     * Sets the identifier of the W3C Trace Context to convey in the message.
      *
-     * @param traceparent the trace parent.
-     * @return Returns the UMessageBuilder with the configured traceparent.
+     * @param traceparent The identifier.
+     * @return The builder with the configured traceparent.
+     * @throws NullPointerException if the traceparent is {@code null}.
      */
     public UMessageBuilder withTraceparent(String traceparent) {
+        // [impl->dsn~up-attributes-traceparent~1]
+        Objects.requireNonNull(traceparent, "traceparent cannot be null.");
         this.traceparent = traceparent;
         return this;
     }
 
     /**
-     * Add the communication status of the message.
+     * Sets the message's communication status.
      *
-     * @param commstatus the communication status of the message.
-     * @return Returns the UMessageBuilder with the configured commstatus.
+     * @param commstatus The status.
+     * @return The builder with the configured commstatus.
+     * @throws IllegalStateException if the message is not an RPC response message.
      */
     public UMessageBuilder withCommStatus(UCode commstatus) {
+        Objects.requireNonNull(commstatus, "commstatus cannot be null.");
+        if (this.type != UMessageType.UMESSAGE_TYPE_RESPONSE) {
+            throw new IllegalStateException("Communication status can only be set for RPC response messages.");
+        }
         this.commstatus = commstatus;
         return this;
     }
 
-    /**
-     * Add the request ID.
-     *
-     * @param reqid the request ID.
-     * @return Returns the UMessageBuilder with the configured reqid.
-     */
     private UMessageBuilder withReqId(UUID reqid) {
         this.reqid = reqid;
         return this;
     }
 
-    /**
-     * Add the explicit destination URI.
-     *
-     * @param sink the explicit destination URI.
-     * @return Returns the UMessageBuilder with the configured sink.
-     */
     private UMessageBuilder withSink(UUri sink) {
         this.sink = sink;
         return this;
@@ -285,56 +355,49 @@ public class UMessageBuilder {
      * 
      * @param payload The payload to be packed into the message.
      * @return Returns the UMessage with the configured payload.
+     * @throws NullPointerException if the payload is {@code null}.
      */
     public UMessage build(UPayload payload) {
-        if (payload != null ) {
-            this.format = payload.format();
-            this.payload = payload.data();
-        }
+        Objects.requireNonNull(payload, "payload cannot be null.");
+        this.format = payload.format();
+        this.payload = payload.data();
         return build();
     }
 
     
     /**
-     * Construct the UMessage from the builder.
+     * Creates the message based on the builder's state.
      *
-     * @return Returns a constructed
+     * # Errors
+     *
+     * If the properties set on the builder do not represent a consistent set of [`UAttributes`],
+     * a [`UMessageError::AttributesValidationError`] is returned.
+     *
+     * @return A message ready to be sent using a transport implementation.
+     * @throws ValidationException if the properties set on the builder do not represent a
+     * consistent set of attributes as determined by {@link UAttributesValidator#validate(UAttributes)}.
      */
     public UMessage build() {
-        UMessage.Builder messageBuilder = UMessage.newBuilder();
-
         UAttributes.Builder attributesBuilder = UAttributes.newBuilder()
                 .setSource(source)
                 .setId(id)
                 .setType(type);
 
-        Optional<UPriority> priority = Optional.ofNullable(this.priority);
-        switch (type) {
-            case UMESSAGE_TYPE_REQUEST:
-            case UMESSAGE_TYPE_RESPONSE:
-                attributesBuilder.setPriority(
-                        priority
-                                .filter(v -> v.getNumber() >= UPriority.UPRIORITY_CS4.getNumber())
-                                .orElse(UPriority.UPRIORITY_CS4));
-                break;
-            default:
-                attributesBuilder.setPriority(
-                        priority
-                                .filter(v -> v.getNumber() >= UPriority.UPRIORITY_CS1.getNumber())
-                                .orElse(UPriority.UPRIORITY_CS1));
-                break;
-        }
-
         Optional.ofNullable(sink).ifPresent(attributesBuilder::setSink);
+        Optional.ofNullable(priority).ifPresent(attributesBuilder::setPriority);
         Optional.ofNullable(ttl).ifPresent(attributesBuilder::setTtl);
         Optional.ofNullable(plevel).ifPresent(attributesBuilder::setPermissionLevel);
         Optional.ofNullable(commstatus).ifPresent(attributesBuilder::setCommstatus);
         Optional.ofNullable(reqid).ifPresent(attributesBuilder::setReqid);
         Optional.ofNullable(token).ifPresent(attributesBuilder::setToken);
         Optional.ofNullable(traceparent).ifPresent(attributesBuilder::setTraceparent);
-        Optional.ofNullable(payload).ifPresent(messageBuilder::setPayload);
         Optional.ofNullable(format).ifPresent(attributesBuilder::setPayloadFormat);
 
-        return messageBuilder.setAttributes(attributesBuilder).build();
+        final var attributes = attributesBuilder.build();
+        UAttributesValidator.getValidator(attributes).validate(attributes);
+
+        UMessage.Builder messageBuilder = UMessage.newBuilder();
+        Optional.ofNullable(payload).ifPresent(messageBuilder::setPayload);
+        return messageBuilder.setAttributes(attributes).build();
     }
 }
