@@ -75,9 +75,9 @@ public class UuidValidatorTest {
         final UUID uuidv6 = UuidFactory.Factories.UUIDV6.factory().create();
         final UUID uuid = UUID.newBuilder().setMsb(0L).setLsb(0L).build();
 
-        final java.util.UUID uuid_java = java.util.UUID.randomUUID();
-        final UUID uuidv4 = UUID.newBuilder().setMsb(uuid_java.getMostSignificantBits())
-                .setLsb(uuid_java.getLeastSignificantBits()).build();
+        final java.util.UUID uuidJava = java.util.UUID.randomUUID();
+        final UUID uuidv4 = UUID.newBuilder().setMsb(uuidJava.getMostSignificantBits())
+                .setLsb(uuidJava.getLeastSignificantBits()).build();
 
         final UuidValidator validator = UuidValidator.Validators.UPROTOCOL.validator();
         assertNotNull(validator);
