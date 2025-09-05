@@ -12,321 +12,145 @@
  */
 package org.eclipse.uprotocol.uri.serializer;
 
-import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.net.URI;
+import java.util.Optional;
 
-public class UriSerializerTest {
 
+class UriSerializerTest {
 
-    @Test
-    @DisplayName("Test using the serializers")
-    public void testUsingTheSerializers() {
-        UUri uri = UUri.newBuilder()
-                .setAuthorityName("myAuthority")
-                .setUeId(1)
-                .setUeVersionMajor(2)
-                .setResourceId(3)
-                .build();
+    @ParameterizedTest(name = "Test serializing a valid UUri succeeds [{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, textBlock = """
+            authority,     ueId,          ueVersion, resourceId, expectedUri
+            ,              ,              ,          ,           /0/0/0
+            myAuthority,   ,              ,          ,           //myAuthority/0/0/0
+            myAuthority,   0x0000_abcd,   ,          ,           //myAuthority/ABCD/0/0
+            myAuthority,   0x0000_abcd,   0x02,      ,           //myAuthority/ABCD/2/0
+            myAuthority,   0x001f_abcd,   0x02,      0x3d4b,     //myAuthority/1FABCD/2/3D4B
+            *,             0xb1a,         0x01,      0x8aa1,     //*/B1A/1/8AA1
+            myAuthority,   0x0000_ffff,   0x01,      0x8aa1,     //myAuthority/FFFF/1/8AA1
+            # using -62694 to represent 0xffff_0b1a which fails to be parsed by CsvSource
+            # because CsvSource does not support parsing hex strings as unsigned integers
+            myAuthority,   -62694,        0x01,      0x8aa1,     //myAuthority/FFFF0B1A/1/8AA1
+            myAuthority,   0xb1a,         0xff,      0x8aa1,     //myAuthority/B1A/FF/8AA1
+            myAuthority,   0xb1a,         0x01,      0xffff,     //myAuthority/B1A/1/FFFF
+            # using -1 (2s complement) to represent 0xffff_ffff which fails to be parsed by CsvSource
+            # because CsvSource does not support parsing hex strings as unsigned integers
+            *,             -1,            0xff,      0xffff,     //*/FFFFFFFF/FF/FFFF
+            """)
+    void testSerializingValidUUriSucceeds(
+            String authority,
+            Integer ueId,
+            Integer ueVersion,
+            Integer resourceId,
+            String expectedUri) {
+        final var builder = UUri.newBuilder();
+        Optional.ofNullable(authority).ifPresent(builder::setAuthorityName);
+        Optional.ofNullable(ueId).ifPresent(builder::setUeId);
+        Optional.ofNullable(ueVersion).ifPresent(builder::setUeVersionMajor);
+        Optional.ofNullable(resourceId).ifPresent(builder::setResourceId);
+        UUri originalUuri = builder.build();
 
-        String serializedUri = UriSerializer.serialize(uri);
-        assertEquals("//myAuthority/1/2/3", serializedUri);
+        String correspondingUri = UriSerializer.serialize(originalUuri);
+        assertEquals(expectedUri, correspondingUri);
+        assertEquals(originalUuri, UriSerializer.deserialize(correspondingUri));
     }
 
     @Test
-    @DisplayName("Test deserializing a null UUri")
-    public void testDeserializingANullUuri() {
-        UUri uri = UriSerializer.deserialize(null);
-        assertTrue(UriValidator.isEmpty(uri));
+    @DisplayName("Test serializing a null UUri fails")
+    void testSerializingANullUuri() {
+        assertThrows(NullPointerException.class, () -> {
+            UriSerializer.serialize(null);
+        });
+    }
+
+    //
+    // tests for deserializing URIs
+    //
+
+    @ParameterizedTest(name = "Test deserializing a valid Uri succeeds [{index}] {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, textBlock = """
+            URI,                    expectedAuthority, expectedUeId, expectedVersion, expectedResourceId
+            /0/0/0,                 ,                  0x0000_0000,  0x00,            0x0000
+            up:/0/0/0,              ,                  0x0000_0000,  0x00,            0x0000
+            //auth.dev/0/0/0,       auth.dev,          0x0000_0000,  0x00,            0x0000
+            //192.168.1.0/ABCD/0/0, 192.168.1.0,       0x0000_abcd,  0x00,            0x0000
+            //auth/ABCD/2/0,        auth,              0x0000_abcd,  0x02,            0x0000
+            up://auth/ABCD/2/3D4B,  auth,              0x0000_abcd,  0x02,            0x3d4b
+            /1234/1/5678,           ,                  0x0000_1234,  0x01,            0x5678
+            //*/1234/1/5678,        *,                 0x0000_1234,  0x01,            0x5678
+            //auth/FFFF/1/5678,     auth,              0x0000_ffff,  0x01,            0x5678
+            # using -62694 to represent 0xffff_0b1a which fails to be parsed by CsvSource
+            # because CsvSource does not support parsing hex strings as unsigned integers
+            //auth/FFFF0B1A/1/5678, auth,              -62694,       0x01,            0x5678
+            //auth/1234/FF/5678,    auth,              0x0000_1234,  0xff,            0x5678
+            //auth/1234/1/FFFF,     auth,              0x0000_1234,  0x01,            0xffff
+            # using -1 to represent 0xffff_ffff which fails to be parsed by CsvSource
+            # because CsvSource does not support parsing hex strings as unsigned integers
+            //*/FFFFFFFF/FF/FFFF,   *,                 -1,           0xff,            0xffff
+            """)
+    void testDeserializeValidUriSucceeds(
+            String uri,
+            String expectedAuthority,
+            Integer expectedUeId,
+            Integer expectedVersion,
+            Integer expectedResourceId) {
+
+        final var uuri = UriSerializer.deserialize(uri);
+        Optional.ofNullable(expectedAuthority).ifPresent(s -> assertEquals(s, uuri.getAuthorityName()));
+        Optional.ofNullable(expectedUeId).ifPresent(s -> assertEquals(s, uuri.getUeId()));
+        Optional.ofNullable(expectedVersion).ifPresent(s -> assertEquals(s, uuri.getUeVersionMajor()));
+        Optional.ofNullable(expectedResourceId).ifPresent(s -> assertEquals(s, uuri.getResourceId()));
     }
 
     @Test
-    @DisplayName("Test deserializing an empty UUri")
-    public void testDeserializingAnEmptyUuri() {
-        UUri uri = UriSerializer.deserialize("");
-        assertTrue(UriValidator.isEmpty(uri));
+    @DisplayName("Test deserializing a null UUri fails")
+    public void testDeserializingANullUuriFails() {
+        assertThrows(NullPointerException.class, () -> {
+            UriSerializer.deserialize((String) null);
+        });
+        assertThrows(NullPointerException.class, () -> {
+            UriSerializer.deserialize((URI) null);
+        });
     }
 
-
-    @Test
-    @DisplayName("Test deserializing a blank UUri")
-    public void testDeserializingABlankUuri() {
-        UUri uri = UriSerializer.deserialize("  ");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing with a valid URI that has scheme")
-    public void testDeserializingWithAValidUriThatHasScheme() {
-        UUri uri = UriSerializer.deserialize("up://myAuthority/1/2/3");
-        assertEquals("myAuthority", uri.getAuthorityName());
-        assertEquals(1, uri.getUeId());
-        assertEquals(2, uri.getUeVersionMajor());
-        assertEquals(3, uri.getResourceId());
-    }
-
-    @Test
-    @DisplayName("Test deserializing with a valid URI that has scheme but nothing else")
-    public void testDeserializingWithAValidUriThatHasSchemeButNothingElse() {
-        UUri uri = UriSerializer.deserialize("up://");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a valid UUri with all fields")
-    public void testDeserializingAValidUuriWithAllFields() {
-        UUri uri = UriSerializer.deserialize("//myAuthority/1/2/3");
-        assertEquals("myAuthority", uri.getAuthorityName());
-        assertEquals(1, uri.getUeId());
-        assertEquals(2, uri.getUeVersionMajor());
-        assertEquals(3, uri.getResourceId());
-    }
-
-    @Test
-    @DisplayName("Test deserializing a valid UUri with only authority")
-    public void testDeserializingAValidUuriWithOnlyAuthority() {
-        UUri uri = UriSerializer.deserialize("//myAuthority");
-        assertEquals("myAuthority", uri.getAuthorityName());
-        assertEquals(0, uri.getUeId());
-        assertEquals(0, uri.getUeVersionMajor());
-        assertEquals(0, uri.getResourceId());
-    }
-
-    @Test
-    @DisplayName("Test deserializing a valid UUri with only authority and ueId")
-    public void testDeserializingAValidUuriWithOnlyAuthorityAndUeid() {
-        UUri uri = UriSerializer.deserialize("//myAuthority/1");
-        assertEquals("myAuthority", uri.getAuthorityName());
-        assertEquals(1, uri.getUeId());
-        assertEquals(0, uri.getUeVersionMajor());
-        assertEquals(0, uri.getResourceId());
-    }
-
-    @Test
-    @DisplayName("Test deserializing a valid UUri with only authority, ueId and ueVersionMajor")
-    public void testDeserializingAValidUuriWithOnlyAuthorityUeidAndUeversionmajor() {
-        UUri uri = UriSerializer.deserialize("//myAuthority/1/2");
-        assertEquals("myAuthority", uri.getAuthorityName());
-        assertEquals(1, uri.getUeId());
-        assertEquals(2, uri.getUeVersionMajor());
-        assertEquals(0, uri.getResourceId());
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with invalid characters at the beginning")
-    public void testDeserializingAStringWithInvalidCharacters() {
-        UUri uri = UriSerializer.deserialize("$$");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with names instead of ids for UeId")
-    public void testDeserializingAStringWithNamesInsteadOfIdsForUeid() {
-        UUri uri = UriSerializer.deserialize("//myAuthority/myUeId/2/3");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with names instead of ids for UeVersionMajor")
-    public void testDeserializingAStringWithNamesInsteadOfIdsForUeversionmajor() {
-        UUri uri = UriSerializer.deserialize("//myAuthority/1/myUeVersionMajor/3");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with names instead of ids for ResourceId")
-    public void testDeserializingAStringWithNamesInsteadOfIdsForResourceid() {
-        UUri uri = UriSerializer.deserialize("//myAuthority/1/2/myResourceId");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string without authority")
-    public void testDeserializingAStringWithoutAuthority() {
-        UUri uri = UriSerializer.deserialize("/1/2/3");
-        assertEquals(1, uri.getUeId());
-        assertEquals(2, uri.getUeVersionMajor());
-        assertEquals(3, uri.getResourceId());
-        assertTrue(uri.getAuthorityName().isBlank());
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string without authority and ResourceId")
-    public void testDeserializingAStringWithoutAuthorityAndResourceid() {
-        UUri uri = UriSerializer.deserialize("/1/2");
-        assertEquals(1, uri.getUeId());
-        assertEquals(2, uri.getUeVersionMajor());
-        assertEquals(0, uri.getResourceId());
-        assertTrue(uri.getAuthorityName().isBlank());
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string without authority, ResourceId and UeVersionMajor")
-    public void testDeserializingAStringWithoutAuthorityResourceidAndUeversionmajor() {
-        UUri uri = UriSerializer.deserialize("/1");
-        assertEquals(1, uri.getUeId());
-        assertEquals(0, uri.getUeVersionMajor());
-        assertEquals(0, uri.getResourceId());
-        assertTrue(uri.getAuthorityName().isBlank());
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with blank authority")
-    public void testDeserializingAStringWithBlankAuthority() {
-        UUri uri = UriSerializer.deserialize("///2");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with all the items are the wildcard values")
-    public void testDeserializingAStringWithAllTheItemsAreTheWildcardValues() {
-        UUri uri = UriSerializer.deserialize("//*/FFFF/ff/ffff");
-        assertEquals("*", uri.getAuthorityName());
-        assertEquals(0xFFFF, uri.getUeId());
-        assertEquals(0xFF, uri.getUeVersionMajor());
-        assertEquals(0xFFFF, uri.getResourceId());
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with uEId() out of range")
-    public void testDeserializingAStringWithUeidOutOfRange() {
-        UUri uri = UriSerializer.deserialize("/fffffffff/2/3");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with uEVersionMajor out of range")
-    public void testDeserializingAStringWithUeversionmajorOutOfRange() {
-        UUri uri = UriSerializer.deserialize("/1/256/3");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with resourceId out of range")
-    public void testDeserializingAStringWithResourceidOutOfRange() {
-        UUri uri = UriSerializer.deserialize("/1/2/65536");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with negative uEId")
-    public void testDeserializingAStringWithNegativeUeid() {
-        UUri uri = UriSerializer.deserialize("/-1/2/3");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with negative uEVersionMajor")
-    public void testDeserializingAStringWithNegativeUeversionmajor() {
-        UUri uri = UriSerializer.deserialize("/1/-2/3");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with negative resourceId")
-    public void testDeserializingAStringWithNegativeResourceid() {
-        UUri uri = UriSerializer.deserialize("/1/2/-3");
-        assertTrue(UriValidator.isEmpty(uri));
-    }
-
-    @Test
-    @DisplayName("Test deserializing a string with wildcard ResourceId")
-    public void testDeserializingAStringWithWildcardResourceid() {
-        UUri uri = UriSerializer.deserialize("/1/2/ffff");
-        assertEquals(1, uri.getUeId());
-        assertEquals(2, uri.getUeVersionMajor());
-        assertEquals(0xFFFF, uri.getResourceId());
-    }
-
-    @Test
-    @DisplayName("Test serializing an Empty UUri")
-    public void testSerializingAnEmptyUuri() {
-        UUri uri = UUri.getDefaultInstance();
-        String serializedUri = UriSerializer.serialize(uri);
-        assertTrue(serializedUri.isBlank());
-    }
-
-    @Test
-    @DisplayName("Test serializing a null UUri")
-    public void testSerializingANullUuri() {
-        String serializedUri = UriSerializer.serialize(null);
-        assertTrue(serializedUri.isBlank());
-    }
-
-    @Test
-    @DisplayName("Test serializing a full UUri")
-    public void testSerializingAFullUuri() {
-        UUri uri = UUri.newBuilder()
-                .setAuthorityName("myAuthority")
-                .setUeId(1)
-                .setUeVersionMajor(2)
-                .setResourceId(3)
-                .build();
-        String serializedUri = UriSerializer.serialize(uri);
-        assertEquals("//myAuthority/1/2/3", serializedUri);
-    }
-
-    @Test
-    @DisplayName("Test serializing a UUri with only authority")
-    public void testSerializingAUuriWithOnlyAuthority() {
-        UUri uri = UUri.newBuilder()
-                .setAuthorityName("myAuthority")
-                .build();
-        String serializedUri = UriSerializer.serialize(uri);
-        assertEquals("//myAuthority/0/0/0", serializedUri);
-    }
-
-    @Test
-    @DisplayName("Test serializing a UUri with only authority and ueId")
-    public void testSerializingAUuriWithOnlyAuthorityAndUeid() {
-        UUri uri = UUri.newBuilder()
-                .setAuthorityName("myAuthority")
-                .setUeId(1)
-                .build();
-        String serializedUri = UriSerializer.serialize(uri);
-        assertEquals("//myAuthority/1/0/0", serializedUri);
-    }
-
-    @Test
-    @DisplayName("Test serializing a UUri with only authority, ueId and ueVersionMajor")
-    public void testSerializingAUuriWithOnlyAuthorityUeidAndUeversionmajor() {
-        UUri uri = UUri.newBuilder()
-                .setAuthorityName("myAuthority")
-                .setUeId(1)
-                .setUeVersionMajor(2)
-                .build();
-        String serializedUri = UriSerializer.serialize(uri);
-        assertEquals("//myAuthority/1/2/0", serializedUri);
-    }
-
-    @Test
-    @DisplayName("Test serializing a UUri with only authority, ueId, ueVersionMajor and resourceId")
-    public void testSerializingAUuriWithOnlyAuthorityUeidUeversionmajorAndResourceid() {
-        UUri uri = UUri.newBuilder()
-                .setAuthorityName("myAuthority")
-                .setUeId(1)
-                .setUeVersionMajor(2)
-                .setResourceId(3)
-                .build();
-        String serializedUri = UriSerializer.serialize(uri);
-        assertEquals("//myAuthority/1/2/3", serializedUri);
-    }
-
-    @Test
-    @DisplayName("Test serializing a UUri that has a blank authority")
-    public void testSerializingAUuriThatHasABlankAuthority() {
-        UUri uri = UUri.newBuilder()
-                .setAuthorityName("")
-                .setUeId(1)
-                .setUeVersionMajor(2)
-                .setResourceId(3)
-                .build();
-        String serializedUri = UriSerializer.serialize(uri);
-        assertEquals("/1/2/3", serializedUri);
+    @ParameterizedTest(name = "Test deserializing an invalid URI fails [{index}] {arguments}")
+    @ValueSource(strings = {
+        "  ",
+        "$$",
+        "up://",
+        "up://just_an_authority",
+        "/ABC",
+        "/ABC/1",
+        "//myhost/ABC",
+        "//myhost/ABC/1",
+        "//myhost//1/A000",
+        "//myhost/ABC//A000",
+        "//myhost/ABC/1//",
+        "//myhost/not-hex/1/2341",
+        "//myhost/1/not-hex/2341",
+        "//myhost/1/1/not-hex",
+        "//myhost/-1/1/2341",
+        "invalidscheme://myhost/A000/1/2341",
+        "up://myhost/A000/1/2341#invalid",
+        "up://myhost/A000/1/2341?param=invalid",
+        "up://myhost/100000000/1/2341",
+        "//myhost/A1B/-1/2341",
+        "//myhost/A1B/100/2341",
+        "up://myhost/A1B/1/-1",
+        "//myhost/A1B/1/10000"
+    })
+    void testDeserializeInvalidUriFails(String uri) {
+        assertThrows(IllegalArgumentException.class, () -> {
+            UriSerializer.deserialize(uri);
+        });
     }
 }

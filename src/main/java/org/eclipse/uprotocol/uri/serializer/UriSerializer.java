@@ -12,114 +12,140 @@
  */
 package org.eclipse.uprotocol.uri.serializer;
 
-import org.eclipse.uprotocol.uri.factory.UriFactory;
+import java.net.URI;
+import java.util.Objects;
+import java.util.Optional;
+
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
- * UUri Serializer that serializes a UUri to a long format string per
- * https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc.
+ * Provides functionality for serializing and deserializing {@link UUri}s to/from their
+ * corresponding URI representation as defined by the uProtocol specification.
+ *
+ * @see <a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.4/basics/uri.adoc">
+ * uProtocol URI Specification</a>
  */
 public interface UriSerializer {
 
-
+    String SCHEME_UP = "up";
 
     /**
-     * Support for serializing {@link UUri} objects into their String format.
+     * Serializes a {@link UUri} into its URI representation.
      * 
-     * @param uri {@link UUri} object to be serialized to the String format.
-     * @return Returns the String format of the supplied {@link UUri} that can be
-     *         used as a sink or a source in a uProtocol publish communication.
+     * @param uuri The UUri to be serialized.
+     * @return The URI.
+     * @throws NullPointerException if the UUri is null.
+     * @throws IllegalArgumentException if the UUri does not comply with the UUri specification.
      */
-    static String serialize(UUri uri) {
-        if (uri == null || UriValidator.isEmpty(uri)) {
-            return "";
-        }
-
+    // [impl->dsn~uri-authority-mapping~1]
+    // [impl->dsn~uri-path-mapping~1]
+    // [impl->req~uri-serialization~1]
+    static String serialize(UUri uuri) {
+        Objects.requireNonNull(uuri);
+        UriValidator.validate(uuri);
         StringBuilder sb = new StringBuilder();
 
-        if (!uri.getAuthorityName().isBlank()) {
+        if (!uuri.getAuthorityName().isBlank()) {
             sb.append("//");
-            sb.append(uri.getAuthorityName());
+            sb.append(uuri.getAuthorityName());
         }
 
         sb.append("/");
         final var pathSegments = String.format("%X/%X/%X",
-                uri.getUeId(),
-                uri.getUeVersionMajor(),
-                uri.getResourceId());
+                uuri.getUeId(),
+                uuri.getUeVersionMajor(),
+                uuri.getResourceId());
         sb.append(pathSegments);
         return sb.toString();
     }
 
     /**
-     * Deserialize a String into a UUri object.
+     * Deserializes a URI into a UUri.
      * 
-     * @param uProtocolUri A long format uProtocol URI.
-     * @return Returns an UUri data object.
+     * @param uProtocolUri The URI to deserialize.
+     * @return The UUri.
+     * @throws NullPointerException if the URI is null.
+     * @throws IllegalArgumentException if the URI is invalid.
      */
+    // [impl->dsn~uri-authority-name-length~1]
+    // [impl->dsn~uri-scheme~1]
+    // [impl->dsn~uri-host-only~2]
+    // [impl->dsn~uri-authority-mapping~1]
+    // [impl->dsn~uri-path-mapping~1]
+    // [impl->req~uri-serialization~1]
     static UUri deserialize(String uProtocolUri) {
-        if (uProtocolUri == null) {
-            return UUri.getDefaultInstance();
+        Objects.requireNonNull(uProtocolUri);
+        final var parsedUri = URI.create(uProtocolUri);
+        return deserialize(parsedUri);
+    }
+
+    /**
+     * Deserializes a URI into a UUri.
+     * 
+     * @param uProtocolUri The URI to deserialize.
+     * @return The UUri.
+     * @throws NullPointerException if the URI is null.
+     * @throws IllegalArgumentException if the URI is invalid.
+     */
+    // [impl->dsn~uri-authority-name-length~1]
+    // [impl->dsn~uri-scheme~1]
+    // [impl->dsn~uri-host-only~2]
+    // [impl->dsn~uri-authority-mapping~1]
+    // [impl->dsn~uri-path-mapping~1]
+    // [impl->req~uri-serialization~1]
+    static UUri deserialize(URI uProtocolUri) {
+        Objects.requireNonNull(uProtocolUri);
+
+        if (uProtocolUri.getScheme() != null && !SCHEME_UP.equals(uProtocolUri.getScheme())) {
+            throw new IllegalArgumentException("uProtocol URI must use '%s' scheme".formatted(SCHEME_UP));
+        }
+        if (uProtocolUri.getQuery() != null) {
+            throw new IllegalArgumentException("uProtocol URI must not contain query");
+        }
+        if (uProtocolUri.getFragment() != null) {
+            throw new IllegalArgumentException("uProtocol URI must not contain fragment");
+        }
+        UriValidator.validateParsedAuthority(uProtocolUri);
+
+        final var pathSegments = uProtocolUri.getPath().split("/");
+        if (pathSegments.length != 4) {
+            throw new IllegalArgumentException("uProtocol URI must have exactly 3 path segments");
         }
 
-        String uri = uProtocolUri.contains(":") ? uProtocolUri.substring(uProtocolUri.indexOf(":") + 1)
-                : uProtocolUri
-                        .replace('\\', '/');
+        final var builder = UUri.newBuilder();
+        Optional.ofNullable(uProtocolUri.getAuthority()).ifPresent(builder::setAuthorityName);
 
-        boolean isLocal = !uri.startsWith("//");
-
-        final String[] uriParts = uri.split("/");
-        final int numberOfPartsInUri = uriParts.length;
-
-        if (numberOfPartsInUri == 0 || numberOfPartsInUri == 1) {
-            return UUri.getDefaultInstance();
+        if (pathSegments[1].isEmpty()) {
+            throw new IllegalArgumentException("URI must contain non-empty entity ID");
         }
-
-        UUri.Builder builder = UUri.newBuilder();
         try {
-            if (isLocal) {
-                builder.setUeId(Integer.parseUnsignedInt(uriParts[1], 16));
-                if (numberOfPartsInUri > 2) {
-                    builder.setUeVersionMajor(Integer.parseUnsignedInt(uriParts[2], 16));
-
-                    if (numberOfPartsInUri > 3) {
-                        builder.setResourceId(Integer.parseUnsignedInt(uriParts[3], 16));
-                    }
-                }
-            } else {
-                // If authority is blank, it is an error
-                if (uriParts[2].isBlank()) {
-                    return UUri.getDefaultInstance();
-                }
-                builder.setAuthorityName(uriParts[2]);
-
-                if (uriParts.length > 3) {
-                    builder.setUeId(Integer.parseUnsignedInt(uriParts[3], 16));
-                    if (numberOfPartsInUri > 4) {
-                        builder.setUeVersionMajor(Integer.parseUnsignedInt(uriParts[4], 16));
-
-                        if (numberOfPartsInUri > 5) {
-                            builder.setResourceId(Integer.parseUnsignedInt(uriParts[5], 16));
-                        }
-
-                    }
-                }
-            }
+            builder.setUeId(Integer.parseUnsignedInt(pathSegments[1], 16));
         } catch (NumberFormatException e) {
-            return UUri.getDefaultInstance();
+            throw new IllegalArgumentException("URI must contain 32 bit hex-encoded entity ID", e);
         }
 
-        // Ensure the major version is less than the wildcard
-        if (builder.getUeVersionMajor() > UriFactory.WILDCARD_ENTITY_VERSION) {
-            return UUri.getDefaultInstance();
+        if (pathSegments[2].isEmpty()) {
+            throw new IllegalArgumentException("URI must contain non-empty entity version");
+        }
+        try {
+            int versionMajor = Integer.parseUnsignedInt(pathSegments[2], 16);
+            UriValidator.validateVersionMajor(versionMajor);
+            builder.setUeVersionMajor(versionMajor);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("URI must contain 8 bit hex-encoded entity version", e);
         }
 
-        // Ensure the resource id is less than the wildcard
-        if (builder.getResourceId() > UriFactory.WILDCARD_ENTITY_ID) {
-            return UUri.getDefaultInstance();
+        // the fourth path segment can not be empty because the String.split() method excludes
+        // trailing empty strings from the resulting array
+        // it is therefore safe to simply parse it as an unsigned integer
+        try {
+            int resourceId = Integer.parseUnsignedInt(pathSegments[3], 16);
+            UriValidator.validateResourceId(resourceId);
+            builder.setResourceId(resourceId);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("URI must contain 16 bit hex-encoded resource ID", e);
         }
-
         return builder.build();
     }
 }
