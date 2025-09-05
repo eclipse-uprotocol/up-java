@@ -443,7 +443,7 @@ public abstract class UAttributesValidator {
             if (!attributes.hasSink() || attributes.getSink() == UUri.getDefaultInstance()) {
                 throw new ValidationException("Missing Sink");
             }
-            if (!UriValidator.isDefaultResourceId(attributes.getSink())) {
+            if (!UriValidator.isNotificationDestination(attributes.getSink())) {
                 throw new ValidationException("Invalid Sink Uri");
             }
         }

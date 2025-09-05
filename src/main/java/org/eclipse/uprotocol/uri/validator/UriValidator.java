@@ -12,230 +12,226 @@
  */
 package org.eclipse.uprotocol.uri.validator;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Objects;
+import java.util.Optional;
+
 import org.eclipse.uprotocol.uri.factory.UriFactory;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
- * class for validating Uris.
+ * A helper for validating uProtocol URIs.
  */
-public interface UriValidator {
+public final class UriValidator {
+
+    private UriValidator() {
+        // prevent instantiation
+    }
 
     /**
      * The minimum publish/notification topic id for a URI.
      */
-    int MIN_TOPIC_ID = 0x8000;
+    public static final int MIN_TOPIC_ID = 0x8000;
 
     /**
      * The Default resource id.
      */
-    int DEFAULT_RESOURCE_ID = 0;
+    public static final int DEFAULT_RESOURCE_ID = 0x0000;
 
     /**
      * Validates a UUri against the uProtocol specification.
      *
      * @param uuri The UUri to validate.
-     * @throws NullPointerException if the UUri is null.
-     * @throws IllegalArgumentException if the UUri does not comply with the UUri specification.
+     * @throws NullPointerException if uuri is {@code null}.
+     * @throws IllegalArgumentException if uuri does not comply with the UUri specification.
      */
-    static void validate(UUri uuri) {
-        if (uuri == null) {
-            throw new NullPointerException("URI cannot be null");
-        }
+    public static void validate(UUri uuri) {
+        Objects.requireNonNull(uuri, "URI must not be null");
 
-        if (uuri.getAuthorityName().length() > 128) {
-            throw new IllegalArgumentException("Authority name exceeds maximum length of 128 characters");
-        }
+        Optional.ofNullable(uuri.getAuthorityName())
+            .filter(s -> !s.isEmpty())
+            .ifPresent(name -> {
+                try {
+                    var uri = new URI(null, name, null, null, null);
+                    validateParsedAuthority(uri);
+                } catch (URISyntaxException e) {
+                    throw new IllegalArgumentException("Invalid authority name", e);
+                }
+            });
 
         // no need to check uEntity ID which is of Java primitive type (signed) int but actually represents
         // an unsigned 32 bit integer, thus any value is valid
 
-        if ((uuri.getUeVersionMajor() & 0xFFFF_FF00) != 0) {
-            throw new IllegalArgumentException("uEntity version major must be in range [0, 0x%X]"
+        validateVersionMajor(uuri.getUeVersionMajor());
+        validateResourceId(uuri.getResourceId());
+    }
+
+    public static void validateVersionMajor(int versionMajor) {
+        if ((versionMajor & 0xFFFF_FF00) != 0) {
+            throw new IllegalArgumentException("uEntity version major must be in range [0x00, 0x%X]"
                 .formatted(UriFactory.WILDCARD_ENTITY_VERSION));
         }
+    }
 
-        if ((uuri.getResourceId() & 0xFFFF_0000) != 0) {
-            throw new IllegalArgumentException("uEntity resource ID must be in range [0, 0x%X]"
+    public static void validateResourceId(int resourceId) {
+        if ((resourceId & 0xFFFF_0000) != 0) {
+            throw new IllegalArgumentException("uEntity resource ID must be in range [0x0000, 0x%X]"
                 .formatted(UriFactory.WILDCARD_RESOURCE_ID));
         }
     }
 
-    /**
-     * Indicates that this URI is an empty as it does not contain authority, entity,
-     * and resource.
-     *
-     * @param uri {@link UUri} to check if it is empty
-     * @return Returns true if this URI is an empty container and has no valuable
-     *         information in building uProtocol sinks or sources.
-     */
-    static boolean isEmpty(UUri uri) {
-        return uri == null || uri.equals(UUri.getDefaultInstance());
+    public static void validateParsedAuthority(URI uri) {
+        Objects.requireNonNull(uri, "URI must not be null");
+
+        if (uri.getPort() != -1) {
+            throw new IllegalArgumentException("uProtocol URI must not contain port");
+        }
+        if (uri.getUserInfo() != null) {
+            throw new IllegalArgumentException("uProtocol URI must not contain user info");
+        }
+        Optional.ofNullable(uri.getAuthority()).ifPresent(authority -> {
+            if (authority.length() > 128) {
+                throw new IllegalArgumentException("Authority name exceeds maximum length of 128 characters");
+            }
+        });
+        // TODO: make sure that authority name only consists of allowed characters
     }
 
     /**
-     * Returns true if URI is of type RPC. A UUri is of type RPC if its
-     * resource ID is less than MIN_TOPIC_ID and greater than RESOURCE_ID_RESPONSE.
+     * Checks if a uProtocol URI represents an RPC method address.
      *
-     * @param uri {@link UUri} to check if it is of type RPC method
-     * @return Returns true if URI is of type RPC.
+     * @param uri The URI to check.
+     * @return {@code true} if the URI's resource ID is &gt; {@value #DEFAULT_RESOURCE_ID}
+     *         and &lt; {@value #MIN_TOPIC_ID}.
+     * @throws NullPointerException if uri is {@code null}.
      */
-    static boolean isRpcMethod(UUri uri) {
-        return !isEmpty(uri) &&
-                uri.getResourceId() > DEFAULT_RESOURCE_ID &&
+    public static boolean isRpcMethod(UUri uri) {
+        Objects.requireNonNull(uri, "URI must not be null");
+        return uri.getResourceId() > DEFAULT_RESOURCE_ID &&
                 uri.getResourceId() < MIN_TOPIC_ID;
     }
 
     /**
-     * Returns true if URI is of type RPC response.
+     * Checks if a uProtocol URI represents an RPC response address.
      *
-     * @param uri {@link UUri} to check response
-     * @return Returns true if URI is of type RPC response.
+     * @param uri The URI to check.
+     * @return {@code true} if the URI's resource ID is {@value #DEFAULT_RESOURCE_ID}.
+     * @throws NullPointerException if uri is {@code null}.
      */
-    static boolean isRpcResponse(UUri uri) {
-        return isDefaultResourceId(uri);
+    public static boolean isRpcResponse(UUri uri) {
+        Objects.requireNonNull(uri, "URI must not be null");
+        return isNotificationDestination(uri);
     }
 
     /**
-     * Returns true if URI has the resource id of 0.
+     * Checks if a uProtocol URI represents a destination for a notification.
      *
-     * @param uri {@link UUri} to check request
-     * @return Returns true if URI has a resource id of 0.
+     * @param uri The URI to check.
+     * @return {@code true} if the URI's resource ID is {@value #DEFAULT_RESOURCE_ID}.
+     * @throws NullPointerException if uri is {@code null}.
      */
-    static boolean isDefaultResourceId(UUri uri) {
-        return !isEmpty(uri) && uri.getResourceId() == DEFAULT_RESOURCE_ID;
+    public static boolean isNotificationDestination(UUri uri) {
+        Objects.requireNonNull(uri, "URI must not be null");
+        return uri.getResourceId() == DEFAULT_RESOURCE_ID;
     }
 
     /**
-     * Returns true if URI is of type Topic used for publish and notifications.
+     * Checks if a uProtocol URI can be used as the source of an event or notification.
      *
-     * @param uri {@link UUri} to check if it is of type Topic
-     * @return Returns true if URI is of type Topic.
+     * @param uri The URI to check.
+     * @return {@code true} if the URI's resource ID is &gt;= {@value #MIN_TOPIC_ID}
+     *         and &lt; {@value UriFactory#WILDCARD_RESOURCE_ID}.
+     * @throws NullPointerException if uri is {@code null}.
      */
-    static boolean isTopic(UUri uri) {
-        return !isEmpty(uri) && uri.getResourceId() >= MIN_TOPIC_ID;
+    public static boolean isTopic(UUri uri) {
+        Objects.requireNonNull(uri, "URI must not be null");
+        return uri.getResourceId() >= MIN_TOPIC_ID &&
+        uri.getResourceId() < UriFactory.WILDCARD_RESOURCE_ID;
+    }
+
+    static boolean matchesAuthority(UUri pattern, UUri candidateUri) {
+        return hasWildcardAuthority(pattern) ||
+                pattern.getAuthorityName().equals(candidateUri.getAuthorityName());
+    }
+
+    static boolean matchesEntityTypeId(UUri pattern, UUri candidateUri) {
+        final var entityTypeIdToMatch = pattern.getUeId() & UriFactory.WILDCARD_ENTITY_TYPE_ID;
+        return entityTypeIdToMatch == UriFactory.WILDCARD_ENTITY_TYPE_ID ||
+                entityTypeIdToMatch == (candidateUri.getUeId() & UriFactory.WILDCARD_ENTITY_TYPE_ID);
+    }
+
+    static boolean matchesEntityInstance(UUri pattern, UUri candidateUri) {
+        final var instanceIdToMatch = pattern.getUeId() & UriFactory.WILDCARD_ENTITY_INSTANCE_ID;
+        return instanceIdToMatch == UriFactory.WILDCARD_ENTITY_INSTANCE_ID ||
+                instanceIdToMatch == (candidateUri.getUeId() & UriFactory.WILDCARD_ENTITY_INSTANCE_ID);
+    }
+
+    static boolean matchesEntityVersion(UUri pattern, UUri candidateUri) {
+        return hasWildcardEntityVersion(pattern) ||
+                pattern.getUeVersionMajor() == candidateUri.getUeVersionMajor();
+    }
+
+    static boolean matchesEntity(UUri pattern, UUri candidateUri) {
+        return matchesEntityTypeId(pattern, candidateUri) &&
+                matchesEntityInstance(pattern, candidateUri) &&
+                matchesEntityVersion(pattern, candidateUri);
+    }
+
+    static boolean matchesResource(UUri pattern, UUri candidateUri) {
+        return hasWildcardResourceId(pattern) ||
+                pattern.getResourceId() == candidateUri.getResourceId();
     }
 
     /**
-     * Checks if the authority of the uriToMatch matches the candidateUri.
-     * A match occurs if the authority name in uriToMatch is a wildcard
-     * or if both URIs have the same authority name.
+     * Checks if a given candidate URI matches a pattern.
      *
-     * @param uriToMatch The URI to match.
-     * @param candidateUri The candidate URI to match against.
-     * @return True if the authority names match, False otherwise.
+     * @param pattern The pattern to match.
+     * @param candidateUri The candidate URI to match against the pattern.
+     * @return {@code true} if the candidate matches the pattern.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    static boolean matchesAuthority(UUri uriToMatch, UUri candidateUri) {
-        return UriFactory.WILDCARD_AUTHORITY.equals(uriToMatch.getAuthorityName()) ||
-                uriToMatch.getAuthorityName().equals(candidateUri.getAuthorityName());
+    public static boolean matches(UUri pattern, UUri candidateUri) {
+        Objects.requireNonNull(pattern, "Pattern must not be null");
+        Objects.requireNonNull(candidateUri, "Candidate URI must not be null");
+        return matchesAuthority(pattern, candidateUri) &&
+                matchesEntity(pattern, candidateUri) &&
+                matchesResource(pattern, candidateUri);
+    }
+
+    static boolean hasWildcardAuthority(UUri uri) {
+        return UriFactory.WILDCARD_AUTHORITY.equals(uri.getAuthorityName());
+    }
+
+    static boolean hasWildcardEntityTypeId(UUri uri) {
+        return (uri.getUeId() & UriFactory.WILDCARD_ENTITY_TYPE_ID) == UriFactory.WILDCARD_ENTITY_TYPE_ID;
+    }
+
+    static boolean hasWildcardEntityInstanceId(UUri uri) {
+        return (uri.getUeId() & UriFactory.WILDCARD_ENTITY_INSTANCE_ID) == UriFactory.WILDCARD_ENTITY_INSTANCE_ID;
+    }
+
+    static boolean hasWildcardEntityVersion(UUri uri) {
+        return uri.getUeVersionMajor() == UriFactory.WILDCARD_ENTITY_VERSION;
+    }
+
+    static boolean hasWildcardResourceId(UUri uri) {
+        return uri.getResourceId() == UriFactory.WILDCARD_RESOURCE_ID;
     }
 
     /**
-     * Checks if the entity ID of the uriToMatch matches the candidateUri.
-     * A match occurs if the entity ID in uriToMatch is a wildcard (0xFFFF)
-     * or if the masked entity IDs of both URIs are equal.
-     * The entity ID masking is performed using a bitwise AND operation with
-     * 0xFFFF. If the result of the bitwise AND operation between the
-     * uriToMatch's entity ID and 0xFFFF is 0xFFFF, it indicates that the
-     * uriToMatch's entity ID is a wildcard and can match any entity ID.
-     * Otherwise, the function checks if the masked entity IDs of both URIs
-     * are equal, meaning that the relevant parts of their entity IDs match.
+     * Checks if a uProtocol URI contains any wildcard values.
      *
-     * @param uriToMatch The URI to match.
-     * @param candidateUri The candidate URI to match against.
-     * @return True if the entity IDs match, False otherwise.
+     * @param uri The URI to check.
+     * @return {@code true} if at least one of the URI's fields contains a wildcard value.
+     * @throws NullPointerException if uri is {@code null}.
      */
-    static boolean matchesEntityId(UUri uriToMatch, UUri candidateUri) {
-        return (uriToMatch.getUeId() & UriFactory.WILDCARD_ENTITY_ID) == UriFactory.WILDCARD_ENTITY_ID ||
-                (uriToMatch.getUeId() & UriFactory.WILDCARD_ENTITY_ID) ==
-                        (candidateUri.getUeId() & UriFactory.WILDCARD_ENTITY_ID);
-    }
-
-    /**
-     * Checks if the entity instance of the uriToMatch matches the candidateUri.
-     * A match occurs if the upper 16 bits of the entity ID in uriToMatch are zero
-     * or if the upper 16 bits of the entity IDs of both URIs are equal.
-     *
-     * @param uriToMatch The URI to match.
-     * @param candidateUri The candidate URI to match against.
-     * @return True if the entity instances match, False otherwise.
-     */
-    static boolean matchesEntityInstance(UUri uriToMatch, UUri candidateUri) {
-        return (uriToMatch.getUeId() & 0xFFFF0000) == 0x00000000 ||
-                (uriToMatch.getUeId() & 0xFFFF0000) == (candidateUri.getUeId() & 0xFFFF0000);
-    }
-
-    /**
-     * Checks if the entity version of the uriToMatch matches the candidateUri.
-     * A match occurs if the entity version in uriToMatch is a wildcard
-     * or if both URIs have the same entity version.
-     *
-     * @param uriToMatch The URI to match.
-     * @param candidateUri The candidate URI to match against.
-     * @return True if the entity versions match, False otherwise.
-     */
-    static boolean matchesEntityVersion(UUri uriToMatch, UUri candidateUri) {
-        return UriFactory.WILDCARD_ENTITY_VERSION == uriToMatch.getUeVersionMajor() ||
-                uriToMatch.getUeVersionMajor() == candidateUri.getUeVersionMajor();
-    }
-
-    /**
-     * Checks if the entity of the uriToMatch matches the candidateUri.
-     * A match occurs if the entity ID, entity instance, and entity version
-     * of both URIs match according to their respective rules.
-     *
-     * @param uriToMatch The URI to match.
-     * @param candidateUri The candidate URI to match against.
-     * @return True if the entities match, False otherwise.
-     */
-    static boolean matchesEntity(UUri uriToMatch, UUri candidateUri) {
-        return matchesEntityId(uriToMatch, candidateUri) &&
-                matchesEntityInstance(uriToMatch, candidateUri) &&
-                matchesEntityVersion(uriToMatch, candidateUri);
-    }
-
-    /**
-     * Checks if the resource of the uriToMatch matches the candidateUri.
-     * A match occurs if the resource ID in uriToMatch is a wildcard
-     * or if both URIs have the same resource ID.
-     *
-     * @param uriToMatch The URI to match.
-     * @param candidateUri The candidate URI to match against.
-     * @return True if the resource IDs match, False otherwise.
-     */
-    static boolean matchesResource(UUri uriToMatch, UUri candidateUri) {
-        return UriFactory.WILDCARD_RESOURCE_ID == uriToMatch.getResourceId() ||
-                uriToMatch.getResourceId() == candidateUri.getResourceId();
-    }
-
-    /**
-     * Checks if the entire URI (authority, entity, and resource) of the uriToMatch
-     * matches the candidateUri. A match occurs if the authority, entity, and resource
-     * of both URIs match according to their respective rules.
-     *
-     * @param uriToMatch The URI to match.
-     * @param candidateUri The candidate URI to match against.
-     * @return True if the entire URIs match, False otherwise.
-     */
-    static boolean matches(UUri uriToMatch, UUri candidateUri) {
-        return matchesAuthority(uriToMatch, candidateUri) &&
-                matchesEntity(uriToMatch, candidateUri) &&
-                matchesResource(uriToMatch, candidateUri);
-    }
-
-
-    /**
-     * Checks if the URI has a wildcard in any of its fields.
-     *
-     * @param uri The URI to check for wildcards.
-     * @return True if the URI has a wildcard, False otherwise.
-     */
-    static boolean hasWildcard(UUri uri) {
-        return !isEmpty(uri) && 
-                (uri.getAuthorityName().equals(UriFactory.WILDCARD_AUTHORITY) ||
-               (uri.getUeId() & UriFactory.WILDCARD_ENTITY_ID) == UriFactory.WILDCARD_ENTITY_ID ||
-                uri.getUeVersionMajor() == UriFactory.WILDCARD_ENTITY_VERSION ||
-                uri.getResourceId() == UriFactory.WILDCARD_RESOURCE_ID);
+    public static boolean hasWildcard(UUri uri) {
+        Objects.requireNonNull(uri, "URI must not be null");
+        return hasWildcardAuthority(uri) ||
+                hasWildcardEntityTypeId(uri) ||
+                hasWildcardEntityInstanceId(uri) ||
+                hasWildcardEntityVersion(uri) ||
+                hasWildcardResourceId(uri);
     }
 }
-
-
