@@ -191,6 +191,7 @@ public final class UriValidator {
      * @return {@code true} if the candidate matches the pattern.
      * @throws NullPointerException if any of the arguments are {@code null}.
      */
+    // [impl->dsn~uri-pattern-matching~2]
     public static boolean matches(UUri pattern, UUri candidateUri) {
         Objects.requireNonNull(pattern, "Pattern must not be null");
         Objects.requireNonNull(candidateUri, "Candidate URI must not be null");

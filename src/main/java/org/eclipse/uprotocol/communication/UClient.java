@@ -23,6 +23,7 @@ import org.eclipse.uprotocol.v1.UUri;
 /**
  * A client for Communication Layer APIs.
  */
+// [impl->dsn~communication-layer-impl-default~1]
 public final class UClient implements RpcServer, Notifier, Publisher, RpcClient {
 
     private final RpcServer rpcServer;

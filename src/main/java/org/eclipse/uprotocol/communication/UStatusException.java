@@ -20,6 +20,7 @@ import org.eclipse.uprotocol.v1.UCode;
 /**
  * The unchecked exception which carries uProtocol error model.
  */
+// [impl->dsn~communication-layer-api-declaration~1]
 public class UStatusException extends RuntimeException {
     private final UStatus mStatus;
 

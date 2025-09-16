@@ -19,6 +19,7 @@ on:
       - main
 
 jobs:
+  # req~up-language-test-coverage~1
   test-and-coverage:
     name: Test with coverage
     runs-on: ubuntu-latest

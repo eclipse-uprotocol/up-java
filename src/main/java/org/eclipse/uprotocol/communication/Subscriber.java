@@ -25,9 +25,10 @@ import org.eclipse.uprotocol.v1.UUri;
 /**
  * A client for subscribing to topics.
  *
- * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l2/api.adoc">
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.5/up-l2/api.adoc">
  * Communication Layer API Specifications</a>
  */
+// [impl->dsn~communication-layer-api-declaration~1]
 public interface Subscriber {
     /**
      * Registers a handler to invoke for messages that have been published to a given topic.

@@ -1,22 +1,26 @@
 = Eclipse uProtocol Java Library
 :toc:
 
+[.specitem,oft-sid="uman~up-java-readme~1",oft-covers="req~up-language-documentation~1",tags="LanguageLibrary"]
 == Overview
 
-This is the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.4/languages.adoc[uProtocol v1.6.0-alpha.4 Language Library] for the Java programming language. The library is organized into packages that are described in <<sdk-packages>> below and organized by the layers of the protocol.
+This is the https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.5/languages.adoc[uProtocol v1.6.0-alpha.5 Language Library] for the Java programming language. The library is organized into packages that are described in <<sdk-packages>> below and organized by the layers of the protocol.
 
-Each package contains a README.adoc file that describes the purpose of the package and how to use it.
-
-The module contains the factory methods, serializers, and validators for all data types defined in the specifications, and any data models that either haven't or couldn't be defined in up-core-api yet.
+Each package folder contains a `README.adoc` file that describes the purpose of the package and how to use it.
 
 == Getting Started
 
-=== Importing the Library
- 
-To pull the Library from maven central, setting ${uprotocol.version} to the latest version of this library in your pom.xml file:
-[source]
+=== Adding the Library
+
+The library is available from [Maven Central](https://search.maven.org/artifact/org.eclipse.uprotocol/up-java) and can be added as a dependency to your Maven or Gradle project.
+
+[.specitem,oft-sid="impl~up-java-deps-resolution~1",oft-covers="req~up-language-build-deps~1",tags="LanguageLibrary"]
 ----
-<!-- uProtocol Core -->
+The following dependency needs to be added to your Maven POM file, setting `${uprotocol.version}` to the desired version of the library:
+----
+
+[source,xml]
+----
 <dependency>
     <groupId>org.eclipse.uprotocol</groupId>
     <artifactId>up-java</artifactId>
@@ -34,20 +38,19 @@ To pull the Library from maven central, setting ${uprotocol.version} to the late
 
 | xref:src/main/java/org/eclipse/uprotocol/client/README.adoc[`*client*`]
 | Top level client-facing interfaces to communication with USubscription, UDiscovery, and UTwin services.
-| https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l3/README.adoc[Application Layer (uP-L3)]
+| https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.5/up-l3/README.adoc[Application Layer (uP-L3)]
 
 | xref:src/main/java/org/eclipse/uprotocol/communication/README.adoc[`*communication*`]
 | Common implementation of communication messaging patterns (publisher, subscriber, RpcClient, RpcServer, etc..) that are built on top of the L1 transport interface (see below).
-| https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l2/api.adoc[Communication Layer (uP-L2)] 
+| https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.5/up-l2/api.adoc[Communication Layer (uP-L2)] 
 
 | xref:src/main/java/org/eclipse/uprotocol/transport/README.adoc[`*transport*`] 
 | Interface and data model for how to send() and receive() messages in a common way across various transport technologies (ex. zenoh, mqtt, http, etc...). the interface is implemented by transports (ex. up-transport-android-java), and the interface is then used to build the uProtocol layer 2 communication layer implementation.
-| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.4/up-l1/README.adoc[Transport Layer (uP-L1)] 
+| https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.5/up-l1/README.adoc[Transport Layer (uP-L1)] 
 
 | xref:src/main/java/org/eclipse/uprotocol/uri/README.adoc[`*uuri*`]
 | uProtocol addressing scheme (UUri) builders, validators, and serializers. 
 | Basics 
-
 
 | xref:src/main/java/org/eclipse/uprotocol/uuid/README.adoc[`*uuid*`]
 | uProtocol unique identifier builders, validators, and serializers.
@@ -56,6 +59,11 @@ To pull the Library from maven central, setting ${uprotocol.version} to the late
 |===
 
 === Building from Source
+
+[.specitem,oft-sid="impl~up-java-build-system~1",oft-covers="req~up-language-build-sys~1",tags="LanguageLibrary"]
+----
+The library is built using the [Apache Maven](https://apache.org/maven) build system and is published to [Maven Central](https://search.maven.org/artifact/org.eclipse.uprotocol/up-java).
+----
 
 . Clone the repository:
 +

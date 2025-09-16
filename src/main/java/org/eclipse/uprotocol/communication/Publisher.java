@@ -17,9 +17,10 @@ import java.util.concurrent.CompletionStage;
 /**
  * A client for publishing messages to a topic.
  *
- * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l2/api.adoc">
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.5/up-l2/api.adoc">
  * Communication Layer API Specifications</a>
  */
+// [impl->dsn~communication-layer-api-declaration~1]
 public interface Publisher {
     /**
      * Publishes a message to a topic.

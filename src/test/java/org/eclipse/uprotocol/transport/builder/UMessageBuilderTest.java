@@ -73,8 +73,10 @@ class UMessageBuilderTest {
     @ParameterizedTest
     @CsvSource(useHeadersInDisplayName = true, textBlock = """
         permLevel, commStatus, token
+        # // [utest->dsn~up-attributes-permission-level~1]
         5,         ,
         ,          NOT_FOUND,
+        # // [utest->dsn~up-attributes-request-token~1]
         ,          ,           my-token
         """)
     void testPublishMessageBuilderRejectsInvalidAttributes(
@@ -89,8 +91,10 @@ class UMessageBuilderTest {
     @ParameterizedTest
     @CsvSource(useHeadersInDisplayName = true, textBlock = """
         permLevel, commStatus, token
+        # // [utest->dsn~up-attributes-permission-level~1]
         5,         ,
         ,          NOT_FOUND,
+        # // [utest->dsn~up-attributes-request-token~1]
         ,          ,           my-token
         """)
     void testNotificationMessageBuilderRejectsInvalidAttributes(
@@ -138,12 +142,18 @@ class UMessageBuilderTest {
     @ParameterizedTest
     @CsvSource(useHeadersInDisplayName = true, textBlock = """
         permLevel, commStatus, priority
+        # // [utest->dsn~up-attributes-permission-level~1]
         -1,        ,
         ,          NOT_FOUND,
+        # // [utest->dsn~up-attributes-request-priority~1]
         ,          ,          UPRIORITY_UNSPECIFIED
+        # // [utest->dsn~up-attributes-request-priority~1]
         ,          ,          UPRIORITY_CS0
+        # // [utest->dsn~up-attributes-request-priority~1]
         ,          ,          UPRIORITY_CS1
+        # // [utest->dsn~up-attributes-request-priority~1]
         ,          ,          UPRIORITY_CS2
+        # // [utest->dsn~up-attributes-request-priority~1]
         ,          ,          UPRIORITY_CS3
         """)
     void testRequestMessageBuilderRejectsInvalidAttributes(
@@ -174,13 +184,20 @@ class UMessageBuilderTest {
     @ParameterizedTest
     @CsvSource(useHeadersInDisplayName = true, textBlock = """
         ttl, permLevel, token,    priority
+        # // [utest->dsn~up-attributes-permission-level~1]
         -1,  ,          ,
         ,    5,         ,
+        # // [utest->dsn~up-attributes-request-token~1]
         ,    ,          my-token,
+        # // [utest->dsn~up-attributes-request-priority~1]
         ,    ,          ,         UPRIORITY_UNSPECIFIED
+        # // [utest->dsn~up-attributes-request-priority~1]
         ,    ,          ,         UPRIORITY_CS0
+        # // [utest->dsn~up-attributes-request-priority~1]
         ,    ,          ,         UPRIORITY_CS1
+        # // [utest->dsn~up-attributes-request-priority~1]
         ,    ,          ,         UPRIORITY_CS2
+        # // [utest->dsn~up-attributes-request-priority~1]
         ,    ,          ,         UPRIORITY_CS3
         """)
     void testResponseMessageBuilderRejectsInvalidAttributes(
@@ -192,7 +209,7 @@ class UMessageBuilderTest {
         var builder = UMessageBuilder.response(
             UURI_METHOD,
             UURI_DEFAULT,
-            UuidFactory.Factories.UPROTOCOL.factory().create());
+            UuidFactory.create());
 
         if (ttl != null) {
             assertThrows(
@@ -221,7 +238,7 @@ class UMessageBuilderTest {
     void testResponseRejectsNonRequestAttributes() {
         UAttributes attributes = UAttributes.newBuilder()
             .setType(UMessageType.UMESSAGE_TYPE_PUBLISH)
-            .setId(UuidFactory.Factories.UPROTOCOL.factory().create())
+            .setId(UuidFactory.create())
             .setSource(UURI_TOPIC)
             .build();
         UAttributesValidator.getValidator(attributes).validate(attributes);
@@ -236,10 +253,10 @@ class UMessageBuilderTest {
     void testBuildSupportsRepeatedInvocation() {
         UMessageBuilder builder = UMessageBuilder.publish(UURI_TOPIC);
         UMessage messageOne = builder
-            .withMessageId(UuidFactory.Factories.UPROTOCOL.factory().create())
+            .withMessageId(UuidFactory.create())
             .build(UPayload.pack(ByteString.copyFromUtf8("locked"), UPayloadFormat.UPAYLOAD_FORMAT_TEXT));
         UMessage messageTwo = builder
-            .withMessageId(UuidFactory.Factories.UPROTOCOL.factory().create())
+            .withMessageId(UuidFactory.create())
             .build(UPayload.pack(ByteString.copyFromUtf8("unlocked"), UPayloadFormat.UPAYLOAD_FORMAT_TEXT));
         assertEquals(messageOne.getAttributes().getType(), messageTwo.getAttributes().getType());
         assertNotEquals(messageOne.getAttributes().getId(), messageTwo.getAttributes().getId());
@@ -248,8 +265,10 @@ class UMessageBuilderTest {
     }
 
     @Test
+    // [utest->req~uattributes-data-model-impl~1]
+    // [utest->req~umessage-data-model-impl~1]
     void testBuildRetainsAllPublishAttributes() {
-        var messageId = UuidFactory.Factories.UPROTOCOL.factory().create();
+        var messageId = UuidFactory.create();
         String traceparent = "traceparent";
         UUri topic = UURI_TOPIC;
         UMessage message = UMessageBuilder.publish(topic)
@@ -258,15 +277,23 @@ class UMessageBuilderTest {
             .withTraceparent(traceparent)
             .build(UPayload.pack(ByteString.copyFromUtf8("locked"), UPayloadFormat.UPAYLOAD_FORMAT_TEXT));
 
+        // [utest->dsn~up-attributes-id~1]
         assertEquals(messageId, message.getAttributes().getId());
         assertEquals(UPriority.UPRIORITY_UNSPECIFIED, message.getAttributes().getPriority());
+        // [utest->dsn~up-attributes-publish-source~1]
         assertEquals(topic, message.getAttributes().getSource());
+        // [utest->dsn~up-attributes-publish-sink~1]
         assertFalse(message.getAttributes().hasSink());
         assertEquals(5000, message.getAttributes().getTtl());
+        // [utest->dsn~up-attributes-traceparent~1]
         assertEquals(traceparent, message.getAttributes().getTraceparent());
+        // [utest->dsn~up-attributes-publish-type~1]
         assertEquals(UMessageType.UMESSAGE_TYPE_PUBLISH, message.getAttributes().getType());
+        // [utest->dsn~up-attributes-payload-format~1]
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_TEXT, message.getAttributes().getPayloadFormat());
 
+        // [utest->req~uattributes-data-model-proto~1]
+        // [utest->req~umessage-data-model-proto~1]
         var proto = message.toByteString();
         assertDoesNotThrow(() -> {
             var deserializedMessage = UMessage.parseFrom(proto);
@@ -275,8 +302,10 @@ class UMessageBuilderTest {
     }
 
     @Test
+    // [utest->req~uattributes-data-model-impl~1]
+    // [utest->req~umessage-data-model-impl~1]
     void testBuildRetainsAllNotificationAttributes() {
-        var messageId = UuidFactory.Factories.UPROTOCOL.factory().create();
+        var messageId = UuidFactory.create();
         String traceparent = "traceparent";
         var origin = UURI_TOPIC;
         var destination = UURI_DEFAULT;
@@ -287,15 +316,21 @@ class UMessageBuilderTest {
             .withTraceparent(traceparent)
             .build(UPayload.pack(ByteString.copyFromUtf8("locked"), UPayloadFormat.UPAYLOAD_FORMAT_TEXT));
 
+        // [utest->dsn~up-attributes-id~1]
         assertEquals(messageId, message.getAttributes().getId());
         assertEquals(UPriority.UPRIORITY_CS2, message.getAttributes().getPriority());
         assertEquals(origin, message.getAttributes().getSource());
         assertEquals(destination, message.getAttributes().getSink());
         assertEquals(5000, message.getAttributes().getTtl());
+        // [utest->dsn~up-attributes-traceparent~1]
         assertEquals(traceparent, message.getAttributes().getTraceparent());
+        // [utest->dsn~up-attributes-notification-type~1]
         assertEquals(UMessageType.UMESSAGE_TYPE_NOTIFICATION, message.getAttributes().getType());
+        // [utest->dsn~up-attributes-payload-format~1]
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_TEXT, message.getAttributes().getPayloadFormat());
 
+        // [utest->req~uattributes-data-model-proto~1]
+        // [utest->req~umessage-data-model-proto~1]
         var proto = message.toByteString();
         assertDoesNotThrow(() -> {
             var deserializedMessage = UMessage.parseFrom(proto);
@@ -304,8 +339,10 @@ class UMessageBuilderTest {
     }
 
     @Test
+    // [utest->req~uattributes-data-model-impl~1]
+    // [utest->req~umessage-data-model-impl~1]
     void testBuildRetainsAllRequestAttributes() {
-        var messageId = UuidFactory.Factories.UPROTOCOL.factory().create();
+        var messageId = UuidFactory.create();
         var token = "token";
         String traceparent = "traceparent";
         var methodToInvoke = UURI_METHOD;
@@ -318,17 +355,25 @@ class UMessageBuilderTest {
             .withTraceparent(traceparent)
             .build(UPayload.pack(ByteString.copyFromUtf8("locked"), UPayloadFormat.UPAYLOAD_FORMAT_TEXT));
 
+        // [utest->dsn~up-attributes-id~1]
         assertEquals(messageId, message.getAttributes().getId());
+        // [utest->dsn~up-attributes-permission-level~1]
         assertEquals(5, message.getAttributes().getPermissionLevel());
         assertEquals(UPriority.UPRIORITY_CS4, message.getAttributes().getPriority());
         assertEquals(replyToAddress, message.getAttributes().getSource());
         assertEquals(methodToInvoke, message.getAttributes().getSink());
+        // [utest->dsn~up-attributes-request-token~1]
         assertEquals(token, message.getAttributes().getToken());
         assertEquals(5000, message.getAttributes().getTtl());
+        // [utest->dsn~up-attributes-traceparent~1]
         assertEquals(traceparent, message.getAttributes().getTraceparent());
+        // [utest->dsn~up-attributes-request-type~1]
         assertEquals(UMessageType.UMESSAGE_TYPE_REQUEST, message.getAttributes().getType());
+        // [utest->dsn~up-attributes-payload-format~1]
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_TEXT, message.getAttributes().getPayloadFormat());
 
+        // [utest->req~uattributes-data-model-proto~1]
+        // [utest->req~umessage-data-model-proto~1]
         var proto = message.toByteString();
         assertDoesNotThrow(() -> {
             var deserializedMessage = UMessage.parseFrom(proto);
@@ -338,8 +383,8 @@ class UMessageBuilderTest {
 
     @Test
     void testBuilderCopiesRequestAttributes() {
-        var requestMessageId = UuidFactory.Factories.UPROTOCOL.factory().create();
-        var responseMessageId = UuidFactory.Factories.UPROTOCOL.factory().create();
+        var requestMessageId = UuidFactory.create();
+        var responseMessageId = UuidFactory.create();
         var methodToInvoke = UURI_METHOD;
         var replyToAddress = UURI_DEFAULT;
         UMessage requestMessage = UMessageBuilder.request(replyToAddress, methodToInvoke, 5000)
@@ -351,22 +396,31 @@ class UMessageBuilderTest {
             .withCommStatus(UCode.DEADLINE_EXCEEDED)
             .build();
 
+        // [utest->dsn~up-attributes-id~1]
         assertEquals(responseMessageId, message.getAttributes().getId());
         assertEquals(UCode.DEADLINE_EXCEEDED, message.getAttributes().getCommstatus());
         assertEquals(UPriority.UPRIORITY_CS5, message.getAttributes().getPriority());
         assertEquals(requestMessageId, message.getAttributes().getReqid());
+        // [utest->dsn~up-attributes-response-source~1]
         assertEquals(methodToInvoke, message.getAttributes().getSource());
+        // [utest->dsn~up-attributes-response-sink~1]
         assertEquals(replyToAddress, message.getAttributes().getSink());
         assertEquals(5000, message.getAttributes().getTtl());
+        // [utest->dsn~up-attributes-request-token~1]
+        assertFalse(message.getAttributes().hasToken());
+        // [utest->dsn~up-attributes-response-type~1]
         assertEquals(UMessageType.UMESSAGE_TYPE_RESPONSE, message.getAttributes().getType());
+        // [utest->dsn~up-attributes-payload-format~1]
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED, message.getAttributes().getPayloadFormat());
         assertTrue(message.getPayload().isEmpty());
     }
 
     @Test
+    // [utest->req~uattributes-data-model-impl~1]
+    // [utest->req~umessage-data-model-impl~1]
     void testBuildRetainsAllResponseAttributes() {
-        var messageId = UuidFactory.Factories.UPROTOCOL.factory().create();
-        var requestId = UuidFactory.Factories.UPROTOCOL.factory().create();
+        var messageId = UuidFactory.create();
+        var requestId = UuidFactory.create();
         var traceparent = "traceparent";
         var methodToInvoke = UURI_METHOD;
         var replyToAddress = UURI_DEFAULT;
@@ -378,18 +432,26 @@ class UMessageBuilderTest {
             .withTraceparent(traceparent)
             .build();
 
+        // [utest->dsn~up-attributes-id~1]
         assertEquals(messageId, message.getAttributes().getId());
         assertEquals(UCode.DEADLINE_EXCEEDED, message.getAttributes().getCommstatus());
         assertEquals(UPriority.UPRIORITY_CS5, message.getAttributes().getPriority());
         assertEquals(requestId, message.getAttributes().getReqid());
+        // [utest->dsn~up-attributes-response-source~1]
         assertEquals(methodToInvoke, message.getAttributes().getSource());
+        // [utest->dsn~up-attributes-response-sink~1]
         assertEquals(replyToAddress, message.getAttributes().getSink());
         assertEquals(4000, message.getAttributes().getTtl());
+        // [utest->dsn~up-attributes-traceparent~1]
         assertEquals(traceparent, message.getAttributes().getTraceparent());
+        // [utest->dsn~up-attributes-response-type~1]
         assertEquals(UMessageType.UMESSAGE_TYPE_RESPONSE, message.getAttributes().getType());
+        // [utest->dsn~up-attributes-payload-format~1]
         assertEquals(UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED, message.getAttributes().getPayloadFormat());
         assertTrue(message.getPayload().isEmpty());
 
+        // [utest->req~uattributes-data-model-proto~1]
+        // [utest->req~umessage-data-model-proto~1]
         var proto = message.toByteString();
         assertDoesNotThrow(() -> {
             var deserializedMessage = UMessage.parseFrom(proto);

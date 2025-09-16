@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UStatus;
 
+// [utest->dsn~communication-layer-impl-default~1]
 public class UStatusExceptionTest {
     
     @Test
@@ -75,5 +76,4 @@ public class UStatusExceptionTest {
         assertEquals("Invalid message type", exception.getMessage());
         assertEquals(cause, exception.getCause());
     }
-
 }

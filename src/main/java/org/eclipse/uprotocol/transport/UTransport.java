@@ -26,9 +26,10 @@ import org.eclipse.uprotocol.v1.UUri;
  * UTransport implementations contain the details for connecting to the underlying transport technology and
  * sending UMessage using the configured technology.
  *
- * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l1/README.adoc">
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.5/up-l1/README.adoc">
  * uProtocol Transport Layer specification</a>
  */
+// [impl->dsn~utransport-declaration~1]
 public interface UTransport {
     /**
      * Sends a message using this transport's message exchange mechanism.
@@ -45,7 +46,7 @@ public interface UTransport {
      * <p>
      * The listener will be invoked for each message that matches the given source filter pattern
      * according to the rules defined by the
-     * <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/basics/uri.adoc">UUri
+     * <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.5/basics/uri.adoc">UUri
      * specification</a>.
      * <p>
      * This default implementation invokes {@link #registerListener(UUri, UUri, UListener)} with the
@@ -66,7 +67,7 @@ public interface UTransport {
      * <p>
      * The listener will be invoked for each message that matches the given source and sink filter patterns
      * according to the rules defined by the
-     * <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/basics/uri.adoc">UUri
+     * <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.5/basics/uri.adoc">UUri
      * specification</a>.
      *
      * @param sourceFilter The <em>source</em> address pattern that messages need to match.

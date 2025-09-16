@@ -29,6 +29,7 @@ import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+// [utest->dsn~communication-layer-impl-default~1]
 class UClientTest {
     private static final UUri TRANSPORT_SOURCE = UUri.newBuilder()
             .setAuthorityName("my-vehicle")

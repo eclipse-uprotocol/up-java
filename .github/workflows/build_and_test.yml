@@ -14,11 +14,16 @@
 name: Verify PR
 
 on:
+  # the repository is configured to require a PR for
+  # making changes to the main branch
+  # so every check made here is effectively
+  # made before merging to main
   pull_request:
     branches:
       - '*'
 
 jobs:
+  # [impl->req~up-language-ci-build~1]
   verify-pr:
     runs-on: ubuntu-latest
 
@@ -33,4 +38,8 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build and Test with Maven
+      # the package goal includes running the tests
+      # [impl->req~up-language-ci-test~1]
+      # and also builds the JavaDocs
+      # [impl->req~up-language-ci-api-docs~1]
       run: mvn -B package --file pom.xml

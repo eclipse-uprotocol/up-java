@@ -45,6 +45,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.google.common.truth.Truth;
 import com.google.protobuf.ByteString;
 
+// [utest->dsn~communication-layer-impl-default~1]
 class InMemoryRpcClientTest extends CommunicationLayerClientTestBase {
 
     private static void assertMessageHasOptions(CallOptions options, UMessage message) {
@@ -177,7 +178,7 @@ class InMemoryRpcClientTest extends CommunicationLayerClientTestBase {
         verify(transport).send(requestMessage.capture());
 
         // create unsolicited response message
-        final var reqId = UuidFactory.Factories.UPROTOCOL.factory().create();
+        final var reqId = UuidFactory.create();
         assertNotEquals(reqId, requestMessage.getValue().getAttributes().getId());
         var responseMessage = UMessageBuilder.response(
                 METHOD_URI,

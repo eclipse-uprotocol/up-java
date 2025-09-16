@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
  *                or directly use a {@link UTransport} to register listeners that handle 
  *                RPC requests and send RPC responses.
  */
+// [impl->dsn~communication-layer-impl-default~1]
 public class InMemoryRpcServer extends AbstractCommunicationLayerClient implements RpcServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryRpcServer.class);
 

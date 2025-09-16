@@ -66,6 +66,7 @@ import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UUri;
 
 @ExtendWith(MockitoExtension.class)
+// [utest->dsn~communication-layer-impl-default~1]
 class InMemorySubscriberTest {
     private static final UUri SUBSCRIPTION_SERVICE_URI = UUri.newBuilder()
         .setAuthorityName("some-host")
@@ -557,7 +558,7 @@ class InMemorySubscriberTest {
         // WHEN a non-notification message is received
         var malformedPublishMessage = UMessage.newBuilder()
             .setAttributes(UAttributes.newBuilder()
-                .setId(UuidFactory.Factories.UPROTOCOL.factory().create())
+                .setId(UuidFactory.create())
                 .setType(UMessageType.UMESSAGE_TYPE_PUBLISH)
                 .setSource(SUBSCRIPTION_NOTIFICATION_TOPIC_URI)
                 .setSink(SOURCE)

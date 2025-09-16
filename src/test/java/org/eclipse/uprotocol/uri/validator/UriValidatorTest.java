@@ -166,33 +166,60 @@ class UriValidatorTest {
         }
     }
 
-    @ParameterizedTest(name = "Test matches: {index} {arguments}")
-    @CsvSource(useHeadersInDisplayName = true, textBlock = """
-        pattern,                     candidate,                 should match
-        //authority/A410/3/1003,     //authority/A410/3/1003,   true
-        //authority/2A410/3/1003,    //authority/2A410/3/1003,  true
-        //*/A410/3/1003,             //authority/A410/3/1003,   true
-        //*/A410/3/1003,             /A410/3/1003,              true
-        //authority/FFFF/3/1003,     //authority/A410/3/1003,   true
-        //authority/FFFFA410/3/1003, //authority/2A410/3/1003,  true
-        //authority/A410/FF/1003,    //authority/A410/3/1003,   true
-        //authority/A410/3/FFFF,     //authority/A410/3/1003,   true
-        //Authority/A410/3/1003,     //authority/A410/3/1003,   false
-        //other/A410/3/1003,         //authority/A410/3/1003,   false
-        /A410/3/1003,                //authority/A410/3/1003,   false
-        //authority/45/3/1003,       //authority/A410/3/1003,   false
-        //authority/2A410/3/1003,    //authority/A410/3/1003,   false
-        //authority/A410/1/1003,     //authority/A410/3/1003,   false
-        //authority/A410/3/ABCD,     //authority/A410/3/1003,   false
+    @ParameterizedTest(name = "Test URI matches pattern: {index} {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+        uri                         | pattern
+        /1/1/A1FB                   | /1/1/A1FB
+        /1/1/A1FB                   | //*/1/1/A1FB
+        /1/1/A1FB                   | /FFFF/1/A1FB
+        /1/1/A1FB                   | //*/FFFF/1/A1FB
+        /1/1/A1FB                   | /FFFFFFFF/1/A1FB
+        /1/1/A1FB                   | //*/FFFFFFFF/1/A1FB
+        /1/1/A1FB                   | /1/FF/A1FB
+        /1/1/A1FB                   | //*/1/FF/A1FB
+        /1/1/A1FB                   | /1/1/FFFF
+        /1/1/A1FB                   | //*/1/1/FFFF
+        /1/1/A1FB                   | /FFFFFFFF/FF/FFFF
+        /1/1/A1FB                   | //*/FFFFFFFF/FF/FFFF
+        /10001/1/A1FB               | /10001/1/A1FB
+        /10001/1/A1FB               | //*/10001/1/A1FB
+        /10001/1/A1FB               | /FFFFFFFF/1/A1FB
+        /10001/1/A1FB               | //*/FFFFFFFF/1/A1FB
+        /10001/1/A1FB               | /FFFFFFFF/FF/FFFF
+        /10001/1/A1FB               | //*/FFFFFFFF/FF/FFFF
+        //vcu.my_vin/1/1/A1FB       | //vcu.my_vin/1/1/A1FB
+        //vcu.my_vin/1/1/A1FB       | //*/1/1/A1FB
         """
     )
-    void testMatches(String pattern, String candidate, boolean shouldMatch) {
+    // TODO: replace with Cucumber based test in UuriTests.java
+    // [utest->dsn~uri-pattern-matching~2]
+    void testMatchesSucceeds(String uri, String pattern) {
         UUri patternUri = UriSerializer.deserialize(pattern);
-        UUri candidateUri = UriSerializer.deserialize(candidate);
-        if (shouldMatch) {
-            assertTrue(UriValidator.matches(patternUri, candidateUri));
-        } else {
-            assertFalse(UriValidator.matches(patternUri, candidateUri));
-        }
+        UUri candidateUri = UriSerializer.deserialize(uri);
+        assertTrue(UriValidator.matches(patternUri, candidateUri));
+    }
+
+    @ParameterizedTest(name = "Test URI does not match pattern: {index} {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, delimiter = '|', textBlock = """
+        uri                   | pattern
+        /1/1/A1FB             | //mcu1/1/1/A1FB
+        //vcu.my_vin/1/1/A1FB | //mcu1/1/1/A1FB
+        //vcu/B1A5/1/A1FB     | //vc/FFFFFFFF/FF/FFFF
+        /B1A5/1/A1FB          | //*/25B1/FF/FFFF
+        /B1A5/1/A1FB          | //*/FFFFFFFF/2/FFFF
+        /B1A5/1/A1FB          | //*/FFFFFFFF/FF/ABCD
+        /B1A5/1/A1FB          | /25B1/1/A1FB
+        /B1A5/1/A1FB          | /2B1A5/1/A1FB
+        /10B1A5/1/A1FB        | /40B1A5/1/A1FB
+        /B1A5/1/A1FB          | /B1A5/4/A1FB
+        /B1A5/1/A1FB          | /B1A5/1/90FB
+        """
+    )
+    // TODO: replace with Cucumber based test in UuriTests.java
+    // [utest->dsn~uri-pattern-matching~2]
+    void testMatchesFails(String uri, String pattern) {
+        UUri patternUri = UriSerializer.deserialize(pattern);
+        UUri candidateUri = UriSerializer.deserialize(uri);
+        assertFalse(UriValidator.matches(patternUri, candidateUri));
     }
 }

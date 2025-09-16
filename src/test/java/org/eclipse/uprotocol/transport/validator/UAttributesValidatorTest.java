@@ -15,6 +15,7 @@ package org.eclipse.uprotocol.transport.validator;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
@@ -24,6 +25,7 @@ import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UMessageType;
 import org.eclipse.uprotocol.v1.UPriority;
 import org.eclipse.uprotocol.v1.UUID;
+import org.eclipse.uprotocol.transport.builder.UMessageBuilder;
 import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 import org.eclipse.uprotocol.v1.UUri;
 import org.eclipse.uprotocol.validation.ValidationException;
@@ -101,18 +103,40 @@ public class UAttributesValidatorTest {
         assertEquals(expectedValidatorType, validator.messageType());
     }
 
+    @ParameterizedTest
+    @CsvSource(useHeadersInDisplayName = true, textBlock = """
+        TTL,    expectedIsExpired
+        0,      false
+        10000,  true
+        29999,  true
+        30000,  true
+        30001,  false
+        """)
+    void testIsExpired(int ttl, boolean expectedIsExpired) {
+        var now = Instant.now();
+        var uuid = UuidFactory.create(now.minusMillis(30_000));
+        var message = UMessageBuilder.publish(UURI_TOPIC)
+            .withMessageId(uuid)
+            .withTtl(ttl)
+            .build();
+
+        var validator = UAttributesValidator.getValidator(message.getAttributes());
+        assertEquals(expectedIsExpired, validator.isExpired(message.getAttributes()));
+    }
+
     static Stream<Arguments> publishMessageArgProvider() {
         return Stream.of(
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_TOPIC),
                 Optional.empty(),
                 OptionalInt.empty(),
                 true
             ),
             // fails for message containing destination
+            // [utest->dsn~up-attributes-publish-sink~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_TOPIC),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.empty(),
@@ -120,37 +144,41 @@ public class UAttributesValidatorTest {
             ),
             // succeeds for valid attributes
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_TOPIC),
                 Optional.empty(),
                 OptionalInt.of(100),
                 true
             ),
             // fails for missing topic
+            // [utest->dsn~up-attributes-publish-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.empty(),
                 Optional.empty(),
                 OptionalInt.empty(),
                 false
             ),
             // fails for invalid topic
+            // [utest->dsn~up-attributes-publish-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.empty(),
                 OptionalInt.empty(),
                 false
             ),
             // fails for source with wildcard
+            // [utest->dsn~up-attributes-publish-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_WILDCARD_RESOURCE),
                 Optional.empty(),
                 OptionalInt.empty(),
                 false
             ),
             // fails for missing message ID
+            // [utest->dsn~up-attributes-id~1]
             Arguments.of(
                 Optional.empty(),
                 Optional.of(UURI_TOPIC),
@@ -159,6 +187,7 @@ public class UAttributesValidatorTest {
                 false
             ),
             // fails for invalid message ID
+            // [utest->dsn~up-attributes-id~1]
             Arguments.of(
                 Optional.of(UUID_INVALID),
                 Optional.of(UURI_TOPIC),
@@ -216,7 +245,7 @@ public class UAttributesValidatorTest {
         return Stream.of(
             // succeeds for both origin and destination
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_TOPIC),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.empty(),
@@ -225,7 +254,7 @@ public class UAttributesValidatorTest {
             ),
             // succeeds for valid attributes
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_TOPIC),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.of(100),
@@ -233,8 +262,9 @@ public class UAttributesValidatorTest {
                 true
             ),
             // fails for missing destination
+            // [utest->dsn~up-attributes-notification-sink~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_TOPIC),
                 Optional.empty(),
                 OptionalInt.empty(),
@@ -242,8 +272,9 @@ public class UAttributesValidatorTest {
                 false
             ),
             // fails for missing origin
+            // [utest->dsn~up-attributes-notification-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.empty(),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.empty(),
@@ -251,8 +282,9 @@ public class UAttributesValidatorTest {
                 false
             ),
             // fails for invalid origin
+            // [utest->dsn~up-attributes-notification-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.empty(),
@@ -260,8 +292,9 @@ public class UAttributesValidatorTest {
                 false
             ),
             // fails for origin with wildcard
+            // [utest->dsn~up-attributes-notification-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_WILDCARD_RESOURCE),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.empty(),
@@ -269,8 +302,9 @@ public class UAttributesValidatorTest {
                 false
             ),
             // fails for invalid destination
+            // [utest->dsn~up-attributes-notification-sink~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_TOPIC),
                 Optional.of(UURI_METHOD),
                 OptionalInt.empty(),
@@ -278,8 +312,9 @@ public class UAttributesValidatorTest {
                 false
             ),
             // fails for destination with wildcard
+            // [utest->dsn~up-attributes-notification-sink~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_TOPIC),
                 Optional.of(UURI_WILDCARD_RESOURCE),
                 OptionalInt.empty(),
@@ -287,8 +322,10 @@ public class UAttributesValidatorTest {
                 false
             ),
             // fails for neither origin nor destination
+            // [utest->dsn~up-attributes-notification-source~1]
+            // [utest->dsn~up-attributes-notification-sink~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.empty(),
                 Optional.empty(),
                 OptionalInt.empty(),
@@ -305,6 +342,7 @@ public class UAttributesValidatorTest {
                 false
             ),
             // fails for missing message ID
+            // [utest->dsn~up-attributes-id~1]
             Arguments.of(
                 Optional.empty(),
                 Optional.of(UURI_TOPIC),
@@ -314,6 +352,7 @@ public class UAttributesValidatorTest {
                 false
             ),
             // fails for invalid message ID
+            // [utest->dsn~up-attributes-id~1]
             Arguments.of(
                 Optional.of(UUID_INVALID),
                 Optional.of(UURI_TOPIC),
@@ -367,7 +406,7 @@ public class UAttributesValidatorTest {
         return Stream.of(
             // succeeds for mandatory attributes
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.empty(),
@@ -377,7 +416,7 @@ public class UAttributesValidatorTest {
                 true),
             // succeeds for valid attributes
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.of(1),
@@ -386,6 +425,7 @@ public class UAttributesValidatorTest {
                 Optional.of("mytoken"),
                 true),
             // fails for missing message ID
+            // [utest->dsn~up-attributes-id~1]
             Arguments.of(
                 Optional.empty(),
                 Optional.of(UURI_METHOD),
@@ -396,6 +436,7 @@ public class UAttributesValidatorTest {
                 Optional.of("mytoken"),
                 false),
             // fails for invalid message ID
+            // [utest->dsn~up-attributes-id~1]
             Arguments.of(
                 Optional.of(UUID_INVALID),
                 Optional.of(UURI_METHOD),
@@ -406,8 +447,9 @@ public class UAttributesValidatorTest {
                 Optional.empty(),
                 false),
             // fails for missing reply-to-address
+            // [utest->dsn~up-attributes-request-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.empty(),
                 OptionalInt.empty(),
@@ -416,8 +458,9 @@ public class UAttributesValidatorTest {
                 Optional.empty(),
                 false),
             // fails for invalid reply-to-address
+            // [utest->dsn~up-attributes-request-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.of(UURI_TOPIC),
                 OptionalInt.empty(),
@@ -426,8 +469,9 @@ public class UAttributesValidatorTest {
                 Optional.empty(),
                 false),
             // fails for reply-to-address with wildcard
+            // [utest->dsn~up-attributes-request-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.of(UURI_WILDCARD_RESOURCE),
                 OptionalInt.empty(),
@@ -436,8 +480,9 @@ public class UAttributesValidatorTest {
                 Optional.empty(),
                 false),
             // fails for missing method-to-invoke
+            // [utest->dsn~up-attributes-request-sink~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.empty(),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.empty(),
@@ -446,8 +491,9 @@ public class UAttributesValidatorTest {
                 Optional.empty(),
                 false),
             // fails for invalid method-to-invoke
+            // [utest->dsn~up-attributes-request-sink~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_TOPIC),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.empty(),
@@ -456,8 +502,9 @@ public class UAttributesValidatorTest {
                 Optional.empty(),
                 false),
             // fails for method-to-invoke with wildcard
+            // [utest->dsn~up-attributes-request-sink~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_WILDCARD_RESOURCE),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.empty(),
@@ -467,7 +514,7 @@ public class UAttributesValidatorTest {
                 false),
             // fails for missing priority
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.of(1),
@@ -477,7 +524,7 @@ public class UAttributesValidatorTest {
                 false),
             // fails for invalid priority
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.of(1),
@@ -487,7 +534,7 @@ public class UAttributesValidatorTest {
                 false),
             // fails for unknown priority
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.of(1),
@@ -496,8 +543,9 @@ public class UAttributesValidatorTest {
                 Optional.empty(),
                 false),
             // fails for missing ttl
+            // [utest->dsn~up-attributes-request-ttl~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.empty(),
@@ -506,8 +554,9 @@ public class UAttributesValidatorTest {
                 Optional.empty(),
                 false),
             // fails for ttl = 0
+            // [utest->dsn~up-attributes-request-ttl~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.empty(),
@@ -517,7 +566,7 @@ public class UAttributesValidatorTest {
                 false),
             // fails for invalid (negative) permission level
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_METHOD),
                 Optional.of(UURI_DEFAULT),
                 OptionalInt.of(-1),
@@ -575,157 +624,165 @@ public class UAttributesValidatorTest {
         return Stream.of(
             // succeeds for mandatory attributes
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
                 OptionalInt.empty(),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 true),
             // succeeds for valid attributes
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.of(UCode.CANCELLED_VALUE),
                 OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 true),
             // fails for missing message ID
+            // [utest->dsn~up-attributes-id~1]
             Arguments.of(
                 Optional.empty(),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.of(UCode.CANCELLED_VALUE),
                 OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for invalid message ID
+            // [utest->dsn~up-attributes-id~1]
             Arguments.of(
                 Optional.of(UUID_INVALID),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
                 OptionalInt.empty(),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for missing reply-to-address
+            // [utest->dsn~up-attributes-response-sink~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.empty(),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
                 OptionalInt.empty(),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for invalid reply-to-address
+            // [utest->dsn~up-attributes-response-sink~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_TOPIC),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
                 OptionalInt.empty(),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for reply-to-address with wildcard
+            // [utest->dsn~up-attributes-response-sink~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_WILDCARD_RESOURCE),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
                 OptionalInt.empty(),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for missing invoked-method
+            // [utest->dsn~up-attributes-response-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.empty(),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
                 OptionalInt.empty(),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for invalid invoked-method
+            // [utest->dsn~up-attributes-response-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_TOPIC),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
                 OptionalInt.empty(),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for invoked-method with wildcard
+            // [utest->dsn~up-attributes-response-source~1]
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_WILDCARD_RESOURCE),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
                 OptionalInt.empty(),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for invalid commstatus
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.of(-189),
                 OptionalInt.empty(),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // succeeds for ttl > 0
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
                 OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 true),
             // succeeds for ttl = 0
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
                 OptionalInt.of(0),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 true),
             // fails for missing priority
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.of(UCode.CANCELLED_VALUE),
                 OptionalInt.of(100),
                 Optional.empty(),
                 false),
             // fails for invalid priority
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 OptionalInt.of(UCode.CANCELLED_VALUE),
                 OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS3),
                 false),
             // fails for missing request ID
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_METHOD),
                 Optional.empty(),
@@ -735,7 +792,7 @@ public class UAttributesValidatorTest {
                 false),
             // fails for invalid request ID
             Arguments.of(
-                Optional.of(UuidFactory.Factories.UPROTOCOL.factory().create()),
+                Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
                 Optional.of(UURI_METHOD),
                 Optional.of(UUID_INVALID),

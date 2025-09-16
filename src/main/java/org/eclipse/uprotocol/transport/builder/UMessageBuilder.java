@@ -68,8 +68,9 @@ public final class UMessageBuilder {
 
         return new UMessageBuilder(
             source,
-            UuidFactory.Factories.UPROTOCOL.factory().create(),
-            UMessageType.UMESSAGE_TYPE_PUBLISH);
+            UuidFactory.create(), // [impl->dsn~up-attributes-id~1]
+            UMessageType.UMESSAGE_TYPE_PUBLISH); // [impl->dsn~up-attributes-publish-type~1]
+
     }
 
     /**
@@ -88,8 +89,8 @@ public final class UMessageBuilder {
 
         return new UMessageBuilder(
                 source,
-                UuidFactory.Factories.UPROTOCOL.factory().create(),
-                UMessageType.UMESSAGE_TYPE_NOTIFICATION)
+                UuidFactory.create(), // [impl->dsn~up-attributes-id~1]
+                UMessageType.UMESSAGE_TYPE_NOTIFICATION) // [impl->dsn~up-attributes-notification-type~1]
             .withSink(sink);
     }
 
@@ -119,8 +120,8 @@ public final class UMessageBuilder {
         }
         return new UMessageBuilder(
                 source,
-                UuidFactory.Factories.UPROTOCOL.factory().create(),
-                UMessageType.UMESSAGE_TYPE_REQUEST)
+                UuidFactory.create(), // [impl->dsn~up-attributes-id~1]
+                UMessageType.UMESSAGE_TYPE_REQUEST) // [impl->dsn~up-attributes-request-type~1]
             .withSink(sink)
             .withTtl(ttl)
             .withPriority(UPriority.UPRIORITY_CS4);
@@ -155,8 +156,9 @@ public final class UMessageBuilder {
 
         return new UMessageBuilder(
                 source,
-                UuidFactory.Factories.UPROTOCOL.factory().create(),
-                UMessageType.UMESSAGE_TYPE_RESPONSE)
+                UuidFactory.create(), // [impl->dsn~up-attributes-id~1]
+                UMessageType.UMESSAGE_TYPE_RESPONSE) // [impl->dsn~up-attributes-response-type~1]
+
             .withSink(sink)
             .withReqId(reqid)
             .withPriority(UPriority.UPRIORITY_CS4);
@@ -193,8 +195,8 @@ public final class UMessageBuilder {
 
         return new UMessageBuilder(
                 request.getSink(),
-                UuidFactory.Factories.UPROTOCOL.factory().create(),
-                UMessageType.UMESSAGE_TYPE_RESPONSE)
+                UuidFactory.create(), // [impl->dsn~up-attributes-id~1]
+                UMessageType.UMESSAGE_TYPE_RESPONSE) // [impl->dsn~up-attributes-response-type~1]
             .withPriority(request.getPriority())
             .withSink(request.getSource())
             .withReqId(request.getId())
@@ -226,6 +228,7 @@ public final class UMessageBuilder {
      * @throws NullPointerException if the id is {@code null}.
      * @throws IllegalArgumentException if the id is not a {@link UuidUtils#isUProtocol(UUID) valid uProtocol UUID}.
      */
+    // [impl->dsn~up-attributes-id~1]
     public UMessageBuilder withMessageId(UUID id) {
         Objects.requireNonNull(id, "id cannot be null.");
         if (!UuidUtils.isUProtocol(id)) {
@@ -359,6 +362,7 @@ public final class UMessageBuilder {
      */
     public UMessage build(UPayload payload) {
         Objects.requireNonNull(payload, "payload cannot be null.");
+        // [impl->dsn~up-attributes-payload-format~1]
         this.format = payload.format();
         this.payload = payload.data();
         return build();
