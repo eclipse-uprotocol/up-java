@@ -19,10 +19,10 @@ import org.eclipse.uprotocol.v1.UMessage;
  *
  * Implementations contain the details for what should occur when a message is received.
  *
- * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.4/up-l1/README.adoc">
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.5/up-l1/README.adoc">
  * uProtocol Transport Layer specification</a>
  */
-/// for details. */
+// [impl->dsn~ulistener-declaration~1]
 public interface UListener {
 
     /**

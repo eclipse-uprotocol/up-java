@@ -20,6 +20,7 @@ import org.eclipse.uprotocol.v1.UUri;
  * Implementations may use arbitrary mechanisms to determine the information that
  * is necessary for creating URIs, e.g. environment variables, configuration files etc.
  */
+// [impl->dsn~localuriprovider-declaration~1]
 public interface LocalUriProvider {
     /**
      * Gets the <em>authority</em> used for URIs representing this uEntity's resources.

@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
  * registered with the listener. When a subscription change notification arrives from the USubscription
  * service, the corresponding handler is being looked up and invoked.
  */
+// [impl->dsn~communication-layer-impl-default~1]
 public final class InMemorySubscriber implements Subscriber {
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemorySubscriber.class);
 

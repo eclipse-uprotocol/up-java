@@ -17,6 +17,7 @@ import java.util.Objects;
 import org.eclipse.uprotocol.transport.LocalUriProvider;
 import org.eclipse.uprotocol.transport.UTransport;
 
+// [impl->dsn~communication-layer-impl-default~1]
 public class AbstractCommunicationLayerClient {
     private final UTransport transport;
     private final LocalUriProvider uriProvider;

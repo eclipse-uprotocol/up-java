@@ -32,6 +32,7 @@ import org.eclipse.uprotocol.v1.UUri;
  * their own or directly use the {@link UTransport} to send notifications and register
  * listeners.
  */
+// [impl->dsn~communication-layer-impl-default~1]
 public class SimpleNotifier extends AbstractCommunicationLayerClient implements Notifier {
 
     /**

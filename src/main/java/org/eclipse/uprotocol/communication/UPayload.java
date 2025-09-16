@@ -28,6 +28,7 @@ import org.eclipse.uprotocol.v1.UPayloadFormat;
 /**
  * Wrapper class that stores the payload as {@link UPayloadFormat}.
  */
+// [impl->dsn~communication-layer-api-declaration~1]
 public record UPayload (ByteString data, UPayloadFormat format) {
 
     // Empty UPayload

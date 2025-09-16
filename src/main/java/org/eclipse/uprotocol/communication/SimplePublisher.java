@@ -28,6 +28,7 @@ import org.eclipse.uprotocol.v1.UCode;
  * <em>NOTE:</em> Developers are not required to use these APIs, they can implement their own
  *  or directly use the {@link UTransport} to send notifications and register listeners.
  */
+// [impl->dsn~communication-layer-impl-default~1]
 public class SimplePublisher extends AbstractCommunicationLayerClient implements Publisher {
 
     /**

@@ -51,6 +51,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.google.protobuf.ByteString;
 
 @ExtendWith(MockitoExtension.class)
+// [utest->dsn~communication-layer-impl-default~1]
 class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
 
     @Mock

@@ -21,6 +21,7 @@ import org.eclipse.uprotocol.v1.UPriority;
 /**
  * This class is used to pass metadata to method invocation on the client side.
  */
+// [impl->dsn~communication-layer-api-declaration~1]
 public record CallOptions (Integer timeout, UPriority priority, String token) {
     public static final int TIMEOUT_DEFAULT = 10000; // Default timeout of 10 seconds
  

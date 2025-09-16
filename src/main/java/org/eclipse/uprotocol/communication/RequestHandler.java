@@ -19,6 +19,7 @@ import org.eclipse.uprotocol.v1.UMessage;
  * RequestListener is used by the RpcServer to handle incoming requests and automatically sends
  * back the response to the client. <br>
  */
+// [impl->dsn~communication-layer-api-declaration~1]
 public interface RequestHandler {
     /**
      * Method called to handle/process request messages.

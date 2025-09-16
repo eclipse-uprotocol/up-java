@@ -20,6 +20,7 @@ import org.eclipse.uprotocol.v1.UUri;
  * 
  * This interface provides APIs to handle subscription state changes for a given topic.
  */
+// [impl->dsn~communication-layer-api-declaration~1]
 public interface SubscriptionChangeHandler {
     /**
      * Method called to handle/process subscription state changes for a given topic.

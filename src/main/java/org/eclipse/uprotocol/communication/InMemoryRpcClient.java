@@ -45,6 +45,7 @@ import org.eclipse.uprotocol.v1.UUri;
  *         or directly use the {@link UTransport} to send RPC requests and register listeners that
  *         handle the RPC responses.
  */
+// [impl->dsn~communication-layer-impl-default~1]
 public class InMemoryRpcClient extends AbstractCommunicationLayerClient implements RpcClient {
     // Map to store the futures that needs to be completed when the response comes in
     private final Map<UUID, CompletableFuture<UMessage>> mRequests = new ConcurrentHashMap<>();

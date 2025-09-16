@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+// [utest->dsn~communication-layer-impl-default~1]
 class CommunicationLayerClientTestBase {
     protected static final UUri TRANSPORT_SOURCE = UUri.newBuilder()
             .setAuthorityName("my-vehicle")

@@ -12,40 +12,52 @@
  */
 package org.eclipse.uprotocol.uuid.serializer;
 
+import java.util.Objects;
+
+import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.v1.UUID;
 
 /**
- * UUID Serializer interface used to serialize/deserialize UUIDs to/from
- * its hyphenated string form.
+ * Helper for de-/serializing UUIDs from/to its hyphenated string form.
  */
-public interface UuidSerializer {
+// [impl->req~uuid-hex-and-dash~1]
+public final class UuidSerializer {
+
+    private UuidSerializer() {
+        // utility class
+    }
 
     /**
-     * Deserialize from a specific serialization format to a {@link UUID}.
+     * Creates a uProtocol UUID from its hyphenated string format.
      * 
-     * @param stringUuid The UUID in the transport serialized format.
-     * @return Returns the {@link UUID} object.
+     * @param stringUuid The hyphenated string.
+     * @return The UUID.
+     * @throws IllegalArgumentException if the string does not represent a valid uProtocol UUID.
      */
-    static UUID deserialize(String stringUuid) {
-        if (stringUuid == null || stringUuid.isBlank()) {
-            return UUID.getDefaultInstance();
-        }
-        try {
-            java.util.UUID uuidJava = java.util.UUID.fromString(stringUuid);
-            return UUID.newBuilder().setMsb(uuidJava.getMostSignificantBits())
-                    .setLsb(uuidJava.getLeastSignificantBits()).build();
-        } catch (IllegalArgumentException e) {
-            return UUID.getDefaultInstance();
+    public static UUID deserialize(String stringUuid) {
+        Objects.requireNonNull(stringUuid);
+        // will throw IllegalArgumentException if the string is not hex-and-dash
+        java.util.UUID uuidJava = java.util.UUID.fromString(stringUuid);
+        var uuid = UUID.newBuilder()
+            .setMsb(uuidJava.getMostSignificantBits())
+            .setLsb(uuidJava.getLeastSignificantBits())
+            .build();
+        if (UuidUtils.isUProtocol(uuid)) {
+            return uuid;
+        } else {
+            throw new IllegalArgumentException("String does not represent a uProtocol UUID");
         }
     }
 
     /**
-     * Serialize from a {@link UUID} to a specific serialization format.
-     * 
-     * @param uuid The {@link UUID} object to serialize to a string.
-     * @return Returns the {@link UUID} in the transport serialized format.
+     * Serializes uProtocol UUID to its hyphenated string representation.
+     *
+     * @param uuid The UUID.
+     * @return The hyphenated string representation of the UUID.
+     * @throws NullPointerException if the UUID is {@code null}.
      */
-    static String serialize(UUID uuid) {
-        return uuid == null ? new String() : new java.util.UUID(uuid.getMsb(), uuid.getLsb()).toString();
+    public static String serialize(UUID uuid) {
+        Objects.requireNonNull(uuid);
+        return new java.util.UUID(uuid.getMsb(), uuid.getLsb()).toString();
     }
 }

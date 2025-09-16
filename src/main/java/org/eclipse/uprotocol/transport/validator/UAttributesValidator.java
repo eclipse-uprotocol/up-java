@@ -12,6 +12,8 @@
  */
 package org.eclipse.uprotocol.transport.validator;
 
+import java.time.Instant;
+
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.uuid.factory.UuidUtils;
 import org.eclipse.uprotocol.v1.UAttributes;
@@ -75,6 +77,7 @@ public abstract class UAttributesValidator {
      * @throws ValidationException if the message ID is invalid.
      */
     public final void validateId(UAttributes attributes) {
+        // [impl->dsn~up-attributes-id~1]
         if (!attributes.hasId()) {
             throw new ValidationException("Missing message ID");
         }
@@ -138,7 +141,7 @@ public abstract class UAttributesValidator {
      */
     public final boolean isExpired(UAttributes attributes) {
         final int ttl = attributes.getTtl();
-        return ttl > 0 && UuidUtils.isExpired(attributes.getId(), ttl);
+        return ttl > 0 && UuidUtils.isExpired(attributes.getId(), ttl, Instant.now());
     }
 
     /*
@@ -278,6 +281,7 @@ public abstract class UAttributesValidator {
          */
         @Override
         public void validateSink(UAttributes attributes) {
+            // [impl->dsn~up-attributes-publish-sink~1]
             if (attributes.hasSink()) {
                 throw new ValidationException("Attributes for a publish message must not contain a sink URI");
             }
@@ -440,6 +444,7 @@ public abstract class UAttributesValidator {
          */
         @Override
         public void validateTtl(UAttributes attributes) {
+            // [impl->dsn~up-attributes-request-ttl~1]
             if (!attributes.hasTtl()) {
                 throw new ValidationException("RPC request message must contain a TTL");
             }

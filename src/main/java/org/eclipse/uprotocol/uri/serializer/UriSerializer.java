@@ -13,8 +13,10 @@
 package org.eclipse.uprotocol.uri.serializer;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UUri;
@@ -23,16 +25,29 @@ import org.eclipse.uprotocol.v1.UUri;
  * Provides functionality for serializing and deserializing {@link UUri}s to/from their
  * corresponding URI representation as defined by the uProtocol specification.
  *
- * @see <a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.4/basics/uri.adoc">
+ * @see <a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.5/basics/uri.adoc">
  * uProtocol URI Specification</a>
  */
-public interface UriSerializer {
+public final class UriSerializer {
 
-    String SCHEME_UP = "up";
+    /**
+     * The scheme used for uProtocol URIs.
+     */
+    public static final String SCHEME_UP = "up";
+
+    private static final Pattern AUTHORITY_PATTERN = Pattern.compile("^[a-z0-9-._~]{1,128}$");
+
+    private UriSerializer() {
+        // prevent instantiation
+    }
 
     /**
      * Serializes a {@link UUri} into its URI representation.
-     * 
+     * <p>
+     * The returned URI does not include the "up:" scheme. If the scheme needs to be included,
+     * the overloaded {@link #serialize(UUri, boolean)} method with the {@code includeScheme}
+     * parameter set to {@code true} can be used.
+     *
      * @param uuri The UUri to be serialized.
      * @return The URI.
      * @throws NullPointerException if the UUri is null.
@@ -41,11 +56,33 @@ public interface UriSerializer {
     // [impl->dsn~uri-authority-mapping~1]
     // [impl->dsn~uri-path-mapping~1]
     // [impl->req~uri-serialization~1]
-    static String serialize(UUri uuri) {
+    public static String serialize(UUri uuri) {
+        return serialize(uuri, false);
+    }
+
+    /**
+     * Serializes a {@link UUri} into its URI representation.
+     * 
+     * @param uuri The UUri to be serialized.
+     * @param includeScheme Whether to include the "up:" scheme in the serialized URI.
+     *                     If false, the scheme and the colon will be omitted.
+     *                     This can be useful when embedding the URI in contexts where
+     *                     the scheme is implied or not allowed.
+     * @return The URI.
+     * @throws NullPointerException if the UUri is null.
+     * @throws IllegalArgumentException if the UUri does not comply with the UUri specification.
+     */
+    // [impl->dsn~uri-authority-mapping~1]
+    // [impl->dsn~uri-path-mapping~1]
+    // [impl->req~uri-serialization~1]
+    public static String serialize(UUri uuri, boolean includeScheme) {
         Objects.requireNonNull(uuri);
         UriValidator.validate(uuri);
         StringBuilder sb = new StringBuilder();
 
+        if (includeScheme) {
+            sb.append(SCHEME_UP).append(":");
+        }
         if (!uuri.getAuthorityName().isBlank()) {
             sb.append("//");
             sb.append(uuri.getAuthorityName());
@@ -74,7 +111,7 @@ public interface UriSerializer {
     // [impl->dsn~uri-authority-mapping~1]
     // [impl->dsn~uri-path-mapping~1]
     // [impl->req~uri-serialization~1]
-    static UUri deserialize(String uProtocolUri) {
+    public static UUri deserialize(String uProtocolUri) {
         Objects.requireNonNull(uProtocolUri);
         final var parsedUri = URI.create(uProtocolUri);
         return deserialize(parsedUri);
@@ -94,7 +131,7 @@ public interface UriSerializer {
     // [impl->dsn~uri-authority-mapping~1]
     // [impl->dsn~uri-path-mapping~1]
     // [impl->req~uri-serialization~1]
-    static UUri deserialize(URI uProtocolUri) {
+    public static UUri deserialize(URI uProtocolUri) {
         Objects.requireNonNull(uProtocolUri);
 
         if (uProtocolUri.getScheme() != null && !SCHEME_UP.equals(uProtocolUri.getScheme())) {
@@ -106,7 +143,25 @@ public interface UriSerializer {
         if (uProtocolUri.getFragment() != null) {
             throw new IllegalArgumentException("uProtocol URI must not contain fragment");
         }
-        UriValidator.validateParsedAuthority(uProtocolUri);
+
+        String authority;
+        try {
+            // this should work if authority is server-based (i.e. contains a host)
+            var uriWithServerAuthority = uProtocolUri.parseServerAuthority();
+            // we can then verify that the authority does neither contain user info nor port
+            UriValidator.validateParsedAuthority(uriWithServerAuthority);
+            authority = uriWithServerAuthority.getHost();
+        } catch (URISyntaxException e) {
+            // the authority is not server-based but might still be valid according to the UUri spec,
+            // we just need to make sure that it either is the wildcard authority or contains allowed
+            // characters only
+            authority = uProtocolUri.getAuthority();
+            if (authority != null && !"*".equals(authority) && !AUTHORITY_PATTERN.matcher(authority).matches()) {
+                throw new IllegalArgumentException(
+                    "uProtocol URI authority contains invalid characters",
+                    e);
+            }
+        }
 
         final var pathSegments = uProtocolUri.getPath().split("/");
         if (pathSegments.length != 4) {
@@ -114,7 +169,7 @@ public interface UriSerializer {
         }
 
         final var builder = UUri.newBuilder();
-        Optional.ofNullable(uProtocolUri.getAuthority()).ifPresent(builder::setAuthorityName);
+        Optional.ofNullable(authority).ifPresent(builder::setAuthorityName);
 
         if (pathSegments[1].isEmpty()) {
             throw new IllegalArgumentException("URI must contain non-empty entity ID");
