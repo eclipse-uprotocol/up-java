@@ -21,7 +21,7 @@ import java.util.Random;
 /**
  * A factory for creating uProtocol UUIDs.
  *
- * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.5/basics/uuid.adoc">
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.6/basics/uuid.adoc">
  * uProtocol UUID Specification</a>
  */
 // [impl->dsn~uuid-spec~1]

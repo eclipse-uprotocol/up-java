@@ -25,7 +25,7 @@ import org.eclipse.uprotocol.v1.UUri;
  * Provides functionality for serializing and deserializing {@link UUri}s to/from their
  * corresponding URI representation as defined by the uProtocol specification.
  *
- * @see <a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.5/basics/uri.adoc">
+ * @see <a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.6/basics/uri.adoc">
  * uProtocol URI Specification</a>
  */
 public final class UriSerializer {
