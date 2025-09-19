@@ -200,23 +200,58 @@ public final class UriValidator {
                 matchesResource(pattern, candidateUri);
     }
 
-    static boolean hasWildcardAuthority(UUri uri) {
+    /**
+     * Checks if a uProtocol URI contains the wildcard authority.
+     *
+     * @param uri The URI to check.
+     * @return {@code true} if the URI's authority is the wildcard authority.
+     * @throws NullPointerException if uri is {@code null}.
+     */
+    public static boolean hasWildcardAuthority(UUri uri) {
         return UriFactory.WILDCARD_AUTHORITY.equals(uri.getAuthorityName());
     }
 
-    static boolean hasWildcardEntityTypeId(UUri uri) {
+    /**
+     * Checks if a uProtocol URI contains the wildcard uEntity type.
+     *
+     * @param uri The URI to check.
+     * @return {@code true} if the URI's uEntity type identifier is the wildcard identifier.
+     * @throws NullPointerException if uri is {@code null}.
+     */
+    public static boolean hasWildcardEntityTypeId(UUri uri) {
         return (uri.getUeId() & UriFactory.WILDCARD_ENTITY_TYPE_ID) == UriFactory.WILDCARD_ENTITY_TYPE_ID;
     }
 
-    static boolean hasWildcardEntityInstanceId(UUri uri) {
+    /**
+     * Checks if a uProtocol URI contains the wildcard uEntity instance identifier.
+     *
+     * @param uri The URI to check.
+     * @return {@code true} if the URI's uEntity instance identifier is the wildcard identifier.
+     * @throws NullPointerException if uri is {@code null}.
+     */
+    public static boolean hasWildcardEntityInstanceId(UUri uri) {
         return (uri.getUeId() & UriFactory.WILDCARD_ENTITY_INSTANCE_ID) == UriFactory.WILDCARD_ENTITY_INSTANCE_ID;
     }
 
-    static boolean hasWildcardEntityVersion(UUri uri) {
+    /**
+     * Checks if a uProtocol URI contains the wildcard uEntity major version.
+     *
+     * @param uri The URI to check.
+     * @return {@code true} if the URI's uEntity major version is the wildcard version.
+     * @throws NullPointerException if uri is {@code null}.
+     */
+    public static boolean hasWildcardEntityVersion(UUri uri) {
         return uri.getUeVersionMajor() == UriFactory.WILDCARD_ENTITY_VERSION;
     }
 
-    static boolean hasWildcardResourceId(UUri uri) {
+    /**
+     * Checks if a uProtocol URI contains the wildcard uEntity resource identifier.
+     *
+     * @param uri The URI to check.
+     * @return {@code true} if the URI's uEntity resource identifier is the wildcard identifier.
+     * @throws NullPointerException if uri is {@code null}.
+     */
+    public static boolean hasWildcardResourceId(UUri uri) {
         return uri.getResourceId() == UriFactory.WILDCARD_RESOURCE_ID;
     }
 
