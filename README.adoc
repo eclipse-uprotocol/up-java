@@ -12,12 +12,12 @@ Each package folder contains a `README.adoc` file that describes the purpose of 
 
 === Adding the Library
 
-The library is available from [Maven Central](https://search.maven.org/artifact/org.eclipse.uprotocol/up-java) and can be added as a dependency to your Maven or Gradle project.
+The library is available from https://search.maven.org/artifact/org.eclipse.uprotocol/up-java[Maven Central] and can be added as a dependency to your Maven or Gradle project.
 
 [.specitem,oft-sid="impl~up-java-deps-resolution~1",oft-covers="req~up-language-build-deps~1",tags="LanguageLibrary"]
-----
+--
 The following dependency needs to be added to your Maven POM file, setting `${uprotocol.version}` to the desired version of the library:
-----
+--
 
 [source,xml]
 ----
@@ -61,9 +61,9 @@ The following dependency needs to be added to your Maven POM file, setting `${up
 === Building from Source
 
 [.specitem,oft-sid="impl~up-java-build-system~1",oft-covers="req~up-language-build-sys~1",tags="LanguageLibrary"]
-----
-The library is built using the [Apache Maven](https://apache.org/maven) build system and is published to [Maven Central](https://search.maven.org/artifact/org.eclipse.uprotocol/up-java).
-----
+--
+The library is built using the https://apache.org/maven[Apache Maven] build system and is published to https://search.maven.org/artifact/org.eclipse.uprotocol/up-java[Maven Central].
+--
 
 . Clone the repository:
 +
