@@ -42,7 +42,7 @@
 
     <scm>
         <connection>scm:git:https://github.com/eclipse-uprotocol/up-java.git</connection>
-        <developerConnection>scm:git:ssh://github.com:eclipse-uprotocol/up-java.git</developerConnection>
+        <developerConnection>scm:git:ssh://github.com/eclipse-uprotocol/up-java.git</developerConnection>
         <url>https://github.com/eclipse-uprotocol/up-java</url>
     </scm>
 
