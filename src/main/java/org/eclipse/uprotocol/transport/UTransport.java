@@ -12,6 +12,7 @@
  */
 package org.eclipse.uprotocol.transport;
 
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import org.eclipse.uprotocol.communication.UStatusException;
@@ -38,6 +39,7 @@ public interface UTransport {
      *                {@link UAttributes} contained in the message determine the addressing semantics.
      * @return The outcome of the operation. The stage will be completed with a {@link UStatusException} if
      * the message could not be sent.
+     * @throws NullPointerException if the argument is {@code null}.
      */
     CompletionStage<Void> send(UMessage message);
 
@@ -49,17 +51,19 @@ public interface UTransport {
      * <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.6/basics/uri.adoc">UUri
      * specification</a>.
      * <p>
-     * This default implementation invokes {@link #registerListener(UUri, UUri, UListener)} with the
+     * This default implementation invokes {@link #registerListener(UUri, Optional<UUri>, UListener)} with the
      * given source filter and a sink filter of {@link UriFactory#ANY}.
      *
      * @param sourceFilter The <em>source</em> address pattern that messages need to match.
+     * Use {@link UriFactory#ANY} to match any source.
      * @param listener     The listener to invoke. The listener can be unregistered again
-     * using {@link #unregisterListener(UUri, UUri, UListener)}.
+     * using {@link #unregisterListener(UUri, UListener)}.
      * @return The outcome of the operation. The stage will be completed with a {@link UStatusException} if
      * the listener could not be registered.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
     default CompletionStage<Void> registerListener(UUri sourceFilter, UListener listener) {
-        return registerListener(sourceFilter, UriFactory.ANY, listener);
+        return registerListener(sourceFilter, Optional.of(UriFactory.ANY), listener);
     }
 
     /**
@@ -71,36 +75,40 @@ public interface UTransport {
      * specification</a>.
      *
      * @param sourceFilter The <em>source</em> address pattern that messages need to match.
+     * Use {@link UriFactory#ANY} to match any source.
      * @param sinkFilter   The <em>sink</em> address pattern that messages need to match.
+     * Use {@link UriFactory#ANY} to match any sink. Use {@link Optional#empty()} to match only messages without a sink.
      * @param listener     The listener to invoke. The listener can be unregistered again
-     * using {@link #unregisterListener(UUri, UUri, UListener)}.
+     * using {@link #unregisterListener(UUri, Optional<UUri>, UListener)}.
      * @return The outcome of the operation. The stage will be completed with a {@link UStatusException} if
      * the listener could not be registered.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    CompletionStage<Void> registerListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
+    CompletionStage<Void> registerListener(UUri sourceFilter, Optional<UUri> sinkFilter, UListener listener);
 
     /**
-     * Unregisters a message listener.
+     * Unregisters a previously {@link #registerListener(UUri, UListener) registered} message listener.
      * <p>
-     * The listener will no longer be called for any (matching) messages after this function has
+     * The listener will no longer be called for any (matching) messages after this method has
      * returned successfully.
      * <p>
-     * This default implementation invokes {@link #unregisterListener(UUri, UUri, UListener)} with the
+     * This default implementation invokes {@link #unregisterListener(UUri, Optional<UUri>, UListener)} with the
      * given source filter and a sink filter of {@link UriFactory#ANY}.
      *
      * @param sourceFilter The <em>source</em> address pattern that the listener had been registered for.
      * @param listener      The listener to unregister.
      * @return The outcome of the operation. The stage will be completed with a {@link UStatusException} if
      * the listener could not be unregistered.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
     default CompletionStage<Void> unregisterListener(UUri sourceFilter, UListener listener) {
-        return unregisterListener(sourceFilter, UriFactory.ANY, listener);
+        return unregisterListener(sourceFilter, Optional.of(UriFactory.ANY), listener);
     }
 
     /**
-     * Unregisters a message listener.
+     * Unregisters a previously {@link #registerListener(UUri, Optional<UUri>, UListener) registered} message listener.
      * <p>
-     * The listener will no longer be called for any (matching) messages after this function has
+     * The listener will no longer be called for any (matching) messages after this method has
      * returned successfully.
      *
      * @param sourceFilter The <em>source</em> address pattern that the listener had been registered for.
@@ -108,6 +116,7 @@ public interface UTransport {
      * @param listener      The listener to unregister.
      * @return The outcome of the operation. The stage will be completed with a {@link UStatusException} if
      * the listener could not be unregistered.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      */
-    CompletionStage<Void> unregisterListener(UUri sourceFilter, UUri sinkFilter, UListener listener);
+    CompletionStage<Void> unregisterListener(UUri sourceFilter, Optional<UUri> sinkFilter, UListener listener);
 }

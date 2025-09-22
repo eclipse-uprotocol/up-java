@@ -12,6 +12,7 @@
  */
 package org.eclipse.uprotocol.transport;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -53,20 +54,22 @@ class UTransportTest {
 
     @Test
     @DisplayName("Test default implementation of registerListener")
+    @SuppressWarnings("unchecked")
     void testRegisterListener() {
-        when(transport.registerListener(any(UUri.class), any(UUri.class), any(UListener.class)))
+        when(transport.registerListener(any(UUri.class), any(Optional.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(null));
 
         transport.registerListener(SOURCE_FILTER, listener).toCompletableFuture().join();
-        verify(transport).registerListener(eq(SOURCE_FILTER), eq(UriFactory.ANY), eq(listener));
+        verify(transport).registerListener(eq(SOURCE_FILTER), eq(Optional.of(UriFactory.ANY)), eq(listener));
     }
 
     @Test
     @DisplayName("Test happy path unregister listener")
+    @SuppressWarnings("unchecked")
     void testUnregisterListener() {
-        when(transport.unregisterListener(any(UUri.class), any(UUri.class), any(UListener.class)))
+        when(transport.unregisterListener(any(UUri.class), any(Optional.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(null));
         transport.unregisterListener(SOURCE_FILTER, listener).toCompletableFuture().join();
-        verify(transport).unregisterListener(eq(SOURCE_FILTER), eq(UriFactory.ANY), eq(listener));
+        verify(transport).unregisterListener(eq(SOURCE_FILTER), eq(Optional.of(UriFactory.ANY)), eq(listener));
     }
 }

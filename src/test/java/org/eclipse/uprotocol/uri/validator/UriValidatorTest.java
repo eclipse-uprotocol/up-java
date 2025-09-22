@@ -13,17 +13,21 @@
 package org.eclipse.uprotocol.uri.validator;
 
 
+import org.eclipse.uprotocol.communication.UStatusException;
 import org.eclipse.uprotocol.uri.serializer.UriSerializer;
+import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 class UriValidatorTest {
 
@@ -163,6 +167,36 @@ class UriValidatorTest {
             assertTrue(UriValidator.hasWildcard(uuri));
         } else {
             assertFalse(UriValidator.hasWildcard(uuri));
+        }
+    }
+
+    @ParameterizedTest(name = "Test verifyFilterCriteria: {index} {arguments}")
+    @CsvSource(useHeadersInDisplayName = true, textBlock = """
+        source,                     sink,                 should fail
+        //vehicle1/AA/1/FFFF,       //vehicle2/BB/1/FFFF, false
+        //vehicle1/AA/1/9000,       //vehicle2/BB/1/0,    false
+        //vehicle1/AA/1/0,          //vehicle2/BB/1/1,    false
+        # source and sink both have resource ID 0
+        //vehicle1/AA/1/0,          //vehicle2/BB/1/0,    true
+        //vehicle1/AA/1/FFFF,       //vehicle2/BB/1/1A,   false
+        //vehicle1/AA/1/0,          //vehicle2/BB/1/1A,   false
+        # sink is RPC but source has invalid resource ID
+        //vehicle1/AA/1/CC,         //vehicle2/BB/1/1A,   true
+        //vehicle1/AA/1/9000,       ,                     false
+        //vehicle1/AA/1/FFFF,       ,                     false
+        # sink is empty but source has non-topic resource ID
+        //vehicle1/AA/1/CC,         ,                     true
+        """)
+    void testVerifyFilterCriteriaFails(String source, String sink, boolean shouldFail) {
+        var sourceFilter = UriSerializer.deserialize(source);
+        Optional<UUri> sinkFilter = sink != null ? Optional.of(UriSerializer.deserialize(sink)) : Optional.empty();
+        if (shouldFail) {
+            UStatusException exception = assertThrows(
+                UStatusException.class,
+                () -> UriValidator.verifyFilterCriteria(sourceFilter, sinkFilter));
+            assertEquals(UCode.INVALID_ARGUMENT, exception.getCode());
+        } else {
+            assertDoesNotThrow(() -> UriValidator.verifyFilterCriteria(sourceFilter, sinkFilter));
         }
     }
 }

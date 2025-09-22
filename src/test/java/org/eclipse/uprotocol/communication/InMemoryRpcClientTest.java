@@ -77,11 +77,12 @@ class InMemoryRpcClientTest extends CommunicationLayerClientTestBase {
 
     @ParameterizedTest(name = "Test successful RPC, sending and receiving a payload: {index} - {arguments}")
     @MethodSource("callOptionsAndPayloadProvider")
+    @SuppressWarnings("unchecked")
     void testInvokeMethodWithPayloadSucceeds(CallOptions options, UPayload payload, UCode responseStatus) {
         RpcClient rpcClient = new InMemoryRpcClient(transport, uriProvider);
 
         var response = rpcClient.invokeMethod(METHOD_URI, payload, options);
-        verify(transport).registerListener(any(UUri.class), any(UUri.class), responseListener.capture());
+        verify(transport).registerListener(any(UUri.class), any(Optional.class), responseListener.capture());
         verify(transport).send(requestMessage.capture());
         assertEquals(payload.data(), requestMessage.getValue().getPayload());
         assertMessageHasOptions(options, requestMessage.getValue());
@@ -137,10 +138,11 @@ class InMemoryRpcClientTest extends CommunicationLayerClientTestBase {
 
     @Test
     @DisplayName("Test unsuccessful RPC, with service returning error")
+    @SuppressWarnings("unchecked")
     void testInvokeMethodFailsForErroneousServiceInvocation() {
         RpcClient rpcClient = new InMemoryRpcClient(transport, uriProvider);
         var response = rpcClient.invokeMethod(METHOD_URI, UPayload.EMPTY, CallOptions.DEFAULT);
-        verify(transport).registerListener(any(UUri.class), any(UUri.class), responseListener.capture());
+        verify(transport).registerListener(any(UUri.class), any(Optional.class), responseListener.capture());
         verify(transport).send(requestMessage.capture());
         assertEquals(UPayload.EMPTY.data(), requestMessage.getValue().getPayload());
         assertMessageHasOptions(CallOptions.DEFAULT, requestMessage.getValue());
@@ -168,10 +170,11 @@ class InMemoryRpcClientTest extends CommunicationLayerClientTestBase {
 
     @ParameterizedTest(name = "Test client handles unexpected incoming messages: {index} - {arguments}")
     @MethodSource("unexpectedMessageHandlerProvider")
+    @SuppressWarnings("unchecked")
     void testHandleUnexpectedResponse(Consumer<UMessage> unexpectedMessageHandler) {
         var rpcClient = new InMemoryRpcClient(transport, uriProvider);
         Optional.ofNullable(unexpectedMessageHandler).ifPresent(rpcClient::setUnexpectedMessageHandler);
-        verify(transport).registerListener(any(UUri.class), any(UUri.class), responseListener.capture());
+        verify(transport).registerListener(any(UUri.class), any(Optional.class), responseListener.capture());
 
         // send an arbitrary request
         rpcClient.invokeMethod(METHOD_URI, UPayload.EMPTY, CallOptions.DEFAULT);
@@ -214,8 +217,14 @@ class InMemoryRpcClientTest extends CommunicationLayerClientTestBase {
     @DisplayName("Test close() unregisters the response listener from the transport")
     void testCloseUnregistersResponseListenerFromTransport() {
         InMemoryRpcClient rpcClient = new InMemoryRpcClient(transport, uriProvider);
-        verify(transport).registerListener(eq(UriFactory.ANY), eq(TRANSPORT_SOURCE), responseListener.capture());
+        verify(transport).registerListener(
+            eq(UriFactory.ANY),
+            eq(Optional.of(TRANSPORT_SOURCE)),
+            responseListener.capture());
         rpcClient.close();
-        verify(transport).unregisterListener(eq(UriFactory.ANY), eq(TRANSPORT_SOURCE), eq(responseListener.getValue()));
+        verify(transport).unregisterListener(
+            eq(UriFactory.ANY),
+            eq(Optional.of(TRANSPORT_SOURCE)),
+            eq(responseListener.getValue()));
     }
 }

@@ -13,6 +13,7 @@
 package org.eclipse.uprotocol.communication;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -64,11 +65,11 @@ public class SimpleNotifier extends AbstractCommunicationLayerClient implements 
 
     @Override
     public CompletionStage<Void> registerNotificationListener(UUri topic, UListener listener) {
-        return getTransport().registerListener(topic, getUriProvider().getSource(), listener);
+        return getTransport().registerListener(topic, Optional.of(getUriProvider().getSource()), listener);
     }
 
     @Override
     public CompletionStage<Void> unregisterNotificationListener(UUri topic, UListener listener) {
-        return getTransport().unregisterListener(topic, getUriProvider().getSource(), listener);
+        return getTransport().unregisterListener(topic, Optional.of(getUriProvider().getSource()), listener);
     }
 }

@@ -17,7 +17,10 @@ import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.eclipse.uprotocol.communication.UStatusException;
+import org.eclipse.uprotocol.transport.UTransport;
 import org.eclipse.uprotocol.uri.factory.UriFactory;
+import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UUri;
 
 /**
@@ -269,5 +272,49 @@ public final class UriValidator {
                 hasWildcardEntityInstanceId(uri) ||
                 hasWildcardEntityVersion(uri) ||
                 hasWildcardResourceId(uri);
+    }
+
+    /**
+     * Verifies that given uProtocol URIs can be used as source and sink filter URIs
+     * for registering listeners.
+     * <p>
+     * This function is helpful for implementing {@link UTransport} in accordance with the
+     * uProtocol Transport Layer specification.
+     *
+     * @param sourceFilter The source filter URI to verify.
+     * @param sinkFilter The optional sink filter URI to verify.
+     * @throws UStatusException if the given URIs cannot be used as filter criteria.
+     */
+    public static void verifyFilterCriteria(UUri sourceFilter, Optional<UUri> sinkFilter) {
+        sinkFilter.ifPresentOrElse(
+            filter -> {
+                if (isNotificationDestination(filter) && isNotificationDestination(sourceFilter)) {
+                    throw new UStatusException(
+                        UCode.INVALID_ARGUMENT,
+                        "source and sink filters must not both have resource ID 0");
+                }
+                if (isRpcMethod(filter)
+                    && !hasWildcardResourceId(sourceFilter)
+                    && !isRpcResponse(sourceFilter)) {
+                    throw new UStatusException(
+                        UCode.INVALID_ARGUMENT,
+                        """
+                        source filter must either have the wildcard resource ID or resource ID 0, \
+                        if sink filter matches RPC method resource ID
+                        """);
+                }
+            },
+            () -> {
+                if (!hasWildcardResourceId(sourceFilter) && !isTopic(sourceFilter)) {
+                    throw new UStatusException(
+                        UCode.INVALID_ARGUMENT,
+                        """
+                        source filter must either have the wildcard resource ID or a resource ID from topic range, \
+                        if sink filter is empty
+                        """);
+                } // no sink filter provided
+            }
+        );
+        // everything else might match valid messages
     }
 }

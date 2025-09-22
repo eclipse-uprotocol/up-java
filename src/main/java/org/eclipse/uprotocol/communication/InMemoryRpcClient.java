@@ -68,7 +68,7 @@ public class InMemoryRpcClient extends AbstractCommunicationLayerClient implemen
 
         getTransport().registerListener(
                 UriFactory.ANY,
-                getUriProvider().getSource(),
+                Optional.of(getUriProvider().getSource()),
                 mResponseHandler)
             .toCompletableFuture().join();
     }
@@ -125,7 +125,10 @@ public class InMemoryRpcClient extends AbstractCommunicationLayerClient implemen
      */
     public void close() {
         mRequests.clear();
-        getTransport().unregisterListener(UriFactory.ANY, getUriProvider().getSource(), mResponseHandler);
+        getTransport().unregisterListener(
+            UriFactory.ANY,
+            Optional.of(getUriProvider().getSource()),
+            mResponseHandler);
     }
 
     private void handleResponse(UMessage message) {
