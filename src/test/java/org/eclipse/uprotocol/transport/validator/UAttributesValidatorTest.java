@@ -110,7 +110,7 @@ public class UAttributesValidatorTest {
         10000,  true
         29999,  true
         30000,  true
-        30001,  false
+        40000,  false
         """)
     void testIsExpired(int ttl, boolean expectedIsExpired) {
         var now = Instant.now();

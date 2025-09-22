@@ -15,10 +15,12 @@ package org.eclipse.uprotocol.communication;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -103,20 +105,21 @@ class SimpleNotifierTest extends CommunicationLayerClientTestBase {
         notifier.registerNotificationListener(TOPIC_URI, listener).toCompletableFuture().join();
         verify(transport).registerListener(
             TOPIC_URI,
-            TRANSPORT_SOURCE,
+            Optional.of(TRANSPORT_SOURCE),
             listener);
         notifier.unregisterNotificationListener(TOPIC_URI, listener).toCompletableFuture().join();
         verify(transport).unregisterListener(
             TOPIC_URI,
-            TRANSPORT_SOURCE,
+            Optional.of(TRANSPORT_SOURCE),
             listener);
     }
 
     @Test
     @DisplayName("Test unregistering a listener that was not registered")
+    @SuppressWarnings("unchecked")
     void testUnregisterListenerNotRegistered() {
         final var listener = mock(UListener.class);
-        when(transport.unregisterListener(TOPIC_URI, TRANSPORT_SOURCE, listener))
+        when(transport.unregisterListener(any(UUri.class), any(Optional.class), any(UListener.class)))
             .thenReturn(CompletableFuture.failedFuture(
                 new UStatusException(UCode.NOT_FOUND, "no such listener")));
         final var exception = assertThrows(CompletionException.class, () -> {
@@ -124,7 +127,7 @@ class SimpleNotifierTest extends CommunicationLayerClientTestBase {
         });
         verify(transport).unregisterListener(
             TOPIC_URI,
-            TRANSPORT_SOURCE,
+            Optional.of(TRANSPORT_SOURCE),
             listener);
         assertEquals(UCode.NOT_FOUND, ((UStatusException) exception.getCause()).getCode());
     }

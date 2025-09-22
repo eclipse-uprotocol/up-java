@@ -112,7 +112,7 @@ public class InMemoryRpcServer extends AbstractCommunicationLayerClient implemen
                 return CompletableFuture.failedFuture(new UStatusException(
                     UCode.ALREADY_EXISTS, "Handler already registered"));
             }
-            return getTransport().registerListener(UriFactory.ANY, method, mRequestHandler)
+            return getTransport().registerListener(UriFactory.ANY, Optional.of(method), mRequestHandler)
                 .whenComplete((ok, throwable) -> {
                     if (throwable != null) {
                         mRequestsHandlers.remove(method);
@@ -140,7 +140,7 @@ public class InMemoryRpcServer extends AbstractCommunicationLayerClient implemen
         }
 
         if (mRequestsHandlers.remove(method, handler)) {
-            return getTransport().unregisterListener(UriFactory.ANY, method, mRequestHandler);
+            return getTransport().unregisterListener(UriFactory.ANY, Optional.of(method), mRequestHandler);
         } else {
             return CompletableFuture.failedFuture(new UStatusException(
                 UCode.NOT_FOUND, "Handler not found"));

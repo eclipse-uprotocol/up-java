@@ -102,15 +102,16 @@ class InMemorySubscriberTest {
     private UListener listener;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setup() {
         uriProvider = StaticUriProvider.of(SOURCE);
 
         transport = mock(UTransport.class);
-        Mockito.lenient().when(transport.registerListener(any(UUri.class), any(UUri.class), any(UListener.class)))
+        Mockito.lenient().when(transport.registerListener(any(UUri.class), any(Optional.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(null));
         Mockito.lenient().when(transport.registerListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(null));
-        Mockito.lenient().when(transport.unregisterListener(any(UUri.class), any(UUri.class), any(UListener.class)))
+        Mockito.lenient().when(transport.unregisterListener(any(UUri.class), any(Optional.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(null));
         Mockito.lenient().when(transport.unregisterListener(any(UUri.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(null));
@@ -186,7 +187,7 @@ class InMemorySubscriberTest {
             SUBSCRIPTION_NOTIFICATION_TOPIC_URI.getAuthorityName());
         verify(transport).registerListener(
             eq(SUBSCRIPTION_NOTIFICATION_TOPIC_URI),
-            eq(SOURCE),
+            eq(Optional.of(SOURCE)),
             any(UListener.class));
     }
 

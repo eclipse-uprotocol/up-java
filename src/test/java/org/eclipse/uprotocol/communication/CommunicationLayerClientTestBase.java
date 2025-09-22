@@ -15,6 +15,7 @@ package org.eclipse.uprotocol.communication;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.uprotocol.transport.LocalUriProvider;
@@ -54,11 +55,12 @@ class CommunicationLayerClientTestBase {
     protected ArgumentCaptor<UMessage> requestMessage;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setUpTransport() {
         transport = mock(UTransport.class);
-        Mockito.lenient().when(transport.registerListener(any(UUri.class), any(UUri.class), any(UListener.class)))
+        Mockito.lenient().when(transport.registerListener(any(UUri.class), any(Optional.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(null));
-        Mockito.lenient().when(transport.unregisterListener(any(UUri.class), any(UUri.class), any(UListener.class)))
+        Mockito.lenient().when(transport.unregisterListener(any(UUri.class), any(Optional.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(null));
         Mockito.lenient().when(transport.send(any(UMessage.class)))
             .thenReturn(CompletableFuture.completedFuture(null));

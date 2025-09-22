@@ -19,6 +19,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.uprotocol.transport.StaticUriProvider;
@@ -65,11 +66,11 @@ class UClientTest {
     @Test
     void testFactoryMethod() {
         var transport = mock(UTransport.class);
-        when(transport.registerListener(any(UUri.class), any(UUri.class), any(UListener.class)))
+        when(transport.registerListener(any(UUri.class), any(Optional.class), any(UListener.class)))
             .thenReturn(CompletableFuture.completedFuture(null));
         var uriProvider = StaticUriProvider.of(TRANSPORT_SOURCE);
         UClient.create(transport, uriProvider);
-        verify(transport).registerListener(any(UUri.class), eq(TRANSPORT_SOURCE), any(UListener.class));
+        verify(transport).registerListener(any(UUri.class), eq(Optional.of(TRANSPORT_SOURCE)), any(UListener.class));
     }
 
     @Test

@@ -103,7 +103,7 @@ class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
             .join();
         verify(transport).registerListener(
             eq(originFilter),
-            eq(METHOD_URI),
+            eq(Optional.of(METHOD_URI)),
             any(UListener.class));
 
         server.unregisterRequestHandler(
@@ -114,7 +114,7 @@ class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
             .join();
         verify(transport).unregisterListener(
             eq(originFilter),
-            eq(METHOD_URI),
+            eq(Optional.of(METHOD_URI)),
             any(UListener.class));
     }
 
@@ -132,7 +132,7 @@ class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
             .join();
         verify(transport, times(1)).registerListener(
             eq(originFilter),
-            eq(METHOD_URI),
+            eq(Optional.of(METHOD_URI)),
             any(UListener.class));
 
         var exception = assertThrows(CompletionException.class, () -> server.registerRequestHandler(
@@ -146,6 +146,7 @@ class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
 
     @Test
     @DisplayName("Test unregistering a request handler that wasn't registered already")
+    @SuppressWarnings("unchecked")
     void testUnregisterRequestHandlerFailsForUnknownHandler() {
         final RpcServer server = new InMemoryRpcServer(transport, uriProvider);
 
@@ -156,14 +157,15 @@ class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
         assertEquals(UCode.NOT_FOUND, ((UStatusException) exception.getCause()).getCode());
         verify(transport, never()).unregisterListener(
             any(UUri.class),
-            any(UUri.class),
+            any(Optional.class),
             any(UListener.class));
     }
 
     @Test
     @DisplayName("Test registering a request handler with unavailable transport fails")
+    @SuppressWarnings("unchecked")
     void testRegisteringRequestListenerFailsIfTransportIsUnavailable() {
-        when(transport.registerListener(any(UUri.class), any(UUri.class), any(UListener.class)))
+        when(transport.registerListener(any(UUri.class), any(Optional.class), any(UListener.class)))
             .thenReturn(CompletableFuture.failedFuture(new UStatusException(UCode.UNAVAILABLE, "unavailable")));
         RpcServer server = new InMemoryRpcServer(transport, uriProvider);
 
@@ -174,7 +176,7 @@ class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
         assertEquals(UCode.UNAVAILABLE, ((UStatusException) exception.getCause()).getCode());
         verify(transport, times(1)).registerListener(
             eq(UriFactory.ANY),
-            eq(METHOD_URI),
+            eq(Optional.of(METHOD_URI)),
             any(UListener.class));
     }
 
@@ -203,7 +205,7 @@ class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
         server.registerRequestHandler(UriFactory.ANY, METHOD_URI.getResourceId(), handler)
             .toCompletableFuture().join();
         final ArgumentCaptor<UListener> requestListener = ArgumentCaptor.forClass(UListener.class);
-        verify(transport).registerListener(eq(UriFactory.ANY), eq(METHOD_URI), requestListener.capture());
+        verify(transport).registerListener(eq(UriFactory.ANY), eq(Optional.of(METHOD_URI)), requestListener.capture());
 
         final var request = UMessageBuilder.request(uriProvider.getSource(), METHOD_URI, 5000).build();
         requestListener.getValue().onReceive(request);
@@ -260,7 +262,7 @@ class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
         server.registerRequestHandler(UriFactory.ANY, METHOD_URI.getResourceId(), handler)
             .toCompletableFuture().join();
         final ArgumentCaptor<UListener> requestListener = ArgumentCaptor.forClass(UListener.class);
-        verify(transport).registerListener(eq(UriFactory.ANY), eq(METHOD_URI), requestListener.capture());
+        verify(transport).registerListener(eq(UriFactory.ANY), eq(Optional.of(METHOD_URI)), requestListener.capture());
 
         requestListener.getValue().onReceive(request);
         verify(handler).handleRequest(request);
@@ -290,7 +292,7 @@ class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
         server.registerRequestHandler(UriFactory.ANY, METHOD_URI.getResourceId(), handler)
             .toCompletableFuture().join();
         final ArgumentCaptor<UListener> requestListener = ArgumentCaptor.forClass(UListener.class);
-        verify(transport).registerListener(eq(UriFactory.ANY), eq(METHOD_URI), requestListener.capture());
+        verify(transport).registerListener(eq(UriFactory.ANY), eq(Optional.of(METHOD_URI)), requestListener.capture());
 
         server.unregisterRequestHandler(UriFactory.ANY, METHOD_URI.getResourceId(), handler)
             .toCompletableFuture().join();
@@ -326,7 +328,7 @@ class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
         server.registerRequestHandler(UriFactory.ANY, METHOD_URI.getResourceId(), handler)
             .toCompletableFuture().join();
         final ArgumentCaptor<UListener> requestListener = ArgumentCaptor.forClass(UListener.class);
-        verify(transport).registerListener(eq(UriFactory.ANY), eq(METHOD_URI), requestListener.capture());
+        verify(transport).registerListener(eq(UriFactory.ANY), eq(Optional.of(METHOD_URI)), requestListener.capture());
 
         requestListener.getValue().onReceive(invalidNotification);
         verify(handler, never()).handleRequest(any(UMessage.class));
@@ -349,7 +351,7 @@ class InMemoryRpcServerTest extends CommunicationLayerClientTestBase {
         server.registerRequestHandler(UriFactory.ANY, METHOD_URI.getResourceId(), handler)
             .toCompletableFuture().join();
         final ArgumentCaptor<UListener> requestListener = ArgumentCaptor.forClass(UListener.class);
-        verify(transport).registerListener(eq(UriFactory.ANY), eq(METHOD_URI), requestListener.capture());
+        verify(transport).registerListener(eq(UriFactory.ANY), eq(Optional.of(METHOD_URI)), requestListener.capture());
 
         requestListener.getValue().onReceive(request);
         verify(handler).handleRequest(request);
