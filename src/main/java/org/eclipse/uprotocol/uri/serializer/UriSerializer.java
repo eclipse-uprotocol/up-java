@@ -35,7 +35,7 @@ public final class UriSerializer {
      */
     public static final String SCHEME_UP = "up";
 
-    private static final Pattern AUTHORITY_PATTERN = Pattern.compile("^[a-z0-9-._~]{1,128}$");
+    private static final Pattern AUTHORITY_PATTERN = Pattern.compile("^[a-z0-9-._~]{0,128}$");
 
     private UriSerializer() {
         // prevent instantiation
