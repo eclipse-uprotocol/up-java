@@ -563,16 +563,6 @@ public class UAttributesValidatorTest {
                 OptionalInt.of(0),
                 OptionalInt.of(UPriority.UPRIORITY_CS4_VALUE),
                 Optional.empty(),
-                false),
-            // fails for invalid (negative) permission level
-            Arguments.of(
-                Optional.of(UuidFactory.create()),
-                Optional.of(UURI_METHOD),
-                Optional.of(UURI_DEFAULT),
-                OptionalInt.of(-1),
-                OptionalInt.of(2000),
-                OptionalInt.of(UPriority.UPRIORITY_CS4_VALUE),
-                Optional.empty(),
                 false)
         );
     }
@@ -629,7 +619,7 @@ public class UAttributesValidatorTest {
                 Optional.of(UURI_METHOD),
                 Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
-                OptionalInt.empty(),
+                OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 true),
             // succeeds for valid attributes
@@ -661,7 +651,7 @@ public class UAttributesValidatorTest {
                 Optional.of(UURI_METHOD),
                 Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
-                OptionalInt.empty(),
+                OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for missing reply-to-address
@@ -672,7 +662,7 @@ public class UAttributesValidatorTest {
                 Optional.of(UURI_METHOD),
                 Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
-                OptionalInt.empty(),
+                OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for invalid reply-to-address
@@ -683,7 +673,7 @@ public class UAttributesValidatorTest {
                 Optional.of(UURI_METHOD),
                 Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
-                OptionalInt.empty(),
+                OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for reply-to-address with wildcard
@@ -694,7 +684,7 @@ public class UAttributesValidatorTest {
                 Optional.of(UURI_METHOD),
                 Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
-                OptionalInt.empty(),
+                OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for missing invoked-method
@@ -705,7 +695,7 @@ public class UAttributesValidatorTest {
                 Optional.empty(),
                 Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
-                OptionalInt.empty(),
+                OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for invalid invoked-method
@@ -716,7 +706,7 @@ public class UAttributesValidatorTest {
                 Optional.of(UURI_TOPIC),
                 Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
-                OptionalInt.empty(),
+                OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for invoked-method with wildcard
@@ -727,7 +717,7 @@ public class UAttributesValidatorTest {
                 Optional.of(UURI_WILDCARD_RESOURCE),
                 Optional.of(UuidFactory.create()),
                 OptionalInt.empty(),
-                OptionalInt.empty(),
+                OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
                 false),
             // fails for invalid commstatus
@@ -737,20 +727,10 @@ public class UAttributesValidatorTest {
                 Optional.of(UURI_METHOD),
                 Optional.of(UuidFactory.create()),
                 OptionalInt.of(-189),
-                OptionalInt.empty(),
-                Optional.of(UPriority.UPRIORITY_CS4),
-                false),
-            // succeeds for ttl > 0
-            Arguments.of(
-                Optional.of(UuidFactory.create()),
-                Optional.of(UURI_DEFAULT),
-                Optional.of(UURI_METHOD),
-                Optional.of(UuidFactory.create()),
-                OptionalInt.empty(),
                 OptionalInt.of(100),
                 Optional.of(UPriority.UPRIORITY_CS4),
-                true),
-            // succeeds for ttl = 0
+                false),
+            // fails for ttl = 0
             Arguments.of(
                 Optional.of(UuidFactory.create()),
                 Optional.of(UURI_DEFAULT),
@@ -759,7 +739,7 @@ public class UAttributesValidatorTest {
                 OptionalInt.empty(),
                 OptionalInt.of(0),
                 Optional.of(UPriority.UPRIORITY_CS4),
-                true),
+                false),
             // fails for missing priority
             Arguments.of(
                 Optional.of(UuidFactory.create()),

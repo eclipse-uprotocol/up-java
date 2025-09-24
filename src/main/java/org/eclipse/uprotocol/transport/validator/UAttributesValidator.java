@@ -130,18 +130,41 @@ public abstract class UAttributesValidator {
     }
 
     /**
+     * Validates the time-to-live configuration of RPC messages.
+     *
+     * @param attributes The attributes to check.
+     * @throws IllegalArgumentException if the attributes do not represent an RPC message.
+     * @throws ValidationException if the attributes do not contain a TTL or if its value is 0.
+     */
+    public final void validateRpcTtl(UAttributes attributes) {
+        if (attributes.getType() != UMessageType.UMESSAGE_TYPE_REQUEST
+            && attributes.getType() != UMessageType.UMESSAGE_TYPE_RESPONSE) {
+            throw new IllegalArgumentException("Attributes do not represent an RPC message");
+        }
+        if (!attributes.hasTtl()) {
+            throw new ValidationException("RPC messages must contain a TTL");
+        }
+        int ttl = attributes.getTtl();
+        // TTL is interpreted as an unsigned integer, so negative values are not possible
+        if (ttl == 0) {
+            throw new ValidationException("RPC message's TTL must not be 0");
+        }
+    }
+
+    /**
      * Checks if a given set of attributes belong to a message that has expired.
      * <p>
      * The message is considered expired if the message's creation time plus the
      * duration indicated by the <em>ttl</em> attribute is <em>before</em> the current
-     * instant in time.
+     * instant in (system) time.
      *
      * @param attributes The attributes to check.
      * @return {@code true} if the given attributes should be considered expired.
      */
     public final boolean isExpired(UAttributes attributes) {
         final int ttl = attributes.getTtl();
-        return ttl > 0 && UuidUtils.isExpired(attributes.getId(), ttl, Instant.now());
+        // TTL is interpreted as an unsigned integer, so negative values are not possible
+        return Integer.compareUnsigned(ttl, 0) > 0 && UuidUtils.isExpired(attributes.getId(), ttl, Instant.now());
     }
 
     /*
@@ -177,43 +200,6 @@ public abstract class UAttributesValidator {
      * specified for the message type.
      */
     public abstract void validate(UAttributes attributes);
-
-    /**
-     * Validates the time-to-live configuration.
-     * <p>
-     * If the UAttributes does not contain a time to live then the ValidationResult is ok.
-     *
-     * @param attributes The attributes to check.
-     * @throws ValidationException if the attributes contain a negative TTL.
-     */
-    public void validateTtl(UAttributes attributes) {
-        if (!attributes.hasTtl()) {
-            return;
-        }
-        int ttl = attributes.getTtl();
-        if (ttl < 0) {
-            throw new ValidationException(String.format("TTL must be a non-negative integer [%s]", ttl));
-        }
-    }
-
-    /**
-     * Validate the permissionLevel for the default case. If the UAttributes does
-     * not contain a permission level then
-     * the ValidationResult is ok.
-     *
-     * @param attributes The attributes to check.
-     * @throws ValidationException if the attributes contain a negative permission level.
-     */
-    public final void validatePermissionLevel(UAttributes attributes) {
-        if (!attributes.hasPermissionLevel()) {
-            return;
-        }
-        final var level = attributes.getPermissionLevel();
-        if (level < 0) {
-            throw new ValidationException(
-                String.format("Permission level must be a non-negative integer [%d]", level));
-        }
-    }
 
     /**
      * Validators for the message types defined by uProtocol.
@@ -294,7 +280,6 @@ public abstract class UAttributesValidator {
                     this::validateId,
                     this::validateSource,
                     this::validateSink,
-                    this::validateTtl,
                     this::validatePriority
             );
             if (!errors.isEmpty()) {
@@ -366,7 +351,6 @@ public abstract class UAttributesValidator {
                     this::validateId,
                     this::validateSource,
                     this::validateSink,
-                    this::validateTtl,
                     this::validatePriority
             );
             if (!errors.isEmpty()) {
@@ -435,27 +419,6 @@ public abstract class UAttributesValidator {
             }
         }
 
-        /**
-         * Verifies that a set of attributes representing an RPC request contain a valid time-to-live.
-         *
-         * @param attributes The attributes to check.
-         * @throws ValidationException if the attributes do not contain a time-to-live,
-         * or if the time-to-live is &lt;= 0.
-         */
-        @Override
-        public void validateTtl(UAttributes attributes) {
-            // [impl->dsn~up-attributes-request-ttl~1]
-            if (!attributes.hasTtl()) {
-                throw new ValidationException("RPC request message must contain a TTL");
-            }
-            int ttl = attributes.getTtl();
-            if (ttl <= 0) {
-                throw new ValidationException(String.format(
-                    "RPC request message's TTL must be a positive integer [%d]",
-                    ttl));
-            }
-        }
-
         @Override
         public void validate(UAttributes attributes) {
             final var errors = ValidationUtils.collectErrors(attributes, 
@@ -463,9 +426,8 @@ public abstract class UAttributesValidator {
                     this::validateId,
                     this::validateSource,
                     this::validateSink,
-                    this::validateTtl,
-                    this::validateRpcPriority,
-                    this::validatePermissionLevel
+                    this::validateRpcTtl,
+                    this::validateRpcPriority
             );
             if (!errors.isEmpty()) {
                 throw new ValidationException(errors);
@@ -575,7 +537,7 @@ public abstract class UAttributesValidator {
                     this::validateSource,
                     this::validateSink,
                     this::validateReqId,
-                    this::validateTtl,
+                    this::validateRpcTtl,
                     this::validateRpcPriority,
                     this::validateCommstatus
             );

@@ -187,6 +187,7 @@ class InMemoryRpcClientTest extends CommunicationLayerClientTestBase {
                 METHOD_URI,
                 TRANSPORT_SOURCE,
                 reqId)
+            .withTtl(54321)
             .build();
         responseListener.getValue().onReceive(responseMessage);
 

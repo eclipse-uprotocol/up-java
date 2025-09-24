@@ -55,7 +55,7 @@ public final class UMessageBuilder {
 
     /**
      * Gets a builder for a publish message.
-     *
+     * <p>
      * A publish message is used to notify all interested consumers of an event that has occurred.
      * Consumers usually indicate their interest by <em>subscribing</em> to a particular topic.
      *
@@ -75,7 +75,7 @@ public final class UMessageBuilder {
 
     /**
      * Gets a builder for a notification message.
-     *
+     * <p>
      * A notification is used to inform a specific consumer about an event that has occurred.
      *
      * @param source The component that the notification originates from.
@@ -135,13 +135,6 @@ public final class UMessageBuilder {
      * <p>
      * The builder will be initialized with {@link UPriority#UPRIORITY_CS4}.
      *
-     * # Arguments
-     *
-     * * `reply_to_address` - The URI that the sender of the request expects to receive the response message at.
-     * * `request_id` - The identifier of the request that this is the response to.
-     * * `invoked_method` - The URI identifying the method that has been invoked and which the created message is
-     *   the outcome of.
-     *
      * @param source The URI identifying the method that has been invoked and which the created message is
      *   the outcome of.
      * @param sink   The URI that the sender of the request expects to receive the response message at.
@@ -169,16 +162,9 @@ public final class UMessageBuilder {
      * <p>
      * A response message is used to send the outcome of processing a request message
      * to the original sender of the request message.
-     * <p>
-     * The builder will be initialized with values from the given request attributes.
      *
-     * # Arguments
-     *
-     * * `request_attributes` - The attributes from the request message. The response message
-     *   builder will be initialized with the corresponding attribute values.
-     * 
      * @param request The attributes from the request message. The response message
-     *   builder will be initialized with the corresponding attribute values.
+     * builder will be initialized with the corresponding attribute values.
      * @return The builder.
      * @throws NullPointerException if request is {@code null}.
      * @throws IllegalArgumentException if the request does not contain valid request attributes.
@@ -219,7 +205,7 @@ public final class UMessageBuilder {
 
     /**
      * Sets the message's identifier.
-     *
+     * <p>
      * Every message must have an identifier. If this method is not used, an identifier will be
      * generated and set on the message when one of the <em>build</em> methods is invoked.
      *
@@ -241,14 +227,11 @@ public final class UMessageBuilder {
     /**
      * Sets the message's time-to-live.
      *
-     * @param ttl The time-to-live in milliseconds.
+     * @param ttl The time-to-live in milliseconds. Note that the value is interpreted as an
+     * <em>unsigned</em> integer. A value of 0 indicates that the message never expires.
      * @return The builder with the configured ttl.
-     * @throws IllegalArgumentException if the ttl is negative.
      */
     public UMessageBuilder withTtl(int ttl) {
-        if (ttl < 0) {
-            throw new IllegalArgumentException("TTL must be a non-negative integer.");
-        }
         this.ttl = ttl;
         return this;
     }
@@ -296,16 +279,12 @@ public final class UMessageBuilder {
     /**
      * Sets the message's permission level.
      *
-     * @param plevel The level.
+     * @param plevel The level. Note that the value is interpreted as an <em>unsigned</em> integer.
      * @return The builder with the configured permission level.
-     * @throws IllegalArgumentException if the permission level is less than 0.
      * @throws IllegalStateException if the message is not an RPC request message.
      */
     public UMessageBuilder withPermissionLevel(int plevel) {
         // [impl->dsn~up-attributes-permission-level~1]
-        if (plevel < 0) {
-            throw new IllegalArgumentException("Permission level must be greater than or equal to 0.");
-        }
         if (this.type != UMessageType.UMESSAGE_TYPE_REQUEST) {
             throw new IllegalStateException("Permission level can only be set for RPC request messages.");
         }
@@ -371,11 +350,6 @@ public final class UMessageBuilder {
     
     /**
      * Creates the message based on the builder's state.
-     *
-     * # Errors
-     *
-     * If the properties set on the builder do not represent a consistent set of [`UAttributes`],
-     * a [`UMessageError::AttributesValidationError`] is returned.
      *
      * @return A message ready to be sent using a transport implementation.
      * @throws ValidationException if the properties set on the builder do not represent a
