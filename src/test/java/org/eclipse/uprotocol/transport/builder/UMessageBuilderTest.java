@@ -27,7 +27,6 @@ import org.eclipse.uprotocol.uuid.factory.UuidFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import com.google.protobuf.ByteString;
 
@@ -130,45 +129,36 @@ class UMessageBuilderTest {
         }
     }
 
-    @ParameterizedTest
-    @ValueSource(ints = { -1, 0 })
-    void testRequestRejectsInvalidTtl(int ttl) {
+    @Test
+    void testRequestRejectsInvalidTtl() {
         assertThrows(
             IllegalArgumentException.class,
-            () -> UMessageBuilder.request(UURI_DEFAULT, UURI_METHOD, ttl)
+            () -> UMessageBuilder.request(UURI_DEFAULT, UURI_METHOD, 0)
         );
     }
 
     @ParameterizedTest
     @CsvSource(useHeadersInDisplayName = true, textBlock = """
-        permLevel, commStatus, priority
-        # // [utest->dsn~up-attributes-permission-level~1]
-        -1,        ,
-        ,          NOT_FOUND,
+        commStatus, priority
+        NOT_FOUND,
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,          ,          UPRIORITY_UNSPECIFIED
+        ,          UPRIORITY_UNSPECIFIED
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,          ,          UPRIORITY_CS0
+        ,          UPRIORITY_CS0
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,          ,          UPRIORITY_CS1
+        ,          UPRIORITY_CS1
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,          ,          UPRIORITY_CS2
+        ,          UPRIORITY_CS2
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,          ,          UPRIORITY_CS3
+        ,          UPRIORITY_CS3
         """)
     void testRequestMessageBuilderRejectsInvalidAttributes(
-        Integer permLevel,
         UCode commStatus,
         UPriority priority
     ) {
         var builder = UMessageBuilder.request(UURI_DEFAULT, UURI_METHOD, 5000);
 
-        if (permLevel != null) {
-            assertThrows(
-                IllegalArgumentException.class,
-                () -> builder.withPermissionLevel(permLevel)
-            );
-        } else if (commStatus != null) {
+        if (commStatus != null) {
             assertThrows(
                 IllegalStateException.class,
                 () -> builder.withCommStatus(commStatus)
@@ -183,25 +173,23 @@ class UMessageBuilderTest {
 
     @ParameterizedTest
     @CsvSource(useHeadersInDisplayName = true, textBlock = """
-        ttl, permLevel, token,    priority
+        permLevel, token,    priority
         # // [utest->dsn~up-attributes-permission-level~1]
-        -1,  ,          ,
-        ,    5,         ,
+        5,         ,
         # // [utest->dsn~up-attributes-request-token~1]
-        ,    ,          my-token,
+        ,          my-token,
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,    ,          ,         UPRIORITY_UNSPECIFIED
+        ,          ,         UPRIORITY_UNSPECIFIED
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,    ,          ,         UPRIORITY_CS0
+        ,          ,         UPRIORITY_CS0
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,    ,          ,         UPRIORITY_CS1
+        ,          ,         UPRIORITY_CS1
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,    ,          ,         UPRIORITY_CS2
+        ,          ,         UPRIORITY_CS2
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,    ,          ,         UPRIORITY_CS3
+        ,          ,         UPRIORITY_CS3
         """)
     void testResponseMessageBuilderRejectsInvalidAttributes(
-        Integer ttl,
         Integer permLevel,
         String token,
         UPriority priority
@@ -211,12 +199,7 @@ class UMessageBuilderTest {
             UURI_DEFAULT,
             UuidFactory.create());
 
-        if (ttl != null) {
-            assertThrows(
-                IllegalArgumentException.class,
-                () -> builder.withTtl(ttl)
-            );
-        } else if (permLevel != null) {
+        if (permLevel != null) {
             assertThrows(
                 IllegalStateException.class,
                 () -> builder.withPermissionLevel(permLevel)
@@ -312,7 +295,7 @@ class UMessageBuilderTest {
         UMessage message = UMessageBuilder.notification(origin, destination)
             .withMessageId(messageId)
             .withPriority(UPriority.UPRIORITY_CS2)
-            .withTtl(5000)
+            .withTtl(0xFF00_FFFF) // test unsigned integer
             .withTraceparent(traceparent)
             .build(UPayload.pack(ByteString.copyFromUtf8("locked"), UPayloadFormat.UPAYLOAD_FORMAT_TEXT));
 
@@ -321,7 +304,7 @@ class UMessageBuilderTest {
         assertEquals(UPriority.UPRIORITY_CS2, message.getAttributes().getPriority());
         assertEquals(origin, message.getAttributes().getSource());
         assertEquals(destination, message.getAttributes().getSink());
-        assertEquals(5000, message.getAttributes().getTtl());
+        assertEquals(0xFF00_FFFF, message.getAttributes().getTtl());
         // [utest->dsn~up-attributes-traceparent~1]
         assertEquals(traceparent, message.getAttributes().getTraceparent());
         // [utest->dsn~up-attributes-notification-type~1]
@@ -349,7 +332,7 @@ class UMessageBuilderTest {
         var replyToAddress = UURI_DEFAULT;
         UMessage message = UMessageBuilder.request(replyToAddress, methodToInvoke, 5000)
             .withMessageId(messageId)
-            .withPermissionLevel(5)
+            .withPermissionLevel(0xFF00_FFFF) // test unsigned integer
             .withPriority(UPriority.UPRIORITY_CS4)
             .withToken(token)
             .withTraceparent(traceparent)
@@ -358,7 +341,7 @@ class UMessageBuilderTest {
         // [utest->dsn~up-attributes-id~1]
         assertEquals(messageId, message.getAttributes().getId());
         // [utest->dsn~up-attributes-permission-level~1]
-        assertEquals(5, message.getAttributes().getPermissionLevel());
+        assertEquals(0xFF00_FFFF, message.getAttributes().getPermissionLevel());
         assertEquals(UPriority.UPRIORITY_CS4, message.getAttributes().getPriority());
         assertEquals(replyToAddress, message.getAttributes().getSource());
         assertEquals(methodToInvoke, message.getAttributes().getSink());

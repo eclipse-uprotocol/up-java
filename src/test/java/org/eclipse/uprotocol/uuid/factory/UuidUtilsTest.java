@@ -75,14 +75,14 @@ class UuidUtilsTest {
     @MethodSource("provideCreationTimestamps")
     void testGetTime(Instant timestamp) {
         final UUID uuid = UuidFactory.create(timestamp);
-        final var time = UuidUtils.getTime(uuid);
+        final var time = UuidUtils.getTimestamp(uuid);
         assertEquals(timestamp.toEpochMilli(), time);
     }
 
     @Test
     void testGetTimeRejectsInvalidArgs() {
-        assertThrows(NullPointerException.class, () -> UuidUtils.getTime(null));
-        assertThrows(IllegalArgumentException.class, () -> UuidUtils.getTime(invalidUuid()));
+        assertThrows(NullPointerException.class, () -> UuidUtils.getTimestamp(null));
+        assertThrows(IllegalArgumentException.class, () -> UuidUtils.getTimestamp(invalidUuid()));
     }
 
     private static Stream<Arguments> provideElapsedTimeTestCases() {
@@ -123,15 +123,16 @@ class UuidUtilsTest {
             Arguments.of(now.minusSeconds(60), 40_000, now, 0),
             Arguments.of(now.minusSeconds(60), 60_000, now, 0),
             Arguments.of(now.minusSeconds(60), 80_000, now, 20_000),
-            Arguments.of(now.plusSeconds(10), 70_000, now.plusSeconds(79), 1_000)
+            Arguments.of(now.plusSeconds(10), 70_000, now.plusSeconds(79), 1_000),
+            Arguments.of(now, 0xFFFF_FFFF, now.plusMillis(0x00FF_FFFF), 0xFF00_0000)
         );
     }
 
     @ParameterizedTest(name = "Test getting remaining time for UUID {index} - {arguments}")
     @MethodSource("provideRemainingTimeTestCases")
-    void testGetRemainingTime(Instant creationTime, int ttl, Instant referenceTime, long expectedRemaining) {
+    void testGetRemainingTime(Instant creationTime, int ttl, Instant referenceTime, long expectedRemainingMillis) {
         final UUID id = UuidFactory.create(creationTime);
-        assertEquals(expectedRemaining, UuidUtils.getRemainingTime(id, ttl, referenceTime));
+        assertEquals(expectedRemainingMillis, UuidUtils.getRemainingTime(id, ttl, referenceTime));
     }
 
     @Test
@@ -154,10 +155,6 @@ class UuidUtilsTest {
             IllegalArgumentException.class,
             () -> UuidUtils.getRemainingTime(UuidFactory.create(), 0, Instant.now().plusSeconds(10))
         );
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> UuidUtils.getRemainingTime(UuidFactory.create(), -1, Instant.now().plusSeconds(10))
-        );
     }
 
     private static Stream<Arguments> provideIsExpiredTestCases() {
@@ -167,7 +164,9 @@ class UuidUtilsTest {
             Arguments.of(now.minusSeconds(60), 40_000, now, true),
             Arguments.of(now.minusSeconds(60), 60_000, now, true),
             Arguments.of(now.minusSeconds(60), 80_000, now, false),
-            Arguments.of(now.plusSeconds(10), 70_000, now.plusSeconds(79), false)
+            Arguments.of(now.plusSeconds(10), 70_000, now.plusSeconds(79), false),
+            Arguments.of(now, 0xFFFF_FF00, now.plusMillis(0xFFFF_FEFF), false),
+            Arguments.of(now, 0xFFFF_FF00, now.plusMillis(0xFFFF_FF00), true)
         );
     }
 
@@ -182,9 +181,5 @@ class UuidUtilsTest {
     void testIsExpiredRejectsInvalidArgs() {
         assertThrows(NullPointerException.class, () -> UuidUtils.isExpired(null, TTL, Instant.now()));
         assertThrows(IllegalArgumentException.class, () -> UuidUtils.isExpired(invalidUuid(), TTL, Instant.now()));
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> UuidUtils.isExpired(UuidFactory.create(), -3, Instant.now())
-        );
     }
 }

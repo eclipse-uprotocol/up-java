@@ -76,7 +76,7 @@ public final class UuidUtils {
      * @throws NullPointerException if the UUID is {@code null}.
      * @throws IllegalArgumentException if the UUID is not a uProtocol UUID.
      */
-    public static long getTime(UUID uuid) {
+    public static long getTimestamp(UUID uuid) {
         Objects.requireNonNull(uuid);
         if (!isUProtocol(uuid)) {
             throw new IllegalArgumentException("UUID is not a uProtocol UUID");
@@ -101,7 +101,7 @@ public final class UuidUtils {
         if (!isUProtocol(id)) {
             throw new IllegalArgumentException("UUID is not a uProtocol UUID");
         }
-        final var creationTime = getTime(id);
+        final var creationTime = getTimestamp(id);
         final var referenceTime = now != null ? now.toEpochMilli() : Instant.now().toEpochMilli();
         return referenceTime - creationTime;
     }
@@ -118,21 +118,16 @@ public final class UuidUtils {
      *         has already expired.
      * @throws NullPointerException if the UUID is {@code null}.
      * @throws IllegalArgumentException if the UUID is not a uProtocol UUID.
-     * @throws IllegalArgumentException if the TTL is non-positive.
+     * @throws IllegalArgumentException if the TTL is 0.
      */
     public static long getRemainingTime(UUID id, int ttl, Instant now) {
         Objects.requireNonNull(id);
-        if (!isUProtocol(id)) {
-            throw new IllegalArgumentException("UUID is not a uProtocol UUID");
+        if (ttl == 0) {
+            throw new IllegalArgumentException("TTL must not be 0");
         }
-        if (ttl <= 0) {
-            throw new IllegalArgumentException("TTL must be positive");
-        }
-        final var creationTime = getTime(id);
-        final var referenceTime = now != null ? now.toEpochMilli() : Instant.now().toEpochMilli();
-        final var elapsedTime = referenceTime - creationTime;
-        if (elapsedTime >= ttl) {
-            return 0;
+        final long elapsedTime = getElapsedTime(id, now);
+        if (Long.compareUnsigned(elapsedTime, ttl) > 0) {
+            return 0; // Expired
         } else {
             return ttl - elapsedTime;
         }
@@ -142,22 +137,19 @@ public final class UuidUtils {
      * Checks if an object identified by a given UUID should be considered expired.
      *
      * @param id  The UUID.
-     * @param ttl The object's time-to-live (TTL) in milliseconds.
+     * @param ttl The object's time-to-live (TTL) in milliseconds. Note that the TTL is
+     * interpreted as an <em>unsigned</em> integer.
      * @param now The reference point in time that the calculation should be based on, given
      * as the number of milliseconds since the Unix epoch, or {@code null} to use the current point in time.
      * @return {@code true} if the object's TTL has already expired.
      * @throws NullPointerException if the UUID is {@code null}.
      * @throws IllegalArgumentException if the UUID is not a uProtocol UUID.
-     * @throws IllegalArgumentException if the TTL is negative.
      */
     public static boolean isExpired(UUID id, int ttl, Instant now) {
         Objects.requireNonNull(id);
         if (!isUProtocol(id)) {
             throw new IllegalArgumentException("UUID is not a uProtocol UUID");
         }
-        if (ttl < 0) {
-            throw new IllegalArgumentException("TTL must be non-negative");
-        }
-        return ttl > 0 && getRemainingTime(id, ttl, now) == 0;
+        return Integer.compareUnsigned(ttl, 0) > 0 && getRemainingTime(id, ttl, now) == 0;
     }
 }
