@@ -118,13 +118,6 @@
             <artifactId>protobuf-java</artifactId>
         </dependency>
 
-        <!-- https://search.maven.org/artifact/com.github.f4b6a3/uuid-creator -->
-        <dependency>
-            <groupId>com.github.f4b6a3</groupId>
-            <artifactId>uuid-creator</artifactId>
-            <version>5.3.7</version>
-        </dependency>
-
         <!-- Testing -->
         <dependency>
             <groupId>nl.jqno.equalsverifier</groupId>
