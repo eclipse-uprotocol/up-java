@@ -377,23 +377,14 @@
                         <configuration>
                             <!-- Exclude classes generated from proto3 files -->
                             <excludes>
+                                <exclude>org/eclipse/uprotocol/Uoptions.*</exclude>
+                                <exclude>org/eclipse/uprotocol/UServiceTopic*</exclude>
                                 <exclude>org/eclipse/uprotocol/core/**</exclude>
                                 <exclude>org/eclipse/uprotocol/v1/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <includes>
-                        <include>**/client/**</include>
-                        <include>**/cloudevent/**</include>
-                        <include>**/communication/**</include>
-                        <include>**/transport/**</include>
-                        <include>**/uri/**</include>
-                        <include>**/uuid/**</include>
-                        <include>**/validation/**</include>
-                    </includes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.sonatype.central</groupId>
