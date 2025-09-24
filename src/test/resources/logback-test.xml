@@ -8,5 +8,5 @@
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
-    <logger name="org.eclipse.uprotocol.communication" level="INFO" />
+    <logger name="org.eclipse.uprotocol" level="DEBUG" />
 </configuration>
