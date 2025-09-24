@@ -34,6 +34,8 @@ Feature: String representation of endpoint identfiers (UUri)
     Examples:
       | authority_name | entity_id  | version | resource_id | uri_string                      |
       | ""             | 0x00000001 |    0x01 |      0xa1fb | up:/1/1/A1FB                    |
+      | "192.168.1.1"  | 0x00000001 |    0x01 |      0xa1fb | up://192.168.1.1/1/1/A1FB       |
+      | "[2001::7]"    | 0x00000001 |    0x01 |      0xa1fb | up://[2001::7]/1/1/A1FB         |
       | "my_vin"       | 0x10000001 |    0x02 |      0x001a | up://my_vin/10000001/2/1A       |
       | "*"            | 0x00000101 |    0xa0 |      0xa1fb | up://*/101/A0/A1FB              |
       | "mcu1"         | 0x0000FFFF |    0x01 |      0xa1fb | up://mcu1/FFFF/1/A1FB           |
@@ -69,7 +71,6 @@ Feature: String representation of endpoint identfiers (UUri)
       | "/"                                   | not a URI                                             |
       | "//"                                  | not a URI                                             |
       | "//vcu.my_vin"                        | just an authority                                     |
-      | "//VCU"                               | authority with uppercase characters                   |
       | "//vcu.my_vin//1/A1FB"                | missing entity ID                                     |
       | "//vcu.my_vin/101//A1FB"              | missing version                                       |
       | "//vcu.my_vin/101/1/"                 | missing resource ID                                   |
@@ -79,6 +80,8 @@ Feature: String representation of endpoint identfiers (UUri)
       | "//vcu.my_vin/101/1/A#foo"            | URI with fragment                                     |
       | "//vcu.my-vin:1516/101/1/A"           | server-based authority with port                      |
       | "//user:pwd@vcu.my-vin/101/1/A"       | server-based authority with user info                 |
+      | "//[2001:db87aa::8]/101/1/A"          | invalid IP literal authority                          |
+      | "//MY_VIN/101/1/A"                    | registry-based authority with uppercase characters    |
       | "//reg_based:1516/101/1/A"            | registry-based authority name with invalid characters |
       | "up://vcu.my-vin/1G1/1/A1FB"          | non-hex entity ID                                     |
       | "/123456789/1/A1FB"                   | entity ID exceeds max length                          |
