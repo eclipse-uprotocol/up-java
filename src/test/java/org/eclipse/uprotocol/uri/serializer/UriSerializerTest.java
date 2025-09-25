@@ -12,6 +12,7 @@
  */
 package org.eclipse.uprotocol.uri.serializer;
 
+import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -21,8 +22,6 @@ import java.net.URI;
 
 
 class UriSerializerTest {
-
-    private static final int AUTHORITY_NAME_MAX_LENGTH = 128;
 
     @Test
     @DisplayName("Test serializing a null UUri fails")
@@ -41,11 +40,11 @@ class UriSerializerTest {
     @DisplayName("Test deserializing a UUri with authority name exceeding max length fails")
     // [utest->dsn~uri-authority-name-length~1]
     void testDeserializeRejectsAuthorityNameExceedingMaxLength() {
-        String authority = "a".repeat(AUTHORITY_NAME_MAX_LENGTH);
+        String authority = "a".repeat(UriValidator.AUTHORITY_NAME_MAX_LENGTH);
         String validUri = "up://%s/ABCD/1/1001".formatted(authority);
         assertDoesNotThrow(() -> UriSerializer.deserialize(validUri));
 
-        authority = "a".repeat(AUTHORITY_NAME_MAX_LENGTH + 1);
+        authority = "a".repeat(UriValidator.AUTHORITY_NAME_MAX_LENGTH + 1);
         var invalidUri = "up://%s/ABCD/1/1001".formatted(authority);
         assertThrows(IllegalArgumentException.class, () -> UriSerializer.deserialize(invalidUri));
     }
