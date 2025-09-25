@@ -13,10 +13,8 @@
 package org.eclipse.uprotocol.uri.serializer;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UUri;
@@ -34,8 +32,6 @@ public final class UriSerializer {
      * The scheme used for uProtocol URIs.
      */
     public static final String SCHEME_UP = "up";
-
-    private static final Pattern AUTHORITY_PATTERN = Pattern.compile("^[a-z0-9-._~]{0,128}$");
 
     private UriSerializer() {
         // prevent instantiation
@@ -105,12 +101,10 @@ public final class UriSerializer {
      * @throws NullPointerException if the URI is null.
      * @throws IllegalArgumentException if the URI is invalid.
      */
-    // [impl->dsn~uri-authority-name-length~1]
     // [impl->dsn~uri-scheme~1]
-    // [impl->dsn~uri-host-only~2]
-    // [impl->dsn~uri-authority-mapping~1]
     // [impl->dsn~uri-path-mapping~1]
     // [impl->req~uri-serialization~1]
+    // [impl->dsn~uri-authority-mapping~1]
     public static UUri deserialize(String uProtocolUri) {
         Objects.requireNonNull(uProtocolUri);
         final var parsedUri = URI.create(uProtocolUri);
@@ -125,12 +119,10 @@ public final class UriSerializer {
      * @throws NullPointerException if the URI is null.
      * @throws IllegalArgumentException if the URI is invalid.
      */
-    // [impl->dsn~uri-authority-name-length~1]
     // [impl->dsn~uri-scheme~1]
-    // [impl->dsn~uri-host-only~2]
-    // [impl->dsn~uri-authority-mapping~1]
     // [impl->dsn~uri-path-mapping~1]
     // [impl->req~uri-serialization~1]
+    // [impl->dsn~uri-authority-mapping~1]
     public static UUri deserialize(URI uProtocolUri) {
         Objects.requireNonNull(uProtocolUri);
 
@@ -143,25 +135,7 @@ public final class UriSerializer {
         if (uProtocolUri.getFragment() != null) {
             throw new IllegalArgumentException("uProtocol URI must not contain fragment");
         }
-
-        String authority;
-        try {
-            // this should work if authority is server-based (i.e. contains a host)
-            var uriWithServerAuthority = uProtocolUri.parseServerAuthority();
-            // we can then verify that the authority does neither contain user info nor port
-            UriValidator.validateParsedAuthority(uriWithServerAuthority);
-            authority = uriWithServerAuthority.getHost();
-        } catch (URISyntaxException e) {
-            // the authority is not server-based but might still be valid according to the UUri spec,
-            // we just need to make sure that it either is the wildcard authority or contains allowed
-            // characters only
-            authority = uProtocolUri.getAuthority();
-            if (authority != null && !"*".equals(authority) && !AUTHORITY_PATTERN.matcher(authority).matches()) {
-                throw new IllegalArgumentException(
-                    "uProtocol URI authority contains invalid characters",
-                    e);
-            }
-        }
+        String authority = UriValidator.validateAuthority(uProtocolUri);
 
         final var pathSegments = uProtocolUri.getPath().split("/");
         if (pathSegments.length != 4) {

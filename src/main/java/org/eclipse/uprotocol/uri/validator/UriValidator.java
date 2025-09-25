@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.eclipse.uprotocol.communication.UStatusException;
 import org.eclipse.uprotocol.transport.UTransport;
@@ -27,6 +28,13 @@ import org.eclipse.uprotocol.v1.UUri;
  * A helper for validating uProtocol URIs.
  */
 public final class UriValidator {
+
+    /**
+     * The maximum length of an authority name.
+     */
+    public static final int AUTHORITY_NAME_MAX_LENGTH = 128;
+
+    private static final Pattern AUTHORITY_PATTERN = Pattern.compile("^[a-z0-9-._~]*$");
 
     private UriValidator() {
         // prevent instantiation
@@ -57,7 +65,7 @@ public final class UriValidator {
             .ifPresent(name -> {
                 try {
                     var uri = new URI(null, name, null, null, null);
-                    validateParsedAuthority(uri);
+                    validateAuthority(uri);
                 } catch (URISyntaxException e) {
                     throw new IllegalArgumentException("Invalid authority name", e);
                 }
@@ -84,21 +92,50 @@ public final class UriValidator {
         }
     }
 
-    public static void validateParsedAuthority(URI uri) {
+    /**
+     * Verifies that the authority part of a uProtocol URI complies with the uProtocol specification.
+     *
+     * @param uri The URI to validate.
+     * @throws NullPointerException if uri is {@code null}.
+     * @throws IllegalArgumentException if the authority part of the URI does not comply with the
+     *         uProtocol specification.
+     * @return The validated authority part of the URI.
+     */
+    // [impl->dsn~uri-authority-name-length~1]
+    // [impl->dsn~uri-host-only~2]
+    public static String validateAuthority(URI uri) {
         Objects.requireNonNull(uri, "URI must not be null");
 
-        if (uri.getPort() != -1) {
-            throw new IllegalArgumentException("uProtocol URI must not contain port");
-        }
-        if (uri.getUserInfo() != null) {
-            throw new IllegalArgumentException("uProtocol URI must not contain user info");
-        }
-        Optional.ofNullable(uri.getAuthority()).ifPresent(authority -> {
-            if (authority.length() > 128) {
-                throw new IllegalArgumentException("Authority name exceeds maximum length of 128 characters");
+        String authority;
+        try {
+            // this should work if authority is server-based, i.e. contains a host, literal IP or IPv4 address
+            var uriWithServerAuthority = uri.parseServerAuthority();
+            if (uriWithServerAuthority.getPort() != -1) {
+                throw new IllegalArgumentException("uProtocol URI must not contain port");
             }
-        });
-        // TODO: make sure that authority name only consists of allowed characters
+            if (uriWithServerAuthority.getUserInfo() != null) {
+                throw new IllegalArgumentException("uProtocol URI must not contain user info");
+            }
+            authority = uriWithServerAuthority.getHost();
+            if (authority != null && authority.startsWith("[") && authority.endsWith("]")) {
+                // this is an IPv6 literal address
+                return authority;
+            }
+        } catch (URISyntaxException e) {
+            // the authority is not server-based but might still be valid according to the UUri spec,
+            authority = uri.getAuthority();
+        }
+        // make sure that authority name either is the wildcard authority or contains allowed characters only
+        if (authority != null && !"*".equals(authority) && !AUTHORITY_PATTERN.matcher(authority).matches()) {
+            throw new IllegalArgumentException("uProtocol URI authority contains invalid characters");
+        }
+        // and does not exceed maximum length
+        if (authority != null && authority.length() > AUTHORITY_NAME_MAX_LENGTH) {
+            throw new IllegalArgumentException("uProtocol URI authority must not exceed %d characters"
+                .formatted(AUTHORITY_NAME_MAX_LENGTH));
+        }
+
+        return authority;
     }
 
     /**
@@ -283,9 +320,21 @@ public final class UriValidator {
      *
      * @param sourceFilter The source filter URI to verify.
      * @param sinkFilter The optional sink filter URI to verify.
+     * @throws NullPointerException if any of the arguments are {@code null}.
      * @throws UStatusException if the given URIs cannot be used as filter criteria.
      */
     public static void verifyFilterCriteria(UUri sourceFilter, Optional<UUri> sinkFilter) {
+        Objects.requireNonNull(sourceFilter);
+        Objects.requireNonNull(sinkFilter);
+        try {
+            validate(sourceFilter);
+            sinkFilter.ifPresent(UriValidator::validate);
+        } catch (IllegalArgumentException e) {
+            throw new UStatusException(
+                UCode.INVALID_ARGUMENT,
+                "source and sink filters must be valid uProtocol URIs",
+                e);
+        }
         sinkFilter.ifPresentOrElse(
             filter -> {
                 if (isNotificationDestination(filter) && isNotificationDestination(sourceFilter)) {

@@ -18,7 +18,9 @@ import org.eclipse.uprotocol.uri.serializer.UriSerializer;
 import org.eclipse.uprotocol.v1.UCode;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -26,8 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 class UriValidatorTest {
 
@@ -36,9 +38,12 @@ class UriValidatorTest {
         authorityName,             ueId,         version, resourceId, should succeed
         *,                         -1,           0xFF,    0xFFFF,     true
         myhost,                    0x0000_0A1B,  0x01,    0x2341,     true
+        192.168.1.1,               0x0000_0A1B,  0x01,    0x2341,     true
+        [2001::7],                 0x0000_0A1B,  0x01,    0x2341,     true
         invalid<<[],               0x0000_0A1B,  0x01,    0x2341,     false
         myhost:5555,               0x0000_0A1B,  0x01,    0x2341,     false
         user:passwd@myhost,        0x0000_0A1B,  0x01,    0x2341,     false
+        MYHOST,                    0x0000_0A1B,  0x01,    0x2341,     false
         myhost,                    0x0000_0A1B,  -1,      0x2341,     false
         myhost,                    0x0000_0A1B,  0x100,   0x2341,     false
         myhost,                    0x0000_0A1B,  0x01,    -1,         false
@@ -73,10 +78,9 @@ class UriValidatorTest {
         129,                  false
         """)
     void testValidateFailsForAuthorityExceedingMaxLength(int authorityNameLength, boolean shouldSucceed) {
-        var authorityName = new char[authorityNameLength];
-        Arrays.fill(authorityName, 'A');
+        var authorityName = "a".repeat(authorityNameLength);
         var uri = UUri.newBuilder()
-            .setAuthorityName(new String(authorityName))
+            .setAuthorityName(authorityName)
             .setUeId(0x1234)
             .setUeVersionMajor(0x01)
             .setResourceId(0x0001)
@@ -170,33 +174,79 @@ class UriValidatorTest {
         }
     }
 
+    static Stream<Arguments> verifyFilterCriteriaProvider() {
+        var templateUriA = UUri.newBuilder()
+            .setAuthorityName("vehicle1")
+            .setUeId(0xaa)
+            .setUeVersionMajor(0x01)
+            .build();
+        var templateUriB = UUri.newBuilder()
+            .setAuthorityName("vehicle2")
+            .setUeId(0xbb)
+            .setUeVersionMajor(0x01)
+            .build();
+        return Stream.of(
+            // source has authority name with upper-case letters
+            Arguments.of(
+                UUri.newBuilder(templateUriA).setAuthorityName("VEHICLE1").setResourceId(0x9000).build(),
+                Optional.of(UUri.newBuilder(templateUriB).setResourceId(0x0000).build()),
+                false),
+            Arguments.of(
+                UUri.newBuilder(templateUriA).setResourceId(0xFFFF).build(),
+                Optional.of(UUri.newBuilder(templateUriB).setResourceId(0xFFFF).build()),
+                true),
+            Arguments.of(
+                UUri.newBuilder(templateUriA).setResourceId(0x9000).build(),
+                Optional.of(UUri.newBuilder(templateUriB).setResourceId(0x0000).build()),
+                true),
+            Arguments.of(
+                UUri.newBuilder(templateUriA).setResourceId(0x0000).build(),
+                Optional.of(UUri.newBuilder(templateUriB).setResourceId(0x0001).build()),
+                true),
+            // source and sink both have resource ID 0
+            Arguments.of(
+                UUri.newBuilder(templateUriA).setResourceId(0x0000).build(),
+                Optional.of(UUri.newBuilder(templateUriB).setResourceId(0x0000).build()),
+                false),
+            Arguments.of(
+                UUri.newBuilder(templateUriA).setResourceId(0xFFFF).build(),
+                Optional.of(UUri.newBuilder(templateUriB).setResourceId(0x001a).build()),
+                true),
+            Arguments.of(
+                UUri.newBuilder(templateUriA).setResourceId(0x0000).build(),
+                Optional.of(UUri.newBuilder(templateUriB).setResourceId(0x001a).build()),
+                true),
+            // sink is RPC but source has invalid resource ID
+            Arguments.of(
+                UUri.newBuilder(templateUriA).setResourceId(0x00cc).build(),
+                Optional.of(UUri.newBuilder(templateUriB).setResourceId(0x001a).build()),
+                false),
+            Arguments.of(
+                UUri.newBuilder(templateUriA).setResourceId(0x9000).build(),
+                Optional.empty(),
+                true),
+            Arguments.of(
+                UUri.newBuilder(templateUriA).setResourceId(0xFFFF).build(),
+                Optional.empty(),
+                true),
+            // sink is empty but source has non-topic resource ID
+            Arguments.of(
+                UUri.newBuilder(templateUriA).setResourceId(0x00cc).build(),
+                Optional.empty(),
+                false)
+        );
+    }
+
     @ParameterizedTest(name = "Test verifyFilterCriteria: {index} {arguments}")
-    @CsvSource(useHeadersInDisplayName = true, textBlock = """
-        source,                     sink,                 should fail
-        //vehicle1/AA/1/FFFF,       //vehicle2/BB/1/FFFF, false
-        //vehicle1/AA/1/9000,       //vehicle2/BB/1/0,    false
-        //vehicle1/AA/1/0,          //vehicle2/BB/1/1,    false
-        # source and sink both have resource ID 0
-        //vehicle1/AA/1/0,          //vehicle2/BB/1/0,    true
-        //vehicle1/AA/1/FFFF,       //vehicle2/BB/1/1A,   false
-        //vehicle1/AA/1/0,          //vehicle2/BB/1/1A,   false
-        # sink is RPC but source has invalid resource ID
-        //vehicle1/AA/1/CC,         //vehicle2/BB/1/1A,   true
-        //vehicle1/AA/1/9000,       ,                     false
-        //vehicle1/AA/1/FFFF,       ,                     false
-        # sink is empty but source has non-topic resource ID
-        //vehicle1/AA/1/CC,         ,                     true
-        """)
-    void testVerifyFilterCriteriaFails(String source, String sink, boolean shouldFail) {
-        var sourceFilter = UriSerializer.deserialize(source);
-        Optional<UUri> sinkFilter = sink != null ? Optional.of(UriSerializer.deserialize(sink)) : Optional.empty();
-        if (shouldFail) {
+    @MethodSource("verifyFilterCriteriaProvider")
+    void testVerifyFilterCriteriaFails(UUri sourceFilter, Optional<UUri> sinkFilter, boolean shouldSucceed) {
+        if (shouldSucceed) {
+            assertDoesNotThrow(() -> UriValidator.verifyFilterCriteria(sourceFilter, sinkFilter));
+        } else {
             UStatusException exception = assertThrows(
                 UStatusException.class,
                 () -> UriValidator.verifyFilterCriteria(sourceFilter, sinkFilter));
             assertEquals(UCode.INVALID_ARGUMENT, exception.getCode());
-        } else {
-            assertDoesNotThrow(() -> UriValidator.verifyFilterCriteria(sourceFilter, sinkFilter));
         }
     }
 }

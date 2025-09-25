@@ -78,6 +78,7 @@ Feature: String representation of endpoint identfiers (UUri)
       | "xy://vcu.my_vin/101/1/A"             | unsupported schema                                    |
       | "//vcu.my_vin/101/1/A?foo=bar"        | URI with query                                        |
       | "//vcu.my_vin/101/1/A#foo"            | URI with fragment                                     |
+      | "//VCU.my-vin/101/1/A"                | server-based authority with upper-case letters        |
       | "//vcu.my-vin:1516/101/1/A"           | server-based authority with port                      |
       | "//user:pwd@vcu.my-vin/101/1/A"       | server-based authority with user info                 |
       | "//[2001:db87aa::8]/101/1/A"          | invalid IP literal authority                          |
