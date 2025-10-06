@@ -126,7 +126,7 @@ public final class UuidUtils {
             throw new IllegalArgumentException("TTL must not be 0");
         }
         final long elapsedTime = getElapsedTime(id, now);
-        if (Long.compareUnsigned(elapsedTime, ttl) > 0) {
+        if (Long.compareUnsigned(elapsedTime, ttl) >= 0) {
             return 0; // Expired
         } else {
             return ttl - elapsedTime;

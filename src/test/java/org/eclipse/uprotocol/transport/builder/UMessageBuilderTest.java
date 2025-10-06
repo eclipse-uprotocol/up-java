@@ -130,6 +130,7 @@ class UMessageBuilderTest {
     }
 
     @Test
+    // [utest->dsn~up-attributes-request-ttl~1]
     void testRequestRejectsInvalidTtl() {
         assertThrows(
             IllegalArgumentException.class,
@@ -139,22 +140,25 @@ class UMessageBuilderTest {
 
     @ParameterizedTest
     @CsvSource(useHeadersInDisplayName = true, textBlock = """
-        commStatus, priority
-        NOT_FOUND,
+        commStatus, priority,              ttl
+        NOT_FOUND,  ,
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,          UPRIORITY_UNSPECIFIED
+        ,          UPRIORITY_UNSPECIFIED,
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,          UPRIORITY_CS0
+        ,          UPRIORITY_CS0,
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,          UPRIORITY_CS1
+        ,          UPRIORITY_CS1,
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,          UPRIORITY_CS2
+        ,          UPRIORITY_CS2,
         # // [utest->dsn~up-attributes-request-priority~1]
-        ,          UPRIORITY_CS3
+        ,          UPRIORITY_CS3,
+        # // [utest->dsn~up-attributes-request-ttl~1]
+        ,          ,                       0
         """)
     void testRequestMessageBuilderRejectsInvalidAttributes(
         UCode commStatus,
-        UPriority priority
+        UPriority priority,
+        Integer ttl
     ) {
         var builder = UMessageBuilder.request(UURI_DEFAULT, UURI_METHOD, 5000);
 
@@ -167,6 +171,11 @@ class UMessageBuilderTest {
             assertThrows(
                 IllegalArgumentException.class,
                 () -> builder.withPriority(priority)
+            );
+        } else if (ttl != null) {
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> builder.withTtl(ttl)
             );
         }
     }

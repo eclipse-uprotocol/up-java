@@ -106,16 +106,17 @@ public final class UMessageBuilder {
      * @param source The URI that the sender of the request expects the response message at.
      * @param sink   The URI identifying the method to invoke.
      * @param ttl    The number of milliseconds after which the request should no longer be processed
-     * by the target service.
+     * by the target service. The given value is interpreted as an <em>unsigned</em> integer.
      * @return The builder.
      * @throws NullPointerException if the source or sink is {@code null}.
-     * @throws IllegalArgumentException if the ttl is less than or equal to 0.
+     * @throws IllegalArgumentException if the ttl is 0.
      */
     public static UMessageBuilder request(UUri source, UUri sink, int ttl) {
         Objects.requireNonNull(source, "source cannot be null.");
         Objects.requireNonNull(sink, "sink cannot be null.");
 
-        if (ttl <= 0) {
+        if (ttl == 0) {
+            // [impl->dsn~up-attributes-request-ttl~1]
             throw new IllegalArgumentException("ttl must be greater than 0.");
         }
         return new UMessageBuilder(
@@ -230,8 +231,15 @@ public final class UMessageBuilder {
      * @param ttl The time-to-live in milliseconds. Note that the value is interpreted as an
      * <em>unsigned</em> integer. A value of 0 indicates that the message never expires.
      * @return The builder with the configured ttl.
+     * @throws IllegalArgumentException if the builder is used for creating an RPC message and the TTL is 0.
      */
     public UMessageBuilder withTtl(int ttl) {
+        if ((this.type == UMessageType.UMESSAGE_TYPE_REQUEST
+            || this.type == UMessageType.UMESSAGE_TYPE_RESPONSE)
+            && ttl == 0) {
+            // [impl->dsn~up-attributes-request-ttl~1]
+            throw new IllegalArgumentException("TTL of RPC messages must be greater than 0.");
+        }
         this.ttl = ttl;
         return this;
     }
