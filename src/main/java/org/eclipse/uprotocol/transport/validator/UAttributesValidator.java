@@ -147,6 +147,7 @@ public abstract class UAttributesValidator {
         int ttl = attributes.getTtl();
         // TTL is interpreted as an unsigned integer, so negative values are not possible
         if (ttl == 0) {
+            // [impl->dsn~up-attributes-request-ttl~1]
             throw new ValidationException("RPC message's TTL must not be 0");
         }
     }
