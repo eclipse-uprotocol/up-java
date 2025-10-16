@@ -17,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import org.eclipse.uprotocol.communication.CallOptions;
 import org.eclipse.uprotocol.communication.RpcClient;
-import org.eclipse.uprotocol.communication.RpcMapper;
 import org.eclipse.uprotocol.communication.UPayload;
 import org.eclipse.uprotocol.communication.UStatusException;
 import org.eclipse.uprotocol.core.utwin.v2.GetLastMessagesRequest;
@@ -34,33 +33,34 @@ import com.google.protobuf.Descriptors.ServiceDescriptor;
 /**
  * The uTwin client implementation using the RpcClient uP-L2 communication layer interface.
  */
-public class SimpleUTwinClient implements UTwinClient {
-    private final RpcClient rpcClient;
+public class RpcClientBasedUTwinClient implements UTwinClient {
 
-    private static final ServiceDescriptor UTWIN = UTwinProto.getDescriptor().getServices().get(0);
+    static final ServiceDescriptor UTWIN = UTwinProto.getDescriptor().getServices().get(0);
 
     // TODO: The following items eventually need to be pulled from generated code
-    private static final UUri GETLASTMESSAGE_METHOD = UriFactory.fromProto(UTWIN, 1);
+    static final UUri GETLASTMESSAGE_METHOD = UriFactory.fromProto(UTWIN, 1);
 
+    private final RpcClient rpcClient;
 
     /**
-     * Create a new instance of the uTwin client passing in the RPCClient to use for communication.
+     * Creates a new client for the uTwin service.
      * 
      * @param rpcClient The RPC client to use for communication.
      */
-    public SimpleUTwinClient(RpcClient rpcClient) {
+    public RpcClientBasedUTwinClient(RpcClient rpcClient) {
         this.rpcClient = rpcClient;
     }
 
 
     /**
-     * Fetch the last messages for a batch of topics.
+     * Fetches the last messages for a batch of topics.
      * 
      * @param topics  {@link UUriBatch} batch of 1 or more topics to fetch the last messages for.
      * @param options The call options.
      * @return CompletionStage completes successfully with {@link GetLastMessagesResponse} if uTwin was able
      *         to fetch the topics or completes exceptionally with {@link UStatus} with the failure reason.
      *         such as {@code UCode.NOT_FOUND}, {@code UCode.PERMISSION_DENIED} etc...
+     * @throws NullPointerException if topics or options is {@code null}.
      */
     @Override
     public CompletionStage<GetLastMessagesResponse> getLastMessages(UUriBatch topics, CallOptions options) {
@@ -73,8 +73,8 @@ public class SimpleUTwinClient implements UTwinClient {
                 new UStatusException(UCode.INVALID_ARGUMENT, "topics must not be empty"));
         }
 
-        GetLastMessagesRequest request = GetLastMessagesRequest.newBuilder().setTopics(topics).build();
-        return RpcMapper.mapResponse(rpcClient.invokeMethod(
-            GETLASTMESSAGE_METHOD, UPayload.pack(request), options), GetLastMessagesResponse.class);
-    }   
+        final var request = GetLastMessagesRequest.newBuilder().setTopics(topics).build();
+        return rpcClient.invokeMethod(GETLASTMESSAGE_METHOD, UPayload.pack(request), options)
+            .thenApply(response -> UPayload.unpackOrDefaultInstance(response, GetLastMessagesResponse.class));
+    }
 }
