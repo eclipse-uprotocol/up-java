@@ -64,6 +64,7 @@ class UClientTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testFactoryMethod() {
         var transport = mock(UTransport.class);
         when(transport.registerListener(any(UUri.class), any(Optional.class), any(UListener.class)))
