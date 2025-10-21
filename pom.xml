@@ -407,6 +407,38 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.6.1</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <!-- 
+                                This execution will initialize the up-spec git submodule,
+                                if it has not already been initialized during cloning of the repository.
+                                This is mainly needed during the release:perform step of the release process
+                                when a fresh clone of the repository is created in a temporary directory.
+                                The build process depends on the up-spec submodule to generate the protobuf
+                                classes, so it must be initialized before the protobuf-maven-plugin runs.
+                                -->
+                                <id>init git submodules</id>
+                                <phase>initialize</phase>
+                                <configuration>
+                                    <executable>git</executable>
+                                    <arguments>
+                                        <argument>submodule</argument>
+                                        <argument>update</argument>
+                                        <argument>--init</argument>
+                                        <argument>--recursive</argument>
+                                    </arguments>
+                                </configuration>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <artifactId>maven-source-plugin</artifactId>
                     </plugin>
                     <plugin>
