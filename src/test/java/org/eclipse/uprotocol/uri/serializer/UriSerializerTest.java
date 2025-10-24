@@ -30,14 +30,14 @@ class UriSerializerTest {
     }
 
     @Test
-    @DisplayName("Test deserializing a null UUri fails")
-    void testDeserializingANullUuriFails() {
+    @DisplayName("Test deserializing a null URI fails")
+    void testDeserializingANullUriFails() {
         assertThrows(NullPointerException.class, () -> UriSerializer.deserialize((String) null));
         assertThrows(NullPointerException.class, () -> UriSerializer.deserialize((URI) null));
     }
 
     @Test
-    @DisplayName("Test deserializing a UUri with authority name exceeding max length fails")
+    @DisplayName("Test deserializing a URI with authority name exceeding max length fails")
     // [utest->dsn~uri-authority-name-length~1]
     void testDeserializeRejectsAuthorityNameExceedingMaxLength() {
         String authority = "a".repeat(UriValidator.AUTHORITY_NAME_MAX_LENGTH);
@@ -47,5 +47,15 @@ class UriSerializerTest {
         authority = "a".repeat(UriValidator.AUTHORITY_NAME_MAX_LENGTH + 1);
         var invalidUri = "up://%s/ABCD/1/1001".formatted(authority);
         assertThrows(IllegalArgumentException.class, () -> UriSerializer.deserialize(invalidUri));
+    }
+
+    @Test
+    @DisplayName("Test deserializing URI that contains lower case hex-encoded values succeeds")
+    // [utest->dsn~uri-path-mapping~2]
+    void testDeserializingLowerCaseHexEncodingSuccceeds() {
+        var uuri = UriSerializer.deserialize("up://example.com/abcd/a1/ef01");
+        assertEquals(0xabcd, uuri.getUeId());
+        assertEquals(0xa1, uuri.getUeVersionMajor());
+        assertEquals(0xef01, uuri.getResourceId());
     }
 }
