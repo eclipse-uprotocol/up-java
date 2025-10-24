@@ -22,7 +22,6 @@ import org.eclipse.uprotocol.uri.validator.UriValidator;
 import org.eclipse.uprotocol.v1.UUri;
 import org.junit.platform.suite.api.ConfigurationParameter;
 import org.junit.platform.suite.api.IncludeEngines;
-import org.junit.platform.suite.api.SelectClasspathResource;
 import org.junit.platform.suite.api.SelectFile;
 import org.junit.platform.suite.api.Suite;
 
@@ -38,17 +37,11 @@ import static io.cucumber.junit.platform.engine.Constants.GLUE_PROPERTY_NAME;
 @Suite
 @IncludeEngines("cucumber")
 // [utest->dsn~uri-pattern-matching~2]
-// TODO: replace with feature from up-spec once the referenced version contains fixes
-// see https://github.com/eclipse-uprotocol/up-spec/issues/302
-// @SelectFile("up-spec/basics/uuri_pattern_matching.feature")
-@SelectClasspathResource("features/uuri_pattern_matching.feature")
+@SelectFile("up-spec/basics/uuri_pattern_matching.feature")
 // [utest->req~uri-data-model-proto~1]
 @SelectFile("up-spec/basics/uuri_protobuf_serialization.feature")
 // [utest->req~uri-serialization~1]
-// TODO: replace with feature from up-spec once the referenced version contains missing examples
-// see https://github.com/eclipse-uprotocol/up-spec/issues/300
-// @SelectFile("up-spec/basics/uuri_uri_serialization.feature")
-@SelectClasspathResource("features/uuri_uri_serialization.feature")
+@SelectFile("up-spec/basics/uuri_uri_serialization.feature")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "org.eclipse.uprotocol.uri")
 public class UuriTests {
 

@@ -23,7 +23,7 @@ import org.eclipse.uprotocol.v1.UUri;
  * Provides functionality for serializing and deserializing {@link UUri}s to/from their
  * corresponding URI representation as defined by the uProtocol specification.
  *
- * @see <a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.6/basics/uri.adoc">
+ * @see <a href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/v1.6.0-alpha.7/basics/uri.adoc">
  * uProtocol URI Specification</a>
  */
 public final class UriSerializer {
@@ -50,7 +50,7 @@ public final class UriSerializer {
      * @throws IllegalArgumentException if the UUri does not comply with the UUri specification.
      */
     // [impl->dsn~uri-authority-mapping~1]
-    // [impl->dsn~uri-path-mapping~1]
+    // [impl->dsn~uri-path-mapping~2]
     // [impl->req~uri-serialization~1]
     public static String serialize(UUri uuri) {
         return serialize(uuri, false);
@@ -69,7 +69,7 @@ public final class UriSerializer {
      * @throws IllegalArgumentException if the UUri does not comply with the UUri specification.
      */
     // [impl->dsn~uri-authority-mapping~1]
-    // [impl->dsn~uri-path-mapping~1]
+    // [impl->dsn~uri-path-mapping~2]
     // [impl->req~uri-serialization~1]
     public static String serialize(UUri uuri, boolean includeScheme) {
         Objects.requireNonNull(uuri);
@@ -102,7 +102,7 @@ public final class UriSerializer {
      * @throws IllegalArgumentException if the URI is invalid.
      */
     // [impl->dsn~uri-scheme~1]
-    // [impl->dsn~uri-path-mapping~1]
+    // [impl->dsn~uri-path-mapping~2]
     // [impl->req~uri-serialization~1]
     // [impl->dsn~uri-authority-mapping~1]
     public static UUri deserialize(String uProtocolUri) {
@@ -120,7 +120,7 @@ public final class UriSerializer {
      * @throws IllegalArgumentException if the URI is invalid.
      */
     // [impl->dsn~uri-scheme~1]
-    // [impl->dsn~uri-path-mapping~1]
+    // [impl->dsn~uri-path-mapping~2]
     // [impl->req~uri-serialization~1]
     // [impl->dsn~uri-authority-mapping~1]
     public static UUri deserialize(URI uProtocolUri) {

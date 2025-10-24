@@ -34,7 +34,7 @@ import static io.cucumber.junit.platform.engine.Constants.GLUE_PROPERTY_NAME;
 @Suite
 @IncludeEngines("cucumber")
 // [utest->req~uuid-proto~1]
-// @SelectFile("up-spec/basics/uuid_protobuf_serialization.feature")
+@SelectFile("up-spec/basics/uuid_protobuf_serialization.feature")
 // [utest->req~uuid-hex-and-dash~1]
 @SelectFile("up-spec/basics/uuid_string_serialization.feature")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "org.eclipse.uprotocol.uuid")
