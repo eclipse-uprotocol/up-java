@@ -57,7 +57,7 @@
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <protobuf.version>3.25.8</protobuf.version>
+        <protobuf.version>4.33.0</protobuf.version>
         <!-- allow dynamic loading of the Mockito Mock agent -->
         <!-- see https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
         <argLine>-XX:+EnableDynamicAgentLoading</argLine>
@@ -78,7 +78,8 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.13.4</version>
+                <!-- this version must match the version of junit used by Cucumber JVM -->
+                <version>5.14.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -99,7 +100,7 @@
             <dependency>
                 <groupId>io.cucumber</groupId>
                 <artifactId>cucumber-bom</artifactId>
-                <version>7.25.0</version>
+                <version>7.30.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -293,7 +294,7 @@
             <plugin>
                 <groupId>io.github.ascopes</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>3.10.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -310,17 +311,13 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <!-- 
-                    do NOT use 3.5.3 as it is incompatible with Cucumber
-                    https://github.com/cucumber/cucumber-jvm/issues/2984
-                 -->
-                <version>3.5.2</version>
+                <version>3.5.4</version>
                 <configuration>
                     <!--  allow to use unnamed modules -->
                     <useModulePath>false</useModulePath>
                     <properties>
                         <configurationParameters>
-                            cucumber.junit-platform.naming-strategy=surefire
+                            cucumber.junit-platform.naming-strategy=long
                         </configurationParameters>
                     </properties>
                 </configuration>
