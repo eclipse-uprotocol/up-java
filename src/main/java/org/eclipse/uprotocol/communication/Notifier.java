@@ -21,7 +21,7 @@ import org.eclipse.uprotocol.transport.UListener;
 /**
  * A client for sending Notification messages to a uEntity.
  *
- * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.6/up-l2/api.adoc">
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.7/up-l2/api.adoc">
  * Communication Layer API Specifications</a>
  */
 // [impl->dsn~communication-layer-api-declaration~1]

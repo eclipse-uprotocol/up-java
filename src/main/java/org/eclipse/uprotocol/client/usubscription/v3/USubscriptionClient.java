@@ -32,7 +32,7 @@ import org.eclipse.uprotocol.v1.UUri;
 /**
  * The client-side interface for interacting with a USubscription service instance.
  *
- * @see <a href="https://github.com/eclipse-uprotocol/up-spec/tree/v1.6.0-alpha.6/up-l3/usubscription/v3">
+ * @see <a href="https://github.com/eclipse-uprotocol/up-spec/tree/v1.6.0-alpha.7/up-l3/usubscription/v3">
  * USubscription service specification</a>
  */
 public interface USubscriptionClient {

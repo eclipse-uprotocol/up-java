@@ -57,7 +57,7 @@ public final class UuidUtils {
      * @return {@code true} if is a uProtocol UUID or {@code false} if uuid is {@code null}
      *         or is not a v7 UUID.
      * @see <a href="https://www.rfc-editor.org/rfc/rfc9562.html">RFC 9562</a>
-     * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.6/basics/uuid.adoc">
+     * @see <a href="https://github.com/eclipse-uprotocol/up-spec/blob/v1.6.0-alpha.7/basics/uuid.adoc">
      * uProtocol UUID specification</a>
      */
     public static boolean isUProtocol(UUID uuid) {
