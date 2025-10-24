@@ -91,10 +91,10 @@ public class InMemoryRpcClient extends AbstractCommunicationLayerClient implemen
         Objects.requireNonNull(options, "Call options cannot be null");
 
         UMessageBuilder builder = UMessageBuilder.request(getUriProvider().getSource(), methodUri, options.timeout());
-        Optional.ofNullable(options.priority()).ifPresent(priority -> builder.withPriority(priority));
+        Optional.ofNullable(options.priority()).ifPresent(builder::withPriority);
         Optional.ofNullable(options.token())
             .filter(s -> !s.isBlank())
-            .ifPresent(token -> builder.withToken(token));
+            .ifPresent(builder::withToken);
 
         // Build the request message
         final UMessage request = builder.build(requestPayload);
@@ -132,14 +132,13 @@ public class InMemoryRpcClient extends AbstractCommunicationLayerClient implemen
     }
 
     private void handleResponse(UMessage message) {
+        final UAttributes responseAttributes = message.getAttributes();
         // Only handle responses messages
-        if (message.getAttributes().getType() != UMessageType.UMESSAGE_TYPE_RESPONSE) {
+        if (responseAttributes.getType() != UMessageType.UMESSAGE_TYPE_RESPONSE) {
             Optional.ofNullable(unexpectedMessageHandler).ifPresent(handler -> handler.accept(message));
             return;
         }
-        
-        final UAttributes responseAttributes = message.getAttributes();
-        
+
         // Check if the response is for a request we made, if not then ignore it
         final CompletableFuture<UMessage> responseFuture = mRequests.remove(responseAttributes.getReqid());
         if (responseFuture == null) {
