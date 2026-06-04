@@ -35,7 +35,7 @@ jobs:
   requirements-tracing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           submodules: "recursive"
       - name: Fast-Forward to HEAD revision of uProtocol Spec main branch
@@ -49,7 +49,7 @@ jobs:
           cd "${{ github.workspace }}"
 
       - name: "Determine OpenFastTrace file patterns from .env file"
-        uses: xom9ikk/dotenv@v2.3.0
+        uses: xom9ikk/dotenv@ac290ca23a42155a0cba1031d23afa46240116a9 # v2.3.0
         with:
           mode: "oft-latest"
           load-mode: strict
